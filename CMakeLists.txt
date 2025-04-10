@@ -5,7 +5,7 @@ find_package(imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(CLI11 CONFIG REQUIRED)
 
-add_executable (HitmanTracker "HitmanTracker.cpp" "config.cpp" "logger.cpp")
+add_executable (HitmanTracker "HitmanTracker.cpp" "settings.cpp" "logger.cpp")
 set_property(TARGET HitmanTracker PROPERTY CXX_STANDARD 20)
 target_link_libraries(HitmanTracker PRIVATE imgui::imgui)
 target_link_libraries(HitmanTracker PRIVATE spdlog::spdlog_header_only)

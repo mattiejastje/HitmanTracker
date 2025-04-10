@@ -1,4 +1,4 @@
-#include "config.hpp"
+#include "settings.hpp"
 
 #include <CLI/CLI.hpp>
 
@@ -38,28 +38,29 @@ static std::unique_ptr<CLI::App> make_app(
     return app;
 }
 
-void config_load(int argc, char** argv) {
+void settings_load(int argc, char** argv) {
     auto log_level = spdlog::level::info;
     auto log_flush_level = spdlog::level::off;
     auto app = make_app(log_level, log_flush_level);
     try {
         app->parse(argc, argv);
     } catch (const CLI::ParseError& e) {
-        LOG->warn("failed to parse options ({})", e.what());
+        spdlog::warn("Failed to parse settings ({})", e.what());
     }
-    LOG->set_level(log_level);
-    LOG->flush_on(log_flush_level);
-    g_config = std::make_unique<Config>();
+    spdlog::set_level(log_level);
+    spdlog::flush_on(log_flush_level);
+    spdlog::debug("Settings loaded from HitmanTracker.ini");
+    g_settings = std::make_unique<Settings>();
 }
 
-void config_save() {
-    auto log_level = g_logger ? g_logger->level() : spdlog::level::info;
-    auto log_flush_level =
-        g_logger ? g_logger->flush_level() : spdlog::level::off;
+void settings_save() {
+    auto log_level = spdlog::get_level();
+    auto log_flush_level = spdlog::default_logger()->flush_level();
     auto app = make_app(log_level, log_flush_level);
     if (std::ofstream config_file{"HitmanTracker.ini"}) {
         config_file << app->config_to_str(true, true);
+        spdlog::debug("Settings saved to HitmanTracker.ini");
     } else {
-        LOG->error("Unable to save config to HitmanTracker.ini");
+        spdlog::error("Unable to save settings to HitmanTracker.ini");
     }
 }

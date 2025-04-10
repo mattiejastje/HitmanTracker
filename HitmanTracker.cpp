@@ -1,15 +1,14 @@
-﻿#include "config.hpp"
-#include "logger.hpp"
+﻿#include "logger.hpp"
+#include "settings.hpp"
 
 using namespace std;
 
-std::shared_ptr<spdlog::logger> g_logger = nullptr;
-std::unique_ptr<Config> g_config = nullptr;
+std::unique_ptr<Settings> g_settings = nullptr;
 
 int main(int argc, char** argv) {
     logger_init();
-    config_load(argc, argv);
+    settings_load(argc, argv);
     // TODO main application loop comes here
-    config_save();
+    settings_save();
     return 0;
 }
