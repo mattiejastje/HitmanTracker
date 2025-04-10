@@ -1,0 +1,5 @@
+BasedOnStyle: Google
+BinPackArguments: false
+AlignAfterOpenBracket: BlockIndent
+IndentWidth: 4
+ContinuationIndentWidth: 4

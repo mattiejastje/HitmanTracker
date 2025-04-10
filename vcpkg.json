@@ -1,0 +1,13 @@
+{
+  "dependencies": [
+    "cli11",
+    {
+      "name": "imgui",
+      "features": [
+        "dx9-binding",
+        "win32-binding"
+      ]
+    },
+    "spdlog"
+  ]
+}

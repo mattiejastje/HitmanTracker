@@ -1,8 +1,12 @@
 ﻿cmake_minimum_required (VERSION 3.30)
 project ("HitmanTracker")
 
-# Add source to this project's executable.
+find_package(imgui CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(CLI11 CONFIG REQUIRED)
+
 add_executable (HitmanTracker "HitmanTracker.cpp")
 set_property(TARGET HitmanTracker PROPERTY CXX_STANDARD 20)
-
-# TODO: Add tests and install targets if needed.
+target_link_libraries(HitmanTracker PRIVATE imgui::imgui)
+target_link_libraries(HitmanTracker PRIVATE spdlog::spdlog_header_only)
+target_link_libraries(HitmanTracker PRIVATE CLI11::CLI11)
