@@ -3,3 +3,4 @@ BinPackArguments: false
 AlignAfterOpenBracket: BlockIndent
 IndentWidth: 4
 ContinuationIndentWidth: 4
+AccessModifierOffset: -4
