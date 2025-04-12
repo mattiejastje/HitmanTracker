@@ -1,7 +1,9 @@
+#pragma once
+
 #include <memory>
 
 class Settings {
-   public:
+public:
     // TODO add configuration variables here
 };
 

@@ -1,7 +1,6 @@
 #include "logger.hpp"
 
 #include <spdlog/sinks/rotating_file_sink.h>
-#include <spdlog/spdlog.h>
 
 void logger_init() {
     auto logger = spdlog::rotating_logger_mt(
