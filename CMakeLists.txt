@@ -5,7 +5,24 @@ find_package(CLI11 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
-add_executable (HitmanTracker "HitmanTracker.cpp" "gui.cpp" "logger.cpp" "settings.cpp" "game.cpp")
+add_executable (HitmanTracker
+	"HitmanTracker.cpp"
+	"gui.cpp"
+	"logger.cpp"
+	"settings.cpp"
+	"game.cpp"
+	"read_process_memory.cpp"
+	"process_handle.cpp"
+	"format_duration.cpp"
+	"hitman2_silent_assassin/gui.cpp"
+	"hitman_contracts/gui.cpp"
+	"hitman_codename_47/gui.cpp"
+	"hitman_blood_money/gui.cpp"
+	"hitman2_silent_assassin/stats.cpp"
+	"hitman_contracts/stats.cpp"
+	"hitman_codename_47/stats.cpp"
+	"hitman_blood_money/stats.cpp"
+)
 set_property(TARGET HitmanTracker PROPERTY CXX_STANDARD 20)
 target_link_libraries(HitmanTracker PRIVATE CLI11::CLI11)
 target_link_libraries(HitmanTracker PRIVATE imgui::imgui)
