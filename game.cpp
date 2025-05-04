@@ -11,13 +11,6 @@
 
 #include "logger.hpp"
 
-enum GameId {
-    HITMAN_CODENAME_47,
-    HITMAN2_SILENT_ASSASSIN,
-    HITMAN_CONTRACTS,
-    HITMAN_BLOOD_MONEY,
-};
-
 struct GameProcess {
     DWORD process_id;
     GameGui gui;
