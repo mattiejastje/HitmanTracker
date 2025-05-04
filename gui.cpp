@@ -6,14 +6,18 @@
 #include <imgui_impl_win32.h>
 #include <tchar.h>
 
+#include "game.hpp"
 #include "logger.hpp"
 
 // Data
+constexpr auto TIMER_FIND_GAME = 1;
+constexpr auto TIMER_UPDATE_STATS = 2;
 static LPDIRECT3D9 g_pD3D = nullptr;
 static LPDIRECT3DDEVICE9 g_pd3dDevice = nullptr;
 static bool g_DeviceLost = false;
 static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 static D3DPRESENT_PARAMETERS g_d3dpp = {};
+static std::optional<Game> game = {};
 
 // Forward declarations of helper functions
 bool CreateDeviceD3D(HWND hWnd);
@@ -85,6 +89,10 @@ int gui_run() {
 
     // Initialize state (nothing here yet)
 
+    // Set timer
+    SetTimer(hwnd, TIMER_FIND_GAME, 1000, nullptr);
+    SetTimer(hwnd, TIMER_UPDATE_STATS, 100, nullptr);
+
     // Main loop
     spdlog::trace("Starting main loop...");
     bool done = false;
@@ -132,7 +140,11 @@ int gui_run() {
             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
                 | ImGuiWindowFlags_NoMove
         );
-        ImGui::Text("Game Not Running");
+        if (game) {
+            ImGui::Text(game->name.c_str());
+        } else {
+            ImGui::Text("Game Not Running");
+        }
         ImGui::End();
         ImGui::EndFrame();
 
@@ -153,6 +165,9 @@ int gui_run() {
 
     // Cleanup
     spdlog::trace("Cleanup...");
+    KillTimer(hwnd, TIMER_UPDATE_STATS);
+    KillTimer(hwnd, TIMER_FIND_GAME);
+    game.reset();
     ImGui_ImplDX9_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
@@ -245,6 +260,16 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case WM_DESTROY:
             ::PostQuitMessage(0);
             return 0;
+        case WM_TIMER:
+            switch (wParam) {
+                case TIMER_FIND_GAME:
+                    if (!game || (game && !game_is_running(game->handle))) {
+                        game = find_game();
+                    };
+                    return 0;
+                case TIMER_UPDATE_STATS:
+                    return 0;
+            }
     }
     return ::DefWindowProcW(hWnd, msg, wParam, lParam);
-}}
+}

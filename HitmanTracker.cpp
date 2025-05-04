@@ -1,6 +1,7 @@
 ﻿#include "logger.hpp"
 #include "settings.hpp"
 #include "gui.hpp"
+#include "game.hpp"
 
 using namespace std;
 
