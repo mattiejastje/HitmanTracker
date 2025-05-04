@@ -113,7 +113,11 @@ static std::optional<Game> find_game(HANDLE snapshot_handle) {
             auto process_handle
                 = open_process_handle(process_entry.th32ProcessID);
             if (process_handle) {
-                return Game{std::move(process_handle), std::get<0>(game_gui_stats.value()), std::get<1>(game_gui_stats.value())};
+                return Game{
+                    std::move(process_handle),
+                    std::get<0>(game_gui_stats.value()),
+                    std::get<1>(game_gui_stats.value())
+                };
             }
         }
         found = Process32Next(snapshot_handle, &process_entry);
