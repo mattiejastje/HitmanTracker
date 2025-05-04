@@ -1,9 +1,11 @@
 #include "game.hpp"
 
+#include <fmt/format.h>
 #include <imgui.h>
 #include <windows.h>
 #include <tlhelp32.h>
 
+#include <chrono>
 #include <memory>
 #include <optional>
 
@@ -21,24 +23,41 @@ struct GameProcess {
     GameGui gui;
 };
 
+static std::string format_duration(float seconds) {
+    std::chrono::duration<float> duration(seconds);
+    auto mins = std::chrono::duration_cast<std::chrono::minutes>(duration);
+    duration -= mins;
+    auto secs = std::chrono::duration_cast<std::chrono::seconds>(duration);
+    duration -= secs;
+    auto millisecs
+        = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    return fmt::format(
+        "{}:{:02}.{:03}", mins.count(), secs.count(), millisecs.count()
+    );
+}
+
 static void gui_hitman_codename_47(const Stats& stats) {
     ImGui::Text("Hitman: Codename 47");
     ImGui::Separator();
+    ImGui::Text(format_duration(stats.time).c_str());
 }
 
 static void gui_hitman2_silent_assassin(const Stats& stats) {
     ImGui::Text("Hitman 2: Silent Assassin");
     ImGui::Separator();
+    ImGui::Text(format_duration(stats.time).c_str());
 }
 
 static void gui_hitman_contracts(const Stats& stats) {
     ImGui::Text("Hitman: Contracts");
     ImGui::Separator();
+    ImGui::Text(format_duration(stats.time).c_str());
 }
 
 static void gui_hitman_blood_money(const Stats& stats) {
     ImGui::Text("Hitman: Blood Money");
     ImGui::Separator();
+    ImGui::Text(format_duration(stats.time).c_str());
 }
 
 static void stats_hitman_codename_47(
