@@ -45,12 +45,12 @@ int gui_run() {
            nullptr,
            nullptr,
            nullptr,
-           L"ImGui Example",
+           L"Hitman Tracker",
            nullptr};
     ::RegisterClassExW(&wc);
     HWND hwnd = ::CreateWindowW(
         wc.lpszClassName,
-        L"Dear ImGui DirectX9 Example",
+        L"Hitman Tracker",
         WS_OVERLAPPEDWINDOW,
         100,
         100,
@@ -129,7 +129,7 @@ int gui_run() {
             ResetDevice();
         }
 
-        // Start the Dear ImGui frame
+        // Start the frame
         ImGui_ImplDX9_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
@@ -256,4 +256,4 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             return 0;
     }
     return ::DefWindowProcW(hWnd, msg, wParam, lParam);
-}
+}}
