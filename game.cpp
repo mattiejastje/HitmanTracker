@@ -1,5 +1,6 @@
 #include "game.hpp"
 
+#include <imgui.h>
 #include <windows.h>
 #include <tlhelp32.h>
 
@@ -16,58 +17,63 @@ enum GameId {
 };
 
 struct GameProcess {
-    GameId game_id;
     DWORD process_id;
+    GameGui gui;
 };
 
-const std::map<GameId, std::string> game_name
-    = {{HITMAN_CODENAME_47, "Hitman: Codename 47"},
-       {HITMAN2_SILENT_ASSASSIN, "Hitman 2: Silent Assassin"},
-       {HITMAN_CONTRACTS, "Hitman: Contracts"},
-       {HITMAN_BLOOD_MONEY, "Hitman: Blood Money"}};
+static void gui_hitman_codename_47(const Stats& stats) {
+    ImGui::Text("Hitman: Codename 47");
+    ImGui::Separator();
+}
 
-static std::optional<GameId> find_game_id(const char* exe_file) {
+static void gui_hitman2_silent_assassin(const Stats& stats) {
+    ImGui::Text("Hitman 2: Silent Assassin");
+    ImGui::Separator();
+}
+
+static void gui_hitman_contracts(const Stats& stats) {
+    ImGui::Text("Hitman: Contracts");
+    ImGui::Separator();
+}
+
+static void gui_hitman_blood_money(const Stats& stats) {
+    ImGui::Text("Hitman: Blood Money");
+    ImGui::Separator();
+}
+
+static void stats_hitman_codename_47(
+    const ProcessHandlePtr& handle, Stats& stats
+) {}
+
+static void stats_hitman2_silent_assassin(
+    const ProcessHandlePtr& handle, Stats& stats
+) {}
+
+static void stats_hitman_contracts(
+    const ProcessHandlePtr& handle, Stats& stats
+) {}
+
+static void stats_hitman_blood_money(
+    const ProcessHandlePtr& handle, Stats& stats
+) {}
+
+static std::optional<std::tuple<GameGui, GameStats>> find_game_gui_stats(
+    const char* exe_file
+) {
     if (stricmp("hitman.exe", exe_file) == 0) {
-        return HITMAN_CODENAME_47;
+        return std::make_tuple(
+            gui_hitman_codename_47, stats_hitman_codename_47
+        );
     } else if (stricmp("hitman2.exe", exe_file) == 0) {
-        return HITMAN2_SILENT_ASSASSIN;
+        return std::make_tuple(
+            gui_hitman2_silent_assassin, stats_hitman2_silent_assassin
+        );
     } else if (stricmp("hitmancontracts.exe", exe_file) == 0) {
-        return HITMAN_CONTRACTS;
+        return std::make_tuple(gui_hitman_contracts, stats_hitman_contracts);
     } else if (stricmp("hitmanbloodmoney.exe", exe_file) == 0) {
-        return HITMAN_BLOOD_MONEY;
-    }
-    return {};
-}
-
-static std::optional<GameProcess> find_game_process(HANDLE snapshot_handle) {
-    std::optional<GameProcess> game_process{};
-    PROCESSENTRY32 process_entry{};
-    process_entry.dwSize = sizeof(PROCESSENTRY32);
-    auto found = Process32First(snapshot_handle, &process_entry);
-    while (found) {
-        spdlog::trace("Checking process {}", process_entry.szExeFile);
-        auto game_id = find_game_id(process_entry.szExeFile);
-        if (game_id.has_value()) {
-            spdlog::info(
-                "Found {} (process id {})",
-                game_name.at(game_id.value()).c_str(),
-                process_entry.th32ProcessID
-            );
-            return GameProcess{game_id.value(), process_entry.th32ProcessID};
-        }
-        found = Process32Next(snapshot_handle, &process_entry);
-    }
-    return {};
-}
-
-static std::optional<GameProcess> find_game_process() {
-    auto snapshot_handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (INVALID_HANDLE_VALUE == snapshot_handle) {
-        spdlog::error("Unable to list processes (invalid snapshot handle)");
-    } else {
-        auto game_process = find_game_process(snapshot_handle);
-        CloseHandle(snapshot_handle);
-        return game_process;
+        return std::make_tuple(
+            gui_hitman_blood_money, stats_hitman_blood_money
+        );
     }
     return {};
 }
@@ -93,16 +99,37 @@ static ProcessHandlePtr open_process_handle(DWORD process_id) {
     return ProcessHandlePtr{process_handle};
 }
 
-std::optional<Game> find_game() {
-    auto game_process = find_game_process();
-    if (game_process) {
-        auto process_handle = open_process_handle(game_process->process_id);
-        if (process_handle) {
-            return Game{
-                game_name.at(game_process->game_id), std::move(process_handle)
-            };
+static std::optional<Game> find_game(HANDLE snapshot_handle) {
+    PROCESSENTRY32 process_entry{};
+    process_entry.dwSize = sizeof(PROCESSENTRY32);
+    auto found = Process32First(snapshot_handle, &process_entry);
+    while (found) {
+        spdlog::trace("Checking process {}", process_entry.szExeFile);
+        auto game_gui_stats = find_game_gui_stats(process_entry.szExeFile);
+        if (game_gui_stats.has_value()) {
+            spdlog::info(
+                "Found game (process id {})", process_entry.th32ProcessID
+            );
+            auto process_handle
+                = open_process_handle(process_entry.th32ProcessID);
+            if (process_handle) {
+                return Game{std::move(process_handle), std::get<0>(game_gui_stats.value()), std::get<1>(game_gui_stats.value())};
+            }
         }
-    };
+        found = Process32Next(snapshot_handle, &process_entry);
+    }
+    return {};
+}
+
+std::optional<Game> find_game() {
+    auto snapshot_handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (INVALID_HANDLE_VALUE == snapshot_handle) {
+        spdlog::error("Unable to list processes (invalid snapshot handle)");
+    } else {
+        auto game = find_game(snapshot_handle);
+        CloseHandle(snapshot_handle);
+        return game;
+    }
     return {};
 }
 

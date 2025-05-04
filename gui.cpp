@@ -18,6 +18,7 @@ static bool g_DeviceLost = false;
 static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 static D3DPRESENT_PARAMETERS g_d3dpp = {};
 static std::optional<Game> game = {};
+static Stats stats = {};
 
 // Forward declarations of helper functions
 bool CreateDeviceD3D(HWND hWnd);
@@ -141,9 +142,9 @@ int gui_run() {
                 | ImGuiWindowFlags_NoMove
         );
         if (game) {
-            ImGui::Text(game->name.c_str());
+            game->gui(stats);
         } else {
-            ImGui::Text("Game Not Running");
+            ImGui::Text("Game not running");
         }
         ImGui::End();
         ImGui::EndFrame();
@@ -264,10 +265,14 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             switch (wParam) {
                 case TIMER_FIND_GAME:
                     if (!game || (game && !game_is_running(game->handle))) {
+                        stats = {};
                         game = find_game();
                     };
                     return 0;
                 case TIMER_UPDATE_STATS:
+                    if (game) {
+                        game->stats(game->handle, stats);
+                    };
                     return 0;
             }
     }
