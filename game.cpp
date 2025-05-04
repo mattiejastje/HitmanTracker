@@ -43,8 +43,8 @@ static std::optional<GameProcess> find_game_process(HANDLE snapshot_handle) {
     std::optional<GameProcess> game_process{};
     PROCESSENTRY32 process_entry{};
     process_entry.dwSize = sizeof(PROCESSENTRY32);
-    BOOL hResult = Process32First(snapshot_handle, &process_entry);
-    while (hResult) {
+    auto found = Process32First(snapshot_handle, &process_entry);
+    while (found) {
         spdlog::trace("Checking process {}", process_entry.szExeFile);
         auto game_id = find_game_id(process_entry.szExeFile);
         if (game_id.has_value()) {
@@ -55,14 +55,13 @@ static std::optional<GameProcess> find_game_process(HANDLE snapshot_handle) {
             );
             return GameProcess{game_id.value(), process_entry.th32ProcessID};
         }
-        hResult = Process32Next(snapshot_handle, &process_entry);
+        found = Process32Next(snapshot_handle, &process_entry);
     }
     return {};
 }
 
 static std::optional<GameProcess> find_game_process() {
-    HANDLE snapshot_handle;
-    snapshot_handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    auto snapshot_handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (INVALID_HANDLE_VALUE == snapshot_handle) {
         spdlog::error("Unable to list processes (invalid snapshot handle)");
     } else {
@@ -81,7 +80,7 @@ void ProcessHandleDeleter::operator()(void* process_handle) const {
 };
 
 static ProcessHandlePtr open_process_handle(DWORD process_id) {
-    HANDLE process_handle = OpenProcess(PROCESS_ALL_ACCESS, 0, process_id);
+    auto process_handle = OpenProcess(PROCESS_ALL_ACCESS, 0, process_id);
     if (process_handle) {
         spdlog::debug(
             "Process handle {} opened for process id {}",
@@ -110,7 +109,7 @@ std::optional<Game> find_game() {
 bool game_is_running(const ProcessHandlePtr& process_handle) {
     if (process_handle) {
         UINT32 first_bytes = 0;
-        SIZE_T bytes_read;
+        SIZE_T bytes_read = 0;
         ReadProcessMemory(
             process_handle.get(),
             (LPCVOID)0x00400000,
