@@ -79,5 +79,5 @@ std::optional<Game> find_game() {
 }
 
 bool game_is_running(const HandlePtr& process_handle) {
-    return read_uint32(process_handle, (LPCVOID)0x00400000) == 0x00905A4D;
+    return read_uint32(process_handle, 0x00400000) == 0x00905A4D;
 }
