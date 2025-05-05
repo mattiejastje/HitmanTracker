@@ -4,11 +4,6 @@
 
 #include "../read_process_memory.hpp"
 
-struct Map {
-    int number;
-    std::string name;
-};
-
 // unordered_map for fast lookup
 const std::unordered_map<std::string, int> scenes = {
     {R"(SCENES\C0-1\C0-1__MAIN.gms)", 1},
