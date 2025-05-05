@@ -31,7 +31,7 @@ const std::vector<std::string> map_names
        "St. Petersburg Revisited",  // 20
        "Redemption at Gontranno"};  // 21
 
-void gui_hitman2_silent_assassin(const Stats& stats) {
+void hitman2_silent_assassin::gui(const Stats& stats) {
     ImGui::Text("Hitman 2: Silent Assassin");
     ImGui::Separator();
     if (stats.map > 0) {

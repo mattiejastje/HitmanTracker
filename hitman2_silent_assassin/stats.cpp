@@ -29,7 +29,7 @@ const std::unordered_map<std::string, int> scenes = {
     {R"(SCENES\C8-1\C8-1__MAIN.gms)", 21},
 };
 
-void update_slow_hitman2_silent_assassin(
+void hitman2_silent_assassin::update_slow(
     const HandlePtr& handle, Stats& stats
 ) {
     auto scene = read_string(handle, 0x006A6C5C, {0x98, 0xBBB}, 64);
@@ -43,7 +43,7 @@ void update_slow_hitman2_silent_assassin(
     };
 }
 
-void update_fast_hitman2_silent_assassin(
+void hitman2_silent_assassin::update_fast(
     const HandlePtr& handle, Stats& stats
 ) {
     if (stats.map > 0) {

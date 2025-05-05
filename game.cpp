@@ -8,11 +8,8 @@
 #include "hitman2_silent_assassin/gui.hpp"
 #include "hitman2_silent_assassin/stats.hpp"
 #include "hitman_blood_money/gui.hpp"
-#include "hitman_blood_money/stats.hpp"
 #include "hitman_codename_47/gui.hpp"
-#include "hitman_codename_47/stats.hpp"
 #include "hitman_contracts/gui.hpp"
-#include "hitman_contracts/stats.hpp"
 #include "logger.hpp"
 #include "read_process_memory.hpp"
 
@@ -21,30 +18,30 @@ static void stats_nothing(const HandlePtr& handle, Stats& stats) {}
 static std::optional<GameMethods> get_game_methods(const char* exe_file) {
     if (stricmp("hitman.exe", exe_file) == 0) {
         return GameMethods{
-            gui_hitman_codename_47,
+            hitman_codename_47::gui,
             stats_nothing,
-            update_slow_hitman_codename_47,
+            stats_nothing,
             stats_nothing,
         };
     } else if (stricmp("hitman2.exe", exe_file) == 0) {
         return GameMethods{
-            gui_hitman2_silent_assassin,
+            hitman2_silent_assassin::gui,
             stats_nothing,
-            update_slow_hitman2_silent_assassin,
-            update_fast_hitman2_silent_assassin
+            hitman2_silent_assassin::update_slow,
+            hitman2_silent_assassin::update_fast
         };
     } else if (stricmp("hitmancontracts.exe", exe_file) == 0) {
         return GameMethods{
-            gui_hitman_contracts,
+            hitman_contracts::gui,
             stats_nothing,
-            update_slow_hitman_contracts,
+            stats_nothing,
             stats_nothing
         };
     } else if (stricmp("hitmanbloodmoney.exe", exe_file) == 0) {
         return GameMethods{
-            gui_hitman_blood_money,
+            hitman_blood_money::gui,
             stats_nothing,
-            update_slow_hitman_blood_money,
+            stats_nothing,
             stats_nothing
         };
     }

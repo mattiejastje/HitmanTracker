@@ -3,5 +3,9 @@
 #include "../handle.hpp"
 #include "../stats.hpp"
 
-void update_slow_hitman2_silent_assassin(const HandlePtr& handle, Stats& stats);
-void update_fast_hitman2_silent_assassin(const HandlePtr& handle, Stats& stats);
+namespace hitman2_silent_assassin {
+
+void update_slow(const HandlePtr& handle, Stats& stats);
+void update_fast(const HandlePtr& handle, Stats& stats);
+
+}  // namespace hitman2_silent_assassin

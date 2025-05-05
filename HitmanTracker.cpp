@@ -2,8 +2,6 @@
 #include "settings.hpp"
 #include "gui.hpp"
 
-using namespace std;
-
 std::unique_ptr<Settings> g_settings = nullptr;
 
 int main(int argc, char** argv) {

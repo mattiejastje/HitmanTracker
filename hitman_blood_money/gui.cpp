@@ -4,7 +4,7 @@
 
 #include "../format_duration.hpp"
 
-void gui_hitman_blood_money(const Stats& stats) {
+void hitman_blood_money::gui(const Stats& stats) {
     ImGui::Text("Hitman: Blood Money");
     ImGui::Separator();
     ImGui::Text(format_duration(stats.time).c_str());

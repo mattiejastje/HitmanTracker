@@ -2,4 +2,8 @@
 
 #include "../stats.hpp"
 
-void gui_hitman2_silent_assassin(const Stats& stats);
+namespace hitman2_silent_assassin {
+
+void gui(const Stats& stats);
+
+}

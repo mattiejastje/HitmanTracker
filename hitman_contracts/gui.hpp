@@ -2,4 +2,8 @@
 
 #include "../stats.hpp"
 
-void gui_hitman_contracts(const Stats& stats);
+namespace hitman_contracts {
+
+void gui(const Stats& stats);
+
+}

@@ -2,4 +2,8 @@
 
 #include "../stats.hpp"
 
-void gui_hitman_codename_47(const Stats& stats);
+namespace hitman_codename_47 {
+
+void gui(const Stats& stats);
+
+}
