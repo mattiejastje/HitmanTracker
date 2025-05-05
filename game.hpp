@@ -3,7 +3,7 @@
 #include <functional>
 #include <optional>
 
-#include "process_handle.hpp"
+#include "handle.hpp"
 #include "stats.hpp"
 
 using GameHook = std::function<void(const HandlePtr&, Stats&)>;

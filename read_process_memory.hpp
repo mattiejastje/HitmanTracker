@@ -5,23 +5,18 @@
 #include <string>
 #include <vector>
 
+#include "handle.hpp"
 #include "logger.hpp"
-#include "process_handle.hpp"
 
 bool read_bytes(
-    const HandlePtr& handle,
-    const void* ptr,
-    void* buffer,
-    std::size_t size
+    const HandlePtr& handle, const void* ptr, void* buffer, std::size_t size
 );
 
 uint32_t read_uint32(const HandlePtr& handle, const void* ptr);
 
 float read_float(const HandlePtr& handle, const void* ptr);
 
-std::string read_string(
-    const HandlePtr& handle, const void* ptr, size_t size
-);
+std::string read_string(const HandlePtr& handle, const void* ptr, size_t size);
 
 const void* find_pointer(
     const HandlePtr& handle,
