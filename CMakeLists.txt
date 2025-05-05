@@ -12,7 +12,7 @@ add_executable (HitmanTracker
 	"settings.cpp"
 	"game.cpp"
 	"read_process_memory.cpp"
-	"process_handle.cpp"
+	"handle.cpp"
 	"format_duration.cpp"
 	"hitman2_silent_assassin/gui.cpp"
 	"hitman_contracts/gui.cpp"

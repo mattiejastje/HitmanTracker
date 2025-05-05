@@ -1,13 +1,13 @@
-#include "process_handle.hpp"
+#include "handle.hpp"
 
 #include <tlhelp32.h>
 
 #include "logger.hpp"
 
-void ProcessHandleDeleter::operator()(void* process_handle) const {
-    if (process_handle) {
-        CloseHandle(process_handle);
-        spdlog::debug("Process handle {} closed", process_handle);
+void HandleDeleter::operator()(void* handle) const {
+    if (handle) {
+        CloseHandle(handle);
+        spdlog::debug("Handle {} closed", handle);
     }
 };
 
@@ -15,9 +15,7 @@ HandlePtr open_process_handle(DWORD process_id) {
     auto process_handle = OpenProcess(PROCESS_ALL_ACCESS, 0, process_id);
     if (process_handle) {
         spdlog::debug(
-            "Process handle {} opened for process id {}",
-            process_handle,
-            process_id
+            "Handle {} opened for process id {}", process_handle, process_id
         );
     } else {
         spdlog::error("Cannot open handle for process id {}", process_id);
