@@ -29,6 +29,23 @@ const std::unordered_map<std::string, int> scenes = {
     {R"(SCENES\C8-1\C8-1__MAIN.gms)", 21},
 };
 
+// note: index 0 is for map 2 etc.
+const std::vector<uint32_t> second_offsets
+    = {0x838, 0xB24, 0x8A0, 0x138, 0xB88, 0xBB8, 0xB48, 0xCE8, 0x136C, 0xAD0,
+       0xF50, 0x8D4, 0x9EC, 0x400, 0x9EC, 0x644, 0xB08, 0x96C, 0xB00,  0x8};
+
+struct GameStats {
+    uint32_t headshots;          // 0x208
+    uint32_t enemies_wounded;    // 0x20C
+    uint32_t enemies_killed;     // 0x210
+    uint32_t innocents_wounded;  // 0x214
+    uint32_t innocents_killed;   // 0x218
+    uint32_t alerts;             // 0x21C
+    uint32_t close_encounters;   // 0x220
+};
+
+static_assert(sizeof(GameStats) == 28);
+
 void hitman2_silent_assassin::update_slow(
     const HandlePtr& handle, Stats& stats
 ) {
@@ -40,6 +57,35 @@ void hitman2_silent_assassin::update_slow(
         spdlog::trace("Map {}", stats.map);
     } else {
         stats.map = 0;
+    }
+    if (stats.map >= 2) { 
+        // note: shots fired pointer occasionally glitches out
+        stats.shots_fired
+            = read_uint32(handle, 0x43981C, {0x12C, 0x8C, 0x11C7});
+        spdlog::trace("Shots fired {}", stats.shots_fired);
+        GameStats game_stats{0};
+        if (read_bytes(
+                handle,
+                0x6A6C50,
+                {0x28, second_offsets.at(stats.map - 2), 0x208},
+                &game_stats,
+                sizeof(game_stats)
+            )) {
+            spdlog::trace("Headshots {}", game_stats.headshots);
+            spdlog::trace("Enemies wounded {}", game_stats.enemies_wounded);
+            spdlog::trace("Enemies killed {}", game_stats.enemies_killed);
+            spdlog::trace("Innocents wounded {}", game_stats.innocents_wounded);
+            spdlog::trace("Innocents killed {}", game_stats.innocents_killed);
+            spdlog::trace("Alerts {}", game_stats.alerts);
+            spdlog::trace("Close encounters {}", game_stats.close_encounters);
+            stats.headshots = game_stats.headshots;
+            stats.enemies_wounded = game_stats.enemies_wounded;
+            stats.enemies_killed = game_stats.enemies_killed;
+            stats.innocents_killed = game_stats.innocents_killed;
+            stats.innocents_wounded = game_stats.innocents_wounded;
+            stats.alerts = game_stats.alerts;
+            stats.close_encounters = game_stats.close_encounters;
+        }
     };
 }
 

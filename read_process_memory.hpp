@@ -19,9 +19,15 @@ float read_float(const HandlePtr& handle, uint32_t ptr);
 std::string read_string(const HandlePtr& handle, uint32_t ptr, size_t size);
 
 uint32_t find_pointer(
+    const HandlePtr& handle, uint32_t ptr, const std::vector<uint32_t>& offsets
+);
+
+bool read_bytes(
     const HandlePtr& handle,
     uint32_t ptr,
-    const std::vector<uint32_t>& offsets
+    const std::vector<std::uint32_t>& offsets,
+    void* buffer,
+    std::size_t size
 );
 
 uint32_t read_uint32(

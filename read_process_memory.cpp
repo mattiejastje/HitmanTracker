@@ -8,7 +8,13 @@ bool read_bytes(
     static_assert(sizeof(uint32_t) == sizeof(void*));
     if (handle && ptr) {
         SIZE_T bytes_read = 0;
-        if (ReadProcessMemory(handle.get(), reinterpret_cast<void *>(ptr), buffer, size, &bytes_read)) {
+        if (ReadProcessMemory(
+                handle.get(),
+                reinterpret_cast<void*>(ptr),
+                buffer,
+                size,
+                &bytes_read
+            )) {
             spdlog::trace("Read {} bytes at {}", size, ptr);
             return true;
         }
@@ -60,6 +66,16 @@ uint32_t find_pointer(
         ptr += offset;
     }
     return ptr;
+}
+
+bool read_bytes(
+    const HandlePtr& handle,
+    uint32_t ptr,
+    const std::vector<std::uint32_t>& offsets,
+    void* buffer,
+    std::size_t size
+) {
+    return read_bytes(handle, find_pointer(handle, ptr, offsets), buffer, size);
 }
 
 uint32_t read_uint32(
