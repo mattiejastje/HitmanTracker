@@ -11,3 +11,4 @@ struct ProcessHandleDeleter {
 using ProcessHandlePtr = std::unique_ptr<void, ProcessHandleDeleter>;
 
 ProcessHandlePtr open_process_handle(DWORD process_id);
+ProcessHandlePtr open_snapshot_handle();

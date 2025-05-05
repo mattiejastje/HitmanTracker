@@ -1,20 +1,24 @@
 #pragma once
 
 #include <functional>
-#include <memory>
 #include <optional>
-#include <string>
 
 #include "process_handle.hpp"
 #include "stats.hpp"
 
+using GameHook = std::function<void(const ProcessHandlePtr&, Stats&)>;
 using GameGui = std::function<void(const Stats&)>;
 using GameStats = std::function<void(const ProcessHandlePtr&, Stats&)>;
 
-struct Game {
-    ProcessHandlePtr handle;
+struct GameMethods {
+    GameHook hook;
     GameGui gui;
     GameStats stats;
+};
+
+struct Game {
+    ProcessHandlePtr handle;
+    GameMethods methods;
 };
 
 std::optional<Game> find_game();

@@ -1,6 +1,5 @@
 #include "game.hpp"
 
-#include <windows.h>
 #include <tlhelp32.h>
 
 #include <memory>
@@ -17,63 +16,66 @@
 #include "logger.hpp"
 #include "read_process_memory.hpp"
 
-static std::optional<std::tuple<GameGui, GameStats>> find_game_gui_stats(
-    const char* exe_file
-) {
+static void hook_nothing(const ProcessHandlePtr& handle, Stats& stats) {}
+
+static std::optional<GameMethods> get_game_methods(const char* exe_file) {
     if (stricmp("hitman.exe", exe_file) == 0) {
-        return std::make_tuple(
-            gui_hitman_codename_47, stats_hitman_codename_47
-        );
+        return GameMethods{
+            hook_nothing, gui_hitman_codename_47, stats_hitman_codename_47
+        };
     } else if (stricmp("hitman2.exe", exe_file) == 0) {
-        return std::make_tuple(
-            gui_hitman2_silent_assassin, stats_hitman2_silent_assassin
-        );
+        return GameMethods{
+            hook_nothing,
+            gui_hitman2_silent_assassin,
+            stats_hitman2_silent_assassin
+        };
     } else if (stricmp("hitmancontracts.exe", exe_file) == 0) {
-        return std::make_tuple(gui_hitman_contracts, stats_hitman_contracts);
+        return GameMethods{
+            hook_nothing, gui_hitman_contracts, stats_hitman_contracts
+        };
     } else if (stricmp("hitmanbloodmoney.exe", exe_file) == 0) {
-        return std::make_tuple(
-            gui_hitman_blood_money, stats_hitman_blood_money
-        );
+        return GameMethods{
+            hook_nothing, gui_hitman_blood_money, stats_hitman_blood_money
+        };
     }
     return {};
 }
 
-static std::optional<Game> find_game(HANDLE snapshot_handle) {
-    PROCESSENTRY32 process_entry{};
-    process_entry.dwSize = sizeof(PROCESSENTRY32);
-    auto found = Process32First(snapshot_handle, &process_entry);
-    while (found) {
-        spdlog::trace("Checking process {}", process_entry.szExeFile);
-        auto game_gui_stats = find_game_gui_stats(process_entry.szExeFile);
-        if (game_gui_stats.has_value()) {
-            spdlog::info(
-                "Found game (process id {})", process_entry.th32ProcessID
-            );
-            auto process_handle
-                = open_process_handle(process_entry.th32ProcessID);
-            if (process_handle) {
-                return Game{
-                    std::move(process_handle),
-                    std::get<0>(game_gui_stats.value()),
-                    std::get<1>(game_gui_stats.value())
-                };
-            }
+static std::optional<Game> get_game_for_process(
+    const char* exe_file, DWORD process_id
+) {
+    spdlog::trace("Inspecting process {} with id {}", exe_file, process_id);
+    auto methods = get_game_methods(exe_file);
+    if (methods) {
+        spdlog::info("Found game {}", exe_file);
+        auto process_handle = open_process_handle(process_id);
+        if (process_handle) {
+            return Game{
+                std::move(process_handle),
+                methods.value(),
+            };
         }
-        found = Process32Next(snapshot_handle, &process_entry);
     }
     return {};
 }
 
 std::optional<Game> find_game() {
-    auto snapshot_handle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (INVALID_HANDLE_VALUE == snapshot_handle) {
-        spdlog::error("Unable to list processes (invalid snapshot handle)");
-    } else {
-        auto game = find_game(snapshot_handle);
-        CloseHandle(snapshot_handle);
-        return game;
+    spdlog::debug("Inspecting all processes");
+    std::optional<Game> game{};
+    auto snapshot_handle = open_snapshot_handle();
+    if (snapshot_handle) {
+        PROCESSENTRY32 process_entry{};
+        process_entry.dwSize = sizeof(PROCESSENTRY32);
+        auto found = Process32First(snapshot_handle.get(), &process_entry);
+        while (found) {
+            game = get_game_for_process(
+                process_entry.szExeFile, process_entry.th32ProcessID
+            );
+            if (game) break;
+            found = Process32Next(snapshot_handle.get(), &process_entry);
+        }
     }
-    return {};
+    return game;
 }
 
 bool game_is_running(const ProcessHandlePtr& process_handle) {
