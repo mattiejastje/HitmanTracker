@@ -6,14 +6,14 @@
 #include "handle.hpp"
 #include "stats.hpp"
 
-using GameHook = std::function<void(const HandlePtr&, Stats&)>;
 using GameGui = std::function<void(const Stats&)>;
 using GameStats = std::function<void(const HandlePtr&, Stats&)>;
 
 struct GameMethods {
-    GameHook hook;
-    GameGui gui;
-    GameStats stats;
+    GameGui gui;            // called every frame (for displaying stats)
+    GameStats init;         // called once (for e.g. hooking functions)
+    GameStats update_slow;  // called every 0.1 seconds (for slow varying stats)
+    GameStats update_fast;  // called every frame (for fast varying stats)
 };
 
 struct Game {

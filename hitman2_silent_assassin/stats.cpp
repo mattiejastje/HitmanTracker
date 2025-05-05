@@ -34,9 +34,8 @@ const std::unordered_map<std::string, int> scenes = {
     {R"(SCENES\C8-1\C8-1__MAIN.gms)", 21},
 };
 
-void stats_hitman2_silent_assassin(const HandlePtr& handle, Stats& stats) {
-    auto scene
-        = read_string(handle, 0x006A6C5C, {0x98, 0xBBB}, 64);
+void update_slow_hitman2_silent_assassin(const HandlePtr& handle, Stats& stats) {
+    auto scene = read_string(handle, 0x006A6C5C, {0x98, 0xBBB}, 64);
     spdlog::trace("Scene {}", scene);
     auto iter = scenes.find(scene);
     if (iter != scenes.end()) {
@@ -45,4 +44,12 @@ void stats_hitman2_silent_assassin(const HandlePtr& handle, Stats& stats) {
     } else {
         stats.map = 0;
     };
+}
+
+void update_fast_hitman2_silent_assassin(const HandlePtr& handle, Stats& stats) {
+    if (stats.map > 0) {
+        stats.time
+            = read_uint32(handle, 0x006A6C58, {0x118, 0xB38, 0x8, 0x1084, 0x24})
+              * 0.0166666666666666f;  // 1 / 60.0f
+    }
 }

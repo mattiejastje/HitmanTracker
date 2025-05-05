@@ -16,26 +16,36 @@
 #include "logger.hpp"
 #include "read_process_memory.hpp"
 
-static void hook_nothing(const HandlePtr& handle, Stats& stats) {}
+static void stats_nothing(const HandlePtr& handle, Stats& stats) {}
 
 static std::optional<GameMethods> get_game_methods(const char* exe_file) {
     if (stricmp("hitman.exe", exe_file) == 0) {
         return GameMethods{
-            hook_nothing, gui_hitman_codename_47, stats_hitman_codename_47
+            gui_hitman_codename_47,
+            stats_nothing,
+            update_slow_hitman_codename_47,
+            stats_nothing,
         };
     } else if (stricmp("hitman2.exe", exe_file) == 0) {
         return GameMethods{
-            hook_nothing,
             gui_hitman2_silent_assassin,
-            stats_hitman2_silent_assassin
+            stats_nothing,
+            update_slow_hitman2_silent_assassin,
+            update_fast_hitman2_silent_assassin
         };
     } else if (stricmp("hitmancontracts.exe", exe_file) == 0) {
         return GameMethods{
-            hook_nothing, gui_hitman_contracts, stats_hitman_contracts
+            gui_hitman_contracts,
+            stats_nothing,
+            update_slow_hitman_contracts,
+            stats_nothing
         };
     } else if (stricmp("hitmanbloodmoney.exe", exe_file) == 0) {
         return GameMethods{
-            hook_nothing, gui_hitman_blood_money, stats_hitman_blood_money
+            gui_hitman_blood_money,
+            stats_nothing,
+            update_slow_hitman_blood_money,
+            stats_nothing
         };
     }
     return {};

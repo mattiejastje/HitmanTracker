@@ -142,6 +142,7 @@ int gui_run() {
                 | ImGuiWindowFlags_NoMove
         );
         if (game) {
+            game->methods.update_fast(game->handle, stats);
             game->methods.gui(stats);
         } else {
             ImGui::Text("Game not running");
@@ -268,13 +269,13 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         stats = {};
                         game = find_game();
                         if (game) {
-                            game->methods.hook(game->handle, stats);
+                            game->methods.init(game->handle, stats);
                         };
                     };
                     return 0;
                 case TIMER_UPDATE_STATS:
                     if (game) {
-                        game->methods.stats(game->handle, stats);
+                        game->methods.update_slow(game->handle, stats);
                     };
                     return 0;
             }
