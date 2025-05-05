@@ -33,7 +33,7 @@ void update_slow_hitman2_silent_assassin(
     const HandlePtr& handle, Stats& stats
 ) {
     auto scene = read_string(handle, 0x006A6C5C, {0x98, 0xBBB}, 64);
-    spdlog::trace("Scene {}", scene);
+    if (!scene.empty()) spdlog::trace("Scene {}", scene);
     auto iter = scenes.find(scene);
     if (iter != scenes.end()) {
         stats.map = iter->second;
