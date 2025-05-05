@@ -19,6 +19,7 @@ add_executable (HitmanTracker
 	"hitman_contracts/gui.cpp"
 	"hitman_codename_47/gui.cpp"
 	"hitman_blood_money/gui.cpp"
+	"hitman_blood_money/stats.cpp"
 )
 set_property(TARGET HitmanTracker PROPERTY CXX_STANDARD 20)
 add_definitions(-DWIN32_LEAN_AND_MEAN)
