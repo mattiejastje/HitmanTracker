@@ -3,7 +3,7 @@
 #include "logger.hpp"
 
 bool read_bytes(
-    const ProcessHandlePtr& handle,
+    const HandlePtr& handle,
     const void* ptr,
     void* buffer,
     std::size_t size
@@ -19,7 +19,7 @@ bool read_bytes(
     return false;
 }
 
-uint32_t read_uint32(const ProcessHandlePtr& handle, const void* ptr) {
+uint32_t read_uint32(const HandlePtr& handle, const void* ptr) {
     uint32_t value = 0;
     if (read_bytes(handle, ptr, &value, 4)) {
         spdlog::trace("Read uint32 {}", value);
@@ -28,7 +28,7 @@ uint32_t read_uint32(const ProcessHandlePtr& handle, const void* ptr) {
     return 0;
 }
 
-float read_float(const ProcessHandlePtr& handle, const void* ptr) {
+float read_float(const HandlePtr& handle, const void* ptr) {
     float value = 0;
     if (read_bytes(handle, ptr, &value, 4)) {
         spdlog::trace("Read float {}", value);
@@ -38,7 +38,7 @@ float read_float(const ProcessHandlePtr& handle, const void* ptr) {
 }
 
 std::string read_string(
-    const ProcessHandlePtr& handle, const void* ptr, size_t size
+    const HandlePtr& handle, const void* ptr, size_t size
 ) {
     auto value = std::make_unique<char[]>(size + 1);
     if (read_bytes(handle, ptr, value.get(), size)) {
@@ -49,7 +49,7 @@ std::string read_string(
 }
 
 const void* find_pointer(
-    const ProcessHandlePtr& handle,
+    const HandlePtr& handle,
     const void* ptr,
     const std::vector<uint32_t>& offsets
 ) {
@@ -71,7 +71,7 @@ const void* find_pointer(
 }
 
 uint32_t read_uint32(
-    const ProcessHandlePtr& handle,
+    const HandlePtr& handle,
     const void* ptr,
     const std::vector<std::uint32_t>& offsets
 ) {
@@ -79,7 +79,7 @@ uint32_t read_uint32(
 }
 
 float read_float(
-    const ProcessHandlePtr& handle,
+    const HandlePtr& handle,
     const void* ptr,
     const std::vector<std::uint32_t>& offsets
 ) {
@@ -87,7 +87,7 @@ float read_float(
 }
 
 std::string read_string(
-    const ProcessHandlePtr& handle,
+    const HandlePtr& handle,
     const void* ptr,
     const std::vector<std::uint32_t>& offsets,
     std::size_t size

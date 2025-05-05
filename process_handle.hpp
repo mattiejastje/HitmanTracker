@@ -8,7 +8,7 @@ struct ProcessHandleDeleter {
     void operator()(void* process_handle) const;
 };
 
-using ProcessHandlePtr = std::unique_ptr<void, ProcessHandleDeleter>;
+using HandlePtr = std::unique_ptr<void, ProcessHandleDeleter>;
 
-ProcessHandlePtr open_process_handle(DWORD process_id);
-ProcessHandlePtr open_snapshot_handle();
+HandlePtr open_process_handle(DWORD process_id);
+HandlePtr open_snapshot_handle();

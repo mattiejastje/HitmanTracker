@@ -3,4 +3,4 @@
 #include "../process_handle.hpp"
 #include "../stats.hpp"
 
-void stats_hitman_blood_money(const ProcessHandlePtr& handle, Stats& stats);
+void stats_hitman_blood_money(const HandlePtr& handle, Stats& stats);
