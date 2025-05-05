@@ -30,31 +30,38 @@ const std::vector<std::string> map_names
        "St. Petersburg Revisited",  // 20
        "Redemption at Gontranno"};  // 21
 
+static void table_row(const char* text, const char* fmt, ...) {
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+    ImGui::Text(text);
+    ImGui::TableNextColumn();
+    va_list args;
+    va_start(args, fmt);
+    ImGui::TextV(fmt, args);
+    va_end(args);
+}
+
 void hitman2_silent_assassin::gui(const Stats& stats) {
     ImGui::Text("Hitman 2: Silent Assassin");
     ImGui::Separator();
     if (stats.map > 0) {
         ImGui::Text("#%d %s", stats.map, map_names.at(stats.map - 1).c_str());
         ImGui::Text(format_duration(stats.time).c_str());
-        ImGui::BeginTable("Statistics", 2);
-        ImGui::TableNextColumn();
-        ImGui::Text("Shots Fired");
-        ImGui::Text("Close Encounters");
-        ImGui::Text("Headshots");
-        ImGui::Text("Alerts");
-        ImGui::Text("Enemies Killed");
-        ImGui::Text("Enemies Wounded");
-        ImGui::Text("Innocents Killed");
-        ImGui::Text("Innocents Wounded");
-        ImGui::TableNextColumn();
-        ImGui::Text("%d", stats.shots_fired);
-        ImGui::Text("%d", stats.close_encounters);
-        ImGui::Text("%d", stats.headshots);
-        ImGui::Text("%d", stats.alerts);
-        ImGui::Text("%d", stats.enemies_killed);
-        ImGui::Text("%d", stats.enemies_wounded);
-        ImGui::Text("%d", stats.innocents_killed);
-        ImGui::Text("%d", stats.innocents_wounded);
+        ImGui::BeginTable("Statistics", 2, ImGuiTableFlags_BordersH | ImGuiTableFlags_SizingFixedFit);
+        table_row(
+            "Silent Assassin",
+            stats.silent_assassin == SilentAssassin::YES     ? "Yes"
+            : stats.silent_assassin == SilentAssassin::MAYBE ? "Maybe"
+                                                             : "No"
+        );
+        table_row("Shots Fired", "%d", stats.shots_fired);
+        table_row("Close Encounters", "%d", stats.close_encounters);
+        table_row("Headshots", "%d", stats.headshots);
+        table_row("Alerts", "%d", stats.alerts);
+        table_row("Enemies Killed", "%d", stats.enemies_killed);
+        table_row("Enemies Wounded", "%d", stats.enemies_wounded);
+        table_row("Innocents Killed", "%d", stats.innocents_killed);
+        table_row("Innocents Wounded", "%d", stats.innocents_wounded);
         ImGui::EndTable();
     }
 }
