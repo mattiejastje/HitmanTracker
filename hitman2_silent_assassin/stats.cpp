@@ -89,9 +89,7 @@ static SilentAssassin get_silent_assassin(const Stats& stats) {
     return SilentAssassin::NO;
 }
 
-void hitman2_silent_assassin::update_slow(
-    const HandlePtr& handle, Stats& stats
-) {
+void hitman2_silent_assassin::update_slow(void* handle, Stats& stats) {
     auto scene = read_string(handle, 0x006A6C5C, {0x98, 0xBBB}, 64);
     if (!scene.empty()) spdlog::trace("Scene {}", scene);
     auto iter = scenes.find(scene);
@@ -133,9 +131,7 @@ void hitman2_silent_assassin::update_slow(
     }
 }
 
-void hitman2_silent_assassin::update_fast(
-    const HandlePtr& handle, Stats& stats
-) {
+void hitman2_silent_assassin::update_fast(void* handle, Stats& stats) {
     if (stats.map > 0) {
         stats.time
             = read_uint32(handle, 0x006A6C58, {0x118, 0xB38, 0x8, 0x1084, 0x24})

@@ -3,13 +3,13 @@
 #include "logger.hpp"
 
 bool read_bytes(
-    const HandlePtr& handle, uint32_t ptr, void* buffer, std::size_t size
+    void *handle, uint32_t ptr, void* buffer, std::size_t size
 ) {
     static_assert(sizeof(uint32_t) == sizeof(void*));
     if (handle && ptr) {
         SIZE_T bytes_read = 0;
         if (ReadProcessMemory(
-                handle.get(),
+                handle,
                 reinterpret_cast<void*>(ptr),
                 buffer,
                 size,
@@ -23,7 +23,7 @@ bool read_bytes(
     return false;
 }
 
-uint32_t read_uint32(const HandlePtr& handle, uint32_t ptr) {
+uint32_t read_uint32(void *handle, uint32_t ptr) {
     uint32_t value = 0;
     if (read_bytes(handle, ptr, &value, 4)) {
         spdlog::trace("Read uint32 {}", value);
@@ -32,7 +32,7 @@ uint32_t read_uint32(const HandlePtr& handle, uint32_t ptr) {
     return 0;
 }
 
-float read_float(const HandlePtr& handle, uint32_t ptr) {
+float read_float(void *handle, uint32_t ptr) {
     float value = 0;
     if (read_bytes(handle, ptr, &value, 4)) {
         spdlog::trace("Read float {}", value);
@@ -41,7 +41,7 @@ float read_float(const HandlePtr& handle, uint32_t ptr) {
     return 0;
 }
 
-std::string read_string(const HandlePtr& handle, uint32_t ptr, size_t size) {
+std::string read_string(void *handle, uint32_t ptr, size_t size) {
     auto value = std::make_unique<char[]>(size + 1);
     if (read_bytes(handle, ptr, value.get(), size)) {
         spdlog::trace("Read string {}", value.get());
@@ -51,7 +51,7 @@ std::string read_string(const HandlePtr& handle, uint32_t ptr, size_t size) {
 }
 
 uint32_t find_pointer(
-    const HandlePtr& handle, uint32_t ptr, const std::vector<uint32_t>& offsets
+    void *handle, uint32_t ptr, const std::vector<uint32_t>& offsets
 ) {
     for (uint32_t offset : offsets) {
         ptr = read_uint32(handle, ptr);
@@ -69,7 +69,7 @@ uint32_t find_pointer(
 }
 
 bool read_bytes(
-    const HandlePtr& handle,
+    void *handle,
     uint32_t ptr,
     const std::vector<std::uint32_t>& offsets,
     void* buffer,
@@ -79,7 +79,7 @@ bool read_bytes(
 }
 
 uint32_t read_uint32(
-    const HandlePtr& handle,
+    void *handle,
     uint32_t ptr,
     const std::vector<std::uint32_t>& offsets
 ) {
@@ -87,7 +87,7 @@ uint32_t read_uint32(
 }
 
 float read_float(
-    const HandlePtr& handle,
+    void *handle,
     uint32_t ptr,
     const std::vector<std::uint32_t>& offsets
 ) {
@@ -95,7 +95,7 @@ float read_float(
 }
 
 std::string read_string(
-    const HandlePtr& handle,
+    void *handle,
     uint32_t ptr,
     const std::vector<std::uint32_t>& offsets,
     std::size_t size

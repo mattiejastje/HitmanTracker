@@ -6,8 +6,8 @@
 #include "handle.hpp"
 #include "stats.hpp"
 
-using GameGui = std::function<void(const Stats&)>;
-using GameStats = std::function<void(const HandlePtr&, Stats&)>;
+using GameGui = std::function<void(const Stats &)>;
+using GameStats = std::function<void(void *, Stats &)>;
 
 struct GameMethods {
     GameGui gui;            // called every frame (for displaying stats)
@@ -23,4 +23,4 @@ struct Game {
 
 std::optional<Game> find_game();
 
-bool game_is_running(const HandlePtr& process_handle);
+bool game_is_running(void *process_handle);

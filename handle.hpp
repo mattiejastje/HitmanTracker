@@ -5,7 +5,7 @@
 #include <memory>
 
 struct HandleDeleter {
-    void operator()(void* process_handle) const;
+    void operator()(void* handle) const;
 };
 
 using HandlePtr = std::unique_ptr<void, HandleDeleter>;

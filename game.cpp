@@ -13,7 +13,7 @@
 #include "logger.hpp"
 #include "read_process_memory.hpp"
 
-static void stats_nothing(const HandlePtr& handle, Stats& stats) {}
+static void stats_nothing(void *handle, Stats& stats) {}
 
 static std::optional<GameMethods> get_game_methods(const char* exe_file) {
     if (stricmp("hitman.exe", exe_file) == 0) {
@@ -85,6 +85,6 @@ std::optional<Game> find_game() {
     return game;
 }
 
-bool game_is_running(const HandlePtr& process_handle) {
+bool game_is_running(void *process_handle) {
     return read_uint32(process_handle, 0x00400000) == 0x00905A4D;
 }
