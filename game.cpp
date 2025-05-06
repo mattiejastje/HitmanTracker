@@ -1,5 +1,6 @@
 #include "game.hpp"
 
+#include <synchapi.h>
 #include <tlhelp32.h>
 
 #include <memory>
@@ -39,10 +40,6 @@ static std::optional<GameMethods> get_game_methods(const char* exe_file) {
         };
     } else if (stricmp("hitmanbloodmoney.exe", exe_file) == 0) {
         return GameMethods{
-            hitman_blood_money::gui,
-            stats_nothing,
-            stats_nothing,
-            stats_nothing
         };
     }
     return {};
@@ -51,7 +48,6 @@ static std::optional<GameMethods> get_game_methods(const char* exe_file) {
 static std::optional<Game> get_game_for_process(
     const char* exe_file, DWORD process_id
 ) {
-    spdlog::trace("Inspecting process {} with id {}", exe_file, process_id);
     auto methods = get_game_methods(exe_file);
     if (methods) {
         spdlog::info("Found game {}", exe_file);
@@ -69,7 +65,6 @@ static std::optional<Game> get_game_for_process(
 std::optional<Game> find_game() {
     spdlog::debug("Inspecting all processes");
     std::optional<Game> game{};
-    auto snapshot_handle = open_snapshot_handle();
     if (snapshot_handle) {
         PROCESSENTRY32 process_entry{};
         process_entry.dwSize = sizeof(PROCESSENTRY32);
@@ -85,6 +80,7 @@ std::optional<Game> find_game() {
     return game;
 }
 
-bool game_is_running(void *process_handle) {
-    return read_uint32(process_handle, 0x00400000) == 0x00905A4D;
+bool game_is_running(void* process_handle) {
+    auto ret = WaitForSingleObject(process_handle, 0);
+    return ret == WAIT_TIMEOUT;
 }
