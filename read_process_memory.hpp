@@ -8,43 +8,38 @@
 #include "handle.hpp"
 #include "logger.hpp"
 
-bool read_bytes(
-    void *handle, uint32_t ptr, void* buffer, std::size_t size
-);
+bool read_bytes(void *handle, int32_t ptr, void *buffer, std::size_t size);
 
-uint32_t read_uint32(void *handle, uint32_t ptr);
+int32_t read_int32(void *handle, int32_t ptr);
 
-float read_float(void *handle, uint32_t ptr);
 
-std::string read_string(void *handle, uint32_t ptr, size_t size);
+float read_float(void *handle, int32_t ptr);
 
-uint32_t find_pointer(
-    void *handle, uint32_t ptr, const std::vector<uint32_t>& offsets
+std::string read_string(void *handle, int32_t ptr, size_t size);
+
+int32_t find_pointer(
+    void *handle, int32_t ptr, const std::vector<int32_t> &offsets
 );
 
 bool read_bytes(
     void *handle,
-    uint32_t ptr,
-    const std::vector<std::uint32_t>& offsets,
-    void* buffer,
+    int32_t ptr,
+    const std::vector<std::int32_t> &offsets,
+    void *buffer,
     std::size_t size
 );
 
-uint32_t read_uint32(
-    void *handle,
-    uint32_t ptr,
-    const std::vector<std::uint32_t>& offsets
+int32_t read_int32(
+    void *handle, int32_t ptr, const std::vector<std::int32_t> &offsets
 );
 
 float read_float(
-    void *handle,
-    uint32_t ptr,
-    const std::vector<std::uint32_t>& offsets
+    void *handle, int32_t ptr, const std::vector<std::int32_t> &offsets
 );
 
 std::string read_string(
     void *handle,
-    uint32_t ptr,
-    const std::vector<std::uint32_t>& offsets,
+    int32_t ptr,
+    const std::vector<std::int32_t> &offsets,
     std::size_t size
 );

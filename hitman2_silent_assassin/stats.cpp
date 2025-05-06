@@ -30,24 +30,24 @@ const std::unordered_map<std::string, int> scenes = {
 };
 
 // note: index 0 is for map 2 etc.
-const std::vector<uint32_t> second_offsets
+const std::vector<int32_t> second_offsets
     = {0x838, 0xB24, 0x8A0, 0x138, 0xB88, 0xBB8, 0xB48, 0xCE8, 0x136C, 0xAD0,
        0xF50, 0x8D4, 0x9EC, 0x400, 0x9EC, 0x644, 0xB08, 0x96C, 0xB00,  0x8};
 
 struct GameStats {
-    uint32_t headshots;          // 0x208
-    uint32_t enemies_wounded;    // 0x20C
-    uint32_t enemies_killed;     // 0x210
-    uint32_t innocents_wounded;  // 0x214
-    uint32_t innocents_killed;   // 0x218
-    uint32_t alerts;             // 0x21C
-    uint32_t close_encounters;   // 0x220
+    int32_t headshots;          // 0x208
+    int32_t enemies_wounded;    // 0x20C
+    int32_t enemies_killed;     // 0x210
+    int32_t innocents_wounded;  // 0x214
+    int32_t innocents_killed;   // 0x218
+    int32_t alerts;             // 0x21C
+    int32_t close_encounters;   // 0x220
 };
 
 static_assert(sizeof(GameStats) == 28);
 
 // https://docs.google.com/spreadsheets/d/1i6dmzcBROqoJlsQjUGY8wxdqwxt2hXzjB9fPVggTf2k/edit?gid=1074822823#gid=1074822823
-const std::vector<std::array<uint32_t, 8>> silent_assassin_combinations
+const std::vector<std::array<int32_t, 8>> silent_assassin_combinations
     = {{0, 1, 0, 0, 1, 2, 0, 0}, {0, 1, 0, 0, 0, 5, 0, 0},
        {0, 1, 0, 0, 0, 2, 0, 1}, {0, 0, 0, 1, 2, 0, 0, 0},
        {0, 0, 0, 1, 1, 3, 0, 0}, {0, 0, 0, 1, 1, 0, 0, 1},
@@ -64,7 +64,7 @@ const std::vector<std::array<uint32_t, 8>> silent_assassin_combinations
        {3, 0, 0, 1, 0, 0, 0, 0}};
 
 static bool is_less_or_equal(
-    std::array<uint32_t, 8> comb1, std::array<uint32_t, 8> comb2
+    std::array<int32_t, 8> comb1, std::array<int32_t, 8> comb2
 ) {
     for (int i = 0; i < 8; i++) {
         if (comb1[i] > comb2[i]) return false;
@@ -73,7 +73,7 @@ static bool is_less_or_equal(
 }
 
 static SilentAssassin get_silent_assassin(const Stats& stats) {
-    std::array<uint32_t, 8> stats_comb{
+    std::array<int32_t, 8> stats_comb{
         stats.shots_fired,
         stats.close_encounters,
         stats.headshots,
@@ -102,7 +102,7 @@ void hitman2_silent_assassin::update_slow(void* handle, Stats& stats) {
     if (stats.map >= 2) {
         // note: shots fired pointer occasionally glitches out
         stats.shots_fired
-            = read_uint32(handle, 0x43981C, {0x12C, 0x8C, 0x11C7});
+            = read_int32(handle, 0x43981C, {0x12C, 0x8C, 0x11C7});
         spdlog::trace("Shots fired {}", stats.shots_fired);
         GameStats game_stats{0};
         if (read_bytes(
@@ -134,7 +134,7 @@ void hitman2_silent_assassin::update_slow(void* handle, Stats& stats) {
 void hitman2_silent_assassin::update_fast(void* handle, Stats& stats) {
     if (stats.map > 0) {
         stats.time
-            = read_uint32(handle, 0x006A6C58, {0x118, 0xB38, 0x8, 0x1084, 0x24})
+            = read_int32(handle, 0x006A6C58, {0x118, 0xB38, 0x8, 0x1084, 0x24})
               * 0.0166666666666666f;  // 1 / 60.0f
     }
 }

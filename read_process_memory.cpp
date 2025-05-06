@@ -3,9 +3,9 @@
 #include "logger.hpp"
 
 bool read_bytes(
-    void *handle, uint32_t ptr, void* buffer, std::size_t size
+    void *handle, int32_t ptr, void* buffer, std::size_t size
 ) {
-    static_assert(sizeof(uint32_t) == sizeof(void*));
+    static_assert(sizeof(int32_t) == sizeof(void*));
     if (handle && ptr) {
         SIZE_T bytes_read = 0;
         if (ReadProcessMemory(
@@ -15,24 +15,24 @@ bool read_bytes(
                 size,
                 &bytes_read
             )) {
-            spdlog::trace("Read {} bytes at {}", size, ptr);
+            spdlog::trace("Read {} bytes at {:#x}", size, ptr);
             return true;
         }
-        spdlog::trace("Failed to read {} bytes at {}", size, ptr);
     }
+    spdlog::trace("Failed to read {} bytes at {:#x}", size, ptr);
     return false;
 }
 
-uint32_t read_uint32(void *handle, uint32_t ptr) {
-    uint32_t value = 0;
-    if (read_bytes(handle, ptr, &value, 4)) {
-        spdlog::trace("Read uint32 {}", value);
+int32_t read_int32(void *handle, int32_t ptr) {
+    int32_t value = 0;
+    if (read_bytes(handle, ptr, &value, sizeof(value))) {
+        spdlog::trace("Read int32 {}", value);
         return value;
     }
     return 0;
 }
 
-float read_float(void *handle, uint32_t ptr) {
+float read_float(void *handle, int32_t ptr) {
     float value = 0;
     if (read_bytes(handle, ptr, &value, 4)) {
         spdlog::trace("Read float {}", value);
@@ -41,7 +41,7 @@ float read_float(void *handle, uint32_t ptr) {
     return 0;
 }
 
-std::string read_string(void *handle, uint32_t ptr, size_t size) {
+std::string read_string(void *handle, int32_t ptr, size_t size) {
     auto value = std::make_unique<char[]>(size + 1);
     if (read_bytes(handle, ptr, value.get(), size)) {
         spdlog::trace("Read string {}", value.get());
@@ -50,11 +50,11 @@ std::string read_string(void *handle, uint32_t ptr, size_t size) {
     return {};
 }
 
-uint32_t find_pointer(
-    void *handle, uint32_t ptr, const std::vector<uint32_t>& offsets
+int32_t find_pointer(
+    void *handle, int32_t ptr, const std::vector<int32_t>& offsets
 ) {
-    for (uint32_t offset : offsets) {
-        ptr = read_uint32(handle, ptr);
+    for (int32_t offset : offsets) {
+        ptr = read_int32(handle, ptr);
         if (ptr == 0) {
             spdlog::trace("Pointer invalid");
             return 0;
@@ -70,34 +70,34 @@ uint32_t find_pointer(
 
 bool read_bytes(
     void *handle,
-    uint32_t ptr,
-    const std::vector<std::uint32_t>& offsets,
+    int32_t ptr,
+    const std::vector<std::int32_t>& offsets,
     void* buffer,
     std::size_t size
 ) {
     return read_bytes(handle, find_pointer(handle, ptr, offsets), buffer, size);
 }
 
-uint32_t read_uint32(
+int32_t read_int32(
     void *handle,
-    uint32_t ptr,
-    const std::vector<std::uint32_t>& offsets
+    int32_t ptr,
+    const std::vector<std::int32_t>& offsets
 ) {
-    return read_uint32(handle, find_pointer(handle, ptr, offsets));
+    return read_int32(handle, find_pointer(handle, ptr, offsets));
 }
 
 float read_float(
     void *handle,
-    uint32_t ptr,
-    const std::vector<std::uint32_t>& offsets
+    int32_t ptr,
+    const std::vector<std::int32_t>& offsets
 ) {
     return read_float(handle, find_pointer(handle, ptr, offsets));
 }
 
 std::string read_string(
     void *handle,
-    uint32_t ptr,
-    const std::vector<std::uint32_t>& offsets,
+    int32_t ptr,
+    const std::vector<std::int32_t>& offsets,
     std::size_t size
 ) {
     return read_string(handle, find_pointer(handle, ptr, offsets), size);
