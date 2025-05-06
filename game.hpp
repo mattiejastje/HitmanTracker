@@ -1,7 +1,10 @@
 #pragma once
 
+#include <cinttypes>
 #include <functional>
 #include <optional>
+#include <string>
+#include <unordered_map>
 
 #include "handle.hpp"
 #include "stats.hpp"
@@ -18,6 +21,7 @@ struct GameMethods {
 
 struct Game {
     HandlePtr handle;
+    std::unordered_map<std::string, int32_t> module_base;
     GameMethods methods;
 };
 

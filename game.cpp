@@ -45,9 +45,37 @@ static std::optional<GameMethods> get_game_methods(const char* exe_file) {
     return {};
 }
 
+static std::unordered_map<std::string, int32_t> get_module_base(DWORD process_id
+) {
+    spdlog::debug("Finding modules of process id {:#x}", process_id);
+    std::unordered_map<std::string, int32_t> module_base{};
+    auto snapshot_handle = open_snapshot_handle(TH32CS_SNAPMODULE, process_id);
+    if (snapshot_handle) {
+        MODULEENTRY32 module_entry = {0};
+        module_entry.dwSize = sizeof(MODULEENTRY32);
+        if (Module32First(snapshot_handle.get(), &module_entry)) {
+            do {
+                std::string name{module_entry.szModule};
+                std::transform(
+                    name.begin(),
+                    name.end(),
+                    name.begin(),
+                    [](char& c) { return std::tolower(c); }
+                );
+                auto base_ptr
+                    = reinterpret_cast<int32_t>(module_entry.modBaseAddr);
+                spdlog::trace("Found module {} at {:#x}", name, base_ptr);
+                module_base[name] = base_ptr;
+            } while (Module32Next(snapshot_handle.get(), &module_entry));
+        }
+    }
+    return module_base;
+}
+
 static std::optional<Game> get_game_for_process(
     const char* exe_file, DWORD process_id
 ) {
+    spdlog::trace("Inspecting process {} with id {:#x}", exe_file, process_id);
     auto methods = get_game_methods(exe_file);
     if (methods) {
         spdlog::info("Found game {}", exe_file);
@@ -55,6 +83,7 @@ static std::optional<Game> get_game_for_process(
         if (process_handle) {
             return Game{
                 std::move(process_handle),
+                get_module_base(process_id),
                 methods.value(),
             };
         }
