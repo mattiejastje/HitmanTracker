@@ -17,8 +17,8 @@ static LPDIRECT3DDEVICE9 g_pd3dDevice = nullptr;
 static bool g_DeviceLost = false;
 static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 static D3DPRESENT_PARAMETERS g_d3dpp = {};
-static std::optional<Game> game = {};
-static Stats stats = {};
+static std::optional<Game> game{};
+static Stats stats{0};
 
 // Forward declarations of helper functions
 bool CreateDeviceD3D(HWND hWnd);
@@ -260,6 +260,8 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 return 0;
             break;
         case WM_DESTROY:
+            game = {};
+            stats = {0};
             ::PostQuitMessage(0);
             return 0;
         case WM_TIMER:
