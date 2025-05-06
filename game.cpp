@@ -65,16 +65,17 @@ static std::optional<Game> get_game_for_process(
 std::optional<Game> find_game() {
     spdlog::debug("Inspecting all processes");
     std::optional<Game> game{};
+    auto snapshot_handle = open_snapshot_handle(TH32CS_SNAPPROCESS, 0);
     if (snapshot_handle) {
-        PROCESSENTRY32 process_entry{};
+        PROCESSENTRY32 process_entry = {0};
         process_entry.dwSize = sizeof(PROCESSENTRY32);
-        auto found = Process32First(snapshot_handle.get(), &process_entry);
-        while (found) {
-            game = get_game_for_process(
-                process_entry.szExeFile, process_entry.th32ProcessID
-            );
-            if (game) break;
-            found = Process32Next(snapshot_handle.get(), &process_entry);
+        if (Process32First(snapshot_handle.get(), &process_entry)) {
+            do {
+                game = get_game_for_process(
+                    process_entry.szExeFile, process_entry.th32ProcessID
+                );
+                if (game) break;
+            } while (Process32Next(snapshot_handle.get(), &process_entry));
         }
     }
     return game;

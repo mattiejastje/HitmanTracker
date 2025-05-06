@@ -11,4 +11,4 @@ struct HandleDeleter {
 using HandlePtr = std::unique_ptr<void, HandleDeleter>;
 
 HandlePtr open_process_handle(DWORD process_id);
-HandlePtr open_snapshot_handle();
+HandlePtr open_snapshot_handle(DWORD flags, DWORD process_id);
