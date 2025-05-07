@@ -74,7 +74,7 @@ std::string read_string(void *handle, int32_t ptr, size_t size) {
     auto value = std::make_unique<char[]>(size + 1);
     if (read_bytes(handle, ptr, value.get(), size)) {
         spdlog::trace("Read string {}", value.get());
-        return value.get();
+        return std::string(value.get(), strnlen(value.get(), size));
     }
     return {};
 }
