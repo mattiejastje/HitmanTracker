@@ -7,7 +7,6 @@
 #include <optional>
 
 #include "hitman2_silent_assassin/gui.hpp"
-#include "hitman2_silent_assassin/hook.hpp"
 #include "hitman2_silent_assassin/stats.hpp"
 #include "hitman_blood_money/gui.hpp"
 #include "hitman_codename_47/gui.hpp"
@@ -31,7 +30,7 @@ static std::optional<GameMethods> get_game_methods(const char* exe_file) {
     } else if (stricmp("hitman2.exe", exe_file) == 0) {
         return GameMethods{
             hitman2_silent_assassin::gui,
-            hitman2_silent_assassin::hook,
+            hook_nothing,
             hitman2_silent_assassin::update_slow,
             hitman2_silent_assassin::update_fast
         };

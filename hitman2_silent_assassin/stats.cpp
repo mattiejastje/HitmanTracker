@@ -104,7 +104,8 @@ void hitman2_silent_assassin::update_slow(
         write<int32_t>(handle, hook_target_ptr, 0);
     }
     if (stats.map >= 2) {
-        stats.shots_fired = read<int32_t>(handle, hook_target_ptr);
+        stats.shots_fired
+            = read<int32_t>(handle, 0x43981C, {0x12C, 0x8C, 0x11C7});
         spdlog::trace("Shots fired {}", stats.shots_fired);
         GameStats game_stats{0};
         if (read_bytes(
