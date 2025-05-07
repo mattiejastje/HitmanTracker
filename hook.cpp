@@ -1,7 +1,7 @@
 #include "hook.hpp"
 
 #include <spdlog/spdlog.h>
-#include "mem/read_process_memory.hpp"
+#include "mem/read_write.hpp"
 
 static Code get_code(int32_t offset) {
     return {

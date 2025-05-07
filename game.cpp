@@ -13,7 +13,7 @@
 #include "hitman_codename_47/gui.hpp"
 #include "hitman_contracts/gui.hpp"
 #include <spdlog/spdlog.h>
-#include "mem/read_process_memory.hpp"
+#include "mem/read_write.hpp"
 
 static void stats_nothing(void* handle, int32_t hook_target_ptr, Stats& stats) {
 }

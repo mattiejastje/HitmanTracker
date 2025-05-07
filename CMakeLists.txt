@@ -15,7 +15,7 @@ add_executable (HitmanTracker
 	"format_duration.cpp"
 	"mem/alloc.cpp"
 	"mem/handle.cpp"
-	"mem/read_process_memory.cpp"
+	"mem/read_write.cpp"
 	"hitman2_silent_assassin/gui.cpp"
 	"hitman2_silent_assassin/hook.cpp"
 	"hitman2_silent_assassin/stats.cpp"

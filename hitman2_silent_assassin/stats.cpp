@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../mem/read_process_memory.hpp"
+#include "../mem/read_write.hpp"
 
 // unordered_map for fast lookup
 const std::unordered_map<std::string, int> scenes = {
