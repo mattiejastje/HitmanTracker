@@ -6,12 +6,15 @@
 #include <vector>
 
 #include "handle.hpp"
-#include "logger.hpp"
+#include <spdlog/spdlog.h>
 
 bool read_bytes(void *handle, int32_t ptr, void *buffer, std::size_t size);
 
+bool write_bytes(void *handle, int32_t ptr, void *buffer, std::size_t size);
+
 int32_t read_int32(void *handle, int32_t ptr);
 
+bool write_int32(void *handle, int32_t ptr, int32_t value);
 
 float read_float(void *handle, int32_t ptr);
 

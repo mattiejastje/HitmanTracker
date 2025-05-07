@@ -2,7 +2,7 @@
 
 #include <tlhelp32.h>
 
-#include "logger.hpp"
+#include <spdlog/spdlog.h>
 
 void HandleDeleter::operator()(void* handle) const {
     if (handle) {

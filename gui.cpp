@@ -7,7 +7,7 @@
 #include <tchar.h>
 
 #include "game.hpp"
-#include "logger.hpp"
+#include <spdlog/spdlog.h>
 
 // Data
 constexpr auto TIMER_FIND_GAME = 1;
@@ -18,6 +18,7 @@ static bool g_DeviceLost = false;
 static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 static D3DPRESENT_PARAMETERS g_d3dpp = {};
 static std::optional<Game> game{};
+static HookPtr hook{};
 static Stats stats{0};
 
 // Forward declarations of helper functions
@@ -142,7 +143,11 @@ int gui_run() {
                 | ImGuiWindowFlags_NoMove
         );
         if (game) {
-            game->methods.update_fast(game->handle.get(), stats);
+            auto target_ptr
+                = hook ? (hook->target_alloc ? hook->target_alloc->ptr : 0) : 0;
+            game->methods.update_fast(
+                game->handle.get(), target_ptr, stats
+            );
             game->methods.gui(stats);
         } else {
             ImGui::Text("Game not running");
@@ -261,23 +266,32 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             break;
         case WM_DESTROY:
             game = {};
+            hook = nullptr;
             stats = {0};
             ::PostQuitMessage(0);
             return 0;
         case WM_TIMER:
             switch (wParam) {
                 case TIMER_FIND_GAME:
-                    if (!game || (game && !game_is_running(game->handle.get()))) {
-                        stats = {};
+                    if (!game
+                        || (game && !game_is_running(game->handle.get()))) {
+                        hook = nullptr;
+                        stats = {0};
                         game = find_game();
                         if (game) {
-                            game->methods.init(game->handle.get(), stats);
+                            hook = game->methods.hook(game->handle);
                         };
                     };
                     return 0;
                 case TIMER_UPDATE_STATS:
                     if (game) {
-                        game->methods.update_slow(game->handle.get(), stats);
+                        auto target_ptr = hook ? (hook->target_alloc
+                                                      ? hook->target_alloc->ptr
+                                                      : 0)
+                                               : 0;
+                        game->methods.update_slow(
+                            game->handle.get(), target_ptr, stats
+                        );
                     };
                     return 0;
             }

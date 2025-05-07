@@ -1,6 +1,6 @@
 #include "read_process_memory.hpp"
 
-#include "logger.hpp"
+#include <spdlog/spdlog.h>
 
 bool read_bytes(
     void *handle, int32_t ptr, void* buffer, std::size_t size
@@ -23,6 +23,27 @@ bool read_bytes(
     return false;
 }
 
+bool write_bytes(
+    void *handle, int32_t ptr, void* buffer, std::size_t size
+) {
+    static_assert(sizeof(int32_t) == sizeof(void*));
+    if (handle && ptr) {
+        SIZE_T bytes_written = 0;
+        if (WriteProcessMemory(
+                handle,
+                reinterpret_cast<void*>(ptr),
+                buffer,
+                size,
+                &bytes_written
+            )) {
+            spdlog::trace("Written {} bytes at {:#x}", size, ptr);
+            return true;
+        }
+    }
+    spdlog::trace("Failed to write {} bytes at {:#x}", size, ptr);
+    return false;
+}
+
 int32_t read_int32(void *handle, int32_t ptr) {
     int32_t value = 0;
     if (read_bytes(handle, ptr, &value, sizeof(value))) {
@@ -30,6 +51,14 @@ int32_t read_int32(void *handle, int32_t ptr) {
         return value;
     }
     return 0;
+}
+
+bool write_int32(void *handle, int32_t ptr, int32_t value) {
+    if (write_bytes(handle, ptr, &value, sizeof(value))) {
+        spdlog::trace("Written int32 {}", value);
+        return true;
+    }
+    return false;
 }
 
 float read_float(void *handle, int32_t ptr) {
