@@ -50,12 +50,16 @@ int32_t find_pointer(
 ) {
     for (int32_t offset : offsets) {
         ptr = read<int32_t>(handle, ptr);
-        if (ptr == 0) {
+        if (ptr <= 0) {
             spdlog::trace("Pointer invalid");
             return 0;
         }
-        if (ptr > (0x7FFFFFFF - offset)) {
-            spdlog::trace("Pointer offset overflow");
+        if (offset >= 0 && ptr > (0x7FFFFFFF - offset)) {
+            spdlog::trace("Pointer overflow");
+            return 0;
+        }
+        if (offset < 0 && ptr + offset <= 0) {
+            spdlog::trace("Pointer underflow");
             return 0;
         }
         ptr += offset;
