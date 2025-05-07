@@ -88,7 +88,7 @@ int32_t find_pointer(
             spdlog::trace("Pointer invalid");
             return 0;
         }
-        if (ptr > (0xFFFFFFFF - offset)) {
+        if (ptr > (0x7FFFFFFF - offset)) {
             spdlog::trace("Pointer offset overflow");
             return 0;
         }
