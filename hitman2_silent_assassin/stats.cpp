@@ -137,8 +137,9 @@ void hitman2_silent_assassin::update_fast(
     void* handle, int32_t hook_target_ptr, Stats& stats
 ) {
     if (stats.map > 0) {
-        stats.time
-            = read<int32_t>(handle, 0x006A6C58, {0x118, 0xB38, 0x8, 0x1084, 0x24})
-              * 0.0166666666666666f;  // 1 / 60.0f
+        stats.time = read<int32_t>(
+                         handle, 0x006A6C58, {0x118, 0xB38, 0x8, 0x1084, 0x24}
+                     )
+                     * 0.0166666666666666f;  // 1 / 60.0f
     }
 }
