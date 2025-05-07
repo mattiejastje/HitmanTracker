@@ -1,3 +1,4 @@
+#include <spdlog/spdlog.h>
 #include <windows.h>
 
 #include <cstdint>
@@ -6,17 +7,28 @@
 #include <vector>
 
 #include "handle.hpp"
-#include <spdlog/spdlog.h>
 
 bool read_bytes(void *handle, int32_t ptr, void *buffer, std::size_t size);
 
 bool write_bytes(void *handle, int32_t ptr, void *buffer, std::size_t size);
 
-int32_t read_int32(void *handle, int32_t ptr);
+template <class T>
+T read(void *handle, int32_t ptr) {
+    T value{};
+    if (read_bytes(handle, ptr, &value, sizeof(value))) {
+        spdlog::trace("Read {}", value);
+    }
+    return value;
+};
 
-bool write_int32(void *handle, int32_t ptr, int32_t value);
-
-float read_float(void *handle, int32_t ptr);
+template <class T>
+bool write(void *handle, int32_t ptr, T value) {
+    if (write_bytes(handle, ptr, &value, sizeof(value))) {
+        spdlog::trace("Written {}", value);
+        return true;
+    }
+    return false;
+};
 
 std::string read_string(void *handle, int32_t ptr, size_t size);
 
@@ -32,13 +44,10 @@ bool read_bytes(
     std::size_t size
 );
 
-int32_t read_int32(
-    void *handle, int32_t ptr, const std::vector<std::int32_t> &offsets
-);
-
-float read_float(
-    void *handle, int32_t ptr, const std::vector<std::int32_t> &offsets
-);
+template <class T>
+T read(void *handle, int32_t ptr, const std::vector<std::int32_t> &offsets) {
+    return read<T>(handle, find_pointer(handle, ptr, offsets));
+};
 
 std::string read_string(
     void *handle,

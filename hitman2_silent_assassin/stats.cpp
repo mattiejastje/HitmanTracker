@@ -101,10 +101,10 @@ void hitman2_silent_assassin::update_slow(
         spdlog::trace("Map {}", stats.map);
     } else {
         stats.map = 0;
-        write_int32(handle, hook_target_ptr, 0);
+        write<int32_t>(handle, hook_target_ptr, 0);
     }
     if (stats.map >= 2) {
-        stats.shots_fired = read_int32(handle, hook_target_ptr);
+        stats.shots_fired = read<int32_t>(handle, hook_target_ptr);
         spdlog::trace("Shots fired {}", stats.shots_fired);
         GameStats game_stats{0};
         if (read_bytes(
@@ -138,7 +138,7 @@ void hitman2_silent_assassin::update_fast(
 ) {
     if (stats.map > 0) {
         stats.time
-            = read_int32(handle, 0x006A6C58, {0x118, 0xB38, 0x8, 0x1084, 0x24})
+            = read<int32_t>(handle, 0x006A6C58, {0x118, 0xB38, 0x8, 0x1084, 0x24})
               * 0.0166666666666666f;  // 1 / 60.0f
     }
 }
