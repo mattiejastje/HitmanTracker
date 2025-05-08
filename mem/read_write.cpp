@@ -36,7 +36,7 @@ bool write_bytes(void* handle, int32_t ptr, void* buffer, std::size_t size) {
     return false;
 }
 
-std::string read_string(void* handle, int32_t ptr, size_t size) {
+std::optional<std::string> read_string(void* handle, int32_t ptr, size_t size) {
     auto value = std::make_unique<char[]>(size);
     if (read_bytes(handle, ptr, value.get(), size)) {
         spdlog::trace("Read string {}", value.get());
@@ -45,24 +45,28 @@ std::string read_string(void* handle, int32_t ptr, size_t size) {
     return {};
 }
 
-int32_t find_pointer(
+std::optional<int32_t> find_pointer(
     void* handle, int32_t ptr, const std::vector<int32_t>& offsets
 ) {
     for (int32_t offset : offsets) {
-        ptr = read<int32_t>(handle, ptr);
+        spdlog::trace("Finding [{:#x}]+{:#x}", ptr, offset);
+        auto next_ptr = read<int32_t>(handle, ptr);
+        if (!next_ptr) return {};
+        ptr = next_ptr.value();
         if (ptr <= 0) {
-            spdlog::trace("Pointer invalid");
-            return 0;
+            spdlog::trace("Pointer zero or negative");
+            return {};
         }
         if (offset >= 0 && ptr > (0x7FFFFFFF - offset)) {
-            spdlog::trace("Pointer overflow");
-            return 0;
+            spdlog::trace("Pointer offset overflow");
+            return {};
         }
         if (offset < 0 && ptr + offset <= 0) {
-            spdlog::trace("Pointer underflow");
-            return 0;
+            spdlog::trace("Pointer offset underflow");
+            return {};
         }
         ptr += offset;
+        spdlog::trace("Found {:#x}", ptr);
     }
     return ptr;
 }
@@ -74,14 +78,16 @@ bool read_bytes(
     void* buffer,
     std::size_t size
 ) {
-    return read_bytes(handle, find_pointer(handle, ptr, offsets), buffer, size);
+    auto ptr_ = find_pointer(handle, ptr, offsets);
+    return ptr_ ? read_bytes(handle, ptr_.value(), buffer, size) : false;
 }
 
-std::string read_string(
+std::optional<std::string> read_string(
     void* handle,
     int32_t ptr,
     const std::vector<std::int32_t>& offsets,
     std::size_t size
 ) {
-    return read_string(handle, find_pointer(handle, ptr, offsets), size);
+    auto ptr_ = find_pointer(handle, ptr, offsets);
+    return ptr_ ? read_string(handle, ptr_.value(), size) : std::nullopt;
 }

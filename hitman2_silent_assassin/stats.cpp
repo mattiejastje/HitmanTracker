@@ -94,8 +94,9 @@ void hitman2_silent_assassin::update_slow(
     void* handle, int32_t hook_target_ptr, Stats& stats
 ) {
     auto scene = read_string(handle, 0x006A6C5C, {0x98, 0xBBB}, 64);
-    if (!scene.empty()) spdlog::trace("Scene {}", scene);
-    auto iter = scenes.find(scene);
+    if (!scene) return;
+    spdlog::trace("Scene {}", scene.value());
+    auto iter = scenes.find(scene.value());
     if (iter != scenes.end()) {
         stats.map = iter->second;
         spdlog::trace("Map {}", stats.map);
@@ -105,7 +106,8 @@ void hitman2_silent_assassin::update_slow(
     }
     if (stats.map >= 2) {
         stats.shots_fired
-            = read<int32_t>(handle, 0x43981C, {0x12C, 0x8C, 0x11C7});
+            = read<int32_t>(handle, 0x43981C, {0x12C, 0x8C, 0x11C7})
+                  .value_or(stats.shots_fired);
         spdlog::trace("Shots fired {}", stats.shots_fired);
         GameStats game_stats{0};
         if (read_bytes(
@@ -138,9 +140,11 @@ void hitman2_silent_assassin::update_fast(
     void* handle, int32_t hook_target_ptr, Stats& stats
 ) {
     if (stats.map > 0) {
+        S
         stats.time = read<int32_t>(
                          handle, 0x006A6C58, {0x118, 0xB38, 0x8, 0x1084, 0x24}
                      )
+                         .value_or(stats.time)
                      * 0.0166666666666666f;  // 1 / 60.0f
     }
 }
