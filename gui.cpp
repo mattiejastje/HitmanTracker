@@ -87,6 +87,7 @@ int gui_run(const Settings& settings) {
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 
     // Setup Platform/Renderer backends
     ImGui_ImplWin32_Init(hwnd);
