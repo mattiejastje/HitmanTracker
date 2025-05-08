@@ -20,12 +20,12 @@ static const CLI::TransformPairs<int> log_level_map{
 
 static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     auto app = std::make_unique<CLI::App>("Hitman tracker", "HitmanTracker");
-    app->add_option("--log-level", settings.log_level, "Log level")
+    app->add_option("--log-level", settings.log.level, "Log level")
         ->capture_default_str()
         ->transform(CLI::CheckedTransformer(log_level_map, CLI::ignore_case));
     app->add_option(
            "--log-flush-level",
-           settings.log_flush_level,
+           settings.log.flush_level,
            "On which level to flush the log"
     )
         ->capture_default_str()
@@ -36,36 +36,26 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     for (int i = 0; i < 5; i++) {
         app->add_option(
                std::format("--font-{}-path", i),
-               settings.fonts[i].path,
-               std::format(
-                   "Path to the .ttf file to use for font {} (leave empty for "
-                   "built-in font)",
-                   i
-               )
+               settings.gui.fonts[i].file,
+               std::format("The .ttf file for font {} (empty for built-in)", i)
         )
             ->capture_default_str();
         app->add_option(
                std::format("--font-{}-size", i),
-               settings.fonts[i].size,
-               std::format(
-                   "Size of font {} if resizeable (built-in font is not)", i
-               )
+               settings.gui.fonts[i].size,
+               std::format("Size of font {} if resizeable", i)
         )
             ->capture_default_str();
     }
-    app->add_option("--font-title", settings.font_title, "Font for the title")
+    app->add_option("--font-title", settings.gui.title_font, "Title font")
         ->capture_default_str();
-    app->add_option("--font-map", settings.font_map, "Font for the map")
+    app->add_option("--font-map", settings.gui.map_font, "Map font")
         ->capture_default_str();
-    app->add_option("--font-time", settings.font_time, "Font for the time")
+    app->add_option("--font-time", settings.gui.time_font, "Time font")
         ->capture_default_str();
-    app->add_option(
-           "--font-rating", settings.font_rating, "Font for the rating"
-    )
+    app->add_option("--font-rating", settings.gui.rating_font, "Rating font")
         ->capture_default_str();
-    app->add_option(
-           "--font-table", settings.font_table, "Font for the statistics table"
-    )
+    app->add_option("--font-table", settings.gui.table_font, "Table font")
         ->capture_default_str();
     app->config_formatter(std::make_shared<CLI::ConfigINI>());
     return app;

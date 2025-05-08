@@ -32,6 +32,25 @@ void CleanupDeviceD3D();
 void ResetDevice();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+static ImFont* load_font(
+    ImGuiIO& io, const Font& font
+) {
+    if (font.file.empty()) {
+    } else if (!std::filesystem::exists(CLI::to_path(font.file))) {
+        logging::warn("Font file \"{}\" does not exist", font.file);
+    } else if (font.size <= 0) {
+        logging::warn("Font size {} zero or negative", font.size);
+    } else {
+        auto im_font
+            = io.Fonts->AddFontFromFileTTF(font.file.c_str(), font.size);
+        if (!im_font) {
+            logging::warn("Unable to load font \"{}\"", font.file);
+        }
+        return im_font;
+    }
+    return nullptr;
+}
+
 // Main code
 int gui_run(const Settings& settings) {
     // Create application window
@@ -96,27 +115,7 @@ int gui_run(const Settings& settings) {
     // Load fonts
     std::array<ImFont*, 5> fonts{0};
     for (int i = 0; i < 5; i++) {
-        if (settings.fonts[i].path.empty()) {
-            // Use default font: nothing to do
-        } else if (!std::filesystem::exists(CLI::to_path(settings.fonts[i].path)
-                   )) {
-            logging::warn(
-                "Font path \"{}\" does not exist", settings.fonts[i].path
-            );
-        } else if (settings.fonts[i].size <= 0) {
-            logging::warn(
-                "Font size {} zero or negative", settings.fonts[i].size
-            );
-        } else {
-            fonts[i] = io.Fonts->AddFontFromFileTTF(
-                settings.fonts[0].path.c_str(), settings.fonts[0].size
-            );
-            if (!fonts[i]) {
-                logging::warn(
-                    "Unable to load font \"{}\"", settings.fonts[0].path
-                );
-            }
-        }
+        fonts[i] = load_font(io, settings.gui.fonts[i]);
     }
 
     // Set timer

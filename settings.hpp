@@ -5,19 +5,27 @@
 #include <string>
 
 struct Font {
-    std::string path;  // utf8 encoded .ttf path
+    std::string file;  // utf8 encoded .ttf file
     float size;        // font size in pixels
 };
 
-struct Settings {
-    int log_level{4};
-    int log_flush_level{4};
+struct SettingsLog {
+    int level{4};
+    int flush_level{4};
+};
+
+struct SettingsGui {
     std::array<Font, 5> fonts;
-    int font_title;   // font (0-4) to use for title
-    int font_map;     // font (0-4) to use for map
-    int font_time;    // font (0-4) to use for time
-    int font_rating;  // font (0-4) to use for rating
-    int font_table;   // font (0-4) to use for statistics table
+    int title_font;   // font (0-4) to use for title
+    int map_font;     // font (0-4) to use for map
+    int time_font;    // font (0-4) to use for time
+    int rating_font;  // font (0-4) to use for rating
+    int table_font;   // font (0-4) to use for statistics table
+};
+
+struct Settings {
+    SettingsLog log;
+    SettingsGui gui;
 };
 
 std::optional<Settings> settings_load(int argc, char** argv);
