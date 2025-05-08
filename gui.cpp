@@ -145,9 +145,7 @@ int gui_run() {
         if (game) {
             auto target_ptr
                 = hook ? (hook->target_alloc ? hook->target_alloc->ptr : 0) : 0;
-            game->methods.update_fast(
-                game->handle.get(), target_ptr, stats
-            );
+            game->methods.update_fast(game->handle.get(), target_ptr, stats);
             game->methods.gui(stats);
         } else {
             ImGui::Text("Game not running");
