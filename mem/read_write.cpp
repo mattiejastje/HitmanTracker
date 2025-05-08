@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-#include "../logger.hpp"
+#include "../logging.hpp"
 
 static_assert(sizeof(int32_t) == sizeof(void*));
 

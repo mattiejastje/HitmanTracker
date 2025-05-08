@@ -12,7 +12,7 @@
 #include "hitman_blood_money/gui.hpp"
 #include "hitman_codename_47/gui.hpp"
 #include "hitman_contracts/gui.hpp"
-#include "logger.hpp"
+#include "logging.hpp"
 #include "mem/read_write.hpp"
 
 static void stats_nothing(void* handle, int32_t hook_target_ptr, Stats& stats) {

@@ -8,7 +8,7 @@
 #include <imgui_impl_win32.h>
 #include <tchar.h>
 
-#include "logger.hpp"
+#include "logging.hpp"
 #include "game.hpp"
 
 // Data

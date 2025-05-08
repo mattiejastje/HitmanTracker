@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../logger.hpp"
+#include "../logging.hpp"
 #include "../mem/read_write.hpp"
 
 // unordered_map for fast lookup

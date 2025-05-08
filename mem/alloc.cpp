@@ -1,6 +1,6 @@
 #include "alloc.hpp"
 
-#include "../logger.hpp"
+#include "../logging.hpp"
 
 void AllocDeleter::operator()(Alloc *alloc) const {
     if (alloc && alloc->ptr) {

@@ -8,7 +8,7 @@ find_package(spdlog CONFIG REQUIRED)
 add_executable (HitmanTracker
 	"HitmanTracker.cpp"
 	"gui.cpp"
-	"logger.cpp"
+	"logging.cpp"
 	"settings.cpp"
 	"game.cpp"
 	"hook.cpp"

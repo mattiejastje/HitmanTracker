@@ -2,7 +2,7 @@
 
 #include <CLI/CLI.hpp>
 
-#include "logger.hpp"
+#include "logging.hpp"
 
 static const CLI::TransformPairs<int> log_level_map{
     {"trace", 6},

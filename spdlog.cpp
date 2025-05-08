@@ -3,7 +3,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-#include "logger.hpp"
+#include "logging.hpp"
 
 spdlog::level::level_enum spdlog_level[7]{
     spdlog::level::off,
