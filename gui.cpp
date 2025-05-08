@@ -6,9 +6,9 @@
 #include <imgui.h>
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
-#include <spdlog/spdlog.h>
 #include <tchar.h>
 
+#include "logger.hpp"
 #include "game.hpp"
 
 // Data
@@ -32,7 +32,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 // Main code
 int gui_run(const Settings& settings) {
     // Create application window
-    spdlog::trace("Creating application window...");
+    logging::trace("Creating application window...");
     WNDCLASSEXW wc
         = {sizeof(wc),
            CS_CLASSDC,
@@ -62,7 +62,7 @@ int gui_run(const Settings& settings) {
     );
 
     // Initialize Direct3D
-    spdlog::trace("Initializing Direct3D...");
+    logging::trace("Initializing Direct3D...");
     if (!CreateDeviceD3D(hwnd)) {
         CleanupDeviceD3D();
         ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
@@ -70,12 +70,12 @@ int gui_run(const Settings& settings) {
     }
 
     // Show the window
-    spdlog::trace("Showing window...");
+    logging::trace("Showing window...");
     ::ShowWindow(hwnd, SW_SHOWDEFAULT);
     ::UpdateWindow(hwnd);
 
     // Setup Dear ImGui context
-    spdlog::trace("Initializing ImGui...");
+    logging::trace("Initializing ImGui...");
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -98,7 +98,7 @@ int gui_run(const Settings& settings) {
     SetTimer(hwnd, TIMER_UPDATE_STATS, 100, nullptr);
 
     // Main loop
-    spdlog::trace("Starting main loop...");
+    logging::trace("Starting main loop...");
     bool done = false;
     while (!done) {
         // Poll and handle messages (inputs, window resize, etc.)
@@ -171,7 +171,7 @@ int gui_run(const Settings& settings) {
     }
 
     // Cleanup
-    spdlog::trace("Cleanup...");
+    logging::trace("Cleanup...");
     KillTimer(hwnd, TIMER_UPDATE_STATS);
     KillTimer(hwnd, TIMER_FIND_GAME);
     game.reset();

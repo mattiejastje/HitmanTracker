@@ -1,6 +1,8 @@
 #include "hook.hpp"
 
-#include <spdlog/spdlog.h>
+#include <cassert>
+
+#include "logger.hpp"
 #include "mem/read_write.hpp"
 
 static Code get_code(int32_t offset) {
@@ -84,10 +86,10 @@ static Code get_code(
 static bool hook_check_source_code(
     void* handle, int32_t source_ptr, Code source_code_orig
 ) {
-    spdlog::debug("Hook: verifying source at {:#x}", source_ptr);
+    logging::debug("Hook: verifying source at {:#x}", source_ptr);
     // check source is large enough
     if (source_code_orig.size() < 5) {
-        spdlog::error("Hook: source too small");
+        logging::error("Hook: source too small");
         return false;
     }
     // check source_ptr is valid
@@ -99,7 +101,7 @@ static bool hook_check_source_code(
             source_code_orig_bytes.get(),
             source_code_orig.size()
         )) {
-        spdlog::error("Hook: cannot read source code at {:#x}", source_ptr);
+        logging::error("Hook: cannot read source code at {:#x}", source_ptr);
         return false;
     };
     if (memcmp(
@@ -108,7 +110,7 @@ static bool hook_check_source_code(
             source_code_orig.size()
         )
         != 0) {
-        spdlog::error("Hook: invalid source code at {:#x}", source_ptr);
+        logging::error("Hook: invalid source code at {:#x}", source_ptr);
         return false;
     };
     return true;
@@ -117,11 +119,11 @@ static bool hook_check_source_code(
 static bool hook_restore_source_code(
     void* handle, int32_t source_ptr, Code source_code_orig
 ) {
-    spdlog::debug("Hook: restoring source code at {:#x}", source_ptr);
+    logging::debug("Hook: restoring source code at {:#x}", source_ptr);
     if (!write_bytes(
             handle, source_ptr, source_code_orig.data(), source_code_orig.size()
         )) {
-        spdlog::error(
+        logging::error(
             "Hook: failed to restore source code at {:#x}", source_ptr
         );
         return false;
@@ -138,26 +140,26 @@ static AllocPtr hook_install_target_code(
     // allocate new memory in process for target code
     // TODO manage with a unique_ptr deleter
     static_assert(sizeof(int32_t) == sizeof(void*));
-    spdlog::debug(
+    logging::debug(
         "Hook: allocating {} bytes for target code", target_code_size
     );
     auto target_alloc = virtual_alloc_ex(handle, target_code_size);
     if (!target_alloc) {
-        spdlog::error("Hook: unable to allocate memory for target code");
+        logging::error("Hook: unable to allocate memory for target code");
         return {};
     };
     // assemble target code
     auto target_code = get_code(source_ptr, target_alloc->ptr, target_asm);
     assert(target_code_size == target_code.size());
     // install target code
-    spdlog::debug("Hook: writing target code at {:#x}", target_alloc->ptr);
+    logging::debug("Hook: writing target code at {:#x}", target_alloc->ptr);
     if (!write_bytes(
             handle.get(),
             target_alloc->ptr,
             target_code.data(),
             target_code.size()
         )) {
-        spdlog::error("Hook: unable to write target code");
+        logging::error("Hook: unable to write target code");
         return {};
     };
     return target_alloc;
@@ -172,11 +174,11 @@ static bool hook_install_source_code(
     // assemble new source code
     auto source_new_code = get_code(source_ptr, target_ptr, source_new_asm);
     // install new source code
-    spdlog::debug("Hook: writing new source code at {:#x}", source_ptr);
+    logging::debug("Hook: writing new source code at {:#x}", source_ptr);
     if (!write_bytes(
             handle, source_ptr, source_new_code.data(), source_new_code.size()
         )) {
-        spdlog::error("Hook: unable to write new source code");
+        logging::error("Hook: unable to write new source code");
         return false;
     };
     return true;
@@ -191,7 +193,7 @@ HookPtr hook_install(
     std::vector<Assembly> source_new_asm,
     std::vector<Assembly> target_asm
 ) {
-    spdlog::debug("Hook: installing at {:#x}", source_ptr);
+    logging::debug("Hook: installing at {:#x}", source_ptr);
     if (!hook_check_source_code(handle.get(), source_ptr, source_orig_code)) {
         return {};
     }
@@ -212,11 +214,11 @@ HookPtr hook_install(
 
 void HookDeleter::operator()(Hook* hook) const {
     if (hook) {
-        spdlog::debug("Hook: uninstalling at {:#x}", hook->source_ptr);
+        logging::debug("Hook: uninstalling at {:#x}", hook->source_ptr);
         hook_restore_source_code(
             hook->handle.get(), hook->source_ptr, hook->source_orig_code
         );
-        spdlog::debug("Hook: freeing memory for target code");
+        logging::debug("Hook: freeing memory for target code");
         hook->target_alloc.reset();
         delete hook;
     }

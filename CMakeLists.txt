@@ -13,6 +13,7 @@ add_executable (HitmanTracker
 	"game.cpp"
 	"hook.cpp"
 	"format_duration.cpp"
+	"spdlog.cpp"
 	"mem/alloc.cpp"
 	"mem/handle.cpp"
 	"mem/read_write.cpp"

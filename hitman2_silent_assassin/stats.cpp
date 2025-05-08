@@ -1,8 +1,11 @@
 #include "stats.hpp"
 
+#include <array>
+#include <cinttypes>
 #include <unordered_map>
 #include <vector>
 
+#include "../logger.hpp"
 #include "../mem/read_write.hpp"
 
 // unordered_map for fast lookup
@@ -95,11 +98,11 @@ void hitman2_silent_assassin::update_slow(
 ) {
     auto scene = read_string(handle, 0x006A6C5C, {0x98, 0xBBB}, 64);
     if (!scene) return;
-    spdlog::trace("Scene {}", scene.value());
+    logging::trace("Scene {}", scene.value());
     auto iter = scenes.find(scene.value());
     if (iter != scenes.end()) {
         stats.map = iter->second;
-        spdlog::trace("Map {}", stats.map);
+        logging::trace("Map {}", stats.map);
     } else {
         stats.map = 0;
         write<int32_t>(handle, hook_target_ptr, 0);
@@ -108,7 +111,7 @@ void hitman2_silent_assassin::update_slow(
         stats.shots_fired
             = read<int32_t>(handle, 0x43981C, {0x12C, 0x8C, 0x11C7})
                   .value_or(stats.shots_fired);
-        spdlog::trace("Shots fired {}", stats.shots_fired);
+        logging::trace("Shots fired {}", stats.shots_fired);
         GameStats game_stats{0};
         if (read_bytes(
                 handle,
@@ -117,13 +120,15 @@ void hitman2_silent_assassin::update_slow(
                 &game_stats,
                 sizeof(game_stats)
             )) {
-            spdlog::trace("Headshots {}", game_stats.headshots);
-            spdlog::trace("Enemies wounded {}", game_stats.enemies_wounded);
-            spdlog::trace("Enemies killed {}", game_stats.enemies_killed);
-            spdlog::trace("Innocents wounded {}", game_stats.innocents_wounded);
-            spdlog::trace("Innocents killed {}", game_stats.innocents_killed);
-            spdlog::trace("Alerts {}", game_stats.alerts);
-            spdlog::trace("Close encounters {}", game_stats.close_encounters);
+            logging::trace("Headshots {}", game_stats.headshots);
+            logging::trace("Enemies wounded {}", game_stats.enemies_wounded);
+            logging::trace("Enemies killed {}", game_stats.enemies_killed);
+            logging::trace(
+                "Innocents wounded {}", game_stats.innocents_wounded
+            );
+            logging::trace("Innocents killed {}", game_stats.innocents_killed);
+            logging::trace("Alerts {}", game_stats.alerts);
+            logging::trace("Close encounters {}", game_stats.close_encounters);
             stats.headshots = game_stats.headshots;
             stats.enemies_wounded = game_stats.enemies_wounded;
             stats.enemies_killed = game_stats.enemies_killed;

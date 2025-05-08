@@ -1,6 +1,8 @@
 #include "read_write.hpp"
 
-#include <spdlog/spdlog.h>
+#include <windows.h>
+
+#include "../logger.hpp"
 
 static_assert(sizeof(int32_t) == sizeof(void*));
 
@@ -10,11 +12,11 @@ bool read_bytes(void* handle, int32_t ptr, void* buffer, std::size_t size) {
         if (ReadProcessMemory(
                 handle, reinterpret_cast<void*>(ptr), buffer, size, &bytes_read
             )) {
-            spdlog::trace("Read {} bytes at {:#x}", size, ptr);
+            logging::trace("Read {} bytes at {:#x}", size, ptr);
             return true;
         }
     }
-    spdlog::trace("Failed to read {} bytes at {:#x}", size, ptr);
+    logging::trace("Failed to read {} bytes at {:#x}", size, ptr);
     return false;
 }
 
@@ -28,18 +30,18 @@ bool write_bytes(void* handle, int32_t ptr, void* buffer, std::size_t size) {
                 size,
                 &bytes_written
             )) {
-            spdlog::trace("Written {} bytes at {:#x}", size, ptr);
+            logging::trace("Written {} bytes at {:#x}", size, ptr);
             return true;
         }
     }
-    spdlog::trace("Failed to write {} bytes at {:#x}", size, ptr);
+    logging::trace("Failed to write {} bytes at {:#x}", size, ptr);
     return false;
 }
 
 std::optional<std::string> read_string(void* handle, int32_t ptr, size_t size) {
     auto value = std::make_unique<char[]>(size);
     if (read_bytes(handle, ptr, value.get(), size)) {
-        spdlog::trace("Read string {}", value.get());
+        logging::trace("Read string {}", value.get());
         return std::string(value.get(), strnlen(value.get(), size));
     }
     return {};
@@ -49,24 +51,24 @@ std::optional<int32_t> find_pointer(
     void* handle, int32_t ptr, const std::vector<int32_t>& offsets
 ) {
     for (int32_t offset : offsets) {
-        spdlog::trace("Finding [{:#x}]+{:#x}", ptr, offset);
+        logging::trace("Finding [{:#x}]+{:#x}", ptr, offset);
         auto next_ptr = read<int32_t>(handle, ptr);
         if (!next_ptr) return {};
         ptr = next_ptr.value();
         if (ptr <= 0) {
-            spdlog::trace("Pointer zero or negative");
+            logging::trace("Pointer zero or negative");
             return {};
         }
         if (offset >= 0 && ptr > (0x7FFFFFFF - offset)) {
-            spdlog::trace("Pointer offset overflow");
+            logging::trace("Pointer offset overflow");
             return {};
         }
         if (offset < 0 && ptr + offset <= 0) {
-            spdlog::trace("Pointer offset underflow");
+            logging::trace("Pointer offset underflow");
             return {};
         }
         ptr += offset;
-        spdlog::trace("Found {:#x}", ptr);
+        logging::trace("Found {:#x}", ptr);
     }
     return ptr;
 }
@@ -74,7 +76,7 @@ std::optional<int32_t> find_pointer(
 bool read_bytes(
     void* handle,
     int32_t ptr,
-    const std::vector<std::int32_t>& offsets,
+    const std::vector<int32_t>& offsets,
     void* buffer,
     std::size_t size
 ) {
@@ -85,7 +87,7 @@ bool read_bytes(
 std::optional<std::string> read_string(
     void* handle,
     int32_t ptr,
-    const std::vector<std::int32_t>& offsets,
+    const std::vector<int32_t>& offsets,
     std::size_t size
 ) {
     auto ptr_ = find_pointer(handle, ptr, offsets);

@@ -1,10 +1,11 @@
 #pragma once
 
-#include <memory>
+#include <optional>
 
 struct Settings {
-    // TODO add configuration variables here
+    int log_level;
+    int log_flush_level;
 };
 
-Settings settings_load(int argc, char** argv);
-void settings_save(const Settings& settings);
+std::optional<Settings> settings_load(int argc, char** argv);
+bool settings_save(Settings settings);
