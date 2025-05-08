@@ -8,8 +8,11 @@
 #include <imgui_impl_win32.h>
 #include <tchar.h>
 
-#include "logging.hpp"
+#include <CLI/CLI.hpp>
+#include <filesystem>
+
 #include "game.hpp"
+#include "logging.hpp"
 
 // Data
 constexpr auto TIMER_FIND_GAME = 1;
@@ -89,9 +92,18 @@ int gui_run(const Settings& settings) {
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
-    // Load Fonts (nothing here yet)
-
-    // Initialize state (nothing here yet)
+    // Load fonts
+    if (!settings.font.path.empty()) {
+        if (!std::filesystem::exists(CLI::to_path(settings.font.path))) {
+            logging::warn(
+                "Font path \"{}\" does not exist", settings.font.path
+            );
+        } else if (!io.Fonts->AddFontFromFileTTF(
+                       settings.font.path.c_str(), settings.font.size
+                   )) {
+            logging::warn("Unable to load font \"{}\"", settings.font.path);
+        }
+    }
 
     // Set timer
     SetTimer(hwnd, TIMER_FIND_GAME, 1000, nullptr);

@@ -5,6 +5,7 @@
       "name": "imgui",
       "features": [
         "dx9-binding",
+        "freetype",
         "win32-binding"
       ]
     },

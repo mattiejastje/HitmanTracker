@@ -32,6 +32,18 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     app->set_config(
         "--config", "HitmanTracker.ini", "Read options from ini file"
     );
+    app->add_option(
+        "--font-path",
+        settings.font.path,
+        "Path to the .ttf file to use (leave empty for built-in font)"
+    )
+        ->capture_default_str();
+    app->add_option(
+        "--font-size",
+        settings.font.size,
+        "Size of the font if resizeable (built-in font is not)"
+    )
+        ->capture_default_str();
     app->config_formatter(std::make_shared<CLI::ConfigINI>());
     return app;
 }
@@ -39,6 +51,7 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
 std::optional<Settings> settings_load(int argc, char** argv) {
     Settings settings{};
     auto app = make_app(settings);
+    argv = app->ensure_utf8(argv);
     try {
         app->parse(argc, argv);
     } catch (const CLI::ParseError& e) {
@@ -48,7 +61,7 @@ std::optional<Settings> settings_load(int argc, char** argv) {
     return settings;
 }
 
-bool settings_save(Settings settings) {
+bool settings_save(Settings& settings) {
     auto app = make_app(settings);
     if (std::ofstream config_file{"HitmanTracker.ini"}) {
         config_file << app->config_to_str(true, true);
