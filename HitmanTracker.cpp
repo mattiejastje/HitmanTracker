@@ -8,6 +8,5 @@ int main(int argc, char** argv) {
     auto settings = settings_load(argc, argv).value_or(Settings{});
     spdlog_set_level(settings.log.level, settings.log.flush_level);
     gui_run(settings);
-    settings_save(settings);
     return 0;
 }

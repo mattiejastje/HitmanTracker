@@ -71,17 +71,14 @@ std::optional<Settings> settings_load(int argc, char** argv) {
         logging::warn("Failed to parse settings ({})", e.what());
         return {};
     }
-    return settings;
-}
-
-bool settings_save(Settings& settings) {
-    auto app = make_app(settings);
-    if (std::ofstream config_file{"HitmanTracker.ini"}) {
-        config_file << app->config_to_str(true, true);
-        logging::debug("Settings saved to HitmanTracker.ini");
-        return true;
-    } else {
-        logging::error("Unable to save settings to HitmanTracker.ini");
-        return false;
+    auto config_file_name = app->get_config_ptr()->as<std::string>();
+    if (!std::filesystem::exists(config_file_name)) {
+        if (std::ofstream config_file{config_file_name}) {
+            config_file << app->config_to_str(true, true);
+            logging::info("Settings saved to {}", config_file_name);
+        } else {
+            logging::warn("Unable to save settings to {}", config_file_name);
+        }
     }
+    return settings;
 }

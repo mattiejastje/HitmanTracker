@@ -29,4 +29,3 @@ struct Settings {
 };
 
 std::optional<Settings> settings_load(int argc, char** argv);
-bool settings_save(Settings& settings);
