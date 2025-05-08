@@ -41,7 +41,7 @@ std::optional<T> read(
     void *handle, int32_t ptr, const std::vector<int32_t> &offsets
 ) {
     auto ptr_ = find_pointer(handle, ptr, offsets);
-    return ptr_ ? read<T>(handle, ptr) : std::nullopt;
+    return ptr_ ? read<T>(handle, ptr_.value()) : std::nullopt;
 };
 
 std::optional<std::string> read_string(
