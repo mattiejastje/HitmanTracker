@@ -2,12 +2,9 @@
 
 #include <memory>
 
-class Settings {
-public:
+struct Settings {
     // TODO add configuration variables here
 };
 
-extern std::unique_ptr<Settings> g_settings;
-
-void settings_load(int argc, char** argv);
-void settings_save();
+Settings settings_load(int argc, char** argv);
+void settings_save(const Settings& settings);

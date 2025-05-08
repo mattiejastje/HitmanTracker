@@ -2,12 +2,10 @@
 #include "settings.hpp"
 #include "gui.hpp"
 
-std::unique_ptr<Settings> g_settings = nullptr;
-
 int main(int argc, char** argv) {
     logger_init();
-    settings_load(argc, argv);
-    gui_run();
-    settings_save();
+    auto settings = settings_load(argc, argv);
+    gui_run(settings);
+    settings_save(settings);
     return 0;
 }

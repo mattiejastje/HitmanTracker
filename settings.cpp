@@ -38,7 +38,7 @@ static std::unique_ptr<CLI::App> make_app(
     return app;
 }
 
-void settings_load(int argc, char** argv) {
+Settings settings_load(int argc, char** argv) {
     auto log_level = spdlog::level::info;
     auto log_flush_level = spdlog::level::off;
     auto app = make_app(log_level, log_flush_level);
@@ -50,10 +50,10 @@ void settings_load(int argc, char** argv) {
     spdlog::set_level(log_level);
     spdlog::flush_on(log_flush_level);
     spdlog::debug("Settings loaded from HitmanTracker.ini");
-    g_settings = std::make_unique<Settings>();
+    return Settings{};
 }
 
-void settings_save() {
+void settings_save(const Settings& settings) {
     auto log_level = spdlog::get_level();
     auto log_flush_level = spdlog::default_logger()->flush_level();
     auto app = make_app(log_level, log_flush_level);

@@ -30,7 +30,7 @@ void ResetDevice();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // Main code
-int gui_run() {
+int gui_run(const Settings& settings) {
     // Create application window
     spdlog::trace("Creating application window...");
     WNDCLASSEXW wc
