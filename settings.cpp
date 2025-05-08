@@ -35,15 +35,15 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     );
     for (int i = 0; i < 5; i++) {
         app->add_option(
-               std::format("--font-{}-path", i),
+               std::format("--font-{}-file", i),
                settings.gui.fonts[i].file,
-               std::format("The .ttf file for font {} (empty for built-in)", i)
+               std::format("The .ttf file for font {}", i)
         )
             ->capture_default_str();
         app->add_option(
                std::format("--font-{}-size", i),
                settings.gui.fonts[i].size,
-               std::format("Size of font {} if resizeable", i)
+               std::format("Pixel size of font {}", i)
         )
             ->capture_default_str();
     }
