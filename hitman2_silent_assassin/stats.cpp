@@ -105,13 +105,16 @@ void hitman2_silent_assassin::update_slow(
         logging::trace("Map {}", stats.map);
     } else {
         stats.map = 0;
-        write<int32_t>(handle, hook_target_ptr, 0);
     }
     if (stats.map >= 2) {
-        stats.shots_fired
-            = read<int32_t>(handle, 0x43981C, {0x12C, 0x8C, 0x11C7})
-                  .value_or(stats.shots_fired);
-        logging::trace("Shots fired {}", stats.shots_fired);
+        auto shots_fired
+            = read<int32_t>(handle, 0x43981C, {0x12C, 0x8C, 0x11C7});
+        if (shots_fired) {
+            logging::trace("Shots fired {}", shots_fired.value());
+            stats.shots_fired = shots_fired.value();
+        } else {
+            logging::warn("Unable to read shots fired");
+        }
         GameStats game_stats{0};
         if (read_bytes(
                 handle,
@@ -137,6 +140,8 @@ void hitman2_silent_assassin::update_slow(
             stats.alerts = game_stats.alerts;
             stats.close_encounters = game_stats.close_encounters;
             stats.silent_assassin = get_silent_assassin(stats);
+        } else {
+            logging::warn("Unable to read game stats");
         }
     }
 }
