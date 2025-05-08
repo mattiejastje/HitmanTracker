@@ -108,7 +108,7 @@ void hitman2_silent_assassin::update_slow(
     }
     if (stats.map >= 2) {
         auto shots_fired
-            = read<int32_t>(handle, 0x43981C, {0x12C, 0x8C, 0x11C7});
+            = read<int32_t>(handle, 0x492894, {0x2E0, 0x4, 0x11C7});
         if (shots_fired) {
             logging::trace("Shots fired {}", shots_fired.value());
             stats.shots_fired = shots_fired.value();
