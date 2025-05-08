@@ -1,13 +1,15 @@
+#include "gui.hpp"
+
 #pragma comment(lib, "d3d9.lib")
 
 #include <d3d9.h>
 #include <imgui.h>
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
+#include <spdlog/spdlog.h>
 #include <tchar.h>
 
 #include "game.hpp"
-#include <spdlog/spdlog.h>
 
 // Data
 constexpr auto TIMER_FIND_GAME = 1;
