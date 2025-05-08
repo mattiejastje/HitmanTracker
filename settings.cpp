@@ -1,6 +1,7 @@
 #include "settings.hpp"
 
 #include <CLI/CLI.hpp>
+#include <format>
 
 #include "logging.hpp"
 
@@ -32,16 +33,38 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     app->set_config(
         "--config", "HitmanTracker.ini", "Read options from ini file"
     );
+    for (int i = 0; i < 5; i++) {
+        app->add_option(
+               std::format("--font-{}-path", i),
+               settings.fonts[i].path,
+               std::format(
+                   "Path to the .ttf file to use for font {} (leave empty for "
+                   "built-in font)",
+                   i
+               )
+        )
+            ->capture_default_str();
+        app->add_option(
+               std::format("--font-{}-size", i),
+               settings.fonts[i].size,
+               std::format(
+                   "Size of font {} if resizeable (built-in font is not)", i
+               )
+        )
+            ->capture_default_str();
+    }
+    app->add_option("--font-title", settings.font_title, "Font for the title")
+        ->capture_default_str();
+    app->add_option("--font-map", settings.font_map, "Font for the map")
+        ->capture_default_str();
+    app->add_option("--font-time", settings.font_time, "Font for the time")
+        ->capture_default_str();
     app->add_option(
-        "--font-path",
-        settings.font.path,
-        "Path to the .ttf file to use (leave empty for built-in font)"
+           "--font-rating", settings.font_rating, "Font for the rating"
     )
         ->capture_default_str();
     app->add_option(
-        "--font-size",
-        settings.font.size,
-        "Size of the font if resizeable (built-in font is not)"
+           "--font-table", settings.font_table, "Font for the statistics table"
     )
         ->capture_default_str();
     app->config_formatter(std::make_shared<CLI::ConfigINI>());

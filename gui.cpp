@@ -94,15 +94,28 @@ int gui_run(const Settings& settings) {
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
     // Load fonts
-    if (!settings.font.path.empty()) {
-        if (!std::filesystem::exists(CLI::to_path(settings.font.path))) {
-            logging::warn(
-                "Font path \"{}\" does not exist", settings.font.path
-            );
-        } else if (!io.Fonts->AddFontFromFileTTF(
-                       settings.font.path.c_str(), settings.font.size
+    std::array<ImFont*, 5> fonts{0};
+    for (int i = 0; i < 5; i++) {
+        if (settings.fonts[i].path.empty()) {
+            // Use default font: nothing to do
+        } else if (!std::filesystem::exists(CLI::to_path(settings.fonts[i].path)
                    )) {
-            logging::warn("Unable to load font \"{}\"", settings.font.path);
+            logging::warn(
+                "Font path \"{}\" does not exist", settings.fonts[i].path
+            );
+        } else if (settings.fonts[i].size <= 0) {
+            logging::warn(
+                "Font size {} zero or negative", settings.fonts[i].size
+            );
+        } else {
+            fonts[i] = io.Fonts->AddFontFromFileTTF(
+                settings.fonts[0].path.c_str(), settings.fonts[0].size
+            );
+            if (!fonts[i]) {
+                logging::warn(
+                    "Unable to load font \"{}\"", settings.fonts[0].path
+                );
+            }
         }
     }
 
