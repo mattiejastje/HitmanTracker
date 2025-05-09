@@ -4,7 +4,7 @@
 
 #include "../logging.hpp"
 
-void DeviceD3DDeleter::operator()(DeviceD3D *dev) const {
+void DeviceD3DDeleter::operator()(DeviceD3D* dev) const {
     logging::debug("Releasing Direct3D...");
     if (dev->d3d_device) {
         dev->d3d_device->Release();
@@ -20,7 +20,9 @@ std::unique_ptr<DeviceD3D, DeviceD3DDeleter> CreateDeviceD3D(HWND window_handle
     auto dev = std::unique_ptr<DeviceD3D, DeviceD3DDeleter>(new DeviceD3D);
     dev->d3d = Direct3DCreate9(D3D_SDK_VERSION);
     if (!dev->d3d) return nullptr;
-    ZeroMemory(&dev->d3d_present_parameters, sizeof(dev->d3d_present_parameters));
+    ZeroMemory(
+        &dev->d3d_present_parameters, sizeof(dev->d3d_present_parameters)
+    );
     dev->d3d_present_parameters.Windowed = TRUE;
     dev->d3d_present_parameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
     dev->d3d_present_parameters.BackBufferFormat
