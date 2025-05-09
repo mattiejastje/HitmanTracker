@@ -57,6 +57,8 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     app->set_config(
         "--config", "HitmanTracker.ini", "Read options from ini file"
     );
+    app->add_option("--font-size", settings.gui.font_size, "Font size")
+        ->capture_default_str();
     app->add_option("--bg-color", settings.gui.bg_color, "Background color")
         ->capture_default_str();
     add_text_style_options(*app, "title", "title", settings.gui.title);
