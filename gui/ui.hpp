@@ -21,7 +21,7 @@ struct Fonts {
 };
 
 struct UI {
-    ImGuiContext* g_pUIContext;
+    ImGuiContext* imgui_context;
     Fonts fonts;
 };
 

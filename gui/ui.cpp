@@ -54,7 +54,7 @@ void UIDeleter::operator()(UI* ui) const {
         logging::debug("Shutting down ImGui...");
         ImGui_ImplDX9_Shutdown();
         ImGui_ImplWin32_Shutdown();
-        if (ui->g_pUIContext) ImGui::DestroyContext(ui->g_pUIContext);
+        if (ui->imgui_context) ImGui::DestroyContext(ui->imgui_context);
     }
 }
 
@@ -64,8 +64,8 @@ std::unique_ptr<UI, UIDeleter> CreateUI(
     logging::debug("Initializing ImGui...");
     auto ui = std::unique_ptr<UI, UIDeleter>(new UI());
     if (!IMGUI_CHECKVERSION()) return nullptr;
-    ui->g_pUIContext = ImGui::CreateContext();
-    if (!ui->g_pUIContext) return nullptr;
+    ui->imgui_context = ImGui::CreateContext();
+    if (!ui->imgui_context) return nullptr;
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;
     io.LogFilename = nullptr;
