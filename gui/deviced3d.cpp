@@ -53,3 +53,16 @@ void ResetDevice(DeviceD3D* dev) {
     assert(hr != D3DERR_INVALIDCALL);
     ImGui_ImplDX9_CreateDeviceObjects();
 }
+
+HRESULT RenderAndPresent(DeviceD3D* dev) {
+    logging::trace("Rendering...");
+    dev->d3d_device->SetRenderState(D3DRS_ZENABLE, FALSE);
+    dev->d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+    dev->d3d_device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+    if (dev->d3d_device->BeginScene() >= 0) {
+        ImGui::Render();
+        ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+        dev->d3d_device->EndScene();
+    }
+    return dev->d3d_device->Present(nullptr, nullptr, nullptr, nullptr);
+}

@@ -20,3 +20,4 @@ struct DeviceD3DDeleter {
 std::unique_ptr<DeviceD3D, DeviceD3DDeleter> CreateDeviceD3D(HWND window_handle
 );
 void ResetDevice(DeviceD3D* dev);
+HRESULT RenderAndPresent(DeviceD3D* dev);

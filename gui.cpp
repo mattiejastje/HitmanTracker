@@ -128,17 +128,7 @@ int gui_run(const settings::Settings& settings) {
         ImGui::End();
         ImGui::EndFrame();
 
-        logging::trace("Rendering...");
-        dev->d3d_device->SetRenderState(D3DRS_ZENABLE, FALSE);
-        dev->d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-        dev->d3d_device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
-        if (dev->d3d_device->BeginScene() >= 0) {
-            ImGui::Render();
-            ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-            dev->d3d_device->EndScene();
-        }
-        HRESULT result
-            = dev->d3d_device->Present(nullptr, nullptr, nullptr, nullptr);
+        HRESULT result = RenderAndPresent(dev.get());
         if (result == D3DERR_DEVICELOST) g_DeviceLost = true;
     }
     logging::debug("Cleanup...");
