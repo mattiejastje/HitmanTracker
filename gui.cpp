@@ -15,6 +15,7 @@
 #include <tuple>
 
 #include "game.hpp"
+#include "gui/window.hpp"
 #include "imgui_utils.hpp"
 #include "logging.hpp"
 
@@ -73,66 +74,10 @@ static FontKey get_font_key(float font_size, const settings::TextStyle& style) {
     return {style.file, font_size * style.scale};
 }
 
-struct Window {
-    WNDCLASSEXW cls = {};
-    ATOM atom = 0;
-    HWND handle = nullptr;
-};
-
-struct WindowDeleter {
-    void operator()(Window* window) const {
-        if (window) {
-            logging::trace("Destroying application window...");
-            if (window->handle) ::DestroyWindow(window->handle);
-            if (window->atom != 0)
-                ::UnregisterClassW(
-                    window->cls.lpszClassName, window->cls.hInstance
-                );
-        }
-    }
-};
-
-static std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(float font_size
-) {
-    logging::trace("Creating application window...");
-    auto window = std::unique_ptr<Window, WindowDeleter>(new Window{
-        .cls
-        = {sizeof(WNDCLASSEXW),
-           CS_CLASSDC,
-           WndProc,
-           0L,
-           0L,
-           GetModuleHandle(nullptr),
-           nullptr,
-           nullptr,
-           nullptr,
-           nullptr,
-           L"Hitman Tracker",
-           nullptr}
-    });
-    window->atom = ::RegisterClassExW(&window->cls);
-    if (window->atom == 0) return nullptr;
-    window->handle = ::CreateWindowExW(
-        0,
-        window->cls.lpszClassName,
-        L"Hitman Tracker",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        15 * font_size,
-        30 * font_size,
-        nullptr,
-        nullptr,
-        window->cls.hInstance,
-        nullptr
-    );
-    return window->handle ? std::move(window) : nullptr;
-}
-
 // Main code
 int gui_run(const settings::Settings& settings) {
     // Create application window
-    auto window = CreateWindowWin32(settings.gui.font_size);
+    auto window = CreateWindowWin32(WndProc, settings.gui.font_size);
 
     // Initialize Direct3D
     logging::trace("Initializing Direct3D...");

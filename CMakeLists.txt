@@ -14,6 +14,7 @@ add_executable (HitmanTracker
 	"hook.cpp"
 	"imgui_utils.cpp"
 	"format_duration.cpp"
+	"gui/window.cpp"
 	"spdlog.cpp"
 	"mem/alloc.cpp"
 	"mem/handle.cpp"
