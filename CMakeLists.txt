@@ -14,8 +14,9 @@ add_executable (HitmanTracker
 	"hook.cpp"
 	"imgui_utils.cpp"
 	"format_duration.cpp"
-	"gui/window.cpp"
 	"gui/deviced3d.cpp"
+	"gui/ui.cpp"
+	"gui/window.cpp"
 	"spdlog.cpp"
 	"mem/alloc.cpp"
 	"mem/handle.cpp"
@@ -26,7 +27,7 @@ add_executable (HitmanTracker
 	"hitman_codename_47/gui.cpp"
 	"hitman_blood_money/gui.cpp"
 	"hitman_blood_money/stats.cpp"
-)
+ )
 set_property(TARGET HitmanTracker PROPERTY CXX_STANDARD 20)
 add_definitions(-DWIN32_LEAN_AND_MEAN)
 target_link_libraries(HitmanTracker PRIVATE CLI11::CLI11)

@@ -1,7 +1,5 @@
 #include "deviced3d.hpp"
 
-#include <imgui_impl_dx9.h>
-
 #include "../logging.hpp"
 
 void DeviceD3DDeleter::operator()(DeviceD3D *dev) const {
@@ -42,11 +40,4 @@ std::unique_ptr<DeviceD3D, DeviceD3DDeleter> CreateDeviceD3D(HWND window_handle
         return nullptr;
 
     return dev;
-}
-
-void ResetDevice(DeviceD3D *dev) {
-    ImGui_ImplDX9_InvalidateDeviceObjects();
-    HRESULT hr = dev->g_pd3dDevice->Reset(&dev->g_d3dpp);
-    if (hr == D3DERR_INVALIDCALL) IM_ASSERT(0);
-    ImGui_ImplDX9_CreateDeviceObjects();
 }

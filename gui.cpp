@@ -14,6 +14,7 @@
 #include "game.hpp"
 #include "gui/window.hpp"
 #include "gui/deviced3d.hpp"
+#include "gui/ui.hpp"
 #include "imgui_utils.hpp"
 #include "logging.hpp"
 
@@ -29,120 +30,20 @@ static Stats stats{0};
 // Forward declarations of helper functions
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static ImFont* load_font(
-    ImGuiIO& io, const std::filesystem::path file, float size
-) {
-    auto im_font
-        = std::filesystem::exists(file)
-              ? io.Fonts->AddFontFromFileTTF(file.string().c_str(), size)
-              : nullptr;
-    if (im_font) {
-        logging::debug("Font {} (size {}) loaded", file.string(), size);
-    } else {
-        logging::error(
-            "Font {} (size {}) could not be loaded", file.string(), size
-        );
-    }
-    return im_font;
-}
-
-using FontKey = std::tuple<std::filesystem::path, float>;
-using FontRegistry = std::map<FontKey, ImFont*>;
-
-static ImFont* load_font(
-    ImGuiIO& io, FontRegistry& registry, const FontKey& key
-) {
-    auto iter = registry.find(key);
-    if (iter != registry.end()) {
-        return iter->second;
-    } else {
-        auto im_font = load_font(io, std::get<0>(key), std::get<1>(key));
-        registry[key] = im_font;
-        return im_font;
-    }
-}
-
-static FontKey get_font_key(float font_size, const settings::TextStyle& style) {
-    return {style.file, font_size * style.scale};
-}
-
 // Main code
 int gui_run(const settings::Settings& settings) {
-    // Create application window
+    ImGui_ImplWin32_EnableDpiAwareness();
     auto window = CreateWindowWin32(WndProc, settings.gui.font_size);
     if (!window) return 1;
-
-    // Initialize Direct3D
     auto dev = CreateDeviceD3D(window->handle);
     if (!dev) return 1;
 
-    // Show the window
     logging::trace("Showing window...");
     ::ShowWindow(window->handle, SW_SHOWDEFAULT);
     ::UpdateWindow(window->handle);
 
-    // Setup Dear ImGui context
-    logging::trace("Initializing ImGui...");
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.IniFilename = nullptr;
-    io.LogFilename = nullptr;
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    auto& style = ImGui::GetStyle();
-    style.WindowBorderSize = 0.0f;
-    style.Colors[ImGuiCol_WindowBg] = im_vec4(settings.gui.bg_color);
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplWin32_Init(window->handle);
-    ImGui_ImplDX9_Init(dev->g_pd3dDevice);
-
-    // Load fonts
-    FontRegistry font_registry{};
-    Fonts fonts{
-        .title = load_font(
-            io,
-            font_registry,
-            get_font_key(settings.gui.font_size, settings.gui.title)
-        ),
-        .map = load_font(
-            io,
-            font_registry,
-            get_font_key(settings.gui.font_size, settings.gui.map)
-        ),
-        .time = load_font(
-            io,
-            font_registry,
-            get_font_key(settings.gui.font_size, settings.gui.time)
-        ),
-        .rating_bad = load_font(
-            io,
-            font_registry,
-            get_font_key(settings.gui.font_size, settings.gui.rating_bad)
-        ),
-        .rating_good = load_font(
-            io,
-            font_registry,
-            get_font_key(settings.gui.font_size, settings.gui.rating_good)
-        ),
-        .rating_maybe = load_font(
-            io,
-            font_registry,
-            get_font_key(settings.gui.font_size, settings.gui.rating_maybe)
-        ),
-        .label = load_font(
-            io,
-            font_registry,
-            get_font_key(settings.gui.font_size, settings.gui.label)
-        ),
-        .value = load_font(
-            io,
-            font_registry,
-            get_font_key(settings.gui.font_size, settings.gui.value)
-        ),
-    };
+    auto ui = CreateUI(settings.gui, window.get(), dev.get());
+    if (!ui) return 1;
 
     // Set timer
     SetTimer(window->handle, TIMER_FIND_GAME, 1000, nullptr);
@@ -170,7 +71,7 @@ int gui_run(const settings::Settings& settings) {
                 ::Sleep(10);
                 continue;
             }
-            if (hr == D3DERR_DEVICENOTRESET) ResetDevice(dev.get());
+            if (hr == D3DERR_DEVICENOTRESET) ResetDevice(ui.get(), dev.get());
             g_DeviceLost = false;
         }
 
@@ -180,13 +81,14 @@ int gui_run(const settings::Settings& settings) {
             dev->g_d3dpp.BackBufferWidth = g_ResizeWidth;
             dev->g_d3dpp.BackBufferHeight = g_ResizeHeight;
             g_ResizeWidth = g_ResizeHeight = 0;
-            ResetDevice(dev.get());
+            ResetDevice(ui.get(), dev.get());
         }
 
         // Start the frame
         ImGui_ImplDX9_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
+        auto& io = ImGui::GetIO();
         ImGui::SetNextWindowSize({io.DisplaySize.x, io.DisplaySize.y});
         ImGui::SetNextWindowPos({0, 0});
         ImGui::Begin(
@@ -199,7 +101,7 @@ int gui_run(const settings::Settings& settings) {
             auto target_ptr
                 = hook ? (hook->target_alloc ? hook->target_alloc->ptr : 0) : 0;
             game->methods.update_fast(game->handle.get(), target_ptr, stats);
-            game->methods.gui(settings.gui, fonts, stats);
+            game->methods.gui(settings.gui, ui->fonts, stats);
         } else {
             ImGui::Text("Game not running");
         }
@@ -220,15 +122,11 @@ int gui_run(const settings::Settings& settings) {
             = dev->g_pd3dDevice->Present(nullptr, nullptr, nullptr, nullptr);
         if (result == D3DERR_DEVICELOST) g_DeviceLost = true;
     }
-
     // Cleanup
     logging::trace("Cleanup...");
     KillTimer(window->handle, TIMER_UPDATE_STATS);
     KillTimer(window->handle, TIMER_FIND_GAME);
     game.reset();
-    ImGui_ImplDX9_Shutdown();
-    ImGui_ImplWin32_Shutdown();
-    ImGui::DestroyContext();
 
     return 0;
 }

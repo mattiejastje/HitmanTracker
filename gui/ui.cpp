@@ -1,0 +1,154 @@
+#include "ui.hpp"
+
+#include <imgui_impl_dx9.h>
+#include <imgui_impl_win32.h>
+
+#include <filesystem>
+#include <map>
+#include <tuple>
+
+#include "../imgui_utils.hpp"
+#include "../logging.hpp"
+#include "deviced3d.hpp"
+#include "window.hpp"
+
+static ImFont* load_font(
+    ImGuiIO& io, const std::filesystem::path file, float size
+) {
+    auto im_font
+        = std::filesystem::exists(file)
+              ? io.Fonts->AddFontFromFileTTF(file.string().c_str(), size)
+              : nullptr;
+    if (im_font) {
+        logging::debug("Font {} (size {}) loaded", file.string(), size);
+    } else {
+        logging::error(
+            "Font {} (size {}) could not be loaded", file.string(), size
+        );
+    }
+    return im_font;
+}
+
+using FontKey = std::tuple<std::filesystem::path, float>;
+using FontRegistry = std::map<FontKey, ImFont*>;
+
+static ImFont* load_font(
+    ImGuiIO& io, FontRegistry& registry, const FontKey& key
+) {
+    auto iter = registry.find(key);
+    if (iter != registry.end()) {
+        return iter->second;
+    } else {
+        auto im_font = load_font(io, std::get<0>(key), std::get<1>(key));
+        registry[key] = im_font;
+        return im_font;
+    }
+}
+
+static FontKey get_font_key(float font_size, const settings::TextStyle& style) {
+    return {style.file, font_size * style.scale};
+}
+
+void UIDeleter::operator()(UI* ui) const {
+    if (ui) {
+        logging::trace("Shutting down ImGui...");
+        ui->g_IsUITextureIDValid = false;
+        ImGui_ImplDX9_Shutdown();
+        ImGui_ImplWin32_Shutdown();
+        if (ui->g_pUIContext) ImGui::DestroyContext(ui->g_pUIContext);
+    }
+}
+
+std::unique_ptr<UI, UIDeleter> CreateUI(
+    const settings::Gui& settings, Window* window, DeviceD3D* dev
+) {
+    logging::trace("Initializing ImGui...");
+    auto ui = std::unique_ptr<UI, UIDeleter>(new UI());
+    if (!IMGUI_CHECKVERSION()) return nullptr;
+    ui->g_pUIContext = ImGui::CreateContext();
+    if (!ui->g_pUIContext) return nullptr;
+    ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr;
+    io.LogFilename = nullptr;
+
+    // Setup Platform/Renderer backends
+    if (!ImGui_ImplWin32_Init(window->handle)) return nullptr;
+    if (!ImGui_ImplDX9_Init(dev->g_pd3dDevice)) return nullptr;
+
+    float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(window->handle);
+    if (!UpdateUIScaling(ui.get(), dpiscale > 1.0f ? dpiscale : 1.0f, settings))
+        return nullptr;
+    return ui;
+}
+
+bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
+    ImGuiIO& io = ImGui::GetIO();
+    ui->g_IsUITextureIDValid = false;
+    ImGui_ImplDX9_InvalidateDeviceObjects();
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    auto& style = ImGui::GetStyle();
+    style.WindowBorderSize = 0.0f;
+    style.ChildBorderSize = 0.0f;
+    style.PopupBorderSize = 0.0f;
+    style.FrameBorderSize = 0.0f;
+    style.TabBorderSize = 0.0f;
+    style.Colors[ImGuiCol_WindowBg] = im_vec4(settings.bg_color);
+    style.ScaleAllSizes(dpiscale);
+
+    // Load fonts
+    io.Fonts->Clear();
+    FontRegistry font_registry{};
+    ui->fonts = Fonts{
+        .title = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.font_size * dpiscale, settings.title)
+        ),
+        .map = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.font_size * dpiscale, settings.map)
+        ),
+        .time = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.font_size * dpiscale, settings.time)
+        ),
+        .rating_bad = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.font_size * dpiscale, settings.rating_bad)
+        ),
+        .rating_good = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.font_size * dpiscale, settings.rating_good)
+        ),
+        .rating_maybe = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.font_size * dpiscale, settings.rating_maybe)
+        ),
+        .label = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.font_size * dpiscale, settings.label)
+        ),
+        .value = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.font_size * dpiscale, settings.value)
+        ),
+    };
+    return ImGui_ImplDX9_CreateDeviceObjects();
+};
+
+void ResetDevice(UI* ui, DeviceD3D* dev) {
+    ui->g_IsUITextureIDValid = false;
+    ImGui_ImplDX9_InvalidateDeviceObjects();
+    HRESULT hr = dev->g_pd3dDevice->Reset(&dev->g_d3dpp);
+    assert(hr != D3DERR_INVALIDCALL);
+    ImGui_ImplDX9_CreateDeviceObjects();
+}
