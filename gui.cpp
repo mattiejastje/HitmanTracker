@@ -21,6 +21,9 @@
 // Data
 constexpr auto TIMER_FIND_GAME = 1;
 constexpr auto TIMER_UPDATE_STATS = 2;
+static WNDCLASSEXW g_WndCls = {};
+static ATOM g_WndAtom = 0;
+static HWND g_hWnd = nullptr;
 static LPDIRECT3D9 g_pD3D = nullptr;
 static LPDIRECT3DDEVICE9 g_pd3dDevice = nullptr;
 static bool g_DeviceLost = false;
@@ -73,50 +76,61 @@ static FontKey get_font_key(float font_size, const settings::TextStyle& style) {
     return {style.file, font_size * style.scale};
 }
 
+static bool CreateWindowWin32(float font_size) {
+    logging::trace("Creating application window...");
+    ZeroMemory(&g_WndCls, sizeof(WNDCLASSEXW));
+    g_WndCls.cbSize = sizeof(WNDCLASSEXW);
+    g_WndCls.style = CS_CLASSDC;
+    g_WndCls.lpfnWndProc = &WndProc;
+    g_WndCls.hInstance = GetModuleHandleW(nullptr);
+    g_WndCls.lpszClassName = L"Hitman Tracker";
+
+    g_WndAtom = ::RegisterClassExW(&g_WndCls);
+    if (g_WndAtom == 0) return false;
+
+    g_hWnd = ::CreateWindowExW(
+        0,
+        g_WndCls.lpszClassName,
+        L"Hitman Tracker",
+        WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT,
+        CW_USEDEFAULT,
+        15 * font_size,
+        30 * font_size,
+        nullptr,
+        nullptr,
+        g_WndCls.hInstance,
+        nullptr
+    );
+    return g_hWnd != NULL;
+}
+
+static void DestroyWindowWin32() {
+    logging::trace("Destroying application window...");
+    if (g_hWnd) ::DestroyWindow(g_hWnd);
+    g_hWnd = NULL;
+    if (g_WndAtom != 0)
+        ::UnregisterClassW(g_WndCls.lpszClassName, g_WndCls.hInstance);
+    g_WndAtom = 0;
+}
+
 // Main code
 int gui_run(const settings::Settings& settings) {
     // Create application window
-    logging::trace("Creating application window...");
-    WNDCLASSEXW wc
-        = {sizeof(wc),
-           CS_CLASSDC,
-           WndProc,
-           0L,
-           0L,
-           GetModuleHandle(nullptr),
-           nullptr,
-           nullptr,
-           nullptr,
-           nullptr,
-           L"Hitman Tracker",
-           nullptr};
-    ::RegisterClassExW(&wc);
-    HWND hwnd = ::CreateWindowW(
-        wc.lpszClassName,
-        L"Hitman Tracker",
-        WS_OVERLAPPEDWINDOW,
-        100,
-        100,
-        15 * settings.gui.font_size,
-        30 * settings.gui.font_size,
-        nullptr,
-        nullptr,
-        wc.hInstance,
-        nullptr
-    );
+    CreateWindowWin32(settings.gui.font_size);
 
     // Initialize Direct3D
     logging::trace("Initializing Direct3D...");
-    if (!CreateDeviceD3D(hwnd)) {
+    if (!CreateDeviceD3D(g_hWnd)) {
         CleanupDeviceD3D();
-        ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
+        DestroyWindowWin32();
         return 1;
     }
 
     // Show the window
     logging::trace("Showing window...");
-    ::ShowWindow(hwnd, SW_SHOWDEFAULT);
-    ::UpdateWindow(hwnd);
+    ::ShowWindow(g_hWnd, SW_SHOWDEFAULT);
+    ::UpdateWindow(g_hWnd);
 
     // Setup Dear ImGui context
     logging::trace("Initializing ImGui...");
@@ -133,7 +147,7 @@ int gui_run(const settings::Settings& settings) {
     style.Colors[ImGuiCol_WindowBg] = im_vec4(settings.gui.bg_color);
 
     // Setup Platform/Renderer backends
-    ImGui_ImplWin32_Init(hwnd);
+    ImGui_ImplWin32_Init(g_hWnd);
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
     // Load fonts
@@ -182,8 +196,8 @@ int gui_run(const settings::Settings& settings) {
     };
 
     // Set timer
-    SetTimer(hwnd, TIMER_FIND_GAME, 1000, nullptr);
-    SetTimer(hwnd, TIMER_UPDATE_STATS, 100, nullptr);
+    SetTimer(g_hWnd, TIMER_FIND_GAME, 1000, nullptr);
+    SetTimer(g_hWnd, TIMER_UPDATE_STATS, 100, nullptr);
 
     // Main loop
     logging::trace("Starting main loop...");
@@ -260,16 +274,15 @@ int gui_run(const settings::Settings& settings) {
 
     // Cleanup
     logging::trace("Cleanup...");
-    KillTimer(hwnd, TIMER_UPDATE_STATS);
-    KillTimer(hwnd, TIMER_FIND_GAME);
+    KillTimer(g_hWnd, TIMER_UPDATE_STATS);
+    KillTimer(g_hWnd, TIMER_FIND_GAME);
     game.reset();
     ImGui_ImplDX9_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
 
     CleanupDeviceD3D();
-    ::DestroyWindow(hwnd);
-    ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
+    DestroyWindowWin32();
 
     return 0;
 }
