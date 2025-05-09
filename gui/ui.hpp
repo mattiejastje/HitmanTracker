@@ -10,14 +10,14 @@
 
 // imgui font for each text style in settings::Gui
 struct Fonts {
-    ImFont *title;
-    ImFont *map;
-    ImFont *time;
-    ImFont *rating_bad;
-    ImFont *rating_good;
-    ImFont *rating_maybe;
-    ImFont *label;
-    ImFont *value;
+    ImFont* title;
+    ImFont* map;
+    ImFont* time;
+    ImFont* rating_bad;
+    ImFont* rating_good;
+    ImFont* rating_maybe;
+    ImFont* label;
+    ImFont* value;
 };
 
 struct UI {

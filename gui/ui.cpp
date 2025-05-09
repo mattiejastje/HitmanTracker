@@ -104,9 +104,7 @@ bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
     style.TabRounding = 0.0f;
     style.ScaleAllSizes(dpiscale);
     // Restore colors
-    CopyMemory(
-        style.Colors, styleold.Colors, sizeof(style.Colors)
-    );
+    CopyMemory(style.Colors, styleold.Colors, sizeof(style.Colors));
     style.Colors[ImGuiCol_WindowBg] = im_vec4(settings.bg_color);
 
     // Load fonts
