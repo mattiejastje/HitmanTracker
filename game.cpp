@@ -85,9 +85,10 @@ static std::optional<Game> get_game_for_process(
         logging::info("Found game {}", exe_file);
         auto process_handle = open_process_handle(process_id);
         if (process_handle) {
+            auto base = get_module_base(process_handle.get(), process_id);
             return Game{
                 std::move(process_handle),
-                get_module_base(process_handle.get(), process_id),
+                base,
                 methods.value(),
             };
         }
