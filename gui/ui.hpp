@@ -23,7 +23,6 @@ struct Fonts {
 struct UI {
     ImGuiContext* g_pUIContext;
     Fonts fonts;
-    bool g_IsUITextureIDValid;
 };
 
 struct UIDeleter {

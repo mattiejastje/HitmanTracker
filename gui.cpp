@@ -107,7 +107,6 @@ int gui_run(const settings::Settings& settings) {
         logging::trace("New frame...");
         ImGui_ImplDX9_NewFrame();
         ImGui_ImplWin32_NewFrame();
-        ui->g_IsUITextureIDValid = true;
         ImGui::NewFrame();
         auto& io = ImGui::GetIO();
         ImGui::SetNextWindowSize({io.DisplaySize.x, io.DisplaySize.y});
@@ -134,10 +133,8 @@ int gui_run(const settings::Settings& settings) {
         dev->g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
         dev->g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
         if (dev->g_pd3dDevice->BeginScene() >= 0) {
-            if (ui->g_IsUITextureIDValid) {
-                ImGui::Render();
-                ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-            }
+            ImGui::Render();
+            ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
             dev->g_pd3dDevice->EndScene();
         }
         HRESULT result

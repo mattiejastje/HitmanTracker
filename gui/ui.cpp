@@ -52,7 +52,6 @@ static FontKey get_font_key(float font_size, const settings::TextStyle& style) {
 void UIDeleter::operator()(UI* ui) const {
     if (ui) {
         logging::debug("Shutting down ImGui...");
-        ui->g_IsUITextureIDValid = false;
         ImGui_ImplDX9_Shutdown();
         ImGui_ImplWin32_Shutdown();
         if (ui->g_pUIContext) ImGui::DestroyContext(ui->g_pUIContext);
@@ -84,7 +83,6 @@ std::unique_ptr<UI, UIDeleter> CreateUI(
 bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
     logging::debug("Updating UI scaling to {}...", dpiscale);
     ImGuiIO& io = ImGui::GetIO();
-    ui->g_IsUITextureIDValid = false;
     ImGui_ImplDX9_InvalidateDeviceObjects();
 
     // Setup style
@@ -161,7 +159,6 @@ bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
 
 void ResetDevice(UI* ui, DeviceD3D* dev) {
     logging::debug("Resetting Direct3D device...");
-    ui->g_IsUITextureIDValid = false;
     ImGui_ImplDX9_InvalidateDeviceObjects();
     HRESULT hr = dev->g_pd3dDevice->Reset(&dev->g_d3dpp);
     assert(hr != D3DERR_INVALIDCALL);
