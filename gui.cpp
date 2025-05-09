@@ -124,7 +124,7 @@ int gui_run(const settings::Settings& settings) {
             game->methods.update_fast(game->handle.get(), target_ptr, stats);
             game->methods.gui(settings.gui, ui->fonts, stats);
         } else {
-            ImGui::Text("Game not running");
+            text(ui->fonts.title, settings.gui.title.color, "Game not running");
         }
         ImGui::End();
         ImGui::EndFrame();
