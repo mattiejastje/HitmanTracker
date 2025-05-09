@@ -156,11 +156,3 @@ bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
     };
     return ImGui_ImplDX9_CreateDeviceObjects();
 };
-
-void ResetDevice(UI* ui, DeviceD3D* dev) {
-    logging::debug("Resetting Direct3D device...");
-    ImGui_ImplDX9_InvalidateDeviceObjects();
-    HRESULT hr = dev->d3d_device->Reset(&dev->d3d_present_parameters);
-    assert(hr != D3DERR_INVALIDCALL);
-    ImGui_ImplDX9_CreateDeviceObjects();
-}

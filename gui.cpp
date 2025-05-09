@@ -74,7 +74,7 @@ int gui_run(const settings::Settings& settings) {
                 ::Sleep(10);
                 continue;
             }
-            if (hr == D3DERR_DEVICENOTRESET) ResetDevice(ui.get(), dev.get());
+            if (hr == D3DERR_DEVICENOTRESET) ResetDevice(dev.get());
             logging::debug("Device recovered");
             g_DeviceLost = false;
         }
@@ -84,7 +84,7 @@ int gui_run(const settings::Settings& settings) {
             dev->d3d_present_parameters.BackBufferWidth = g_ResizeWidth;
             dev->d3d_present_parameters.BackBufferHeight = g_ResizeHeight;
             g_ResizeWidth = g_ResizeHeight = 0;
-            ResetDevice(ui.get(), dev.get());
+            ResetDevice(dev.get());
         }
 
         if (g_ChangeDpi != 0) {

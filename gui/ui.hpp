@@ -34,4 +34,3 @@ std::unique_ptr<UI, UIDeleter> CreateUI(
 );
 
 bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings);
-void ResetDevice(UI* ui, DeviceD3D* dev);
