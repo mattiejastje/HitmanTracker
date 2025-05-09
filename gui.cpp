@@ -68,7 +68,7 @@ int gui_run(const settings::Settings& settings) {
 
         if (g_DeviceLost) {
             logging::debug("Handling lost D3D device");
-            HRESULT hr = dev->g_pd3dDevice->TestCooperativeLevel();
+            HRESULT hr = dev->d3d_device->TestCooperativeLevel();
             if (hr == D3DERR_DEVICELOST) {
                 logging::debug("Device still lost");
                 ::Sleep(10);
@@ -81,8 +81,8 @@ int gui_run(const settings::Settings& settings) {
 
         if (g_ResizeWidth != 0 && g_ResizeHeight != 0) {
             logging::debug("Handling window resize");
-            dev->g_d3dpp.BackBufferWidth = g_ResizeWidth;
-            dev->g_d3dpp.BackBufferHeight = g_ResizeHeight;
+            dev->d3d_present_parameters.BackBufferWidth = g_ResizeWidth;
+            dev->d3d_present_parameters.BackBufferHeight = g_ResizeHeight;
             g_ResizeWidth = g_ResizeHeight = 0;
             ResetDevice(ui.get(), dev.get());
         }
@@ -129,16 +129,16 @@ int gui_run(const settings::Settings& settings) {
         ImGui::EndFrame();
 
         logging::trace("Rendering...");
-        dev->g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
-        dev->g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-        dev->g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
-        if (dev->g_pd3dDevice->BeginScene() >= 0) {
+        dev->d3d_device->SetRenderState(D3DRS_ZENABLE, FALSE);
+        dev->d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+        dev->d3d_device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+        if (dev->d3d_device->BeginScene() >= 0) {
             ImGui::Render();
             ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-            dev->g_pd3dDevice->EndScene();
+            dev->d3d_device->EndScene();
         }
         HRESULT result
-            = dev->g_pd3dDevice->Present(nullptr, nullptr, nullptr, nullptr);
+            = dev->d3d_device->Present(nullptr, nullptr, nullptr, nullptr);
         if (result == D3DERR_DEVICELOST) g_DeviceLost = true;
     }
     logging::debug("Cleanup...");

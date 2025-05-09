@@ -8,9 +8,9 @@
 #include <memory>
 
 struct DeviceD3D {
-    LPDIRECT3D9 g_pD3D = nullptr;
-    LPDIRECT3DDEVICE9 g_pd3dDevice = nullptr;
-    D3DPRESENT_PARAMETERS g_d3dpp = {};
+    LPDIRECT3D9 d3d = nullptr;
+    LPDIRECT3DDEVICE9 d3d_device = nullptr;
+    D3DPRESENT_PARAMETERS d3d_present_parameters = {};
 };
 
 struct DeviceD3DDeleter {

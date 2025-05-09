@@ -4,11 +4,11 @@
 
 void DeviceD3DDeleter::operator()(DeviceD3D *dev) const {
     logging::debug("Releasing Direct3D...");
-    if (dev->g_pd3dDevice) {
-        dev->g_pd3dDevice->Release();
+    if (dev->d3d_device) {
+        dev->d3d_device->Release();
     }
-    if (dev->g_pD3D) {
-        dev->g_pD3D->Release();
+    if (dev->d3d) {
+        dev->d3d->Release();
     }
 }
 
@@ -16,25 +16,25 @@ std::unique_ptr<DeviceD3D, DeviceD3DDeleter> CreateDeviceD3D(HWND window_handle
 ) {
     logging::debug("Initializing Direct3D...");
     auto dev = std::unique_ptr<DeviceD3D, DeviceD3DDeleter>(new DeviceD3D);
-    dev->g_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-    if (!dev->g_pD3D) return nullptr;
-    ZeroMemory(&dev->g_d3dpp, sizeof(dev->g_d3dpp));
-    dev->g_d3dpp.Windowed = TRUE;
-    dev->g_d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    dev->g_d3dpp.BackBufferFormat
+    dev->d3d = Direct3DCreate9(D3D_SDK_VERSION);
+    if (!dev->d3d) return nullptr;
+    ZeroMemory(&dev->d3d_present_parameters, sizeof(dev->d3d_present_parameters));
+    dev->d3d_present_parameters.Windowed = TRUE;
+    dev->d3d_present_parameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
+    dev->d3d_present_parameters.BackBufferFormat
         = D3DFMT_UNKNOWN;  // Need to use an explicit format with alpha if
                            // needing per-pixel alpha composition.
-    dev->g_d3dpp.EnableAutoDepthStencil = TRUE;
-    dev->g_d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
-    dev->g_d3dpp.PresentationInterval
+    dev->d3d_present_parameters.EnableAutoDepthStencil = TRUE;
+    dev->d3d_present_parameters.AutoDepthStencilFormat = D3DFMT_D16;
+    dev->d3d_present_parameters.PresentationInterval
         = D3DPRESENT_INTERVAL_ONE;  // Present with vsync
-    if (dev->g_pD3D->CreateDevice(
+    if (dev->d3d->CreateDevice(
             D3DADAPTER_DEFAULT,
             D3DDEVTYPE_HAL,
             window_handle,
             D3DCREATE_HARDWARE_VERTEXPROCESSING,
-            &dev->g_d3dpp,
-            &dev->g_pd3dDevice
+            &dev->d3d_present_parameters,
+            &dev->d3d_device
         )
         < 0)
         return nullptr;

@@ -72,7 +72,7 @@ std::unique_ptr<UI, UIDeleter> CreateUI(
 
     // Setup Platform/Renderer backends
     if (!ImGui_ImplWin32_Init(window->handle)) return nullptr;
-    if (!ImGui_ImplDX9_Init(dev->g_pd3dDevice)) return nullptr;
+    if (!ImGui_ImplDX9_Init(dev->d3d_device)) return nullptr;
 
     float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(window->handle);
     if (!UpdateUIScaling(ui.get(), dpiscale > 1.0f ? dpiscale : 1.0f, settings))
@@ -160,7 +160,7 @@ bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
 void ResetDevice(UI* ui, DeviceD3D* dev) {
     logging::debug("Resetting Direct3D device...");
     ImGui_ImplDX9_InvalidateDeviceObjects();
-    HRESULT hr = dev->g_pd3dDevice->Reset(&dev->g_d3dpp);
+    HRESULT hr = dev->d3d_device->Reset(&dev->d3d_present_parameters);
     assert(hr != D3DERR_INVALIDCALL);
     ImGui_ImplDX9_CreateDeviceObjects();
 }
