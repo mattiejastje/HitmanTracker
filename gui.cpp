@@ -109,7 +109,6 @@ int gui_run(const settings::Settings& settings) {
         ImGui::EndFrame();
 
         // Rendering
-        ImGui::EndFrame();
         dev->g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
         dev->g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
         dev->g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
