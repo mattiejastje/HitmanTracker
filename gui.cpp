@@ -23,6 +23,8 @@ constexpr auto TIMER_FIND_GAME = 1;
 constexpr auto TIMER_UPDATE_STATS = 2;
 static bool g_DeviceLost = false;
 static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
+static RECT g_ChangeRect = {};
+static UINT g_ChangeDpi = 0;
 static std::optional<Game> game{};
 static HookPtr hook{};
 static Stats stats{0};
@@ -84,9 +86,26 @@ int gui_run(const settings::Settings& settings) {
             ResetDevice(ui.get(), dev.get());
         }
 
-        // Start the frame
+        if (g_ChangeDpi != 0) {
+            logging::debug("Handling dpi change");
+            ::SetWindowPos(
+                window->handle,
+                NULL,
+                g_ChangeRect.left,
+                g_ChangeRect.top,
+                g_ChangeRect.right - g_ChangeRect.left,
+                g_ChangeRect.bottom - g_ChangeRect.top,
+                SWP_NOZORDER
+            );
+            float dpiscale
+                = (float)g_ChangeDpi / (float)USER_DEFAULT_SCREEN_DPI;
+            g_ChangeDpi = 0;
+            UpdateUIScaling(ui.get(), dpiscale, settings.gui);
+        }
+
         ImGui_ImplDX9_NewFrame();
         ImGui_ImplWin32_NewFrame();
+        ui->g_IsUITextureIDValid = true;
         ImGui::NewFrame();
         auto& io = ImGui::GetIO();
         ImGui::SetNextWindowSize({io.DisplaySize.x, io.DisplaySize.y});
@@ -113,16 +132,17 @@ int gui_run(const settings::Settings& settings) {
         dev->g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
         dev->g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
         if (dev->g_pd3dDevice->BeginScene() >= 0) {
-            ImGui::Render();
-            ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+            if (ui->g_IsUITextureIDValid) {
+                ImGui::Render();
+                ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+            }
             dev->g_pd3dDevice->EndScene();
         }
         HRESULT result
             = dev->g_pd3dDevice->Present(nullptr, nullptr, nullptr, nullptr);
         if (result == D3DERR_DEVICELOST) g_DeviceLost = true;
     }
-    // Cleanup
-    logging::trace("Cleanup...");
+    logging::debug("Cleanup...");
     KillTimer(window->handle, TIMER_UPDATE_STATS);
     KillTimer(window->handle, TIMER_FIND_GAME);
     game.reset();
@@ -158,6 +178,12 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 == SC_KEYMENU)  // Disable ALT application menu
                 return 0;
             break;
+        case WM_DPICHANGED:
+            // Queue scaling update
+            assert(LOWORD(wParam) == HIWORD(wParam));
+            CopyMemory(&g_ChangeRect, (RECT*)lParam, sizeof(RECT));
+            g_ChangeDpi = LOWORD(wParam);
+            return 0;
         case WM_DESTROY:
             game = {};
             hook = nullptr;

@@ -86,16 +86,29 @@ bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
     ui->g_IsUITextureIDValid = false;
     ImGui_ImplDX9_InvalidateDeviceObjects();
 
-    // Setup Dear ImGui style
+    // Setup style
     ImGui::StyleColorsDark();
-    auto& style = ImGui::GetStyle();
-    style.WindowBorderSize = 0.0f;
-    style.ChildBorderSize = 0.0f;
-    style.PopupBorderSize = 0.0f;
-    style.FrameBorderSize = 0.0f;
-    style.TabBorderSize = 0.0f;
-    style.Colors[ImGuiCol_WindowBg] = im_vec4(settings.bg_color);
+    // Backup colors
+    ImGuiStyle styleold = ImGui::GetStyle();
+    auto style = ImGuiStyle();
+    style.WindowBorderSize = 1.0f;
+    style.ChildBorderSize = 1.0f;
+    style.PopupBorderSize = 1.0f;
+    style.FrameBorderSize = 1.0f;
+    style.TabBorderSize = 1.0f;
+    style.WindowRounding = 0.0f;
+    style.ChildRounding = 0.0f;
+    style.PopupRounding = 0.0f;
+    style.FrameRounding = 0.0f;
+    style.ScrollbarRounding = 0.0f;
+    style.GrabRounding = 0.0f;
+    style.TabRounding = 0.0f;
     style.ScaleAllSizes(dpiscale);
+    // Restore colors
+    CopyMemory(
+        style.Colors, styleold.Colors, sizeof(style.Colors)
+    );
+    style.Colors[ImGuiCol_WindowBg] = im_vec4(settings.bg_color);
 
     // Load fonts
     io.Fonts->Clear();
