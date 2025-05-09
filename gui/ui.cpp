@@ -90,11 +90,11 @@ bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
     // Backup colors
     ImGuiStyle styleold = ImGui::GetStyle();
     auto style = ImGuiStyle();
-    style.WindowBorderSize = 1.0f;
-    style.ChildBorderSize = 1.0f;
-    style.PopupBorderSize = 1.0f;
-    style.FrameBorderSize = 1.0f;
-    style.TabBorderSize = 1.0f;
+    style.WindowBorderSize = 0.0f;
+    style.ChildBorderSize = 0.0f;
+    style.PopupBorderSize = 0.0f;
+    style.FrameBorderSize = 0.0f;
+    style.TabBorderSize = 0.0f;
     style.WindowRounding = 0.0f;
     style.ChildRounding = 0.0f;
     style.PopupRounding = 0.0f;
