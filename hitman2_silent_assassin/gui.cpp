@@ -36,7 +36,6 @@ void hitman2_silent_assassin::gui(
     const settings::Gui& settings, const Fonts& fonts, const Stats& stats
 ) {
     text(fonts.title, settings.title.color, "Hitman 2: Silent Assassin");
-    ImGui::Separator();
     if (stats.map > 0) {
         text(
             fonts.map,
