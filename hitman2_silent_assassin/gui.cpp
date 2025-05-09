@@ -1,11 +1,13 @@
-#include "gui.hpp"
+﻿#include "gui.hpp"
 
 #include <imgui.h>
 
+#include <array>
 #include <string>
 #include <vector>
 
 #include "../format_duration.hpp"
+#include "../imgui_utils.hpp"
 
 const std::vector<std::string> map_names
     = {"The Gontranno Sactuary",    // 1
@@ -30,38 +32,63 @@ const std::vector<std::string> map_names
        "St. Petersburg Revisited",  // 20
        "Redemption at Gontranno"};  // 21
 
-static void table_row(const char* text, const char* fmt, ...) {
-    ImGui::TableNextRow();
-    ImGui::TableNextColumn();
-    ImGui::Text(text);
-    ImGui::TableNextColumn();
-    va_list args;
-    va_start(args, fmt);
-    ImGui::TextV(fmt, args);
-    va_end(args);
-}
-
-void hitman2_silent_assassin::gui(const Stats& stats) {
-    ImGui::Text("Hitman 2: Silent Assassin");
+void hitman2_silent_assassin::gui(
+    const settings::Gui& settings, const Fonts& fonts, const Stats& stats
+) {
+    text(fonts.title, settings.title.color, "Hitman 2: Silent Assassin");
     ImGui::Separator();
     if (stats.map > 0) {
-        ImGui::Text("#%d %s", stats.map, map_names.at(stats.map - 1).c_str());
-        ImGui::Text(format_duration(stats.time).c_str());
-        ImGui::BeginTable("Statistics", 2, ImGuiTableFlags_BordersH | ImGuiTableFlags_SizingFixedFit);
-        table_row(
-            "Silent Assassin",
-            stats.silent_assassin == SilentAssassin::YES     ? "Yes"
-            : stats.silent_assassin == SilentAssassin::MAYBE ? "Maybe"
-                                                             : "No"
+        text(
+            fonts.map,
+            settings.map.color,
+            "#%d %s",
+            stats.map,
+            map_names.at(stats.map - 1).c_str()
         );
-        table_row("Shots Fired", "%d", stats.shots_fired);
-        table_row("Close Encounters", "%d", stats.close_encounters);
-        table_row("Headshots", "%d", stats.headshots);
-        table_row("Alerts", "%d", stats.alerts);
-        table_row("Enemies Killed", "%d", stats.enemies_killed);
-        table_row("Enemies Wounded", "%d", stats.enemies_wounded);
-        table_row("Innocents Killed", "%d", stats.innocents_killed);
-        table_row("Innocents Wounded", "%d", stats.innocents_wounded);
+        ImGui::Spacing();
+        text(
+            fonts.time, settings.time.color, format_duration(stats.time).c_str()
+        );
+        auto rating_font = stats.silent_assassin == SilentAssassin::NO
+                               ? fonts.rating_bad
+                           : stats.silent_assassin == SilentAssassin::YES
+                               ? fonts.rating_good
+                               : fonts.rating_maybe;
+        auto rating_color = stats.silent_assassin == SilentAssassin::NO
+                                ? settings.rating_bad.color
+                            : stats.silent_assassin == SilentAssassin::YES
+                                ? settings.rating_good.color
+                                : settings.rating_maybe.color;
+        auto rating_text = stats.silent_assassin == SilentAssassin::NO
+                               ? "No Silent Assassin"
+                               : "Silent Assassin";
+        text(rating_font, rating_color, rating_text);
+        ImGui::Spacing();
+        ImGui::BeginTable(
+            "Statistics",
+            2,
+            ImGuiTableFlags_SizingFixedFit
+                | ImGuiTableFlags_NoKeepColumnsVisible
+                | ImGuiTableFlags_NoHostExtendX
+        );
+        table_row(fonts, settings, "Shots Fired", "%d", stats.shots_fired);
+        table_row(
+            fonts, settings, "Close Encounters", "%d", stats.close_encounters
+        );
+        table_row(fonts, settings, "Headshots", "%d", stats.headshots);
+        table_row(fonts, settings, "Alerts", "%d", stats.alerts);
+        table_row(
+            fonts, settings, "Enemies Killed", "%d", stats.enemies_killed
+        );
+        table_row(
+            fonts, settings, "Enemies Wounded", "%d", stats.enemies_wounded
+        );
+        table_row(
+            fonts, settings, "Innocents Killed", "%d", stats.innocents_killed
+        );
+        table_row(
+            fonts, settings, "Innocents Wounded", "%d", stats.innocents_wounded
+        );
         ImGui::EndTable();
     }
 }

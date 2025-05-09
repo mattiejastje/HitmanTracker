@@ -5,17 +5,41 @@
 
 #include "logging.hpp"
 
+using namespace settings;
+
 static const CLI::TransformPairs<int> log_level_map{
     {"trace", 6},
     {"debug", 5},
     {"info", 4},
     {"warn", 3},
-    {"warning", 3},
-    {"err", 2},
     {"error", 2},
-    {"crit", 1},
     {"critical", 1},
     {"off", 0},
+};
+
+static void add_text_style_options(
+    CLI::App& app, std::string name, std::string desc, TextStyle& style
+) {
+    app.add_option(
+           std::format("--{}-font", name),
+           style.file,
+           std::format("Font for {}", desc)
+    )
+        ->transform(CLI::ExistingFile)
+        ->capture_default_str();
+    app.add_option(
+           std::format("--{}-scale", name),
+           style.scale,
+           std::format("Scale for {}", desc)
+    )
+        ->transform(CLI::PositiveNumber)
+        ->capture_default_str();
+    app.add_option(
+           std::format("--{}-color", name),
+           style.color,
+           std::format("Color for {}", desc)
+    )
+        ->capture_default_str();
 };
 
 static std::unique_ptr<CLI::App> make_app(Settings& settings) {
@@ -33,52 +57,38 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     app->set_config(
         "--config", "HitmanTracker.ini", "Read options from ini file"
     );
-    for (int i = 0; i < 5; i++) {
-        app->add_option(
-               std::format("--font-{}-file", i),
-               settings.gui.fonts[i].file,
-               std::format("The .ttf file for font {}", i)
-        )
-            ->capture_default_str();
-        app->add_option(
-               std::format("--font-{}-size", i),
-               settings.gui.fonts[i].size,
-               std::format("Pixel size of font {}", i)
-        )
-            ->capture_default_str();
-    }
-    app->add_option("--font-title", settings.gui.title_font, "Title font")
+    app->add_option("--bg-color", settings.gui.bg_color, "Background color")
         ->capture_default_str();
-    app->add_option("--font-map", settings.gui.map_font, "Map font")
-        ->capture_default_str();
-    app->add_option("--font-time", settings.gui.time_font, "Time font")
-        ->capture_default_str();
-    app->add_option("--font-rating", settings.gui.rating_font, "Rating font")
-        ->capture_default_str();
-    app->add_option("--font-table", settings.gui.table_font, "Table font")
-        ->capture_default_str();
-    app->config_formatter(std::make_shared<CLI::ConfigINI>());
+    add_text_style_options(*app, "title", "title", settings.gui.title);
+    add_text_style_options(*app, "map", "map", settings.gui.map);
+    add_text_style_options(*app, "time", "time", settings.gui.time);
+    add_text_style_options(
+        *app, "rating-good", "good rating", settings.gui.rating_good
+    );
+    add_text_style_options(
+        *app, "rating-maybe", "maybe rating", settings.gui.rating_maybe
+    );
+    add_text_style_options(
+        *app, "rating-bad", "bad rating", settings.gui.rating_maybe
+    );
+    add_text_style_options(*app, "label", "labels", settings.gui.label);
+    add_text_style_options(*app, "value", "values", settings.gui.value);
     return app;
 }
 
-std::optional<Settings> settings_load(int argc, char** argv) {
+std::optional<Settings> settings::load(int argc, char** argv) {
     Settings settings{};
     auto app = make_app(settings);
     argv = app->ensure_utf8(argv);
     try {
         app->parse(argc, argv);
+    } catch (const CLI::CallForHelp& e) {
+        std::cout << app->help();
+        return {};
     } catch (const CLI::ParseError& e) {
-        logging::warn("Failed to parse settings ({})", e.what());
+        logging::error("Settings error ({}: {})", e.get_name(), e.what());
         return {};
     }
-    auto config_file_name = app->get_config_ptr()->as<std::string>();
-    if (!std::filesystem::exists(config_file_name)) {
-        if (std::ofstream config_file{config_file_name}) {
-            config_file << app->config_to_str(true, true);
-            logging::info("Settings saved to {}", config_file_name);
-        } else {
-            logging::warn("Unable to save settings to {}", config_file_name);
-        }
-    }
+    std::cout << app->config_to_str(false, false);
     return settings;
 }

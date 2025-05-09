@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../stats.hpp"
+#include "../game.hpp"
 
 namespace hitman_codename_47 {
 
-void gui(const Stats& stats);
+void gui(const settings::Gui& settings, const Fonts& fonts, const Stats& stats);
 
 }

@@ -1,4 +1,4 @@
-#include "gui.hpp"
+﻿#include "gui.hpp"
 
 #pragma comment(lib, "d3d9.lib")
 
@@ -9,9 +9,13 @@
 #include <tchar.h>
 
 #include <CLI/CLI.hpp>
+#include <algorithm>
 #include <filesystem>
+#include <map>
+#include <tuple>
 
 #include "game.hpp"
+#include "imgui_utils.hpp"
 #include "logging.hpp"
 
 // Data
@@ -33,26 +37,44 @@ void ResetDevice();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static ImFont* load_font(
-    ImGuiIO& io, const Font& font
+    ImGuiIO& io, const std::filesystem::path file, float size
 ) {
-    if (font.file.empty()) {
-    } else if (!std::filesystem::exists(CLI::to_path(font.file))) {
-        logging::warn("Font file \"{}\" does not exist", font.file);
-    } else if (font.size <= 0) {
-        logging::warn("Font size {} zero or negative", font.size);
+    auto im_font
+        = std::filesystem::exists(file)
+              ? io.Fonts->AddFontFromFileTTF(file.string().c_str(), size)
+              : nullptr;
+    if (im_font) {
+        logging::debug("Font {} (size {}) loaded", file.string(), size);
     } else {
-        auto im_font
-            = io.Fonts->AddFontFromFileTTF(font.file.c_str(), font.size);
-        if (!im_font) {
-            logging::warn("Unable to load font \"{}\"", font.file);
-        }
+        logging::error(
+            "Font {} (size {}) could not be loaded", file.string(), size
+        );
+    }
+    return im_font;
+}
+
+using FontKey = std::tuple<std::filesystem::path, float>;
+using FontRegistry = std::map<FontKey, ImFont*>;
+
+static ImFont* load_font(
+    ImGuiIO& io, FontRegistry& registry, const FontKey& key
+) {
+    auto iter = registry.find(key);
+    if (iter != registry.end()) {
+        return iter->second;
+    } else {
+        auto im_font = load_font(io, std::get<0>(key), std::get<1>(key));
+        registry[key] = im_font;
         return im_font;
     }
-    return nullptr;
+}
+
+static FontKey get_font_key(float font_size, const settings::TextStyle& style) {
+    return {style.file, font_size * style.scale};
 }
 
 // Main code
-int gui_run(const Settings& settings) {
+int gui_run(const settings::Settings& settings) {
     // Create application window
     logging::trace("Creating application window...");
     WNDCLASSEXW wc
@@ -75,8 +97,8 @@ int gui_run(const Settings& settings) {
         WS_OVERLAPPEDWINDOW,
         100,
         100,
-        260,
-        520,
+        15 * settings.gui.font_size,
+        30 * settings.gui.font_size,
         nullptr,
         nullptr,
         wc.hInstance,
@@ -106,17 +128,58 @@ int gui_run(const Settings& settings) {
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    auto& style = ImGui::GetStyle();
+    style.WindowBorderSize = 0.0f;
+    style.Colors[ImGuiCol_WindowBg] = im_vec4(settings.gui.bg_color);
 
     // Setup Platform/Renderer backends
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
     // Load fonts
-    std::array<ImFont*, 5> fonts{0};
-    for (int i = 0; i < 5; i++) {
-        fonts[i] = load_font(io, settings.gui.fonts[i]);
-    }
+    FontRegistry font_registry{};
+    Fonts fonts{
+        .title = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.gui.font_size, settings.gui.title)
+        ),
+        .map = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.gui.font_size, settings.gui.map)
+        ),
+        .time = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.gui.font_size, settings.gui.time)
+        ),
+        .rating_bad = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.gui.font_size, settings.gui.rating_bad)
+        ),
+        .rating_good = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.gui.font_size, settings.gui.rating_good)
+        ),
+        .rating_maybe = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.gui.font_size, settings.gui.rating_maybe)
+        ),
+        .label = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.gui.font_size, settings.gui.label)
+        ),
+        .value = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.gui.font_size, settings.gui.value)
+        ),
+    };
 
     // Set timer
     SetTimer(hwnd, TIMER_FIND_GAME, 1000, nullptr);
@@ -173,7 +236,7 @@ int gui_run(const Settings& settings) {
             auto target_ptr
                 = hook ? (hook->target_alloc ? hook->target_alloc->ptr : 0) : 0;
             game->methods.update_fast(game->handle.get(), target_ptr, stats);
-            game->methods.gui(stats);
+            game->methods.gui(settings.gui, fonts, stats);
         } else {
             ImGui::Text("Game not running");
         }
