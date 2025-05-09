@@ -4,7 +4,7 @@
 
 void WindowDeleter::operator()(Window* window) const {
     if (window) {
-        logging::trace("Destroying application window...");
+        logging::debug("Destroying application window...");
         if (window->handle) ::DestroyWindow(window->handle);
         if (window->atom != 0)
             ::UnregisterClassW(
@@ -16,7 +16,7 @@ void WindowDeleter::operator()(Window* window) const {
 std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
     WNDPROC WndProc, float font_size
 ) {
-    logging::trace("Creating application window...");
+    logging::debug("Creating application window...");
     auto window = std::unique_ptr<Window, WindowDeleter>(new Window{
         .cls
         = {sizeof(WNDCLASSEXW),

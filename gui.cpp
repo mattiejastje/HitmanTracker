@@ -12,9 +12,9 @@
 #include <tuple>
 
 #include "game.hpp"
-#include "gui/window.hpp"
 #include "gui/deviced3d.hpp"
 #include "gui/ui.hpp"
+#include "gui/window.hpp"
 #include "imgui_utils.hpp"
 #include "logging.hpp"
 
@@ -40,7 +40,7 @@ int gui_run(const settings::Settings& settings) {
     auto dev = CreateDeviceD3D(window->handle);
     if (!dev) return 1;
 
-    logging::trace("Showing window...");
+    logging::debug("Showing window...");
     ::ShowWindow(window->handle, SW_SHOWDEFAULT);
     ::UpdateWindow(window->handle);
 
@@ -52,7 +52,7 @@ int gui_run(const settings::Settings& settings) {
     SetTimer(window->handle, TIMER_UPDATE_STATS, 100, nullptr);
 
     // Main loop
-    logging::trace("Starting main loop...");
+    logging::debug("Starting main loop...");
     bool done = false;
     while (!done) {
         // Poll and handle messages (inputs, window resize, etc.)
@@ -66,20 +66,21 @@ int gui_run(const settings::Settings& settings) {
         }
         if (done) break;
 
-        // Handle lost D3D9 device
         if (g_DeviceLost) {
+            logging::debug("Handling lost D3D device");
             HRESULT hr = dev->g_pd3dDevice->TestCooperativeLevel();
             if (hr == D3DERR_DEVICELOST) {
+                logging::debug("Device still lost");
                 ::Sleep(10);
                 continue;
             }
             if (hr == D3DERR_DEVICENOTRESET) ResetDevice(ui.get(), dev.get());
+            logging::debug("Device recovered");
             g_DeviceLost = false;
         }
 
-        // Handle window resize (we don't resize directly in the WM_SIZE
-        // handler)
         if (g_ResizeWidth != 0 && g_ResizeHeight != 0) {
+            logging::debug("Handling window resize");
             dev->g_d3dpp.BackBufferWidth = g_ResizeWidth;
             dev->g_d3dpp.BackBufferHeight = g_ResizeHeight;
             g_ResizeWidth = g_ResizeHeight = 0;
@@ -103,6 +104,7 @@ int gui_run(const settings::Settings& settings) {
             UpdateUIScaling(ui.get(), dpiscale, settings.gui);
         }
 
+        logging::trace("New frame...");
         ImGui_ImplDX9_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ui->g_IsUITextureIDValid = true;
@@ -127,7 +129,7 @@ int gui_run(const settings::Settings& settings) {
         ImGui::End();
         ImGui::EndFrame();
 
-        // Rendering
+        logging::trace("Rendering...");
         dev->g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
         dev->g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
         dev->g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);

@@ -3,7 +3,7 @@
 #include "../logging.hpp"
 
 void DeviceD3DDeleter::operator()(DeviceD3D *dev) const {
-    logging::trace("Releasing Direct3D...");
+    logging::debug("Releasing Direct3D...");
     if (dev->g_pd3dDevice) {
         dev->g_pd3dDevice->Release();
     }
@@ -14,7 +14,7 @@ void DeviceD3DDeleter::operator()(DeviceD3D *dev) const {
 
 std::unique_ptr<DeviceD3D, DeviceD3DDeleter> CreateDeviceD3D(HWND window_handle
 ) {
-    logging::trace("Initializing Direct3D...");
+    logging::debug("Initializing Direct3D...");
     auto dev = std::unique_ptr<DeviceD3D, DeviceD3DDeleter>(new DeviceD3D);
     dev->g_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
     if (!dev->g_pD3D) return nullptr;

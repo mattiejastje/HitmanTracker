@@ -51,7 +51,7 @@ static FontKey get_font_key(float font_size, const settings::TextStyle& style) {
 
 void UIDeleter::operator()(UI* ui) const {
     if (ui) {
-        logging::trace("Shutting down ImGui...");
+        logging::debug("Shutting down ImGui...");
         ui->g_IsUITextureIDValid = false;
         ImGui_ImplDX9_Shutdown();
         ImGui_ImplWin32_Shutdown();
@@ -62,7 +62,7 @@ void UIDeleter::operator()(UI* ui) const {
 std::unique_ptr<UI, UIDeleter> CreateUI(
     const settings::Gui& settings, Window* window, DeviceD3D* dev
 ) {
-    logging::trace("Initializing ImGui...");
+    logging::debug("Initializing ImGui...");
     auto ui = std::unique_ptr<UI, UIDeleter>(new UI());
     if (!IMGUI_CHECKVERSION()) return nullptr;
     ui->g_pUIContext = ImGui::CreateContext();
@@ -82,6 +82,7 @@ std::unique_ptr<UI, UIDeleter> CreateUI(
 }
 
 bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
+    logging::debug("Updating UI scaling to {}...", dpiscale);
     ImGuiIO& io = ImGui::GetIO();
     ui->g_IsUITextureIDValid = false;
     ImGui_ImplDX9_InvalidateDeviceObjects();
@@ -159,6 +160,7 @@ bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
 };
 
 void ResetDevice(UI* ui, DeviceD3D* dev) {
+    logging::debug("Resetting Direct3D device...");
     ui->g_IsUITextureIDValid = false;
     ImGui_ImplDX9_InvalidateDeviceObjects();
     HRESULT hr = dev->g_pd3dDevice->Reset(&dev->g_d3dpp);
