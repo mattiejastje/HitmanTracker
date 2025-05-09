@@ -91,6 +91,33 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return ::DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
+static void Frame(UI* ui, const settings::Gui settings) {
+    logging::trace("New frame...");
+    ImGui_ImplDX9_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+    auto& io = ImGui::GetIO();
+    ImGui::SetNextWindowSize({io.DisplaySize.x, io.DisplaySize.y});
+    ImGui::SetNextWindowPos({0, 0});
+    if (ImGui::Begin(
+            "Hitman Tracker",
+            nullptr,
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
+                | ImGuiWindowFlags_NoMove
+        )) {
+        if (game) {
+            auto target_ptr
+                = hook ? (hook->target_alloc ? hook->target_alloc->ptr : 0) : 0;
+            game->methods.update_fast(game->handle.get(), target_ptr, stats);
+            game->methods.gui(settings, ui->fonts, stats);
+        } else {
+            text(ui->fonts.title, settings.title.color, "Game not running");
+        }
+    }
+    ImGui::End();
+    ImGui::EndFrame();
+}
+
 // Main code
 int gui_run(const settings::Settings& settings) {
     ImGui_ImplWin32_EnableDpiAwareness();
@@ -163,30 +190,7 @@ int gui_run(const settings::Settings& settings) {
             UpdateUIScaling(ui.get(), dpiscale, settings.gui);
         }
 
-        logging::trace("New frame...");
-        ImGui_ImplDX9_NewFrame();
-        ImGui_ImplWin32_NewFrame();
-        ImGui::NewFrame();
-        auto& io = ImGui::GetIO();
-        ImGui::SetNextWindowSize({io.DisplaySize.x, io.DisplaySize.y});
-        ImGui::SetNextWindowPos({0, 0});
-        ImGui::Begin(
-            "Hitman Tracker",
-            nullptr,
-            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
-                | ImGuiWindowFlags_NoMove
-        );
-        if (game) {
-            auto target_ptr
-                = hook ? (hook->target_alloc ? hook->target_alloc->ptr : 0) : 0;
-            game->methods.update_fast(game->handle.get(), target_ptr, stats);
-            game->methods.gui(settings.gui, ui->fonts, stats);
-        } else {
-            text(ui->fonts.title, settings.gui.title.color, "Game not running");
-        }
-        ImGui::End();
-        ImGui::EndFrame();
-
+        Frame(ui.get(), settings.gui);
         HRESULT result = RenderAndPresent(dev.get());
         if (result == D3DERR_DEVICELOST) g_DeviceLost = true;
     }
