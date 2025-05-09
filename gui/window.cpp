@@ -1,5 +1,7 @@
 #include "window.hpp"
 
+#include <imgui_impl_win32.h>
+
 #include "../logging.hpp"
 
 void WindowDeleter::operator()(Window* window) const {
@@ -34,6 +36,8 @@ std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
     });
     window->atom = ::RegisterClassExW(&window->cls);
     if (window->atom == 0) return nullptr;
+    // need to create the window before we know the dpi...
+    // so first create 10x10 window then resize
     window->handle = ::CreateWindowExW(
         0,
         window->cls.lpszClassName,
@@ -41,12 +45,22 @@ std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        15 * font_size,
-        30 * font_size,
+        10,
+        10,
         nullptr,
         nullptr,
         window->cls.hInstance,
         nullptr
+    );
+    float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(window->handle);
+    ::SetWindowPos(
+        window->handle,
+        NULL,
+        0,
+        0,
+        15 * font_size * dpiscale,
+        30 * font_size * dpiscale,
+        SWP_NOZORDER | SWP_NOMOVE
     );
     return window->handle ? std::move(window) : nullptr;
 }
