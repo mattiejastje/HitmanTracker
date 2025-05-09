@@ -7,7 +7,7 @@
 
 spdlog::level::level_enum spdlog_level[7]{
     spdlog::level::off,
-    spdlog::level::trace,
+    spdlog::level::critical,
     spdlog::level::err,
     spdlog::level::warn,
     spdlog::level::info,
