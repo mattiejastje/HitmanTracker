@@ -15,8 +15,12 @@
 #include "logging.hpp"
 #include "mem/read_write.hpp"
 
-static void stats_nothing(void* handle, int32_t hook_target_ptr, Stats& stats) {
-}
+static void stats_nothing(
+    void* handle,
+    const ModuleBase& module_base,
+    int32_t hook_target_ptr,
+    Stats& stats
+) {}
 
 static HookPtr hook_nothing(std::shared_ptr<void> handle) { return HookPtr{}; }
 
@@ -47,11 +51,11 @@ static std::optional<GameMethods> get_game_methods(const char* exe_file) {
     return {};
 }
 
-static std::unordered_map<std::string, int32_t> get_module_base(
+static ModuleBase get_module_base(
     HANDLE process_handle, DWORD process_id
 ) {
     logging::debug("Finding modules of process id {:#x}", process_id);
-    std::unordered_map<std::string, int32_t> module_base{};
+    ModuleBase module_base{};
     WaitForSingleObject(process_handle, 1000);  // wait until dlls are loaded
     auto snapshot_handle = open_snapshot_handle(TH32CS_SNAPMODULE, process_id);
     if (snapshot_handle) {

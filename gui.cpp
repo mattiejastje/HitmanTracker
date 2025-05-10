@@ -82,7 +82,10 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                                                       : 0)
                                                : 0;
                         game->methods.update_slow(
-                            game->handle.get(), target_ptr, stats
+                            game->handle.get(),
+                            game->module_base,
+                            target_ptr,
+                            stats
                         );
                     };
                     return 0;
@@ -108,7 +111,9 @@ static void Frame(UI* ui, const settings::Gui settings) {
         if (game) {
             auto target_ptr
                 = hook ? (hook->target_alloc ? hook->target_alloc->ptr : 0) : 0;
-            game->methods.update_fast(game->handle.get(), target_ptr, stats);
+            game->methods.update_fast(
+                game->handle.get(), game->module_base, target_ptr, stats
+            );
             game->methods.gui(settings, ui->fonts, stats);
         } else {
             text(ui->fonts.title, settings.title.color, "Game not running");
