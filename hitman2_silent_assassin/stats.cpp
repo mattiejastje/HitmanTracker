@@ -50,8 +50,23 @@ struct GameStats {
 
 static_assert(sizeof(GameStats) == 28);
 
+using StatsArray = std::array<int32_t, 8>;
+
+static StatsArray stats_as_array(const Stats& stats) {
+    return StatsArray{
+        stats.shots_fired,
+        stats.close_encounters,
+        stats.headshots,
+        stats.alerts,
+        stats.enemies_killed,
+        stats.enemies_wounded,
+        stats.innocents_killed,
+        stats.innocents_wounded,
+    };
+}
+
 // https://docs.google.com/spreadsheets/d/1i6dmzcBROqoJlsQjUGY8wxdqwxt2hXzjB9fPVggTf2k/edit?gid=1074822823#gid=1074822823
-const std::vector<std::array<int32_t, 8>> silent_assassin_combinations
+const std::vector<StatsArray> silent_assassin_combinations
     = {{0, 1, 0, 0, 1, 2, 0, 0}, {0, 1, 0, 0, 0, 5, 0, 0},
        {0, 1, 0, 0, 0, 2, 0, 1}, {0, 0, 0, 1, 2, 0, 0, 0},
        {0, 0, 0, 1, 1, 3, 0, 0}, {0, 0, 0, 1, 1, 0, 0, 1},
@@ -67,28 +82,17 @@ const std::vector<std::array<int32_t, 8>> silent_assassin_combinations
        {2, 0, 2, 1, 0, 0, 0, 0}, {2, 0, 1, 1, 0, 1, 0, 0},
        {3, 0, 0, 1, 0, 0, 0, 0}};
 
-static bool is_less_or_equal(
-    std::array<int32_t, 8> comb1, std::array<int32_t, 8> comb2
-) {
+static bool is_less_or_equal(StatsArray comb1, StatsArray comb2) {
     for (int i = 0; i < 8; i++) {
         if (comb1[i] > comb2[i]) return false;
     };
     return true;
 }
 
-static SilentAssassin get_silent_assassin(const Stats& stats) {
-    std::array<int32_t, 8> stats_comb{
-        stats.shots_fired,
-        stats.close_encounters,
-        stats.headshots,
-        stats.alerts,
-        stats.enemies_killed,
-        stats.enemies_wounded,
-        stats.innocents_killed,
-        stats.innocents_wounded,
     };
+static SilentAssassin get_silent_assassin(const StatsArray& stats) {
     for (const auto& sa_comb : silent_assassin_combinations) {
-        if (is_less_or_equal(stats_comb, sa_comb)) return SilentAssassin::YES;
+        if (is_less_or_equal(stats, sa_comb)) return SilentAssassin::YES;
     };
     return SilentAssassin::NO;
 }
@@ -139,7 +143,7 @@ void hitman2_silent_assassin::update_slow(
             stats.innocents_wounded = game_stats.innocents_wounded;
             stats.alerts = game_stats.alerts;
             stats.close_encounters = game_stats.close_encounters;
-            stats.silent_assassin = get_silent_assassin(stats);
+            stats.silent_assassin = get_silent_assassin(stats_as_array(stats));
         } else {
             logging::warn("Unable to read game stats");
         }
