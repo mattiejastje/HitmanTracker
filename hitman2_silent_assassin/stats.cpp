@@ -82,9 +82,9 @@ const std::vector<StatsArray> silent_assassin_combinations
        {2, 0, 2, 1, 0, 0, 0, 0}, {2, 0, 1, 1, 0, 1, 0, 0},
        {3, 0, 0, 1, 0, 0, 0, 0}};
 
-static bool is_less_or_equal(StatsArray comb1, StatsArray comb2) {
+static bool is_less_or_equal(StatsArray stats1, StatsArray stats2) {
     for (int i = 0; i < 8; i++) {
-        if (comb1[i] > comb2[i]) return false;
+        if (stats1[i] > stats2[i]) return false;
     };
     return true;
 }
