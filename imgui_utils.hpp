@@ -43,15 +43,19 @@ template <typename... Args>
 void table_row(
     const Fonts& fonts,
     const settings::Gui& settings,
+    Status status,
     const char* label,
     const char* value,
     Args... args
 ) {
+    auto value_color = status == Status::GREEN ? settings.rating_good.color
+                       : status == Status::RED ? settings.rating_bad.color
+                                               : settings.rating_maybe.color;
     table_row(
         fonts.label,
         settings.label.color,
         fonts.value,
-        settings.value.color,
+        value_color,
         label,
         value,
         args...

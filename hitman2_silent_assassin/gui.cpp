@@ -48,17 +48,16 @@ void hitman2_silent_assassin::gui(
         text(
             fonts.time, settings.time.color, format_duration(stats.time).c_str()
         );
-        auto rating_font = stats.silent_assassin == SilentAssassin::NO
-                               ? fonts.rating_bad
-                           : stats.silent_assassin == SilentAssassin::YES
-                               ? fonts.rating_good
-                               : fonts.rating_maybe;
-        auto rating_color = stats.silent_assassin == SilentAssassin::NO
+        auto rating_font
+            = stats.silent_assassin == Status::RED     ? fonts.rating_bad
+              : stats.silent_assassin == Status::GREEN ? fonts.rating_good
+                                                       : fonts.rating_maybe;
+        auto rating_color = stats.silent_assassin == Status::RED
                                 ? settings.rating_bad.color
-                            : stats.silent_assassin == SilentAssassin::YES
+                            : stats.silent_assassin == Status::GREEN
                                 ? settings.rating_good.color
                                 : settings.rating_maybe.color;
-        auto rating_text = stats.silent_assassin == SilentAssassin::NO
+        auto rating_text = stats.silent_assassin == Status::RED
                                ? "No Silent Assassin"
                                : "Silent Assassin";
         text(rating_font, rating_color, rating_text);
@@ -70,23 +69,69 @@ void hitman2_silent_assassin::gui(
                 | ImGuiTableFlags_NoKeepColumnsVisible
                 | ImGuiTableFlags_NoHostExtendX
         );
-        table_row(fonts, settings, "Shots Fired", "%d", stats.shots_fired);
         table_row(
-            fonts, settings, "Close Encounters", "%d", stats.close_encounters
-        );
-        table_row(fonts, settings, "Headshots", "%d", stats.headshots);
-        table_row(fonts, settings, "Alerts", "%d", stats.alerts);
-        table_row(
-            fonts, settings, "Enemies Killed", "%d", stats.enemies_killed
-        );
-        table_row(
-            fonts, settings, "Enemies Wounded", "%d", stats.enemies_wounded
+            fonts,
+            settings,
+            stats.shots_fired.status,
+            "Shots Fired",
+            "%d",
+            stats.shots_fired.value
         );
         table_row(
-            fonts, settings, "Innocents Killed", "%d", stats.innocents_killed
+            fonts,
+            settings,
+            stats.close_encounters.status,
+            "Close Encounters",
+            "%d",
+            stats.close_encounters.value
         );
         table_row(
-            fonts, settings, "Innocents Wounded", "%d", stats.innocents_wounded
+            fonts,
+            settings,
+            stats.headshots.status,
+            "Headshots",
+            "%d",
+            stats.headshots.value
+        );
+        table_row(
+            fonts,
+            settings,
+            stats.alerts.status,
+            "Alerts",
+            "%d",
+            stats.alerts.value
+        );
+        table_row(
+            fonts,
+            settings,
+            stats.enemies_killed.status,
+            "Enemies Killed",
+            "%d",
+            stats.enemies_killed.value
+        );
+        table_row(
+            fonts,
+            settings,
+            stats.enemies_wounded.status,
+            "Enemies Wounded",
+            "%d",
+            stats.enemies_wounded.value
+        );
+        table_row(
+            fonts,
+            settings,
+            stats.innocents_killed.status,
+            "Innocents Killed",
+            "%d",
+            stats.innocents_killed.value
+        );
+        table_row(
+            fonts,
+            settings,
+            stats.innocents_wounded.status,
+            "Innocents Wounded",
+            "%d",
+            stats.innocents_wounded.value
         );
         ImGui::EndTable();
     }

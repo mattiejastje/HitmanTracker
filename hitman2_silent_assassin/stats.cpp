@@ -1,7 +1,9 @@
 #include "stats.hpp"
 
 #include <array>
+#include <cassert>
 #include <cinttypes>
+#include <set>
 #include <unordered_map>
 #include <vector>
 
@@ -54,14 +56,14 @@ using StatsArray = std::array<int32_t, 8>;
 
 static StatsArray stats_as_array(const Stats& stats) {
     return StatsArray{
-        stats.shots_fired,
-        stats.close_encounters,
-        stats.headshots,
-        stats.alerts,
-        stats.enemies_killed,
-        stats.enemies_wounded,
-        stats.innocents_killed,
-        stats.innocents_wounded,
+        stats.shots_fired.value,
+        stats.close_encounters.value,
+        stats.headshots.value,
+        stats.alerts.value,
+        stats.enemies_killed.value,
+        stats.enemies_wounded.value,
+        stats.innocents_killed.value,
+        stats.innocents_wounded.value,
     };
 }
 
@@ -82,19 +84,73 @@ const std::vector<StatsArray> silent_assassin_combinations
        {2, 0, 2, 1, 0, 0, 0, 0}, {2, 0, 1, 1, 0, 1, 0, 0},
        {3, 0, 0, 1, 0, 0, 0, 0}};
 
-static bool is_less_or_equal(StatsArray stats1, StatsArray stats2) {
+using StatsExcess = StatsArray;
+
+// excess values above a silent assassin combination
+// any values > 0 mean no silent assassin
+static StatsExcess get_subtract(
+    const StatsArray& stats, const StatsArray& stats_sa
+) {
+    StatsArray result{};
     for (int i = 0; i < 8; i++) {
-        if (stats1[i] > stats2[i]) return false;
+        result[i] = stats[i] - stats_sa[i];
     };
-    return true;
+    return result;
 }
 
-static SilentAssassin get_silent_assassin(const StatsArray& stats) {
-    for (const auto& sa_comb : silent_assassin_combinations) {
-        if (is_less_or_equal(stats, sa_comb)) return SilentAssassin::YES;
+struct Excess {
+    int32_t maximum;         // the maximum excess
+    std::set<int> positive;  // strictly positive excess stats ("red")
+};
+
+static Excess get_arg_max(const StatsExcess& excess) {
+    auto maximum = excess[0];
+    for (int i = 1; i < 8; i++) {
+        auto value = excess[i];
+        if (maximum < value) maximum = value;
     };
-    return SilentAssassin::NO;
+    Excess arg_max{maximum, {}};
+    for (int i = 0; i < 8; i++) {
+        if (excess[i] > 0) arg_max.positive.insert(i);
+    }
+    return arg_max;
 }
+
+static std::vector<Excess> get_arg_maxs(const StatsArray& stats) {
+    std::vector<Excess> arg_maxs{};
+    for (auto& stats_sa : silent_assassin_combinations) {
+        arg_maxs.push_back(get_arg_max(get_subtract(stats, stats_sa)));
+    }
+    return arg_maxs;
+}
+
+static Excess get_arg_min(const std::vector<Excess>& arg_maxs) {
+    assert(!arg_maxs.empty());
+    Excess arg_min{arg_maxs[0]};
+    for (auto& arg_max : arg_maxs) {
+        if (arg_min.maximum > arg_max.maximum) {
+            arg_min = arg_max;
+        } else if (arg_min.maximum == arg_max.maximum) {
+            for (auto i : arg_max.positive) arg_min.positive.insert(i);
+        }
+    }
+    return arg_min;
+};
+
+static bool is_at_risk(const StatsArray& stats, int index) {
+    StatsArray stats_inc = stats;
+    stats_inc[index] += 1;
+    auto arg_min_max = get_arg_min(get_arg_maxs(stats_inc));
+    return arg_min_max.maximum > 0;
+}
+
+static Status get_status(
+    const StatsArray& stats, int index, const Excess& arg_min_max
+) {
+    return arg_min_max.positive.contains(index) ? Status::RED
+           : is_at_risk(stats, index)           ? Status::YELLOW
+                                                : Status::GREEN;
+};
 
 void hitman2_silent_assassin::update_slow(
     void* handle, int32_t hook_target_ptr, Stats& stats
@@ -114,7 +170,7 @@ void hitman2_silent_assassin::update_slow(
             = read<int32_t>(handle, 0x492894, {0x2E0, 0x4, 0x11C7});
         if (shots_fired) {
             logging::trace("Shots fired {}", shots_fired.value());
-            stats.shots_fired = shots_fired.value();
+            stats.shots_fired.value = shots_fired.value();
         } else {
             logging::warn("Unable to read shots fired");
         }
@@ -135,14 +191,29 @@ void hitman2_silent_assassin::update_slow(
             logging::trace("Innocents killed {}", game_stats.innocents_killed);
             logging::trace("Alerts {}", game_stats.alerts);
             logging::trace("Close encounters {}", game_stats.close_encounters);
-            stats.headshots = game_stats.headshots;
-            stats.enemies_wounded = game_stats.enemies_wounded;
-            stats.enemies_killed = game_stats.enemies_killed;
-            stats.innocents_killed = game_stats.innocents_killed;
-            stats.innocents_wounded = game_stats.innocents_wounded;
-            stats.alerts = game_stats.alerts;
-            stats.close_encounters = game_stats.close_encounters;
-            stats.silent_assassin = get_silent_assassin(stats_as_array(stats));
+            stats.headshots.value = game_stats.headshots;
+            stats.enemies_wounded.value = game_stats.enemies_wounded;
+            stats.enemies_killed.value = game_stats.enemies_killed;
+            stats.innocents_killed.value = game_stats.innocents_killed;
+            stats.innocents_wounded.value = game_stats.innocents_wounded;
+            stats.alerts.value = game_stats.alerts;
+            stats.close_encounters.value = game_stats.close_encounters;
+            auto stats_arr = stats_as_array(stats);
+            auto arg_min_max = get_arg_min(get_arg_maxs(stats_arr));
+            stats.shots_fired.status = get_status(stats_arr, 0, arg_min_max);
+            stats.close_encounters.status
+                = get_status(stats_arr, 1, arg_min_max);
+            stats.headshots.status = get_status(stats_arr, 2, arg_min_max);
+            stats.alerts.status = get_status(stats_arr, 3, arg_min_max);
+            stats.enemies_killed.status = get_status(stats_arr, 4, arg_min_max);
+            stats.enemies_wounded.status
+                = get_status(stats_arr, 5, arg_min_max);
+            stats.innocents_killed.status
+                = get_status(stats_arr, 6, arg_min_max);
+            stats.innocents_wounded.status
+                = get_status(stats_arr, 7, arg_min_max);
+            stats.silent_assassin
+                = arg_min_max.maximum <= 0 ? Status::GREEN : Status::RED;
         } else {
             logging::warn("Unable to read game stats");
         }
