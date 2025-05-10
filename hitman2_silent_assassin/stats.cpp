@@ -140,8 +140,7 @@ static Excess get_arg_min(const std::vector<Excess>& arg_maxs) {
 static bool is_at_risk(const StatsArray& stats, int index) {
     StatsArray stats_inc = stats;
     stats_inc[index] += 1;
-    auto arg_min_max = get_arg_min(get_arg_maxs(stats_inc));
-    return arg_min_max.maximum > 0;
+    return get_arg_min(get_arg_maxs(stats_inc)).positive.contains(index);
 }
 
 static Status get_status(
