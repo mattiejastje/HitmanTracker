@@ -144,11 +144,11 @@ static bool is_at_risk(const StatsArray& stats, int index) {
 }
 
 static Status get_status(
-    const StatsArray& stats, int index, const Excess& arg_min_max
+    const StatsArray& stats, int index, const Excess& arg_min
 ) {
-    return arg_min_max.positive.contains(index) ? Status::RED
-           : is_at_risk(stats, index)           ? Status::YELLOW
-                                                : Status::GREEN;
+    return arg_min.positive.contains(index) ? Status::RED
+           : is_at_risk(stats, index)       ? Status::YELLOW
+                                            : Status::GREEN;
 };
 
 void hitman2_silent_assassin::update_slow(
@@ -198,21 +198,17 @@ void hitman2_silent_assassin::update_slow(
             stats.alerts.value = game_stats.alerts;
             stats.close_encounters.value = game_stats.close_encounters;
             auto stats_arr = stats_as_array(stats);
-            auto arg_min_max = get_arg_min(get_arg_maxs(stats_arr));
-            stats.shots_fired.status = get_status(stats_arr, 0, arg_min_max);
-            stats.close_encounters.status
-                = get_status(stats_arr, 1, arg_min_max);
-            stats.headshots.status = get_status(stats_arr, 2, arg_min_max);
-            stats.alerts.status = get_status(stats_arr, 3, arg_min_max);
-            stats.enemies_killed.status = get_status(stats_arr, 4, arg_min_max);
-            stats.enemies_wounded.status
-                = get_status(stats_arr, 5, arg_min_max);
-            stats.innocents_killed.status
-                = get_status(stats_arr, 6, arg_min_max);
-            stats.innocents_wounded.status
-                = get_status(stats_arr, 7, arg_min_max);
+            auto arg_min = get_arg_min(get_arg_maxs(stats_arr));
+            stats.shots_fired.status = get_status(stats_arr, 0, arg_min);
+            stats.close_encounters.status = get_status(stats_arr, 1, arg_min);
+            stats.headshots.status = get_status(stats_arr, 2, arg_min);
+            stats.alerts.status = get_status(stats_arr, 3, arg_min);
+            stats.enemies_killed.status = get_status(stats_arr, 4, arg_min);
+            stats.enemies_wounded.status = get_status(stats_arr, 5, arg_min);
+            stats.innocents_killed.status = get_status(stats_arr, 6, arg_min);
+            stats.innocents_wounded.status = get_status(stats_arr, 7, arg_min);
             stats.silent_assassin
-                = arg_min_max.maximum <= 0 ? Status::GREEN : Status::RED;
+                = arg_min.maximum <= 0 ? Status::GREEN : Status::RED;
         } else {
             logging::warn("Unable to read game stats");
         }
