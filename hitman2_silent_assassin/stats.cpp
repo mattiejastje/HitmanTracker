@@ -89,7 +89,6 @@ static bool is_less_or_equal(StatsArray comb1, StatsArray comb2) {
     return true;
 }
 
-    };
 static SilentAssassin get_silent_assassin(const StatsArray& stats) {
     for (const auto& sa_comb : silent_assassin_combinations) {
         if (is_less_or_equal(stats, sa_comb)) return SilentAssassin::YES;
