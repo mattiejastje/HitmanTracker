@@ -81,7 +81,7 @@ std::unique_ptr<UI, UIDeleter> CreateUI(
 }
 
 bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
-    logging::debug("Updating UI scaling to {}...", dpiscale);
+    logging::debug("Updating ImGui for dpi scale {}...", dpiscale);
     ImGuiIO& io = ImGui::GetIO();
     ImGui_ImplDX9_InvalidateDeviceObjects();
 
