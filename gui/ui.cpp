@@ -86,9 +86,6 @@ bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
     ImGui_ImplDX9_InvalidateDeviceObjects();
 
     // Setup style
-    ImGui::StyleColorsDark();
-    // Backup colors
-    ImGuiStyle styleold = ImGui::GetStyle();
     auto style = ImGuiStyle();
     style.WindowBorderSize = 0.0f;
     style.ChildBorderSize = 0.0f;
@@ -103,9 +100,9 @@ bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
     style.GrabRounding = 0.0f;
     style.TabRounding = 0.0f;
     style.ScaleAllSizes(dpiscale);
-    // Restore colors
-    CopyMemory(style.Colors, styleold.Colors, sizeof(style.Colors));
+    ImGui::StyleColorsDark(&style);
     style.Colors[ImGuiCol_WindowBg] = im_vec4(settings.bg_color);
+    CopyMemory(&ImGui::GetStyle(), &style, sizeof(ImGuiStyle));
 
     // Load fonts
     io.Fonts->Clear();
