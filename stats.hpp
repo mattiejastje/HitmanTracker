@@ -13,7 +13,7 @@ struct Stats {
     float time;
     int map;
     Status silent_assassin;
-    StatsValue difficulty;
+    int32_t difficulty;
     StatsValue shots_fired;
     StatsValue headshots;
     StatsValue enemies_killed;
