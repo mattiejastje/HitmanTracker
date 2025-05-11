@@ -22,9 +22,7 @@ void hitman_common::gui(
     text(fonts.difficulty, settings.difficulty.color, difficulty.c_str());
     if (stats.map > 0) {
         text(
-            fonts.map,
-            settings.map.color,
-            map_names.at(stats.map - 1).c_str()
+            fonts.map, settings.map.color, map_names.at(stats.map - 1).c_str()
         );
         if (stats.map_stage != MapStage::pre) {
             ImGui::Spacing();
