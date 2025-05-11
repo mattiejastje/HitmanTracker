@@ -168,6 +168,7 @@ void hitman2_silent_assassin::update_slow(
     } else {
         stats.map = 0;
     }
+    stats.map_stage = MapStage::main;  // always render stats
     if (stats.map >= 2) {
         auto shots_fired = read<int32_t>(
             handle, base_ptrs[0] + 0x092894, {0x2E0, 0x4, 0x11C7}

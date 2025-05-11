@@ -9,9 +9,12 @@ struct StatsValue {
     Status status;
 };
 
+enum class MapStage { pre, main, post };
+
 struct Stats {
     float time;
     int map;
+    MapStage map_stage;
     Status silent_assassin;
     int32_t difficulty;
     StatsValue shots_fired;
