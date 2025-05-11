@@ -258,10 +258,11 @@ void hitman_blood_money::update_slow(
             // custom weapons left
             // calculation depends on stage, status depends on difficulty
             if (stats.map_stage == MapStage::main) {
-                // TODO
+                // TODO get through hook
+                stats.cust_weapons_left.value = 0;
             } else {
-                stats.cust_weapons_left
-                    = stats_value(game_stats.custom_weapons_left_on_level);
+                stats.cust_weapons_left.value
+                    = game_stats.custom_weapons_left_on_level;
             }
             stats.cust_weapons_left.status
                 = (stats.difficulty > 2 && stats.cust_weapons_left.value
@@ -269,15 +270,16 @@ void hitman_blood_money::update_slow(
                    : stats.difficulty > 2 ? Status::YELLOW
                                           : Status::GREEN);
 
-            // witnesses (TODO: use hook)
+            // witnesses
+            // calculation depends on stage
             if (stats.map_stage == MapStage::main) {
-                // TODO
+                // TODO get through hook
+                stats.witnesses = stats_value(0);
             } else if (stats.map_stage == MapStage::post) {
                 stats.witnesses = stats_value(game_stats.witnesses);
             }
-            stats.witnesses.status
-                = stats.witnesses.value ? Status::RED : Status::YELLOW;
-            // silent assassin?
+
+            // silent assassin
             bool items_left_on_map
                 = stats.difficulty > 2
                   && (game_stats.custom_weapons_left_on_level != 0
@@ -304,7 +306,7 @@ void hitman_blood_money::update_slow(
             logging::warn("Unable to read game stats");
         }
     }
-    // this always works
+    // difficulty is always available
     stats.difficulty = read<int32_t>(handle, base_ptrs[0] + 0x41F83C, {0x6664})
                            .value_or(stats.difficulty);
 }
