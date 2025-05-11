@@ -53,10 +53,12 @@ struct HookDeleter {
 
 using HookPtr = std::unique_ptr<Hook, HookDeleter>;
 
-HookPtr hook_install(
+HookPtr install_hook(
     std::shared_ptr<void> handle,
     int32_t source_ptr,
     Code source_orig_code,
     std::vector<Assembly> source_new_asm,
     std::vector<Assembly> target_asm
 );
+
+int32_t get_hook_target_ptr(const HookPtr& hook);

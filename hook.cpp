@@ -186,7 +186,7 @@ static bool hook_install_source_code(
 
 // TODO suspend/resume thread whilst writing...
 
-HookPtr hook_install(
+HookPtr install_hook(
     std::shared_ptr<void> handle,
     int32_t source_ptr,
     Code source_orig_code,
@@ -222,4 +222,8 @@ void HookDeleter::operator()(Hook* hook) const {
         hook->target_alloc.reset();
         delete hook;
     }
+}
+
+int32_t get_hook_target_ptr(const HookPtr& hook) {
+    return hook ? (hook->target_alloc ? hook->target_alloc->ptr : 0) : 0;
 }

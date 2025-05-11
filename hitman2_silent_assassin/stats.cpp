@@ -152,7 +152,10 @@ static Status get_status(
 };
 
 void hitman2_silent_assassin::update_slow(
-    void* handle, const BasePtrs& base_ptrs, Stats& stats
+    void* handle,
+    const BasePtrs& base_ptrs,
+    int32_t hook_target_ptr,
+    Stats& stats
 ) {
     auto scene
         = read_string(handle, base_ptrs[0] + 0x2A6C5C, {0x98, 0xBBB}, 64);
@@ -218,7 +221,10 @@ void hitman2_silent_assassin::update_slow(
 }
 
 void hitman2_silent_assassin::update_fast(
-    void* handle, const BasePtrs& base_ptrs, Stats& stats
+    void* handle,
+    const BasePtrs& base_ptrs,
+    int32_t hook_target_ptr,
+    Stats& stats
 ) {
     if (stats.map > 0) {
         stats.time = read<int32_t>(

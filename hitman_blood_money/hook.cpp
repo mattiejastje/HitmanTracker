@@ -3,9 +3,9 @@
 HookPtr hitman_blood_money::hook(
     std::shared_ptr<void> handle, const BasePtrs& base_ptrs
 ) {
-    return hook_install(
+    return install_hook(
         handle,
-        0x0044BAD8,
+        base_ptrs[0] + 0x04BAD8,
         // original source code
         {0x89, 0x56, 0x38, 0xC7, 0x04, 0x81, 0, 0, 0, 0},
         // new source code (jumps to target code)

@@ -26,7 +26,6 @@ static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 static RECT g_ChangeRect = {};
 static UINT g_ChangeDpi = 0;
 static std::optional<Game> game{};
-static HookPtr hook{};
 static Stats stats{0};
 
 // Forward declare message handler from imgui_impl_win32.cpp
@@ -58,7 +57,6 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             return 0;
         case WM_DESTROY:
             game = {};
-            hook = nullptr;
             stats = {0};
             ::PostQuitMessage(0);
             return 0;
@@ -66,7 +64,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             switch (wParam) {
                 case TIMER_FIND_GAME:
                     if (!game
-                        || (game && !game_is_running(game->handle.get()))) {
+                        || (game && !is_game_running(game->handle.get()))) {
                         stats = {0};
                         game = find_game();
                     };
@@ -76,6 +74,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         game->methods.update_slow(
                             game->handle.get(),
                             game->base_ptrs,
+                            get_hook_target_ptr(game->hook),
                             stats
                         );
                     };
@@ -101,7 +100,10 @@ static void Frame(UI* ui, const settings::Gui settings) {
         )) {
         if (game) {
             game->methods.update_fast(
-                game->handle.get(), game->base_ptrs, stats
+                game->handle.get(),
+                game->base_ptrs,
+                get_hook_target_ptr(game->hook),
+                stats
             );
             game->methods.gui(settings, ui->fonts, stats);
         } else {

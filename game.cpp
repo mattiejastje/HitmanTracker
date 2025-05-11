@@ -29,7 +29,10 @@ struct GameInfo {
 };
 
 static void stats_nothing(
-    void* handle, const BasePtrs& base_ptrs, Stats& stats
+    void* handle,
+    const BasePtrs& base_ptrs,
+    int32_t hook_target_ptr,
+    Stats& stats
 ) {}
 
 static HookPtr hook_nothing(
@@ -179,7 +182,7 @@ std::optional<Game> find_game() {
     return game;
 }
 
-bool game_is_running(void* process_handle) {
+bool is_game_running(void* process_handle) {
     auto ret = WaitForSingleObject(process_handle, 0);
     return ret == WAIT_TIMEOUT;
 }
