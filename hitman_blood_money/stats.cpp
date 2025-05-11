@@ -1,4 +1,96 @@
+#include "stats.hpp"
+
 #include <cstdint>
+#include <string>
+#include <unordered_map>
+
+#include "../logging.hpp"
+#include "../mem/read_write.hpp"
+
+// the scenes\*.gms appear when restarting
+std::unordered_map<std::string, int> scenes = {
+    {"hitmanbloodmoney", 0},
+    {"scenes/hitmanbloodmoney.gms", 0},
+    {"saveandcontinue", 0},
+    // Hideout
+    {"hideout/hideout_main", 1},
+    // Death of a Showman
+    {"m00/m00_intro", 2},
+    {"m00/m00_main", 2},
+    {"scenes/m00/m00_main.gms", 2},
+    {"m00/m00_news", 2},
+    {"m00/m00_albino", 2},
+    // A Vintage Year
+    {"m01/m01_premission", 3},
+    {"m01/m01_main", 3},
+    {"scenes/m01/m01_main.gms", 3},
+    {"m01/m01_postmission", 3},
+    {"m01/m01_news", 3},
+    // Curtains Down
+    {"m03/m03_premission", 4},
+    {"m03/m03_main", 4},
+    {"scenes/m03/m03_main.gms", 4},
+    {"m03/m03_postmission", 4},
+    {"m03/m03_news", 4},
+    // Flatline
+    {"m04/m04_premission", 5},
+    {"m04/m04_main", 5},
+    {"scenes/m04/m04_main.gms", 5},
+    {"m04/m04_postmission", 5},
+    {"m04/m04_news", 5},
+    // A New Life
+    {"m05/m05_premission", 6},
+    {"m05/m05_main", 6},
+    {"scenes/m05/m05_main.gms", 6},
+    {"m05/m05_postmission", 6},
+    {"m05/m05_news", 6},
+    // Murder of the Crows
+    {"m06/m06_premission", 7},
+    {"m06/m06_main", 7},
+    {"scenes/m06/m06_main.gms", 7},
+    {"m06/m06_postmission", 7},
+    {"m06/m06_news", 7},
+    // You Better Watch Out
+    {"m02/m02_premission", 8},
+    {"m02/m02_main", 8},
+    {"scenes/m02/m02_main.gms", 8},
+    {"m02/m02_postmission", 8},
+    {"m02/m02_news", 8},
+    // Death on the Mississippi
+    {"m08/m08_premission", 9},
+    {"m08/m08_main", 9},
+    {"scenes/m08/m08_main.gms", 9},
+    {"m08/m08_postmission", 9},
+    {"m08/m08_news", 9},
+    // Till Death Do Us Part
+    {"m09/m09_premission", 10},
+    {"m09/m09_main", 10},
+    {"scenes/m09/m09_main.gms", 10},
+    {"m09/m09_postmission", 10},
+    {"m09/m09_news", 10},
+    // A House of Cards
+    {"m10/m10_premission", 11},
+    {"m10/m10_main", 11},
+    {"scenes/m10/m10_main.gms", 11},
+    {"m10/m10_postmission", 11},
+    {"m10/m10_news", 11},
+    // A Dance with The Devil
+    {"m11/m11_premission", 12},
+    {"m11/m11_main", 12},
+    {"scenes/m11/m11_main.gms", 12},
+    {"m11/m11_postmission", 12},
+    {"m11/m11_news", 12},
+    // Amendment XXV
+    {"m12/m12_premission", 13},
+    {"m12/m12_main", 13},
+    {"scenes/m12/m12_main.gms", 13},
+    {"m12/m12_postmission", 13},
+    {"m12/m12_news", 13},
+    // Requiem
+    {"m13/m13_intro", 14},
+    {"m13/m13_main", 14},
+    {"scenes/m13/m13_main.gms", 14},
+};
 
 // https://github.com/OrfeasZ/Statman/blob/master/StatModules/HM3/Src/HM3/Structs/HM3Stats.h
 struct GameStats {
@@ -70,3 +162,37 @@ struct GameStats {
     int32_t custom_mg_silenced;            // 0x0104
     int32_t custom_smg_silenced;           // 0x0108
 };
+
+void hitman_blood_money::update_slow(
+    void* handle,
+    const BasePtrs& base_ptrs,
+    int32_t hook_target_ptr,
+    Stats& stats
+) {
+    auto scene = read_string(handle, hook_target_ptr, 64);
+    if (!scene) return;
+    logging::trace("Scene {}", scene.value());
+    auto iter = scenes.find(scene.value());
+    if (iter != scenes.end()) {
+        stats.map = iter->second;
+        logging::trace("map {}", stats.map);
+    } else {
+        if (!scene.value().empty()) {
+            logging::error("No map registered for scene {}", scene.value());
+        }
+        stats.map = 0;
+    }
+}
+
+void hitman_blood_money::update_fast(
+    void* handle,
+    const BasePtrs& base_ptrs,
+    int32_t hook_target_ptr,
+    Stats& stats
+) {
+    if (stats.map > 0) {
+        stats.time = read<int32_t>(handle, base_ptrs[0] + 0x41F820, {0x48})
+                         .value_or(stats.time)
+                     * 0.0009765625f;  // 1 / 1024.0f
+    }
+}
