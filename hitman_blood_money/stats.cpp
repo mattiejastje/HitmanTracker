@@ -251,9 +251,9 @@ void hitman_blood_money::update_slow(
                 stats.suit_left.value = game_stats.suit_left_on_level;
             }
             stats.suit_left.status
-                = (stats.difficulty > 2 && stats.suit_left.value) ? Status::RED
-                  : stats.difficulty > 2 ? Status::YELLOW
-                                         : Status::GREEN;
+                = stats.difficulty > 2
+                      ? (stats.suit_left.value ? Status::RED : Status::YELLOW)
+                      : Status::GREEN;
 
             // custom weapons left
             // calculation depends on stage, status depends on difficulty
@@ -265,10 +265,10 @@ void hitman_blood_money::update_slow(
                     = game_stats.custom_weapons_left_on_level;
             }
             stats.cust_weapons_left.status
-                = (stats.difficulty > 2 && stats.cust_weapons_left.value
-                       ? Status::RED
-                   : stats.difficulty > 2 ? Status::YELLOW
-                                          : Status::GREEN);
+                = stats.difficulty > 2
+                      ? (stats.cust_weapons_left.value ? Status::RED
+                                                       : Status::YELLOW)
+                      : Status::GREEN;
 
             // witnesses
             // calculation depends on stage
