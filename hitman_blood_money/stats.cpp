@@ -175,8 +175,12 @@ struct SuitPtrs {
     int32_t starting_suit;
 };
 
-static StatsValue stats_value(int32_t value) {
-    return StatsValue{value, value ? Status::RED : Status::YELLOW};
+static Status status(int32_t value, bool required = true) {
+    return required ? (value ? Status::RED : Status::YELLOW) : Status::GREEN;
+}
+
+static StatsValue stats_value(int32_t value, bool required = true) {
+    return StatsValue{value, status(value, required)};
 }
 
 void hitman_blood_money::update_slow(
@@ -220,18 +224,13 @@ void hitman_blood_money::update_slow(
             stats.frisk_failed = stats_value(game_stats.frisk_failed);
             stats.cover_blown = stats_value(game_stats.cover_blown);
             stats.bodies_fnd = stats_value(game_stats.bodies_found);
+            stats.target_bodies_fnd = stats_value(
+                game_stats.target_bodies_found, stats.difficulty > 1
+            );
             stats.uncon_bodies_fnd
                 = stats_value(game_stats.unconscious_bodies_found);
             stats.on_camera
                 = stats_value(game_stats.camera_caught ? 1 : 0);  // 2 -> 1
-
-            // target bodies found: status depends on difficulty
-            stats.target_bodies_fnd.value = game_stats.target_bodies_found;
-            stats.target_bodies_fnd.status
-                = (stats.difficulty > 1 && game_stats.target_bodies_found != 0)
-                      ? Status::RED
-                  : stats.difficulty > 1 ? Status::YELLOW
-                                         : Status::GREEN;
 
             // suit left
             // calculation depends on stage, status depends on difficulty
@@ -251,9 +250,7 @@ void hitman_blood_money::update_slow(
                 stats.suit_left.value = game_stats.suit_left_on_level;
             }
             stats.suit_left.status
-                = stats.difficulty > 2
-                      ? (stats.suit_left.value ? Status::RED : Status::YELLOW)
-                      : Status::GREEN;
+                = status(stats.suit_left.value, stats.difficulty > 2);
 
             // custom weapons left
             // calculation depends on stage, status depends on difficulty
@@ -265,10 +262,7 @@ void hitman_blood_money::update_slow(
                     = game_stats.custom_weapons_left_on_level;
             }
             stats.cust_weapons_left.status
-                = stats.difficulty > 2
-                      ? (stats.cust_weapons_left.value ? Status::RED
-                                                       : Status::YELLOW)
-                      : Status::GREEN;
+                = status(stats.cust_weapons_left.value, stats.difficulty > 2);
 
             // witnesses
             // calculation depends on stage
@@ -282,24 +276,24 @@ void hitman_blood_money::update_slow(
             // silent assassin
             bool items_left_on_map
                 = stats.difficulty > 2
-                  && (game_stats.custom_weapons_left_on_level != 0
+                  && (stats.cust_weapons_left.value != 0
                       || stats.suit_left.value != 0);
             stats.silent_assassin
-                = (game_stats.innocents_killed != 0
-                   || game_stats.innocents_wounded != 0
-                   || game_stats.enemies_killed != 0
-                   || game_stats.enemies_wounded != 0
-                   || game_stats.police_killed != 0
-                   || game_stats.police_wounded != 0
-                   || game_stats.frisk_failed != 0
-                   || game_stats.cover_blown != 0
-                   || game_stats.bodies_found != 0
+                = (stats.innocents_killed.value != 0
+                   || stats.innocents_wounded.value != 0
+                   || stats.enemies_killed.value != 0
+                   || stats.enemies_wounded.value != 0
+                   || stats.police_killed.value != 0
+                   || stats.police_wounded.value != 0
+                   || stats.frisk_failed.value != 0
+                   || stats.cover_blown.value != 0
+                   || stats.bodies_fnd.value != 0
                    || (stats.difficulty > 1
-                       && game_stats.target_bodies_found != 0)
-                   || game_stats.unconscious_bodies_found != 0)
+                       && stats.target_bodies_fnd.value != 0)
+                   || stats.uncon_bodies_fnd.value != 0)
                       ? Status::RED
-                  : items_left_on_map || (game_stats.witnesses != 0)
-                          || (game_stats.camera_caught != 0)
+                  : items_left_on_map || (stats.witnesses.value != 0)
+                          || (stats.on_camera.value != 0)
                       ? Status::YELLOW
                       : Status::GREEN;
         } else {
