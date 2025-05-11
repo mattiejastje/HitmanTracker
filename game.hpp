@@ -7,7 +7,7 @@
 #include "gui/ui.hpp"
 #include "hook.hpp"
 #include "mem/handle.hpp"
-#include "module_base.hpp"
+#include "base_ptrs.hpp"
 #include "settings.hpp"
 #include "stats.hpp"
 
@@ -15,7 +15,7 @@ using GameHook = std::function<HookPtr(std::shared_ptr<void>)>;
 using GameGui
     = std::function<void(const settings::Gui &, const Fonts &, const Stats &)>;
 using GameStats
-    = std::function<void(void *, const ModuleBase &, int32_t, Stats &)>;
+    = std::function<void(void *, const BasePtrs &, int32_t, Stats &)>;
 
 struct GameMethods {
     GameGui gui;            // called every frame for displaying stats
@@ -26,7 +26,7 @@ struct GameMethods {
 
 struct Game {
     std::shared_ptr<void> handle;
-    ModuleBase module_base;
+    BasePtrs base_ptrs;
     GameMethods methods;
 };
 

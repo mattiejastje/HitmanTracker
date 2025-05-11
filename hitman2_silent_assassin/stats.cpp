@@ -151,23 +151,14 @@ static Status get_status(
                                             : Status::GREEN;
 };
 
-static std::optional<int32_t> get_base(const ModuleBase& module_base) {
-    auto base = module_base.find("hitman2.exe");
-    if (base == module_base.cend()) return {};
-    return base->second;
-}
-
 void hitman2_silent_assassin::update_slow(
     void* handle,
-    const ModuleBase& module_base,
+    const BasePtrs& base_ptrs,
     int32_t hook_target_ptr,
     Stats& stats
 ) {
-    auto base = get_base(module_base);
-    if (!base) return;
-    logging::trace("Base {:#x}", base.value());
     auto scene
-        = read_string(handle, base.value() + 0x2A6C5C, {0x98, 0xBBB}, 64);
+        = read_string(handle, base_ptrs[0] + 0x2A6C5C, {0x98, 0xBBB}, 64);
     if (!scene) return;
     logging::trace("Scene {}", scene.value());
     auto iter = scenes.find(scene.value());
@@ -179,7 +170,7 @@ void hitman2_silent_assassin::update_slow(
     }
     if (stats.map >= 2) {
         auto shots_fired = read<int32_t>(
-            handle, base.value() + 0x092894, {0x2E0, 0x4, 0x11C7}
+            handle, base_ptrs[0] + 0x092894, {0x2E0, 0x4, 0x11C7}
         );
         if (shots_fired) {
             logging::trace("Shots fired {}", shots_fired.value());
@@ -190,7 +181,7 @@ void hitman2_silent_assassin::update_slow(
         GameStats game_stats{0};
         if (read_bytes(
                 handle,
-                base.value() + 0x2A6C50,
+                base_ptrs[0] + 0x2A6C50,
                 {0x28, second_offsets.at(stats.map - 2), 0x208},
                 &game_stats,
                 sizeof(game_stats)
@@ -231,15 +222,14 @@ void hitman2_silent_assassin::update_slow(
 
 void hitman2_silent_assassin::update_fast(
     void* handle,
-    const ModuleBase& module_base,
+    const BasePtrs& base_ptrs,
     int32_t hook_target_ptr,
     Stats& stats
 ) {
-    auto base = get_base(module_base);
-    if (base && stats.map > 0) {
+    if (stats.map > 0) {
         stats.time = read<int32_t>(
                          handle,
-                         base.value() + 0x2A6C58,
+                         base_ptrs[0] + 0x2A6C58,
                          {0x118, 0xB38, 0x8, 0x1084, 0x24}
                      )
                          .value_or(stats.time)

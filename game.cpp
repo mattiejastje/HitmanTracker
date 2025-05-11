@@ -4,9 +4,14 @@
 #include <tlhelp32.h>
 
 #include <algorithm>
+#include <array>
+#include <cstdint>
 #include <memory>
 #include <optional>
+#include <string>
+#include <unordered_map>
 
+#include "base_ptrs.hpp"
 #include "hitman2_silent_assassin/gui.hpp"
 #include "hitman2_silent_assassin/stats.hpp"
 #include "hitman_blood_money/gui.hpp"
@@ -15,47 +20,71 @@
 #include "logging.hpp"
 #include "mem/read_write.hpp"
 
+struct GameInfo {
+    GameMethods methods;
+    std::array<std::string, 5> module_names;
+};
+
 static void stats_nothing(
     void* handle,
-    const ModuleBase& module_base,
+    const BasePtrs& base_ptrs,
     int32_t hook_target_ptr,
     Stats& stats
 ) {}
 
 static HookPtr hook_nothing(std::shared_ptr<void> handle) { return HookPtr{}; }
 
-static std::optional<GameMethods> get_game_methods(const char* exe_file) {
+static std::optional<GameInfo> get_game_info(const char* exe_file) {
     if (stricmp("hitman.exe", exe_file) == 0) {
-        return GameMethods{
-            hitman_codename_47::gui,
-            hook_nothing,
-            stats_nothing,
-            stats_nothing,
+        return GameInfo{
+            GameMethods{
+                hitman_codename_47::gui,
+                hook_nothing,
+                stats_nothing,
+                stats_nothing,
+            },
+            {{"hitman.exe"}}
         };
     } else if (stricmp("hitman2.exe", exe_file) == 0) {
-        return GameMethods{
-            hitman2_silent_assassin::gui,
-            hook_nothing,
-            hitman2_silent_assassin::update_slow,
-            hitman2_silent_assassin::update_fast
+        return GameInfo{
+            GameMethods{
+                hitman2_silent_assassin::gui,
+                hook_nothing,
+                hitman2_silent_assassin::update_slow,
+                hitman2_silent_assassin::update_fast
+            },
+            {{"hitman2.exe"}}
         };
     } else if (stricmp("hitmancontracts.exe", exe_file) == 0) {
-        return GameMethods{
-            hitman_contracts::gui, hook_nothing, stats_nothing, stats_nothing
+        return GameInfo{
+            GameMethods{
+                hitman_contracts::gui,
+                hook_nothing,
+                stats_nothing,
+                stats_nothing
+            },
+            {{"hitmancontracts.exe"}}
         };
     } else if (stricmp("hitmanbloodmoney.exe", exe_file) == 0) {
-        return GameMethods{
-            hitman_blood_money::gui, hook_nothing, stats_nothing, stats_nothing
+        return GameInfo{
+            GameMethods{
+                hitman_blood_money::gui,
+                hook_nothing,
+                stats_nothing,
+                stats_nothing
+            },
+            {{"hitmanbloodmoney.exe"}}
         };
     }
     return {};
 }
 
-static ModuleBase get_module_base(
+static std::unordered_map<std::string, int32_t> get_all_base_ptrs(
     HANDLE process_handle, DWORD process_id
 ) {
     logging::debug("Finding modules of process id {:#x}", process_id);
-    ModuleBase module_base{};
+    BasePtrs base_ptrs{};
+    std::unordered_map<std::string, int32_t> all_base_ptrs{};
     WaitForSingleObject(process_handle, 1000);  // wait until dlls are loaded
     auto snapshot_handle = open_snapshot_handle(TH32CS_SNAPMODULE, process_id);
     if (snapshot_handle) {
@@ -73,28 +102,57 @@ static ModuleBase get_module_base(
                 auto base_ptr
                     = reinterpret_cast<int32_t>(module_entry.modBaseAddr);
                 logging::trace("Found module {} at {:#x}", name, base_ptr);
-                module_base[name] = base_ptr;
+                all_base_ptrs[name] = base_ptr;
             } while (Module32Next(snapshot_handle.get(), &module_entry));
         }
     }
-    return module_base;
+    return all_base_ptrs;
+}
+
+static std::optional<BasePtrs> get_base_ptrs(
+    const std::unordered_map<std::string, int32_t>& all_base_ptrs,
+    const std::array<std::string, 5>& module_names
+) {
+    BasePtrs base_ptrs{};
+    for (int i = 0; i < 5; i++) {
+        if (!module_names[i].empty()) {
+            auto base_ptr = all_base_ptrs.find(module_names[i]);
+            if (base_ptr == all_base_ptrs.end()) {
+                logging::error("Cannot find module {}", module_names[i]);
+                return {};
+            } else {
+                logging::debug(
+                    "Found required module {} at {:#x}",
+                    module_names[i],
+                    base_ptr->second
+                );
+            }
+            base_ptrs[i] = base_ptr->second;
+        }
+    }
+    return base_ptrs;
 }
 
 static std::optional<Game> get_game_for_process(
     const char* exe_file, DWORD process_id
 ) {
     logging::trace("Inspecting process {} with id {:#x}", exe_file, process_id);
-    auto methods = get_game_methods(exe_file);
-    if (methods) {
+    auto info = get_game_info(exe_file);
+    if (info) {
         logging::info("Found game {}", exe_file);
         auto process_handle = open_process_handle(process_id);
         if (process_handle) {
-            auto base = get_module_base(process_handle.get(), process_id);
-            return Game{
-                std::move(process_handle),
-                base,
-                methods.value(),
-            };
+            auto base_ptrs = get_base_ptrs(
+                get_all_base_ptrs(process_handle.get(), process_id),
+                info.value().module_names
+            );
+            if (base_ptrs) {
+                return Game{
+                    std::move(process_handle),
+                    base_ptrs.value(),
+                    info.value().methods,
+                };
+            }
         }
     }
     return {};
