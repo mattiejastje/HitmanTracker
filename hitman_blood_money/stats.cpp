@@ -189,6 +189,8 @@ void hitman_blood_money::update_slow(
     int32_t hook_target_ptr,
     Stats& stats
 ) {
+    stats.difficulty = read<int32_t>(handle, base_ptrs[0] + 0x41F83C, {0x6664})
+                           .value_or(stats.difficulty);
     auto scene = read_string(handle, hook_target_ptr, 64);
     if (!scene) return;
     logging::trace("Scene {}", scene.value());
@@ -197,7 +199,7 @@ void hitman_blood_money::update_slow(
         stats.map = iter->second.map;
         stats.map_stage = iter->second.map_stage;
         logging::trace(
-            "map {}, stage {}",
+            "Map {}, stage {}",
             stats.map,
             stats.map_stage == MapStage::pre    ? "pre"
             : stats.map_stage == MapStage::main ? "main"
@@ -208,101 +210,83 @@ void hitman_blood_money::update_slow(
             logging::error("No map registered for scene {}", scene.value());
         }
     }
-    if (stats.map == 0 || stats.map_stage == MapStage::pre) {
-        stats = {0};
-    } else {
-        auto optional_game_stats
-            = read<GameStats>(handle, base_ptrs[0] + 0x5B2538);
-        if (optional_game_stats) {
-            auto& game_stats = optional_game_stats.value();
-            stats.innocents_killed = stats_value(game_stats.innocents_killed);
-            stats.innocents_wounded = stats_value(game_stats.innocents_wounded);
-            stats.enemies_killed = stats_value(game_stats.enemies_killed);
-            stats.enemies_wounded = stats_value(game_stats.enemies_wounded);
-            stats.police_killed = stats_value(game_stats.police_killed);
-            stats.police_wounded = stats_value(game_stats.police_wounded);
-            stats.frisk_failed = stats_value(game_stats.frisk_failed);
-            stats.cover_blown = stats_value(game_stats.cover_blown);
-            stats.bodies_fnd = stats_value(game_stats.bodies_found);
-            stats.target_bodies_fnd = stats_value(
-                game_stats.target_bodies_found, stats.difficulty > 1
-            );
-            stats.uncon_bodies_fnd
-                = stats_value(game_stats.unconscious_bodies_found);
-            stats.on_camera
-                = stats_value(game_stats.camera_caught ? 1 : 0);  // 2 -> 1
-
-            // suit left
-            // calculation depends on stage, status depends on difficulty
-            if (stats.map_stage == MapStage::main) {
-                auto suit_ptrs = read<SuitPtrs>(
-                    handle, base_ptrs[0] + 0x41F83C, {0x0A40, 0x0FD0}
-                );
-                if (suit_ptrs) {
-                    stats.suit_left.value
-                        = (suit_ptrs.value().current_suit
-                           != suit_ptrs.value().starting_suit);
-                    logging::trace("Suit left {}", stats.suit_left.value);
-                } else {
-                    logging::warn("Unable to read suit pointers");
-                }
-            } else {
-                stats.suit_left.value = game_stats.suit_left_on_level;
+    if (stats.map > 0) {
+        GameStats game_stats = {0};
+        if (stats.map_stage != MapStage::pre) {
+            if (!read_bytes(
+                    handle,
+                    base_ptrs[0] + 0x5B2538,
+                    &game_stats,
+                    sizeof(game_stats)
+                )) {
+                logging::error("Unable to read game stats");
             }
-            stats.suit_left.status
-                = status(stats.suit_left.value, stats.difficulty > 2);
-
-            // custom weapons left
-            // calculation depends on stage, status depends on difficulty
-            if (stats.map_stage == MapStage::main) {
-                // TODO get through hook
-                stats.cust_weapons_left.value = 0;
-            } else {
-                stats.cust_weapons_left.value
-                    = game_stats.custom_weapons_left_on_level;
-            }
-            stats.cust_weapons_left.status
-                = status(stats.cust_weapons_left.value, stats.difficulty > 2);
-
-            // witnesses
-            // calculation depends on stage
-            if (stats.map_stage == MapStage::main) {
-                // TODO get through hook
-                stats.witnesses = stats_value(0);
-            } else if (stats.map_stage == MapStage::post) {
-                stats.witnesses = stats_value(game_stats.witnesses);
-            }
-
-            // silent assassin
-            bool items_left_on_map
-                = stats.difficulty > 2
-                  && (stats.cust_weapons_left.value != 0
-                      || stats.suit_left.value != 0);
-            stats.silent_assassin
-                = (stats.innocents_killed.value != 0
-                   || stats.innocents_wounded.value != 0
-                   || stats.enemies_killed.value != 0
-                   || stats.enemies_wounded.value != 0
-                   || stats.police_killed.value != 0
-                   || stats.police_wounded.value != 0
-                   || stats.frisk_failed.value != 0
-                   || stats.cover_blown.value != 0
-                   || stats.bodies_fnd.value != 0
-                   || (stats.difficulty > 1
-                       && stats.target_bodies_fnd.value != 0)
-                   || stats.uncon_bodies_fnd.value != 0)
-                      ? Status::RED
-                  : items_left_on_map || (stats.witnesses.value != 0)
-                          || (stats.on_camera.value != 0)
-                      ? Status::YELLOW
-                      : Status::GREEN;
-        } else {
-            logging::warn("Unable to read game stats");
         }
+        // suit left not up-to-date in main stage so get via suit ptrs
+        if (stats.map_stage == MapStage::main) {
+            auto suit_ptrs = read<SuitPtrs>(
+                handle, base_ptrs[0] + 0x41F83C, {0x0A40, 0x0FD0}
+            );
+            if (suit_ptrs) {
+                game_stats.suit_left_on_level
+                    = (suit_ptrs.value().current_suit
+                        != suit_ptrs.value().starting_suit);
+                logging::trace("Suit left {}", stats.suit_left.value);
+            } else {
+                game_stats.suit_left_on_level = 0;
+                logging::warn("Unable to read suit pointers");
+            }
+            // TODO get next two through hook
+            game_stats.custom_weapons_left_on_level = 0;
+            game_stats.witnesses = 0;
+        }
+        stats.innocents_killed = stats_value(game_stats.innocents_killed);
+        stats.innocents_wounded = stats_value(game_stats.innocents_wounded);
+        stats.enemies_killed = stats_value(game_stats.enemies_killed);
+        stats.enemies_wounded = stats_value(game_stats.enemies_wounded);
+        stats.police_killed = stats_value(game_stats.police_killed);
+        stats.police_wounded = stats_value(game_stats.police_wounded);
+        stats.frisk_failed = stats_value(game_stats.frisk_failed);
+        stats.cover_blown = stats_value(game_stats.cover_blown);
+        stats.bodies_fnd = stats_value(game_stats.bodies_found);
+        stats.target_bodies_fnd = stats_value(
+            game_stats.target_bodies_found, stats.difficulty > 1
+        );
+        stats.uncon_bodies_fnd
+            = stats_value(game_stats.unconscious_bodies_found);
+        stats.on_camera
+            = stats_value(game_stats.camera_caught ? 1 : 0);  // 2 -> 1
+        stats.cust_weapons_left.status = status(
+            game_stats.custom_weapons_left_on_level, stats.difficulty > 2
+        );
+        stats.suit_left = stats_value(
+            game_stats.suit_left_on_level, stats.difficulty > 2
+        );
+        stats.witnesses = stats_value(game_stats.witnesses);
+
+        // silent assassin
+        bool items_left_on_map = stats.difficulty > 2
+                                    && (stats.cust_weapons_left.value != 0
+                                        || stats.suit_left.value != 0);
+        stats.silent_assassin = (stats.innocents_killed.value != 0
+                                    || stats.innocents_wounded.value != 0
+                                    || stats.enemies_killed.value != 0
+                                    || stats.enemies_wounded.value != 0
+                                    || stats.police_killed.value != 0
+                                    || stats.police_wounded.value != 0
+                                    || stats.frisk_failed.value != 0
+                                    || stats.cover_blown.value != 0
+                                    || stats.bodies_fnd.value != 0
+                                    || (stats.difficulty > 1
+                                        && stats.target_bodies_fnd.value != 0)
+                                    || stats.uncon_bodies_fnd.value != 0)
+                                    ? Status::RED
+                                : items_left_on_map
+                                        || (stats.witnesses.value != 0)
+                                        || (stats.on_camera.value != 0)
+                                    ? Status::YELLOW
+                                    : Status::GREEN;
     }
-    // difficulty is always available
-    stats.difficulty = read<int32_t>(handle, base_ptrs[0] + 0x41F83C, {0x6664})
-                           .value_or(stats.difficulty);
 }
 
 void hitman_blood_money::update_fast(
