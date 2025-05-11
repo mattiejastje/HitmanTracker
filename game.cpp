@@ -15,6 +15,7 @@
 #include "hitman2_silent_assassin/gui.hpp"
 #include "hitman2_silent_assassin/stats.hpp"
 #include "hitman_blood_money/gui.hpp"
+#include "hitman_blood_money/hook.hpp"
 #include "hitman_codename_47/gui.hpp"
 #include "hitman_contracts/gui.hpp"
 #include "logging.hpp"
@@ -74,8 +75,7 @@ static std::optional<GameInfo> get_game_info(const char* exe_file) {
         return GameInfo{
             GameMethods{hitman_blood_money::gui, stats_nothing, stats_nothing},
             {{"hitmanbloodmoney.exe"}},
-            hook_nothing,
-
+            hitman_blood_money::hook,
         };
     }
     return {};
