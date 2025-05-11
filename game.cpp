@@ -181,8 +181,3 @@ std::optional<Game> find_game() {
     }
     return game;
 }
-
-bool is_game_running(void* process_handle) {
-    auto ret = WaitForSingleObject(process_handle, 0);
-    return ret == WAIT_TIMEOUT;
-}

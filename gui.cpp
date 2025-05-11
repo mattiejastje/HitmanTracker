@@ -64,7 +64,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             switch (wParam) {
                 case TIMER_FIND_GAME:
                     if (!game
-                        || (game && !is_game_running(game->handle.get()))) {
+                        || (game && !is_process_running(game->handle.get()))) {
                         stats = {0};
                         game = find_game();
                     };

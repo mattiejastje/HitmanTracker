@@ -31,5 +31,3 @@ struct Game {
 };
 
 std::optional<Game> find_game();
-
-bool is_game_running(void *process_handle);

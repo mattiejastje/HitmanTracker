@@ -11,6 +11,12 @@ void HandleDeleter::operator()(void* handle) const {
     }
 };
 
+
+bool is_process_running(void* process_handle) {
+    auto ret = WaitForSingleObject(process_handle, 0);
+    return ret == WAIT_TIMEOUT;
+}
+
 HandlePtr open_process_handle(DWORD process_id) {
     auto process_handle = OpenProcess(PROCESS_ALL_ACCESS, 0, process_id);
     if (process_handle) {
