@@ -20,11 +20,11 @@
 #include "logging.hpp"
 #include "mem/read_write.hpp"
 
-using GameHook = std::function<HookPtr(std::shared_ptr<void>)>;
+using GameHook = std::function<HookPtr(std::shared_ptr<void>, const BasePtrs&)>;
 
 struct GameInfo {
     GameMethods methods;
-    std::array<std::string, 4> module_names;
+    std::array<std::string, 5> module_names;
     GameHook hook;
 };
 
@@ -32,7 +32,11 @@ static void stats_nothing(
     void* handle, const BasePtrs& base_ptrs, Stats& stats
 ) {}
 
-static HookPtr hook_nothing(std::shared_ptr<void> handle) { return HookPtr{}; }
+static HookPtr hook_nothing(
+    std::shared_ptr<void> handle, const BasePtrs& base_ptrs
+) {
+    return HookPtr{};
+}
 
 static std::optional<GameInfo> get_game_info(const char* exe_file) {
     if (stricmp("hitman.exe", exe_file) == 0) {
@@ -106,10 +110,10 @@ static std::unordered_map<std::string, int32_t> get_all_base_ptrs(
 
 static std::optional<BasePtrs> get_base_ptrs(
     const std::unordered_map<std::string, int32_t>& all_base_ptrs,
-    const std::array<std::string, 4>& module_names
+    const std::array<std::string, 5>& module_names
 ) {
     BasePtrs base_ptrs{};
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 5; i++) {
         if (!module_names[i].empty()) {
             auto base_ptr = all_base_ptrs.find(module_names[i]);
             if (base_ptr == all_base_ptrs.end()) {
@@ -122,7 +126,7 @@ static std::optional<BasePtrs> get_base_ptrs(
                     base_ptr->second
                 );
             }
-            base_ptrs[i + 1] = base_ptr->second;
+            base_ptrs[i] = base_ptr->second;
         }
     }
     return base_ptrs;
@@ -143,10 +147,7 @@ static std::optional<Game> get_game_for_process(
             );
             if (base_ptrs) {
                 std::shared_ptr<void> handle = std::move(process_handle);
-                auto hook_ptr = info.value().hook(handle);
-                if (hook_ptr && hook_ptr->target_alloc) {
-                    base_ptrs.value()[0] = hook_ptr->target_alloc->ptr;
-                }
+                auto hook_ptr = info.value().hook(handle, base_ptrs.value());
                 return Game{
                     handle,
                     base_ptrs.value(),
