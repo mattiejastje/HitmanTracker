@@ -24,6 +24,7 @@ struct Gui {
     float font_size{20.0f};
     Color bg_color{0.0f, 0.0f, 0.0f};
     TextStyle title{"fonts/DejaVuSansCondensed.ttf"};
+    TextStyle difficulty{"fonts/DejaVuSansCondensed.ttf", 0.9f};
     TextStyle map{"fonts/DejaVuSansCondensed-Oblique.ttf"};
     TextStyle time{"fonts/DejaVuSansMono-Bold.ttf", 1.1f};
     TextStyle rating_bad{

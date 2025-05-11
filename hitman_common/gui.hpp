@@ -14,6 +14,7 @@ void gui(
     const Fonts& fonts,
     const Stats& stats,
     const std::string& game_name,
+    const std::string& difficulty,
     const std::vector<std::string>& map_names,
     const std::vector<TableRow>& table_rows
 );

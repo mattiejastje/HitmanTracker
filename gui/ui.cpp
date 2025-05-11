@@ -113,6 +113,11 @@ bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
             font_registry,
             get_font_key(settings.font_size * dpiscale, settings.title)
         ),
+        .difficulty = load_font(
+            io,
+            font_registry,
+            get_font_key(settings.font_size * dpiscale, settings.difficulty)
+        ),
         .map = load_font(
             io,
             font_registry,

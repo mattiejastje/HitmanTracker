@@ -27,9 +27,12 @@ void hitman_blood_money::gui(
         fonts,
         stats,
         "Hitman: Blood Money",
+        stats.difficulty == 0   ? "Rookie"
+        : stats.difficulty == 1 ? "Normal"
+        : stats.difficulty == 2 ? "Expert"
+                                : "Pro",
         map_names,
         {
-            {"Difficulty", {stats.difficulty, Status::GREEN}},
             {"Innocents Killed", stats.innocents_killed},
             {"Innocents Wounded", stats.innocents_wounded},
             {"Enemies Killed", stats.enemies_killed},

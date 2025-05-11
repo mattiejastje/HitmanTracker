@@ -11,6 +11,7 @@
 // imgui font for each text style in settings::Gui
 struct Fonts {
     ImFont* title;
+    ImFont* difficulty;
     ImFont* map;
     ImFont* time;
     ImFont* rating_bad;

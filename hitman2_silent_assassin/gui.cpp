@@ -42,6 +42,7 @@ void hitman2_silent_assassin::gui(
         fonts,
         stats,
         "Hitman 2: Silent Assassin",
+        "",  // TODO get difficulty
         map_names,
         {
             {"Close Encounters", stats.close_encounters},
