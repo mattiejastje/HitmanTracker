@@ -1,4 +1,4 @@
-#include <cinttypes>
+#include <cstdint>
 
 // https://github.com/OrfeasZ/Statman/blob/master/StatModules/HM3/Src/HM3/Structs/HM3Stats.h
 struct GameStats {

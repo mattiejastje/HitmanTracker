@@ -2,7 +2,7 @@
 
 #include <array>
 #include <cassert>
-#include <cinttypes>
+#include <cstdint>
 #include <set>
 #include <unordered_map>
 #include <vector>

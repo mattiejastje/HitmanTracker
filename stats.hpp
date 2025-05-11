@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cinttypes>
+#include <cstdint>
 
 enum class Status { GREEN, YELLOW, RED };
 
