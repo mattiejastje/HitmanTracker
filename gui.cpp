@@ -67,24 +67,15 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 case TIMER_FIND_GAME:
                     if (!game
                         || (game && !game_is_running(game->handle.get()))) {
-                        hook = nullptr;
                         stats = {0};
                         game = find_game();
-                        if (game) {
-                            hook = game->methods.hook(game->handle);
-                        };
                     };
                     return 0;
                 case TIMER_UPDATE_STATS:
                     if (game) {
-                        auto target_ptr = hook ? (hook->target_alloc
-                                                      ? hook->target_alloc->ptr
-                                                      : 0)
-                                               : 0;
                         game->methods.update_slow(
                             game->handle.get(),
                             game->base_ptrs,
-                            target_ptr,
                             stats
                         );
                     };
@@ -109,10 +100,8 @@ static void Frame(UI* ui, const settings::Gui settings) {
                 | ImGuiWindowFlags_NoMove
         )) {
         if (game) {
-            auto target_ptr
-                = hook ? (hook->target_alloc ? hook->target_alloc->ptr : 0) : 0;
             game->methods.update_fast(
-                game->handle.get(), game->base_ptrs, target_ptr, stats
+                game->handle.get(), game->base_ptrs, stats
             );
             game->methods.gui(settings, ui->fonts, stats);
         } else {

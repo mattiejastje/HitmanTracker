@@ -20,16 +20,16 @@
 #include "logging.hpp"
 #include "mem/read_write.hpp"
 
+using GameHook = std::function<HookPtr(std::shared_ptr<void>)>;
+
 struct GameInfo {
     GameMethods methods;
-    std::array<std::string, 5> module_names;
+    std::array<std::string, 4> module_names;
+    GameHook hook;
 };
 
 static void stats_nothing(
-    void* handle,
-    const BasePtrs& base_ptrs,
-    int32_t hook_target_ptr,
-    Stats& stats
+    void* handle, const BasePtrs& base_ptrs, Stats& stats
 ) {}
 
 static HookPtr hook_nothing(std::shared_ptr<void> handle) { return HookPtr{}; }
@@ -39,41 +39,36 @@ static std::optional<GameInfo> get_game_info(const char* exe_file) {
         return GameInfo{
             GameMethods{
                 hitman_codename_47::gui,
-                hook_nothing,
                 stats_nothing,
                 stats_nothing,
             },
-            {{"hitman.exe"}}
+            {{"hitman.exe"}},
+            hook_nothing,
         };
     } else if (stricmp("hitman2.exe", exe_file) == 0) {
         return GameInfo{
             GameMethods{
                 hitman2_silent_assassin::gui,
-                hook_nothing,
                 hitman2_silent_assassin::update_slow,
                 hitman2_silent_assassin::update_fast
             },
-            {{"hitman2.exe"}}
+            {{"hitman2.exe"}},
+            hook_nothing,
+
         };
     } else if (stricmp("hitmancontracts.exe", exe_file) == 0) {
         return GameInfo{
-            GameMethods{
-                hitman_contracts::gui,
-                hook_nothing,
-                stats_nothing,
-                stats_nothing
-            },
-            {{"hitmancontracts.exe"}}
+            GameMethods{hitman_contracts::gui, stats_nothing, stats_nothing},
+            {{"hitmancontracts.exe"}},
+            hook_nothing,
+
         };
     } else if (stricmp("hitmanbloodmoney.exe", exe_file) == 0) {
         return GameInfo{
-            GameMethods{
-                hitman_blood_money::gui,
-                hook_nothing,
-                stats_nothing,
-                stats_nothing
-            },
-            {{"hitmanbloodmoney.exe"}}
+            GameMethods{hitman_blood_money::gui, stats_nothing, stats_nothing},
+            {{"hitmanbloodmoney.exe"}},
+            hook_nothing,
+
         };
     }
     return {};
@@ -111,10 +106,10 @@ static std::unordered_map<std::string, int32_t> get_all_base_ptrs(
 
 static std::optional<BasePtrs> get_base_ptrs(
     const std::unordered_map<std::string, int32_t>& all_base_ptrs,
-    const std::array<std::string, 5>& module_names
+    const std::array<std::string, 4>& module_names
 ) {
     BasePtrs base_ptrs{};
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 4; i++) {
         if (!module_names[i].empty()) {
             auto base_ptr = all_base_ptrs.find(module_names[i]);
             if (base_ptr == all_base_ptrs.end()) {
@@ -127,7 +122,7 @@ static std::optional<BasePtrs> get_base_ptrs(
                     base_ptr->second
                 );
             }
-            base_ptrs[i] = base_ptr->second;
+            base_ptrs[i + 1] = base_ptr->second;
         }
     }
     return base_ptrs;
@@ -147,10 +142,16 @@ static std::optional<Game> get_game_for_process(
                 info.value().module_names
             );
             if (base_ptrs) {
+                std::shared_ptr<void> handle = std::move(process_handle);
+                auto hook_ptr = info.value().hook(handle);
+                if (hook_ptr && hook_ptr->target_alloc) {
+                    base_ptrs.value()[0] = hook_ptr->target_alloc->ptr;
+                }
                 return Game{
-                    std::move(process_handle),
+                    handle,
                     base_ptrs.value(),
                     info.value().methods,
+                    std::move(hook_ptr),
                 };
             }
         }
