@@ -7,8 +7,22 @@
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
 
-// the scenes\*.gms appear when restarting
-// during postmission, the timer restarts... must disable reading of stats
+/*
+
+Notes.
+
+- The scenes\*.gms appear when restarting; they load the same scene as their
+shorter equivalents.
+
+- During premission, main, and postmission, the timer restarts each time.
+
+- During main, the GameStats do not update time, witnesses, suit_left_on_level,
+and custom_weapons_left_on_level. They may contain outdated values.
+
+- During postmission, the timer restarts. However, the GameStats time will then
+have the correct mission time and all the other correct values.
+
+*/
 
 struct Scene {
     int map{0};
