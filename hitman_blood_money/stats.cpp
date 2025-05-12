@@ -293,11 +293,14 @@ void hitman_blood_money::update_fast(
     Stats& stats
 ) {
     if (stats.map > 0) {
-        if (stats.map_stage == MapStage::main) {
+        if (stats.map_stage == MapStage::pre) {
+            stats.time = 0;
+        } else if (stats.map_stage == MapStage::main) {
             stats.time = read<int32_t>(handle, base_ptrs[0] + 0x41F820, {0x48})
                              .value_or(stats.time)
                          * 0.0009765625f;  // 1 / 1024.0f
         } else if (stats.map_stage == MapStage::post) {
+            // from game_stats
             stats.time = read<int32_t>(handle, base_ptrs[0] + 0x5B2538 + 0x009C)
                              .value_or(stats.time)
                          * 0.0009765625f;
