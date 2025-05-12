@@ -197,14 +197,80 @@ static StatsValue stats_value(int32_t value, bool required = true) {
     return StatsValue{value, status(value, required)};
 }
 
+static std::optional<int32_t> get_time(
+    void* handle, const BasePtrs& base_ptrs, MapStage map_stage
+) {
+    if (map_stage == MapStage::main)
+        return read<int32_t>(handle, base_ptrs[0] + 0x41F820, {0x48});
+    if (map_stage == MapStage::post)
+        return read<int32_t>(handle, base_ptrs[0] + 0x5B2538 + 0x009C);
+    // map_stage == MapStage::pre
+    return 0;
+}
+
+static void set_suit_left_on_level(
+    void* handle,
+    const BasePtrs& base_ptrs,
+    MapStage map_stage,
+    GameStats& game_stats
+) {
+    if (map_stage == MapStage::main) {
+        auto suit_ptrs
+            = read<SuitPtrs>(handle, base_ptrs[0] + 0x41F83C, {0x0A40, 0x0FD0});
+        if (suit_ptrs) {
+            game_stats.suit_left_on_level = suit_ptrs.value().current_suit
+                                            != suit_ptrs.value().starting_suit;
+        } else {
+            logging::error("Unable to read suit pointers");
+        }
+    }
+    // nothing to do in pre/post stage
+}
+
+static void set_custom_weapons_left_on_level(
+    MapStage map_stage, GameStats& game_stats
+) {
+    if (map_stage == MapStage::main) {
+        // TODO use hook
+        game_stats.custom_weapons_left_on_level = 0;
+    }
+    // nothing to do in pre/post stage
+}
+
+static void set_witnesses(MapStage map_stage, GameStats& game_stats) {
+    if (map_stage == MapStage::main) {
+        // TODO use hook
+        game_stats.witnesses = 0;
+    }
+    // nothing to do in pre/post stage
+}
+
+static Status get_silent_assassin(const Stats& stats) {
+    bool items_left_on_map
+        = stats.difficulty > 2
+          && (stats.cust_weapons_left.value != 0 || stats.suit_left.value != 0);
+    return (stats.innocents_killed.value != 0
+            || stats.innocents_wounded.value != 0
+            || stats.enemies_killed.value != 0
+            || stats.enemies_wounded.value != 0
+            || stats.police_killed.value != 0 || stats.police_wounded.value != 0
+            || stats.frisk_failed.value != 0 || stats.cover_blown.value != 0
+            || stats.bodies_fnd.value != 0
+            || (stats.difficulty > 1 && stats.target_bodies_fnd.value != 0)
+            || stats.uncon_bodies_fnd.value != 0)
+               ? Status::RED
+           : items_left_on_map || (stats.witnesses.value != 0)
+                   || (stats.on_camera.value != 0)
+               ? Status::YELLOW
+               : Status::GREEN;
+};
+
 void hitman_blood_money::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     int32_t hook_target_ptr,
     Stats& stats
 ) {
-    stats.difficulty = read<int32_t>(handle, base_ptrs[0] + 0x41F83C, {0x6664})
-                           .value_or(stats.difficulty);
     auto scene = read_string(handle, hook_target_ptr, 64);
     if (!scene) return;
     logging::trace("Scene {}", scene.value());
@@ -219,15 +285,23 @@ void hitman_blood_money::update_slow(
             : stats.map_stage == MapStage::main ? "main"
                                                 : "post"
         );
+        auto difficulty
+            = read<int32_t>(handle, base_ptrs[0] + 0x41F83C, {0x6664});
+        if (difficulty) {
+            stats.difficulty = difficulty.value();
+        } else {
+            logging::error("Unable to read difficulty");
+        }
     } else {
         if (!scene.value().empty()) {
             logging::error("No map registered for scene {}", scene.value());
         }
     }
     if (stats.map > 0) {
+        // force all values to zero in pre-stage
         GameStats game_stats = {0};
-        // note that pointers/values are not ready until timer starts running
-        if (stats.map_stage != MapStage::pre && stats.time > 0.1f) {
+        // read pointers/values when timer starts (only in main/post stages)
+        if (stats.time > 0.1f) {
             if (!read_bytes(
                     handle,
                     base_ptrs[0] + 0x5B2538,
@@ -236,26 +310,13 @@ void hitman_blood_money::update_slow(
                 )) {
                 logging::error("Unable to read game stats");
             }
-        }
-        // fix outdated values in main stage
-        if (stats.map_stage == MapStage::main && stats.time > 0.1f) {
-            game_stats.suit_left_on_level = 0;  // overwrite outdated value
-            auto suit_ptrs = read<SuitPtrs>(
-                handle, base_ptrs[0] + 0x41F83C, {0x0A40, 0x0FD0}
+            // fix values that are not tracked in real-time
+            set_suit_left_on_level(
+                handle, base_ptrs, stats.map_stage, game_stats
             );
-            if (suit_ptrs) {
-                game_stats.suit_left_on_level
-                    = (suit_ptrs.value().current_suit
-                       != suit_ptrs.value().starting_suit);
-                logging::trace("Suit left {}", stats.suit_left.value);
-            } else {
-                logging::warn("Unable to read suit pointers");
-            }
-            // TODO get next two through hook
-            game_stats.custom_weapons_left_on_level = 0;
-            game_stats.witnesses = 0;
+            set_custom_weapons_left_on_level(stats.map_stage, game_stats);
+            set_witnesses(stats.map_stage, game_stats);
         }
-        // set up the stats
         stats.innocents_killed = stats_value(game_stats.innocents_killed);
         stats.innocents_wounded = stats_value(game_stats.innocents_wounded);
         stats.enemies_killed = stats_value(game_stats.enemies_killed);
@@ -277,38 +338,8 @@ void hitman_blood_money::update_slow(
         stats.suit_left
             = stats_value(game_stats.suit_left_on_level, stats.difficulty > 2);
         stats.witnesses = stats_value(game_stats.witnesses);
-        // silent assassin
-        bool items_left_on_map = stats.difficulty > 2
-                                 && (stats.cust_weapons_left.value != 0
-                                     || stats.suit_left.value != 0);
-        stats.silent_assassin
-            = (stats.innocents_killed.value != 0
-               || stats.innocents_wounded.value != 0
-               || stats.enemies_killed.value != 0
-               || stats.enemies_wounded.value != 0
-               || stats.police_killed.value != 0
-               || stats.police_wounded.value != 0
-               || stats.frisk_failed.value != 0 || stats.cover_blown.value != 0
-               || stats.bodies_fnd.value != 0
-               || (stats.difficulty > 1 && stats.target_bodies_fnd.value != 0)
-               || stats.uncon_bodies_fnd.value != 0)
-                  ? Status::RED
-              : items_left_on_map || (stats.witnesses.value != 0)
-                      || (stats.on_camera.value != 0)
-                  ? Status::YELLOW
-                  : Status::GREEN;
+        stats.silent_assassin = get_silent_assassin(stats);
     }
-}
-
-static std::optional<int32_t> get_time(
-    void* handle, const BasePtrs& base_ptrs, MapStage map_stage
-) {
-    if (map_stage == MapStage::main)
-        return read<int32_t>(handle, base_ptrs[0] + 0x41F820, {0x48});
-    if (map_stage == MapStage::post)
-        return read<int32_t>(handle, base_ptrs[0] + 0x5B2538 + 0x009C);
-    // map_stage == MapStage::pre
-    return 0;
 }
 
 void hitman_blood_money::update_fast(
@@ -320,7 +351,7 @@ void hitman_blood_money::update_fast(
     if (stats.map > 0) {
         auto time = get_time(handle, base_ptrs, stats.map_stage);
         if (time) {
-            stats.time = time.value() * 0.0009765625f; // 1 / 1024.0f
+            stats.time = time.value() * 0.0009765625f;  // 1 / 1024.0f
         } else {
             logging::error("Unable to read time");
         }
