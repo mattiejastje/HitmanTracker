@@ -286,6 +286,17 @@ void hitman_blood_money::update_slow(
     }
 }
 
+static std::optional<int32_t> get_time(
+    void* handle, const BasePtrs& base_ptrs, MapStage map_stage
+) {
+    if (map_stage == MapStage::main)
+        return read<int32_t>(handle, base_ptrs[0] + 0x41F820, {0x48});
+    if (map_stage == MapStage::post)
+        return read<int32_t>(handle, base_ptrs[0] + 0x5B2538 + 0x009C);
+    // map_stage == MapStage::pre
+    return 0;
+}
+
 void hitman_blood_money::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
@@ -293,17 +304,11 @@ void hitman_blood_money::update_fast(
     Stats& stats
 ) {
     if (stats.map > 0) {
-        if (stats.map_stage == MapStage::pre) {
-            stats.time = 0;
-        } else if (stats.map_stage == MapStage::main) {
-            stats.time = read<int32_t>(handle, base_ptrs[0] + 0x41F820, {0x48})
-                             .value_or(stats.time)
-                         * 0.0009765625f;  // 1 / 1024.0f
-        } else if (stats.map_stage == MapStage::post) {
-            // from game_stats
-            stats.time = read<int32_t>(handle, base_ptrs[0] + 0x5B2538 + 0x009C)
-                             .value_or(stats.time)
-                         * 0.0009765625f;
+        auto time = get_time(handle, base_ptrs, stats.map_stage);
+        if (time) {
+            stats.time = time.value() * 0.0009765625f; // 1 / 1024.0f
+        } else {
+            logging::error("Unable to read time");
         }
     }
 }
