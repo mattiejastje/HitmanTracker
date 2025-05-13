@@ -33,7 +33,7 @@ struct GameInfo {
 static void stats_nothing(
     void* handle,
     const BasePtrs& base_ptrs,
-    int32_t hook_target_ptr,
+    const LabelPtrs& label_ptrs,
     Stats& stats
 ) {}
 

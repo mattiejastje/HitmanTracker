@@ -15,7 +15,7 @@ using GameGui
     = std::function<void(const settings::Gui &, const Fonts &, const Stats &)>;
 
 using GameStats
-    = std::function<void(void *, const BasePtrs &, int32_t, Stats &)>;
+    = std::function<void(void *, const BasePtrs &, const LabelPtrs &, Stats &)>;
 
 struct GameMethods {
     GameGui gui;            // called every frame for displaying stats

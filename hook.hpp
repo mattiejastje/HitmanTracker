@@ -4,8 +4,8 @@
 #include <memory>
 #include <variant>
 #include <vector>
-#include <unordered_map>
 
+#include "label_ptrs.hpp"
 #include "mem/alloc.hpp"
 #include "mem/handle.hpp"
 
@@ -31,13 +31,7 @@ struct Pointer {
     Label label;
 };
 
-using Assembly = std::variant<
-    Code,
-    Nop,
-    Zero,
-    Label,
-    Jump,
-    Pointer>;
+using Assembly = std::variant<Code, Nop, Zero, Label, Jump, Pointer>;
 
 using AssemblyCode = std::vector<Assembly>;
 
@@ -53,12 +47,11 @@ struct SourceDeleter {
 
 using SourcePtr = std::unique_ptr<Source, SourceDeleter>;
 
-using LabelPtrs = std::unordered_map<int32_t, int32_t>;
-
 struct Hook {
     std::shared_ptr<void> handle;
     SourcePtr source;
     LabelPtrs label_ptrs;
+    AllocPtr target_alloc;
 };
 
 struct HookDeleter {

@@ -154,7 +154,7 @@ static Status get_status(
 void hitman2_silent_assassin::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
-    int32_t hook_target_ptr,
+    const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
     auto scene
@@ -224,7 +224,7 @@ void hitman2_silent_assassin::update_slow(
 void hitman2_silent_assassin::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
-    int32_t hook_target_ptr,
+    const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
     if (stats.map > 0) {

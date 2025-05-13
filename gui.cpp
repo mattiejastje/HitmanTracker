@@ -74,7 +74,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         game->methods.update_slow(
                             game->handle.get(),
                             game->base_ptrs,
-                            get_hook_target_ptr(game->hook),
+                            game->hook->label_ptrs,
                             stats
                         );
                     };
@@ -102,7 +102,7 @@ static void Frame(UI* ui, const settings::Gui settings) {
             game->methods.update_fast(
                 game->handle.get(),
                 game->base_ptrs,
-                get_hook_target_ptr(game->hook),
+                game->hook->label_ptrs,
                 stats
             );
             game->methods.gui(settings, ui->fonts, stats);

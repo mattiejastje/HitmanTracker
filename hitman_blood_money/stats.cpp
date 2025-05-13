@@ -268,10 +268,10 @@ static Status get_silent_assassin(const Stats& stats) {
 void hitman_blood_money::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
-    int32_t hook_target_ptr,
+    const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
-    auto scene = read_string(handle, hook_target_ptr, 64);
+    auto scene = read_string(handle, label_ptrs.at(250), 64);
     if (!scene) return;
     logging::trace("Scene {}", scene.value());
     auto iter = scenes.find(scene.value());
@@ -345,7 +345,7 @@ void hitman_blood_money::update_slow(
 void hitman_blood_money::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
-    int32_t hook_target_ptr,
+    const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
     if (stats.map > 0) {

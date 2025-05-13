@@ -269,7 +269,8 @@ HookPtr install_hook(
         handle, label_ptrs, source_ptr, source_orig_code, source_new_asm
     );
     if (!source) return {};
-    return HookPtr{new Hook{handle, std::move(source), std::move(target_alloc)}
+    return HookPtr{
+        new Hook{handle, std::move(source), std::move(label_ptrs), std::move(target_alloc)}
     };
 };
 
@@ -281,8 +282,4 @@ void HookDeleter::operator()(Hook* hook) const {
         hook->target_alloc.reset();
         delete hook;
     }
-}
-
-int32_t get_hook_target_ptr(const HookPtr& hook) {
-    return hook ? (hook->target_alloc ? hook->target_alloc->ptr : 0) : 0;
 }

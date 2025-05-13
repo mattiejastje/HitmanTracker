@@ -13,23 +13,20 @@ HookPtr hitman_blood_money::hook(
         // push edi
         {0x56, 0x8B, 0x74, 0x24, 0x08, 0x8B, 0xC6, 0x57},
         // new source code (jumps to target code)
-        {Jump{Label{2}}, Nop{3}, Label{0}},
+        {Jump{Label{200}}, Nop{3}, Label{100}},
         // target code:
         // copies the scene name
         // converts backslashes to forward slashes
         // converts upper case to lower case
         {
-            // storage for scene name
-            Label{1},
-            Zero{0x40},
             // new code
-            Label{2},
+            Label{200},
             Code{0x56},                    // push esi
             Code{0x57},                    // push edi
             Code{0x51},                    // push ecx
             Code{0x8B, 0x74, 0x24, 0x10},  // mov esi,[esp+10]
-            Code{0xBF},                    // mov edi,Label{1}
-            Pointer{Label{1}},             // ...
+            Code{0xBF},                    // mov edi,Label{250}
+            Pointer{Label{250}},           // ...
             Code{0xB9, 0x40, 0, 0, 0},     // mov ecx,40
             Code{0xFC},                    // cld
 
@@ -52,7 +49,11 @@ HookPtr hitman_blood_money::hook(
             Code{0x8B, 0x74, 0x24, 0x10},  // mov esi,[esp+10]
             Code{0x8B, 0xC6},              // mov eax,esi
             Code{0x59},                    // pop ecx
-            Jump{Label{0}},                // jmp Label{0}
+            Jump{Label{100}},              // jmp Label{100}
+
+            // storage for scene name
+            Label{250},
+            Zero{0x40},
         }
     );
 }
