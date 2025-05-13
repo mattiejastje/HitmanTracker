@@ -6,6 +6,8 @@
 #include "logging.hpp"
 #include "mem/read_write.hpp"
 
+static_assert(sizeof(int32_t) == sizeof(void*));
+
 static Code get_code(int32_t offset) {
     return {
         static_cast<uint8_t>(offset),
@@ -25,11 +27,9 @@ static Code get_jump_code(int32_t offset) {
 struct GetCodeSizeVisitor {
     int32_t operator()(const Code& code) { return code.size(); }
 
-    int32_t operator()(JumpSourceToTarget jump) { return 5; }
+    int32_t operator()(Jump jump) { return 5; }
 
-    int32_t operator()(JumpTargetToSource jump) { return 5; }
-
-    int32_t operator()(TargetPointer offset) { return 4; }
+    int32_t operator()(Pointer ptr) { return 4; }
 
     int32_t operator()(Nop nop) { return nop.repeat; }
 
@@ -44,11 +44,9 @@ struct GetLabelPtrsVisitor {
 
     void operator()(const Code& code) { current_ptr += code.size(); }
 
-    void operator()(const JumpSourceToTarget& jump) { current_ptr += 5; };
+    void operator()(const Jump& jump) { current_ptr += 5; };
 
-    void operator()(const JumpTargetToSource& jump) { current_ptr += 5; };
-
-    void operator()(const TargetPointer& ptr) { current_ptr += 4; }
+    void operator()(const Pointer& ptr) { current_ptr += 4; }
 
     void operator()(const Nop& nop) { current_ptr += nop.repeat; }
 
@@ -56,51 +54,28 @@ struct GetLabelPtrsVisitor {
 
     void operator()(const Label& label) {
         auto result = label_ptrs.insert({label.index, current_ptr});
-        assert(result.second);  // fail if label already exists
+        if (!result.second)
+            logging::error("Duplicate label {}", label.index);
     }
 };
 
 struct GetCodeVisitor {
-    const int32_t source_ptr;  // TODO remove
-    const int32_t target_ptr;  // TODO remove
-    const std::unordered_map<int32_t, int32_t>& label_ptrs;
     int32_t current_ptr;
+    const std::unordered_map<int32_t, int32_t>& label_ptrs;
 
     Code operator()(const Code& code) {
         current_ptr += code.size();
         return code;
     }
 
-    Code operator()(const JumpSourceToTarget& jump) {
+    Code operator()(const Jump& jump) {
         current_ptr += 5;
-        assert(
-            label_ptrs.at(jump.label.index) - current_ptr
-            == target_ptr + jump.target_offset - source_ptr - jump.source_offset
-                   - 5
-        );
-        return get_jump_code(
-            target_ptr + jump.target_offset - source_ptr - jump.source_offset
-            - 5
-        );
+        return get_jump_code(label_ptrs.at(jump.label.index) - current_ptr);
     };
 
-    Code operator()(const JumpTargetToSource& jump) {
-        current_ptr += 5;
-        assert(
-            label_ptrs.at(jump.label.index) - current_ptr
-            == source_ptr + jump.source_offset - target_ptr - jump.target_offset
-                   - 5
-        );
-        return get_jump_code(
-            source_ptr + jump.source_offset - target_ptr - jump.target_offset
-            - 5
-        );
-    };
-
-    Code operator()(const TargetPointer& ptr) {
-        assert(label_ptrs.at(ptr.label.index) == target_ptr + ptr.offset);
+    Code operator()(const Pointer& ptr) {
         current_ptr += 4;
-        return get_code(target_ptr + ptr.offset);
+        return get_code(label_ptrs.at(ptr.label.index));
     }
 
     Code operator()(const Nop& nop) {
@@ -121,9 +96,8 @@ struct GetCodeVisitor {
 
 static int32_t get_code_size(const std::vector<Assembly>& assembly) {
     int32_t result{0};
-    for (auto& item : assembly) {
+    for (auto& item : assembly)
         result += std::visit(GetCodeSizeVisitor{}, item);
-    }
     return result;
 }
 
@@ -140,17 +114,10 @@ static void get_label_ptrs(
 static Code get_code(
     int32_t current_ptr,
     const std::unordered_map<int32_t, int32_t>& label_ptrs,
-    int32_t source_ptr,  // TODO remove
-    int32_t target_ptr,  // TODO remove
     const std::vector<Assembly>& assembly
 ) {
     Code code{};
-    GetCodeVisitor get_code_visitor{
-        source_ptr,
-        target_ptr,
-        label_ptrs,
-        current_ptr,
-    };
+    GetCodeVisitor get_code_visitor{current_ptr, label_ptrs};
     for (auto& item : assembly) {
         auto part = std::visit(get_code_visitor, item);
         code.insert(code.end(), part.begin(), part.end());
@@ -206,13 +173,10 @@ static bool hook_restore_source_code(
     return true;
 };
 
-static AllocPtr hook_new_alloc_for_asm(
+static AllocPtr hook_new_target_alloc(
     std::shared_ptr<void> handle, const std::vector<Assembly>& target_asm
 ) {
     auto target_code_size = get_code_size(target_asm);
-    // allocate new memory in process for target code
-    // TODO manage with a unique_ptr deleter
-    static_assert(sizeof(int32_t) == sizeof(void*));
     logging::debug(
         "Hook: allocating {} bytes for target code", target_code_size
     );
@@ -231,9 +195,7 @@ static bool hook_install_target_code(
     std::vector<Assembly> target_asm
 ) {
     // assemble target code
-    auto target_code = get_code(
-        target_alloc->ptr, label_ptrs, source_ptr, target_alloc->ptr, target_asm
-    );
+    auto target_code = get_code(target_alloc->ptr, label_ptrs, target_asm);
     assert(get_code_size(target_asm) == target_code.size());
     // install target code
     logging::debug("Hook: writing target code at {:#x}", target_alloc->ptr);
@@ -257,9 +219,7 @@ static bool hook_install_source_code(
     const std::vector<Assembly>& source_new_asm
 ) {
     // assemble new source code
-    auto source_new_code = get_code(
-        source_ptr, label_ptrs, source_ptr, target_ptr, source_new_asm
-    );
+    auto source_new_code = get_code(source_ptr, label_ptrs, source_new_asm);
     // install new source code
     logging::debug("Hook: writing new source code at {:#x}", source_ptr);
     if (!write_bytes(
@@ -286,7 +246,7 @@ HookPtr install_hook(
         return {};
     }
     // allocate target memory
-    auto target_alloc = hook_new_alloc_for_asm(handle, target_asm);
+    auto target_alloc = hook_new_target_alloc(handle, target_asm);
     if (!target_alloc) return {};
     // calculate label pointers
     std::unordered_map<int32_t, int32_t> label_ptrs{};

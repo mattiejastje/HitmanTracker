@@ -13,54 +13,46 @@ HookPtr hitman_blood_money::hook(
         // push edi
         {0x56, 0x8B, 0x74, 0x24, 0x08, 0x8B, 0xC6, 0x57},
         // new source code (jumps to target code)
-        {
-            JumpSourceToTarget{Label{2}, 0, 0x40},  // source+0 jmp target+40
-            Nop{3},                       // source+5 nop
-            Label{0}
-            // source+8 ...
-        },
+        {Jump{Label{2}}, Nop{3}, Label{0}},
         // target code:
         // copies the scene name
         // converts backslashes to forward slashes
         // converts upper case to lower case
         {
-            // target+0: storage for scene name
+            // storage for scene name
             Label{1},
             Zero{0x40},
-
-            // target+40: code
+            // new code
             Label{2},
             Code{0x56},                    // push esi
             Code{0x57},                    // push edi
             Code{0x51},                    // push ecx
             Code{0x8B, 0x74, 0x24, 0x10},  // mov esi,[esp+10]
-            Code{0xBF},                    // mov edi,target+0
-            TargetPointer{Label{1}, 0},    // ...
+            Code{0xBF},                    // mov edi,Label{1}
+            Pointer{Label{1}},             // ...
             Code{0xB9, 0x40, 0, 0, 0},     // mov ecx,40
             Code{0xFC},                    // cld
 
             // jne -27 jumps back here
-            Code{0xAC},                     // lodsb
-            Code{0x3C, 0x5C},               // cmp al,'\'
-            Code{0x75, 0x04},               // jne short 4
-            Code{0xB0, 0x2F},               // mov al,'/'
-            Code{0xEB, 0x0A},               // jmp A
-            Code{0x3C, 0x41},               // cmp al,'A'
-            Code{0x7C, 0x06},               // jl short 6
-            Code{0x3C, 0x5A},               // cmp al,'Z'
-            Code{0x7F, 0x02},               // jg short 2
-            Code{0x0C, 0x20},               // or al,20
-            Code{0xAA},                     // stosb
-            Code{0x84, 0xC0},               // test al, al
-            Code{0x74, 0x03},               // jz 3
-            Code{0x49},                     // dec ecx
-            Code{0x75, 0xE5},               // jnz -27
-            Code{0x8B, 0x74, 0x24, 0x10},   // mov esi,[esp+10]
-            Code{0x8B, 0xC6},               // mov eax,esi
-            Code{0x59},                     // pop ecx
-
-            // target+74
-            JumpTargetToSource{Label{0}, 0x74, 0x8},  // jmp source+8
+            Code{0xAC},                    // lodsb
+            Code{0x3C, 0x5C},              // cmp al,'\'
+            Code{0x75, 0x04},              // jne short 4
+            Code{0xB0, 0x2F},              // mov al,'/'
+            Code{0xEB, 0x0A},              // jmp A
+            Code{0x3C, 0x41},              // cmp al,'A'
+            Code{0x7C, 0x06},              // jl short 6
+            Code{0x3C, 0x5A},              // cmp al,'Z'
+            Code{0x7F, 0x02},              // jg short 2
+            Code{0x0C, 0x20},              // or al,20
+            Code{0xAA},                    // stosb
+            Code{0x84, 0xC0},              // test al, al
+            Code{0x74, 0x03},              // jz 3
+            Code{0x49},                    // dec ecx
+            Code{0x75, 0xE5},              // jnz -27
+            Code{0x8B, 0x74, 0x24, 0x10},  // mov esi,[esp+10]
+            Code{0x8B, 0xC6},              // mov eax,esi
+            Code{0x59},                    // pop ecx
+            Jump{Label{0}},                // jmp Label{0}
         }
     );
 }
