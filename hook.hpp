@@ -38,10 +38,21 @@ using Assembly = std::variant<
     Jump,
     Pointer>;
 
+struct Source {
+    std::shared_ptr<void> handle;
+    int32_t ptr;
+    Code original_code;
+};
+
+struct SourceDeleter {
+    void operator()(Source* source) const;
+};
+
+using SourcePtr = std::unique_ptr<Source, SourceDeleter>;
+
 struct Hook {
     std::shared_ptr<void> handle;
-    int32_t source_ptr;
-    Code source_orig_code;
+    SourcePtr source;
     AllocPtr target_alloc;
 };
 

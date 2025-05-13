@@ -159,19 +159,20 @@ static bool hook_check_source_code(
     return true;
 };
 
-static bool hook_restore_source_code(
-    void* handle, int32_t source_ptr, Code source_code_orig
-) {
-    logging::debug("Hook: restoring source code at {:#x}", source_ptr);
-    if (!write_bytes(
-            handle, source_ptr, source_code_orig.data(), source_code_orig.size()
-        )) {
-        logging::error(
-            "Hook: failed to restore source code at {:#x}", source_ptr
-        );
-        return false;
-    };
-    return true;
+void SourceDeleter::operator()(Source* source) const {
+    if (source) {
+        logging::debug("Hook: restoring source code at {:#x}", source->ptr);
+        if (!write_bytes(
+                source->handle.get(),
+                source->ptr,
+                source->original_code.data(),
+                source->original_code.size()
+            )) {
+            logging::critical(
+                "Hook: failed to restore source code at {:#x}", source->ptr
+            );
+        }
+    }
 };
 
 static AllocPtr hook_new_target_alloc(
@@ -212,24 +213,33 @@ static bool hook_install_target_code(
     return true;
 }
 
-static bool hook_install_source_code(
-    void* handle,
+static SourcePtr hook_install_source_code(
+    std::shared_ptr<void> handle,
     std::unordered_map<int32_t, int32_t> label_ptrs,
     int32_t source_ptr,
-    int32_t target_ptr,
+    const Code& source_orig_code,
     const std::vector<Assembly>& source_new_asm
 ) {
+    if (!hook_check_source_code(handle.get(), source_ptr, source_orig_code))
+        return {};
     // assemble new source code
     auto source_new_code = get_code(source_ptr, label_ptrs, source_new_asm);
+    if (source_new_code.size() != source_orig_code.size()) {
+        logging::error("Hook: new source code has wrong size");
+        return {};
+    } 
     // install new source code
     logging::debug("Hook: writing new source code at {:#x}", source_ptr);
     if (!write_bytes(
-            handle, source_ptr, source_new_code.data(), source_new_code.size()
+            handle.get(),
+            source_ptr,
+            source_new_code.data(),
+            source_new_code.size()
         )) {
         logging::error("Hook: unable to write new source code");
-        return false;
+        return {};
     };
-    return true;
+    return SourcePtr(new Source{handle, source_ptr, source_orig_code});
 }
 
 // TODO suspend/resume thread whilst writing...
@@ -242,10 +252,6 @@ HookPtr install_hook(
     std::vector<Assembly> target_asm
 ) {
     logging::debug("Hook: installing at {:#x}", source_ptr);
-    // check original source code
-    if (!hook_check_source_code(handle.get(), source_ptr, source_orig_code)) {
-        return {};
-    }
     // allocate target memory
     auto target_alloc = hook_new_target_alloc(handle, target_asm);
     if (!target_alloc) return {};
@@ -260,26 +266,18 @@ HookPtr install_hook(
         return {};
     };
     // install new source code
-    if (!hook_install_source_code(
-            handle.get(),
-            label_ptrs,
-            source_ptr,
-            target_alloc->ptr,
-            source_new_asm
-        )) {
-        return {};
-    }
-    return HookPtr{
-        new Hook{handle, source_ptr, source_orig_code, std::move(target_alloc)}
+    auto source = hook_install_source_code(
+        handle, label_ptrs, source_ptr, source_orig_code, source_new_asm
+    );
+    if (!source) return {};
+    return HookPtr{new Hook{handle, std::move(source), std::move(target_alloc)}
     };
 };
 
 void HookDeleter::operator()(Hook* hook) const {
     if (hook) {
-        logging::debug("Hook: uninstalling at {:#x}", hook->source_ptr);
-        hook_restore_source_code(
-            hook->handle.get(), hook->source_ptr, hook->source_orig_code
-        );
+        logging::debug("Hook: uninstalling source");
+        hook->source.reset();
         logging::debug("Hook: freeing memory for target code");
         hook->target_alloc.reset();
         delete hook;
