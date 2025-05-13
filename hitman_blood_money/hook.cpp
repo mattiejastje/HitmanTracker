@@ -14,8 +14,9 @@ HookPtr hitman_blood_money::hook(
         {0x56, 0x8B, 0x74, 0x24, 0x08, 0x8B, 0xC6, 0x57},
         // new source code (jumps to target code)
         {
-            JumpSourceToTarget{0, 0x40},  // source+0 jmp target+40
-            Nop{3}                        // source+5 nop
+            JumpSourceToTarget{Label{2}, 0, 0x40},  // source+0 jmp target+40
+            Nop{3},                       // source+5 nop
+            Label{0}
             // source+8 ...
         },
         // target code:
@@ -24,15 +25,17 @@ HookPtr hitman_blood_money::hook(
         // converts upper case to lower case
         {
             // target+0: storage for scene name
+            Label{1},
             Zero{0x40},
 
             // target+40: code
+            Label{2},
             Code{0x56},                    // push esi
             Code{0x57},                    // push edi
             Code{0x51},                    // push ecx
             Code{0x8B, 0x74, 0x24, 0x10},  // mov esi,[esp+10]
             Code{0xBF},                    // mov edi,target+0
-            TargetPointer{0},              // ...
+            TargetPointer{Label{1}, 0},    // ...
             Code{0xB9, 0x40, 0, 0, 0},     // mov ecx,40
             Code{0xFC},                    // cld
 
@@ -57,7 +60,7 @@ HookPtr hitman_blood_money::hook(
             Code{0x59},                     // pop ecx
 
             // target+74
-            JumpTargetToSource{0x74, 0x8},  // jmp source+8
+            JumpTargetToSource{Label{0}, 0x74, 0x8},  // jmp source+8
         }
     );
 }

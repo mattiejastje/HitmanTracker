@@ -18,17 +18,24 @@ struct Zero {
     int32_t repeat;
 };
 
+struct Label {
+    int32_t index;
+};
+
 struct JumpSourceToTarget {
+    Label label;
     int32_t source_offset;  // offset relative to source_ptr of jmp opcode
     int32_t target_offset;  // offset relative to target_ptr of jmp target
 };
 
 struct JumpTargetToSource {
+    Label label;
     int32_t target_offset;  // offset relative to target_ptr of jmp opcode
     int32_t source_offset;  // offset relative to source_ptr of jmp target
 };
 
 struct TargetPointer {
+    Label label;
     int32_t offset;  // offset relative to target_ptr of absolute pointer
 };
 
@@ -36,6 +43,7 @@ using Assembly = std::variant<
     Code,
     Nop,
     Zero,
+    Label,
     JumpSourceToTarget,
     JumpTargetToSource,
     TargetPointer>;

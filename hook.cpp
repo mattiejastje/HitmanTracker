@@ -33,6 +33,8 @@ struct GetCodeSizeVisitor {
     int32_t operator()(Nop nop) { return nop.repeat; }
 
     int32_t operator()(Zero zero) { return zero.repeat; }
+
+    int32_t operator()(Label label) { return 0; }
 };
 
 struct GetCodeVisitor {
@@ -62,6 +64,8 @@ struct GetCodeVisitor {
     Code operator()(Nop nop) { return Code(nop.repeat, 0x90); }
 
     Code operator()(Zero zero) { return Code(zero.repeat, 0); }
+
+    Code operator()(Label label) { return Code{}; }
 };
 
 static int32_t get_code_size(std::vector<Assembly> assembly) {
