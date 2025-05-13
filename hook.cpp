@@ -88,7 +88,9 @@ struct GetCodeVisitor {
     }
 
     Code operator()(const Label& label) {
-        assert(label_ptrs.find(label.index) != label_ptrs.cend());
+        assert(
+            label_ptrs.find(label.index) != label_ptrs.cend()
+        );  // ensure label found
         return Code{};
     }
 };
