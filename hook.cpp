@@ -1,6 +1,7 @@
 #include "hook.hpp"
 
 #include <cassert>
+#include <unordered_map>
 
 #include "logging.hpp"
 #include "mem/read_write.hpp"
@@ -37,38 +38,88 @@ struct GetCodeSizeVisitor {
     int32_t operator()(Label label) { return 0; }
 };
 
+struct GetLabelPtrsVisitor {
+    int32_t current_ptr;
+    std::unordered_map<int32_t, int32_t>& label_ptrs;
+
+    void operator()(const Code& code) { current_ptr += code.size(); }
+
+    void operator()(const JumpSourceToTarget& jump) { current_ptr += 5; };
+
+    void operator()(const JumpTargetToSource& jump) { current_ptr += 5; };
+
+    void operator()(const TargetPointer& ptr) { current_ptr += 4; }
+
+    void operator()(const Nop& nop) { current_ptr += nop.repeat; }
+
+    void operator()(const Zero& zero) { current_ptr += zero.repeat; }
+
+    void operator()(const Label& label) {
+        auto result = label_ptrs.insert({label.index, current_ptr});
+        assert(result.second);  // fail if label already exists
+    }
+};
+
 struct GetCodeVisitor {
-    int32_t source_ptr;
-    int32_t target_ptr;
+    const int32_t source_ptr;  // TODO remove
+    const int32_t target_ptr;  // TODO remove
+    const std::unordered_map<int32_t, int32_t>& label_ptrs;
+    int32_t current_ptr;
 
-    Code operator()(const Code& code) { return code; }
+    Code operator()(const Code& code) {
+        current_ptr += code.size();
+        return code;
+    }
 
-    Code operator()(JumpSourceToTarget jump) {
+    Code operator()(const JumpSourceToTarget& jump) {
+        current_ptr += 5;
+        assert(
+            label_ptrs.at(jump.label.index) - current_ptr
+            == target_ptr + jump.target_offset - source_ptr - jump.source_offset
+                   - 5
+        );
         return get_jump_code(
             target_ptr + jump.target_offset - source_ptr - jump.source_offset
             - 5
         );
     };
 
-    Code operator()(JumpTargetToSource jump) {
+    Code operator()(const JumpTargetToSource& jump) {
+        current_ptr += 5;
+        assert(
+            label_ptrs.at(jump.label.index) - current_ptr
+            == source_ptr + jump.source_offset - target_ptr - jump.target_offset
+                   - 5
+        );
         return get_jump_code(
             source_ptr + jump.source_offset - target_ptr - jump.target_offset
             - 5
         );
     };
 
-    Code operator()(TargetPointer ptr) {
+    Code operator()(const TargetPointer& ptr) {
+        assert(label_ptrs.at(ptr.label.index) == target_ptr + ptr.offset);
+        current_ptr += 4;
         return get_code(target_ptr + ptr.offset);
     }
 
-    Code operator()(Nop nop) { return Code(nop.repeat, 0x90); }
+    Code operator()(const Nop& nop) {
+        current_ptr += nop.repeat;
+        return Code(nop.repeat, 0x90);
+    }
 
-    Code operator()(Zero zero) { return Code(zero.repeat, 0); }
+    Code operator()(const Zero& zero) {
+        current_ptr += zero.repeat;
+        return Code(zero.repeat, 0);
+    }
 
-    Code operator()(Label label) { return Code{}; }
+    Code operator()(const Label& label) {
+        assert(label_ptrs.find(label.index) != label_ptrs.cend());
+        return Code{};
+    }
 };
 
-static int32_t get_code_size(std::vector<Assembly> assembly) {
+static int32_t get_code_size(const std::vector<Assembly>& assembly) {
     int32_t result{0};
     for (auto& item : assembly) {
         result += std::visit(GetCodeSizeVisitor{}, item);
@@ -76,12 +127,32 @@ static int32_t get_code_size(std::vector<Assembly> assembly) {
     return result;
 }
 
+// Find all labels in assembly and add them to label_ptrs.
+static void get_label_ptrs(
+    int32_t current_ptr,
+    std::vector<Assembly> assembly,
+    std::unordered_map<int32_t, int32_t>& label_ptrs
+) {
+    GetLabelPtrsVisitor find_labels_visitor{current_ptr, label_ptrs};
+    for (auto& item : assembly) std::visit(find_labels_visitor, item);
+}
+
 static Code get_code(
-    int32_t source_ptr, int32_t target_ptr, std::vector<Assembly> assembly
+    int32_t current_ptr,
+    const std::unordered_map<int32_t, int32_t>& label_ptrs,
+    int32_t source_ptr,  // TODO remove
+    int32_t target_ptr,  // TODO remove
+    const std::vector<Assembly>& assembly
 ) {
     Code code{};
+    GetCodeVisitor get_code_visitor{
+        source_ptr,
+        target_ptr,
+        label_ptrs,
+        current_ptr,
+    };
     for (auto& item : assembly) {
-        auto part = std::visit(GetCodeVisitor{source_ptr, target_ptr}, item);
+        auto part = std::visit(get_code_visitor, item);
         code.insert(code.end(), part.begin(), part.end());
     }
     return code;
@@ -135,10 +206,8 @@ static bool hook_restore_source_code(
     return true;
 };
 
-static AllocPtr hook_install_target_code(
-    std::shared_ptr<void> handle,
-    int32_t source_ptr,
-    std::vector<Assembly> target_asm
+static AllocPtr hook_new_alloc_for_asm(
+    std::shared_ptr<void> handle, const std::vector<Assembly>& target_asm
 ) {
     auto target_code_size = get_code_size(target_asm);
     // allocate new memory in process for target code
@@ -152,31 +221,45 @@ static AllocPtr hook_install_target_code(
         logging::error("Hook: unable to allocate memory for target code");
         return {};
     };
+    return target_alloc;
+}
+
+static bool hook_install_target_code(
+    const AllocPtr& target_alloc,
+    std::unordered_map<int32_t, int32_t> label_ptrs,
+    int32_t source_ptr,
+    std::vector<Assembly> target_asm
+) {
     // assemble target code
-    auto target_code = get_code(source_ptr, target_alloc->ptr, target_asm);
-    assert(target_code_size == target_code.size());
+    auto target_code = get_code(
+        target_alloc->ptr, label_ptrs, source_ptr, target_alloc->ptr, target_asm
+    );
+    assert(get_code_size(target_asm) == target_code.size());
     // install target code
     logging::debug("Hook: writing target code at {:#x}", target_alloc->ptr);
     if (!write_bytes(
-            handle.get(),
+            target_alloc->handle.get(),
             target_alloc->ptr,
             target_code.data(),
             target_code.size()
         )) {
         logging::error("Hook: unable to write target code");
-        return {};
+        return false;
     };
-    return target_alloc;
+    return true;
 }
 
 static bool hook_install_source_code(
     void* handle,
+    std::unordered_map<int32_t, int32_t> label_ptrs,
     int32_t source_ptr,
     int32_t target_ptr,
     const std::vector<Assembly>& source_new_asm
 ) {
     // assemble new source code
-    auto source_new_code = get_code(source_ptr, target_ptr, source_new_asm);
+    auto source_new_code = get_code(
+        source_ptr, label_ptrs, source_ptr, target_ptr, source_new_asm
+    );
     // install new source code
     logging::debug("Hook: writing new source code at {:#x}", source_ptr);
     if (!write_bytes(
@@ -198,16 +281,30 @@ HookPtr install_hook(
     std::vector<Assembly> target_asm
 ) {
     logging::debug("Hook: installing at {:#x}", source_ptr);
+    // check original source code
     if (!hook_check_source_code(handle.get(), source_ptr, source_orig_code)) {
         return {};
     }
-    auto target_alloc
-        = hook_install_target_code(handle, source_ptr, target_asm);
-    if (!target_alloc) {
+    // allocate target memory
+    auto target_alloc = hook_new_alloc_for_asm(handle, target_asm);
+    if (!target_alloc) return {};
+    // calculate label pointers
+    std::unordered_map<int32_t, int32_t> label_ptrs{};
+    get_label_ptrs(source_ptr, source_new_asm, label_ptrs);
+    get_label_ptrs(target_alloc->ptr, target_asm, label_ptrs);
+    // install target code
+    if (!hook_install_target_code(
+            target_alloc, label_ptrs, source_ptr, target_asm
+        )) {
         return {};
-    }
+    };
+    // install new source code
     if (!hook_install_source_code(
-            handle.get(), source_ptr, target_alloc->ptr, source_new_asm
+            handle.get(),
+            label_ptrs,
+            source_ptr,
+            target_alloc->ptr,
+            source_new_asm
         )) {
         return {};
     }
