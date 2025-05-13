@@ -11,12 +11,9 @@
 
 using Code = std::vector<uint8_t>;
 
-struct Nop {
-    int32_t repeat;
-};
-
-struct Zero {
-    int32_t repeat;
+struct Fill {
+    int32_t size;
+    uint8_t filler{0};
 };
 
 struct Label {
@@ -31,7 +28,7 @@ struct Pointer {
     Label label;
 };
 
-using Assembly = std::variant<Code, Nop, Zero, Label, Jump, Pointer>;
+using Assembly = std::variant<Code, Fill, Label, Jump, Pointer>;
 
 using AssemblyCode = std::vector<Assembly>;
 

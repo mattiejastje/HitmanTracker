@@ -30,9 +30,7 @@ struct GetCodeSizeVisitor {
 
     int32_t operator()(Pointer ptr) { return 4; }
 
-    int32_t operator()(Nop nop) { return nop.repeat; }
-
-    int32_t operator()(Zero zero) { return zero.repeat; }
+    int32_t operator()(Fill fill) { return fill.size; }
 
     int32_t operator()(Label label) { return 0; }
 };
@@ -47,9 +45,7 @@ struct GetLabelPtrsVisitor {
 
     void operator()(const Pointer& ptr) { current_ptr += 4; }
 
-    void operator()(const Nop& nop) { current_ptr += nop.repeat; }
-
-    void operator()(const Zero& zero) { current_ptr += zero.repeat; }
+    void operator()(const Fill& fill) { current_ptr += fill.size; }
 
     void operator()(const Label& label) {
         auto result = label_ptrs.insert({label.index, current_ptr});
@@ -76,14 +72,9 @@ struct GetCodeVisitor {
         return get_code(label_ptrs.at(ptr.label.index));
     }
 
-    Code operator()(const Nop& nop) {
-        current_ptr += nop.repeat;
-        return Code(nop.repeat, 0x90);
-    }
-
-    Code operator()(const Zero& zero) {
-        current_ptr += zero.repeat;
-        return Code(zero.repeat, 0);
+    Code operator()(const Fill& fill) {
+        current_ptr += fill.size;
+        return Code(fill.size, fill.filler);
     }
 
     Code operator()(const Label& label) {

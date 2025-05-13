@@ -13,7 +13,7 @@ HookPtr hitman_blood_money::hook(
         // push edi
         {0x56, 0x8B, 0x74, 0x24, 0x08, 0x8B, 0xC6, 0x57},
         // new source code (jumps to target code)
-        {Jump{Label{200}}, Nop{3}, Label{100}},
+        {Jump{Label{200}}, Fill{3, 0x90}, Label{100}},
         // target code:
         // copies the scene name
         // converts backslashes to forward slashes
@@ -53,7 +53,7 @@ HookPtr hitman_blood_money::hook(
 
             // storage for scene name
             Label{250},
-            Zero{0x40},
+            Fill{0x40},
         }
     );
 }
