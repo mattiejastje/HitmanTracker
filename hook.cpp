@@ -54,7 +54,7 @@ struct GetLabelPtrsVisitor {
 
     void operator()(const Label& label) {
         auto result = label_ptrs.insert({label.index, current_ptr});
-        assert(!result.second);  // ensure no duplicate labels
+        assert(result.second);  // ensure no duplicate labels
     }
 };
 
