@@ -23,7 +23,16 @@ static Code get_jump_code(int32_t offset) {
     return code;
 }
 
-struct GetCodeSizeVisitor {
+static int32_t get_align_size(int32_t current_ptr, int32_t size) {
+    auto ptr = size * ((current_ptr + size - 1) / size);
+    int32_t final_size = ptr - current_ptr;
+    assert(final_size >= 0);
+    assert(final_size <= size);
+    assert(ptr % size == 0);
+    return final_size;
+}
+
+struct GetCodeSizeUpperBoundVisitor {
     int32_t operator()(const Code& code) { return code.size(); }
 
     int32_t operator()(Jump jump) { return 5; }
@@ -31,6 +40,10 @@ struct GetCodeSizeVisitor {
     int32_t operator()(Pointer ptr) { return 4; }
 
     int32_t operator()(Fill fill) { return fill.size; }
+
+    int32_t operator()(Align align) {
+        return align.size - 1;  // upper bound
+    }
 
     int32_t operator()(Label label) { return 0; }
 };
@@ -46,6 +59,11 @@ struct GetLabelPtrsVisitor {
     void operator()(const Pointer& ptr) { current_ptr += 4; }
 
     void operator()(const Fill& fill) { current_ptr += fill.size; }
+
+    void operator()(Align align) {
+        auto size = get_align_size(current_ptr, align.size);
+        current_ptr += size;
+    }
 
     void operator()(const Label& label) {
         auto result = label_ptrs.insert({label.index, current_ptr});
@@ -77,6 +95,12 @@ struct GetCodeVisitor {
         return Code(fill.size, fill.filler);
     }
 
+    Code operator()(Align align) {
+        auto size = get_align_size(current_ptr, align.size);
+        current_ptr += size;
+        return Code(size, align.filler);
+    }
+
     Code operator()(const Label& label) {
         assert(
             label_ptrs.find(label.index) != label_ptrs.cend()
@@ -85,18 +109,17 @@ struct GetCodeVisitor {
     }
 };
 
-static int32_t get_code_size(const AssemblyCode& assembly) {
+static int32_t get_code_size_upper_bound(const AssemblyCode& assembly) {
     int32_t result{0};
+    GetCodeSizeUpperBoundVisitor get_code_size_upper_bound_visitor{};
     for (auto& item : assembly)
-        result += std::visit(GetCodeSizeVisitor{}, item);
+        result += std::visit(get_code_size_upper_bound_visitor, item);
     return result;
 }
 
 // Find all labels in assembly and add them to label_ptrs.
 static void get_label_ptrs(
-    int32_t current_ptr,
-    AssemblyCode assembly,
-    LabelPtrs& label_ptrs
+    int32_t current_ptr, AssemblyCode assembly, LabelPtrs& label_ptrs
 ) {
     GetLabelPtrsVisitor find_labels_visitor{current_ptr, label_ptrs};
     for (auto& item : assembly) std::visit(find_labels_visitor, item);
@@ -168,7 +191,7 @@ void SourceDeleter::operator()(Source* source) const {
 static AllocPtr hook_new_target_alloc(
     std::shared_ptr<void> handle, const AssemblyCode& target_asm
 ) {
-    auto target_code_size = get_code_size(target_asm);
+    auto target_code_size = get_code_size_upper_bound(target_asm);
     logging::debug(
         "Hook: allocating {} bytes for target code", target_code_size
     );
@@ -188,7 +211,7 @@ static bool hook_install_target_code(
 ) {
     // assemble target code
     auto target_code = get_code(target_alloc->ptr, label_ptrs, target_asm);
-    assert(get_code_size(target_asm) == target_code.size());
+    assert(target_code.size() <= get_code_size_upper_bound(target_asm));
     // install target code
     logging::debug("Hook: writing target code at {:#x}", target_alloc->ptr);
     if (!write_bytes(
@@ -217,7 +240,7 @@ static SourcePtr hook_install_source_code(
     if (source_new_code.size() != source_orig_code.size()) {
         logging::error("Hook: new source code has wrong size");
         return {};
-    } 
+    }
     // install new source code
     logging::debug("Hook: writing new source code at {:#x}", source_ptr);
     if (!write_bytes(
@@ -260,9 +283,12 @@ HookPtr install_hook(
         handle, label_ptrs, source_ptr, source_orig_code, source_new_asm
     );
     if (!source) return {};
-    return HookPtr{
-        new Hook{handle, std::move(source), std::move(label_ptrs), std::move(target_alloc)}
-    };
+    return HookPtr{new Hook{
+        handle,
+        std::move(source),
+        std::move(label_ptrs),
+        std::move(target_alloc)
+    }};
 };
 
 void HookDeleter::operator()(Hook* hook) const {

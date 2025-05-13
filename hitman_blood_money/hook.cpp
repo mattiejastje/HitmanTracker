@@ -52,6 +52,7 @@ HookPtr hitman_blood_money::hook(
             Jump{Label{100}},              // jmp Label{100}
 
             // storage for scene name
+            Align{4, 0xCC},
             Label{250},
             Fill{0x40},
         }

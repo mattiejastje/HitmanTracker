@@ -11,6 +11,11 @@
 
 using Code = std::vector<uint8_t>;
 
+struct Align {
+    int32_t size;
+    uint8_t filler{0};
+};
+
 struct Fill {
     int32_t size;
     uint8_t filler{0};
@@ -28,7 +33,7 @@ struct Pointer {
     Label label;
 };
 
-using Assembly = std::variant<Code, Fill, Label, Jump, Pointer>;
+using Assembly = std::variant<Code, Align, Fill, Label, Jump, Pointer>;
 
 using AssemblyCode = std::vector<Assembly>;
 
