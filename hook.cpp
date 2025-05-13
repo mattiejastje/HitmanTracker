@@ -54,8 +54,7 @@ struct GetLabelPtrsVisitor {
 
     void operator()(const Label& label) {
         auto result = label_ptrs.insert({label.index, current_ptr});
-        if (!result.second)
-            logging::error("Duplicate label {}", label.index);
+        assert(!result.second);  // ensure no duplicate labels
     }
 };
 
