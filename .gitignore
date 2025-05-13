@@ -1,5 +1,9 @@
 # Vcpkg
-/vcpkg_installed/
+vcpkg_installed/
+
+# MSVC temp folder
+enc_temp_folder/
+
 
 # User-specific files
 *.rsuser
