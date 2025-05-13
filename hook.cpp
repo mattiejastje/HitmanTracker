@@ -95,7 +95,7 @@ struct GetCodeVisitor {
     }
 };
 
-static int32_t get_code_size(const std::vector<Assembly>& assembly) {
+static int32_t get_code_size(const AssemblyCode& assembly) {
     int32_t result{0};
     for (auto& item : assembly)
         result += std::visit(GetCodeSizeVisitor{}, item);
@@ -105,7 +105,7 @@ static int32_t get_code_size(const std::vector<Assembly>& assembly) {
 // Find all labels in assembly and add them to label_ptrs.
 static void get_label_ptrs(
     int32_t current_ptr,
-    std::vector<Assembly> assembly,
+    AssemblyCode assembly,
     std::unordered_map<int32_t, int32_t>& label_ptrs
 ) {
     GetLabelPtrsVisitor find_labels_visitor{current_ptr, label_ptrs};
@@ -115,7 +115,7 @@ static void get_label_ptrs(
 static Code get_code(
     int32_t current_ptr,
     const std::unordered_map<int32_t, int32_t>& label_ptrs,
-    const std::vector<Assembly>& assembly
+    const AssemblyCode& assembly
 ) {
     Code code{};
     GetCodeVisitor get_code_visitor{current_ptr, label_ptrs};
@@ -176,7 +176,7 @@ void SourceDeleter::operator()(Source* source) const {
 };
 
 static AllocPtr hook_new_target_alloc(
-    std::shared_ptr<void> handle, const std::vector<Assembly>& target_asm
+    std::shared_ptr<void> handle, const AssemblyCode& target_asm
 ) {
     auto target_code_size = get_code_size(target_asm);
     logging::debug(
@@ -194,7 +194,7 @@ static bool hook_install_target_code(
     const AllocPtr& target_alloc,
     std::unordered_map<int32_t, int32_t> label_ptrs,
     int32_t source_ptr,
-    std::vector<Assembly> target_asm
+    AssemblyCode target_asm
 ) {
     // assemble target code
     auto target_code = get_code(target_alloc->ptr, label_ptrs, target_asm);
@@ -218,7 +218,7 @@ static SourcePtr hook_install_source_code(
     std::unordered_map<int32_t, int32_t> label_ptrs,
     int32_t source_ptr,
     const Code& source_orig_code,
-    const std::vector<Assembly>& source_new_asm
+    const AssemblyCode& source_new_asm
 ) {
     if (!hook_check_source_code(handle.get(), source_ptr, source_orig_code))
         return {};
@@ -248,8 +248,8 @@ HookPtr install_hook(
     std::shared_ptr<void> handle,
     int32_t source_ptr,
     Code source_orig_code,
-    std::vector<Assembly> source_new_asm,
-    std::vector<Assembly> target_asm
+    AssemblyCode source_new_asm,
+    AssemblyCode target_asm
 ) {
     logging::debug("Hook: installing at {:#x}", source_ptr);
     // allocate target memory

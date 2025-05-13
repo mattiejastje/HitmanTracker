@@ -38,6 +38,8 @@ using Assembly = std::variant<
     Jump,
     Pointer>;
 
+using AssemblyCode = std::vector<Assembly>;
+
 struct Source {
     std::shared_ptr<void> handle;
     int32_t ptr;
@@ -66,8 +68,8 @@ HookPtr install_hook(
     std::shared_ptr<void> handle,
     int32_t source_ptr,
     Code source_orig_code,
-    std::vector<Assembly> source_new_asm,
-    std::vector<Assembly> target_asm
+    AssemblyCode source_new_asm,
+    AssemblyCode target_asm
 );
 
 int32_t get_hook_target_ptr(const HookPtr& hook);
