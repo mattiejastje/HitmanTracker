@@ -1,7 +1,6 @@
 #include "hook.hpp"
 
 #include <cassert>
-#include <unordered_map>
 
 #include "logging.hpp"
 #include "mem/read_write.hpp"
@@ -40,7 +39,7 @@ struct GetCodeSizeVisitor {
 
 struct GetLabelPtrsVisitor {
     int32_t current_ptr;
-    std::unordered_map<int32_t, int32_t>& label_ptrs;
+    LabelPtrs& label_ptrs;
 
     void operator()(const Code& code) { current_ptr += code.size(); }
 
@@ -60,7 +59,7 @@ struct GetLabelPtrsVisitor {
 
 struct GetCodeVisitor {
     int32_t current_ptr;
-    const std::unordered_map<int32_t, int32_t>& label_ptrs;
+    const LabelPtrs& label_ptrs;
 
     Code operator()(const Code& code) {
         current_ptr += code.size();
@@ -106,7 +105,7 @@ static int32_t get_code_size(const AssemblyCode& assembly) {
 static void get_label_ptrs(
     int32_t current_ptr,
     AssemblyCode assembly,
-    std::unordered_map<int32_t, int32_t>& label_ptrs
+    LabelPtrs& label_ptrs
 ) {
     GetLabelPtrsVisitor find_labels_visitor{current_ptr, label_ptrs};
     for (auto& item : assembly) std::visit(find_labels_visitor, item);
@@ -114,7 +113,7 @@ static void get_label_ptrs(
 
 static Code get_code(
     int32_t current_ptr,
-    const std::unordered_map<int32_t, int32_t>& label_ptrs,
+    const LabelPtrs& label_ptrs,
     const AssemblyCode& assembly
 ) {
     Code code{};
@@ -192,7 +191,7 @@ static AllocPtr hook_new_target_alloc(
 
 static bool hook_install_target_code(
     const AllocPtr& target_alloc,
-    std::unordered_map<int32_t, int32_t> label_ptrs,
+    LabelPtrs label_ptrs,
     int32_t source_ptr,
     AssemblyCode target_asm
 ) {
@@ -215,7 +214,7 @@ static bool hook_install_target_code(
 
 static SourcePtr hook_install_source_code(
     std::shared_ptr<void> handle,
-    std::unordered_map<int32_t, int32_t> label_ptrs,
+    LabelPtrs label_ptrs,
     int32_t source_ptr,
     const Code& source_orig_code,
     const AssemblyCode& source_new_asm
@@ -256,7 +255,7 @@ HookPtr install_hook(
     auto target_alloc = hook_new_target_alloc(handle, target_asm);
     if (!target_alloc) return {};
     // calculate label pointers
-    std::unordered_map<int32_t, int32_t> label_ptrs{};
+    LabelPtrs label_ptrs{};
     get_label_ptrs(source_ptr, source_new_asm, label_ptrs);
     get_label_ptrs(target_alloc->ptr, target_asm, label_ptrs);
     // install target code

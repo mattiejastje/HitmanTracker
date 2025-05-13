@@ -4,6 +4,7 @@
 #include <memory>
 #include <variant>
 #include <vector>
+#include <unordered_map>
 
 #include "mem/alloc.hpp"
 #include "mem/handle.hpp"
@@ -52,10 +53,12 @@ struct SourceDeleter {
 
 using SourcePtr = std::unique_ptr<Source, SourceDeleter>;
 
+using LabelPtrs = std::unordered_map<int32_t, int32_t>;
+
 struct Hook {
     std::shared_ptr<void> handle;
     SourcePtr source;
-    AllocPtr target_alloc;
+    LabelPtrs label_ptrs;
 };
 
 struct HookDeleter {
@@ -71,5 +74,3 @@ HookPtr install_hook(
     AssemblyCode source_new_asm,
     AssemblyCode target_asm
 );
-
-int32_t get_hook_target_ptr(const HookPtr& hook);
