@@ -35,17 +35,17 @@ static int32_t get_align_size(int32_t current_ptr, int32_t size) {
 struct GetCodeSizeUpperBoundVisitor {
     int32_t operator()(const Code& code) { return code.size(); }
 
-    int32_t operator()(Jump jump) { return 5; }
+    int32_t operator()(const Jump& jump) { return 5; }
 
-    int32_t operator()(Pointer ptr) { return 4; }
+    int32_t operator()(const Pointer& ptr) { return 4; }
 
-    int32_t operator()(Fill fill) { return fill.size; }
+    int32_t operator()(const Fill& fill) { return fill.size; }
 
-    int32_t operator()(Align align) {
+    int32_t operator()(const Align& align) {
         return align.size - 1;  // upper bound
     }
 
-    int32_t operator()(Label label) { return 0; }
+    int32_t operator()(const Label& label) { return 0; }
 };
 
 struct GetLabelPtrsVisitor {
@@ -60,13 +60,15 @@ struct GetLabelPtrsVisitor {
 
     void operator()(const Fill& fill) { current_ptr += fill.size; }
 
-    void operator()(Align align) {
+    void operator()(const Align& align) {
         auto size = get_align_size(current_ptr, align.size);
         current_ptr += size;
     }
 
     void operator()(const Label& label) {
-        logging::debug("Hook: label {} points to {:#x}", label.index, current_ptr);
+        logging::debug(
+            "Hook: label {} points to {:#x}", label.index, current_ptr
+        );
         auto result = label_ptrs.insert({label.index, current_ptr});
         assert(result.second);  // ensure no duplicate labels
     }
@@ -96,7 +98,7 @@ struct GetCodeVisitor {
         return Code(fill.size, fill.filler);
     }
 
-    Code operator()(Align align) {
+    Code operator()(const Align& align) {
         auto size = get_align_size(current_ptr, align.size);
         current_ptr += size;
         return Code(size, align.filler);
@@ -120,7 +122,7 @@ static int32_t get_code_size_upper_bound(const AssemblyCode& assembly) {
 
 // Find all labels in assembly and add them to label_ptrs.
 static void get_label_ptrs(
-    int32_t current_ptr, AssemblyCode assembly, LabelPtrs& label_ptrs
+    int32_t current_ptr, const AssemblyCode& assembly, LabelPtrs& label_ptrs
 ) {
     logging::debug(
         "Hook: calculating label pointers for {:#x}...", current_ptr
@@ -144,7 +146,7 @@ static Code get_code(
 }
 
 static bool hook_check_source_code(
-    void* handle, int32_t source_ptr, Code source_code_orig
+    void* handle, int32_t source_ptr, const Code& source_code_orig
 ) {
     logging::debug("Hook: verifying source at {:#x}", source_ptr);
     // check source is large enough
