@@ -46,7 +46,9 @@ struct GetCodeSizeUpperBoundVisitor {
 
     int32_t operator()(const Call& call) { return 5; }
 
-    int32_t operator()(const Pointer& ptr) { return 4; }
+    int32_t operator()(const Ptr& ptr) { return 4; }
+
+    int32_t operator()(const PtrToLabel& ptr) { return 4; }
 
     int32_t operator()(const Fill& fill) { return fill.size; }
 
@@ -67,7 +69,9 @@ struct GetLabelPtrsVisitor {
 
     void operator()(const Call& call) { current_ptr += 5; }
 
-    void operator()(const Pointer& ptr) { current_ptr += 4; }
+    void operator()(const Ptr& ptr) { current_ptr += 4; }
+
+    void operator()(const PtrToLabel& ptr) { current_ptr += 4; }
 
     void operator()(const Fill& fill) { current_ptr += fill.size; }
 
@@ -104,7 +108,12 @@ struct GetCodeVisitor {
         return get_call_code(call.ptr - current_ptr);
     }
 
-    Code operator()(const Pointer& ptr) {
+    Code operator()(const Ptr& ptr) {
+        current_ptr += 4;
+        return get_code(ptr.ptr);
+    }
+
+    Code operator()(const PtrToLabel& ptr) {
         current_ptr += 4;
         return get_code(label_ptrs.at(ptr.label.index));
     }

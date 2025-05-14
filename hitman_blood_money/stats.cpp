@@ -237,20 +237,6 @@ static void set_custom_weapons_left_on_level(
     // nothing to do in pre/post stage
 }
 
-static void set_witnesses(
-    void *handle, const LabelPtrs& label_ptrs, MapStage map_stage, GameStats& game_stats
-) {
-    if (map_stage == MapStage::main) {
-        auto witnesses = read<int32_t>(handle, label_ptrs.at(260));
-        if (witnesses) {
-            game_stats.witnesses = witnesses.value();
-        } else {
-            logging::error("Unable to read witnesses");
-        }
-    }
-    // nothing to do in pre/post stage
-}
-
 static Status get_silent_assassin(const Stats& stats) {
     bool items_left_on_map
         = stats.difficulty > 2
@@ -321,7 +307,6 @@ void hitman_blood_money::update_slow(
                 handle, base_ptrs, stats.map_stage, game_stats
             );
             set_custom_weapons_left_on_level(stats.map_stage, game_stats);
-            set_witnesses(handle, label_ptrs, stats.map_stage, game_stats);
         }
         stats.innocents_killed = stats_value(game_stats.innocents_killed);
         stats.innocents_wounded = stats_value(game_stats.innocents_wounded);
