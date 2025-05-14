@@ -5,15 +5,19 @@ HookPtr hitman_blood_money::hook(
 ) {
     return install_hook(
         handle,
-        base_ptrs[0] + 0x0668C0,
-        // original source code
-        // push esi
-        // mov esi,[esp+08]
-        // mov eax,esi
-        // push edi
-        {0x56, 0x8B, 0x74, 0x24, 0x08, 0x8B, 0xC6, 0x57},
-        // new source code (jumps to target code)
-        {Jump{Label{200}}, Fill{3, 0x90}, Label{100}},
+        {
+            Source{
+                base_ptrs[0] + 0x0668C0,
+                // original source code
+                // push esi
+                // mov esi,[esp+08]
+                // mov eax,esi
+                // push edi
+                {0x56, 0x8B, 0x74, 0x24, 0x08, 0x8B, 0xC6, 0x57},
+                // new source code (jumps to target code)
+                {Jump{Label{200}}, Fill{3, 0x90}, Label{100}},
+            },
+        },
         // target code:
         // copies the scene name
         // converts backslashes to forward slashes

@@ -66,6 +66,7 @@ struct GetLabelPtrsVisitor {
     }
 
     void operator()(const Label& label) {
+        logging::debug("Hook: label {} points to {:#x}", label.index, current_ptr);
         auto result = label_ptrs.insert({label.index, current_ptr});
         assert(result.second);  // ensure no duplicate labels
     }
@@ -121,6 +122,9 @@ static int32_t get_code_size_upper_bound(const AssemblyCode& assembly) {
 static void get_label_ptrs(
     int32_t current_ptr, AssemblyCode assembly, LabelPtrs& label_ptrs
 ) {
+    logging::debug(
+        "Hook: calculating label pointers for {:#x}...", current_ptr
+    );
     GetLabelPtrsVisitor find_labels_visitor{current_ptr, label_ptrs};
     for (auto& item : assembly) std::visit(find_labels_visitor, item);
 }
@@ -172,7 +176,7 @@ static bool hook_check_source_code(
     return true;
 };
 
-void SourceDeleter::operator()(Source* source) const {
+void SourceHookDeleter::operator()(SourceHook* source) const {
     if (source) {
         logging::debug("Hook: restoring source code at {:#x}", source->ptr);
         if (!write_bytes(
@@ -205,9 +209,8 @@ static AllocPtr hook_new_target_alloc(
 
 static bool hook_install_target_code(
     const AllocPtr& target_alloc,
-    LabelPtrs label_ptrs,
-    int32_t source_ptr,
-    AssemblyCode target_asm
+    const LabelPtrs& label_ptrs,
+    const AssemblyCode& target_asm
 ) {
     // assemble target code
     auto target_code = get_code(target_alloc->ptr, label_ptrs, target_asm);
@@ -226,9 +229,9 @@ static bool hook_install_target_code(
     return true;
 }
 
-static SourcePtr hook_install_source_code(
+static SourceHookPtr hook_install_source_code(
     std::shared_ptr<void> handle,
-    LabelPtrs label_ptrs,
+    const LabelPtrs& label_ptrs,
     int32_t source_ptr,
     const Code& source_orig_code,
     const AssemblyCode& source_new_asm
@@ -252,40 +255,37 @@ static SourcePtr hook_install_source_code(
         logging::error("Hook: unable to write new source code");
         return {};
     };
-    return SourcePtr(new Source{handle, source_ptr, source_orig_code});
+    return SourceHookPtr(new SourceHook{handle, source_ptr, source_orig_code});
 }
 
 // TODO suspend/resume thread whilst writing...
 
 HookPtr install_hook(
     std::shared_ptr<void> handle,
-    int32_t source_ptr,
-    Code source_orig_code,
-    AssemblyCode source_new_asm,
-    AssemblyCode target_asm
+    const std::vector<Source>& sources,
+    const AssemblyCode& target_asm
 ) {
-    logging::debug("Hook: installing at {:#x}", source_ptr);
+    logging::debug("Hook: installing...");
     // allocate target memory
     auto target_alloc = hook_new_target_alloc(handle, target_asm);
     if (!target_alloc) return {};
     // calculate label pointers
     LabelPtrs label_ptrs{};
-    get_label_ptrs(source_ptr, source_new_asm, label_ptrs);
+    for (const auto& source : sources)
+        get_label_ptrs(source.ptr, source.new_asm, label_ptrs);
     get_label_ptrs(target_alloc->ptr, target_asm, label_ptrs);
     // install target code
-    if (!hook_install_target_code(
-            target_alloc, label_ptrs, source_ptr, target_asm
-        )) {
+    if (!hook_install_target_code(target_alloc, label_ptrs, target_asm))
         return {};
-    };
     // install new source code
-    auto source = hook_install_source_code(
-        handle, label_ptrs, source_ptr, source_orig_code, source_new_asm
-    );
-    if (!source) return {};
+    std::vector<SourceHookPtr> source_hooks{};
+    for (const auto& source : sources)
+        source_hooks.push_back(std::move(hook_install_source_code(
+            handle, label_ptrs, source.ptr, source.original_code, source.new_asm
+        )));
     return HookPtr{new Hook{
         handle,
-        std::move(source),
+        std::move(source_hooks),
         std::move(label_ptrs),
         std::move(target_alloc)
     }};
@@ -293,8 +293,8 @@ HookPtr install_hook(
 
 void HookDeleter::operator()(Hook* hook) const {
     if (hook) {
-        logging::debug("Hook: uninstalling source");
-        hook->source.reset();
+        logging::debug("Hook: uninstalling source hooks");
+        hook->source_hooks.clear();
         logging::debug("Hook: freeing memory for target code");
         hook->target_alloc.reset();
         delete hook;

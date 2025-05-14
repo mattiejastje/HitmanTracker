@@ -37,21 +37,21 @@ using Assembly = std::variant<Code, Align, Fill, Label, Jump, Pointer>;
 
 using AssemblyCode = std::vector<Assembly>;
 
-struct Source {
+struct SourceHook {
     std::shared_ptr<void> handle;
     int32_t ptr;
     Code original_code;
 };
 
-struct SourceDeleter {
-    void operator()(Source* source) const;
+struct SourceHookDeleter {
+    void operator()(SourceHook* source) const;
 };
 
-using SourcePtr = std::unique_ptr<Source, SourceDeleter>;
+using SourceHookPtr = std::unique_ptr<SourceHook, SourceHookDeleter>;
 
 struct Hook {
     std::shared_ptr<void> handle;
-    SourcePtr source;
+    std::vector<SourceHookPtr> source_hooks;
     LabelPtrs label_ptrs;
     AllocPtr target_alloc;
 };
@@ -62,10 +62,14 @@ struct HookDeleter {
 
 using HookPtr = std::unique_ptr<Hook, HookDeleter>;
 
+struct Source {
+    int32_t ptr;
+    Code original_code;
+    AssemblyCode new_asm;
+};
+
 HookPtr install_hook(
     std::shared_ptr<void> handle,
-    int32_t source_ptr,
-    Code source_orig_code,
-    AssemblyCode source_new_asm,
-    AssemblyCode target_asm
+    const std::vector<Source>& sources,
+    const AssemblyCode& target_asm
 );
