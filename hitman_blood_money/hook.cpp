@@ -8,33 +8,31 @@ HookPtr hitman_blood_money::hook(
         {
             Source{
                 base_ptrs[0] + 0x0668C0,
-                // original source code
                 // push esi
                 // mov esi,[esp+08]
                 // mov eax,esi
                 // push edi
                 {0x56, 0x8B, 0x74, 0x24, 0x08, 0x8B, 0xC6, 0x57},
                 // new source code (jumps to target code)
-                {Jump{Label{200}}, Fill{3, 0x90}, Label{100}},
+                {Jump{Label{110}}, Fill{3, 0x90}, Label{100}},
+            },
+            Source{
+                base_ptrs[0] + 0x2AF230,
+                {0x64, 0xA1, 0, 0, 0, 0},
+                {Jump{Label{210}}, Code{0x90}, Label{200}},
             },
         },
-        // target code:
-        // copies the scene name
-        // converts backslashes to forward slashes
-        // converts upper case to lower case
         {
-            // new code
-            Label{200},
+            // scene name, convert slashes, lower case
+            Label{110},
             Code{0x56},                    // push esi
             Code{0x57},                    // push edi
             Code{0x51},                    // push ecx
             Code{0x8B, 0x74, 0x24, 0x10},  // mov esi,[esp+10]
             Code{0xBF},                    // mov edi,Label{250}
-            Pointer{Label{250}},           // ...
+            Pointer{Label{150}},           // ...
             Code{0xB9, 0x40, 0, 0, 0},     // mov ecx,40
             Code{0xFC},                    // cld
-
-            // jne -27 jumps back here
             Code{0xAC},                    // lodsb
             Code{0x3C, 0x5C},              // cmp al,'\'
             Code{0x75, 0x04},              // jne short 4
@@ -55,10 +53,61 @@ HookPtr hitman_blood_money::hook(
             Code{0x59},                    // pop ecx
             Jump{Label{100}},              // jmp Label{100}
 
-            // storage for scene name
             Align{4, 0xCC},
-            Label{250},
+            Label{150},  // scene name
             Fill{0x40},
+
+            Align{4, 0xCC},
+            // count witnesses
+            Label{210},
+            Code{0x53},                          // push ebx
+            Code{0x51},                          // push ecx
+            Code{0x52},                          // push edx
+            Code{0x56},                          // push esi
+            Code{0x57},                          // push edi
+            Code{0x31, 0xDB},                    // xor ebx,ebx
+            Code{0x8B, 0xF3},                    // mov esi,ebx
+            Code{0x8D, 0xB9, 0x74, 0x04, 0, 0},  // lea edi,[ecx+474]
+            Code{0x39, 0xDF},                    // cmp edi,ebx
+            Code{0x74, 0x3A},                    // jz +58
+            Code{0x8B, 0x17},                    // mov edx,[edi]
+            Code{0x68},                          // push Label{250}
+            Pointer{Label{250}},                 // ...
+            Code{0x8B, 0xCF},                    // mov ecx,edi
+            Code{0xFF, 0x52, 0x50},              // call dword ptr [edx+50]
+            Code{0x8B, 0x17},                    // mov edx,[edi]
+            Code{0x68},                          // push Label{250}
+            Pointer{Label{250}},                 // ...
+            Code{0x8B, 0xCF},                    // mov ecx,edi
+            Code{0xFF, 0x52, 0x60},              // call dword ptr [edx+60]
+            Code{0x39, 0x1D},                    // cmp [Label{250}],ebx
+            Pointer{Label{250}},                 // ...
+            Code{0x74, 0x1A},                    // jz +26
+            Code{0x50},                          // push eax
+            Call{base_ptrs[0] + 0xE5110},  // call HitmanBloodMoney.exe+E5110
+            Code{0x83, 0xC4, 0x04},        // add esp,4
+            Code{0x8B, 0x10},              // mov edx,[eax]
+            Code{0x8B, 0xC8},              // mov ecx,eax
+            Code{0xFF, 0x92, 0xDC, 0x03, 0, 0},  // call dword ptr [edx+3DC]
+            Code{0x84, 0xC0},                    // test al,al
+            Code{0x75, 0xD5},                    // jz -43
+            Code{0x46},                          // inc esi
+            Code{0xEB, 0xD2},                    // jmp -46
+            Code{0x89, 0x35},                    // mov [Label{260}],esi
+            Pointer{Label{260}},                 // ...
+            Code{0x5F},                          // pop edi
+            Code{0x5E},                          // pop esi
+            Code{0x5A},                          // pop edx
+            Code{0x59},                          // pop ecx
+            Code{0x5B},                          // pop ebx
+            Code{0x64, 0xA1, 0, 0, 0, 0},        // mov eax,fs:[0]
+            Jump{Label{200}},
+
+            Align{4, 0xCC},
+            Label{250},  // iterator
+            Fill{12},
+            Label{260},  // witnesses
+            Fill{4},
         }
     );
 }

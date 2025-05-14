@@ -33,7 +33,11 @@ struct Pointer {
     Label label;
 };
 
-using Assembly = std::variant<Code, Align, Fill, Label, Jump, Pointer>;
+struct Call {
+    int32_t ptr;
+};
+
+using Assembly = std::variant<Code, Align, Fill, Label, Jump, Pointer, Call>;
 
 using AssemblyCode = std::vector<Assembly>;
 

@@ -23,6 +23,13 @@ static Code get_jump_code(int32_t offset) {
     return code;
 }
 
+static Code get_call_code(int32_t offset) {
+    Code code{0xE8};
+    auto offset_code = get_code(offset);
+    code.insert(code.end(), offset_code.begin(), offset_code.end());
+    return code;
+}
+
 static int32_t get_align_size(int32_t current_ptr, int32_t size) {
     auto ptr = size * ((current_ptr + size - 1) / size);
     int32_t final_size = ptr - current_ptr;
@@ -36,6 +43,8 @@ struct GetCodeSizeUpperBoundVisitor {
     int32_t operator()(const Code& code) { return code.size(); }
 
     int32_t operator()(const Jump& jump) { return 5; }
+
+    int32_t operator()(const Call& call) { return 5; }
 
     int32_t operator()(const Pointer& ptr) { return 4; }
 
@@ -55,6 +64,8 @@ struct GetLabelPtrsVisitor {
     void operator()(const Code& code) { current_ptr += code.size(); }
 
     void operator()(const Jump& jump) { current_ptr += 5; };
+
+    void operator()(const Call& call) { current_ptr += 5; }
 
     void operator()(const Pointer& ptr) { current_ptr += 4; }
 
@@ -87,6 +98,11 @@ struct GetCodeVisitor {
         current_ptr += 5;
         return get_jump_code(label_ptrs.at(jump.label.index) - current_ptr);
     };
+
+    Code operator()(const Call& call) {
+        current_ptr += 5;
+        return get_call_code(call.ptr - current_ptr);
+    }
 
     Code operator()(const Pointer& ptr) {
         current_ptr += 4;

@@ -237,10 +237,16 @@ static void set_custom_weapons_left_on_level(
     // nothing to do in pre/post stage
 }
 
-static void set_witnesses(MapStage map_stage, GameStats& game_stats) {
+static void set_witnesses(
+    void *handle, const LabelPtrs& label_ptrs, MapStage map_stage, GameStats& game_stats
+) {
     if (map_stage == MapStage::main) {
-        // TODO use hook
-        game_stats.witnesses = 0;
+        auto witnesses = read<int32_t>(handle, label_ptrs.at(260));
+        if (witnesses) {
+            game_stats.witnesses = witnesses.value();
+        } else {
+            logging::error("Unable to read witnesses");
+        }
     }
     // nothing to do in pre/post stage
 }
@@ -271,7 +277,7 @@ void hitman_blood_money::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
-    auto scene = read_string(handle, label_ptrs.at(250), 64);
+    auto scene = read_string(handle, label_ptrs.at(150), 64);
     if (!scene) return;
     logging::trace("Scene {}", scene.value());
     auto iter = scenes.find(scene.value());
@@ -315,7 +321,7 @@ void hitman_blood_money::update_slow(
                 handle, base_ptrs, stats.map_stage, game_stats
             );
             set_custom_weapons_left_on_level(stats.map_stage, game_stats);
-            set_witnesses(stats.map_stage, game_stats);
+            set_witnesses(handle, label_ptrs, stats.map_stage, game_stats);
         }
         stats.innocents_killed = stats_value(game_stats.innocents_killed);
         stats.innocents_wounded = stats_value(game_stats.innocents_wounded);
