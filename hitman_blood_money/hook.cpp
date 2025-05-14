@@ -18,6 +18,7 @@ HookPtr hitman_blood_money::hook(
             },
             Source{
                 base_ptrs[0] + 0x2AF230,
+                // mov eax,fs:[0]
                 {0x64, 0xA1, 0, 0, 0, 0},
                 {Jump{Label{210}}, Code{0x90}, Label{200}},
             },
