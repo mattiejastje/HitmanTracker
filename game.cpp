@@ -14,6 +14,7 @@
 #include "base_ptrs.hpp"
 #include "hitman2_silent_assassin/gui.hpp"
 #include "hitman2_silent_assassin/stats.hpp"
+#include "hitman_absolution/gui.hpp"
 #include "hitman_blood_money/gui.hpp"
 #include "hitman_blood_money/hook.hpp"
 #include "hitman_blood_money/stats.hpp"
@@ -70,7 +71,6 @@ static std::optional<GameInfo> get_game_info(const char* exe_file) {
             GameMethods{hitman_contracts::gui, stats_nothing, stats_nothing},
             {{"hitmancontracts.exe"}},
             hook_nothing,
-
         };
     } else if (stricmp("hitmanbloodmoney.exe", exe_file) == 0) {
         return GameInfo{
@@ -81,6 +81,12 @@ static std::optional<GameInfo> get_game_info(const char* exe_file) {
             },
             {{"hitmanbloodmoney.exe"}},
             hitman_blood_money::hook,
+        };
+    } else if (stricmp("hma.exe", exe_file) == 0) {
+        return GameInfo{
+            GameMethods{hitman_absolution::gui, stats_nothing, stats_nothing},
+            {{"hma.exe"}},
+            hook_nothing,
         };
     }
     return {};
