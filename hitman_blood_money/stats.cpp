@@ -14,13 +14,17 @@ Notes.
 - The scenes\*.gms appear when restarting; they load the same scene as their
 shorter equivalents.
 
-- During premission, main, and postmission, the timer restarts each time.
-
 - During main, the GameStats do not update time, witnesses, suit_left_on_level,
-and custom_weapons_left_on_level. They may contain outdated values.
+and custom_weapons_left_on_level. They may contain outdated values. These are
+only correct during postmission.
 
-- During postmission, the timer restarts. However, the GameStats time will then
-have the correct mission time and all the other correct values.
+- During premission, main, and postmission, engine timer restarts each time.
+
+Solutions.
+
+- Use engine timer for main, game stats time for postmission.
+
+- Hook LevelControl.FrameUpdate to update witnesses, etc. during main.
 
 */
 
