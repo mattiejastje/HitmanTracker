@@ -321,7 +321,7 @@ void hitman_blood_money::update_slow(
         stats.witnesses = stats_value(game_stats.witnesses);
         stats.on_camera
             = stats_value(game_stats.camera_caught ? 1 : 0);  // 2 -> 1
-        stats.cust_weapons_left.status = status(
+        stats.cust_weapons_left = stats_value(
             game_stats.custom_weapons_left_on_level, stats.difficulty > 2
         );
         stats.suit_left
