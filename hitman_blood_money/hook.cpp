@@ -32,7 +32,7 @@ HookPtr hitman_blood_money::hook(
             Code{0x51},                    // push ecx
             Code{0x8B, 0x74, 0x24, 0x10},  // mov esi,[esp+10]
             Code{0xBF},                    // mov edi,Label{150}
-            PtrToLabel{Label{150}},        // ...
+            Ptr{Label{150}},               // ...
             Code{0xB9, 0x40, 0, 0, 0},     // mov ecx,40
             Code{0xFC},                    // cld
             Code{0xAC},                    // lodsb
@@ -85,11 +85,12 @@ HookPtr hitman_blood_money::hook(
             Code{0x39, 0x1C, 0x24},             // cmp [esp],ebx
             JumpShort{Code{0x74}, Label{230}},  // jz Label{230}
             Code{0x50},                         // push eax
-            Code{0xE8},                   // call HitmanBloodMoney.exe+E5110
-            Ptr{base_ptrs[0] + 0xE5110},  // ...
-            Code{0x83, 0xC4, 0x04},       // add esp,4
-            Code{0x8B, 0x10},             // mov edx,[eax]
-            Code{0x8B, 0xC8},             // mov ecx,eax
+            Jump{
+                Code{0xE8}, Ptr{base_ptrs[0] + 0xE5110}
+            },                       // call HitmanBloodMoney.exe+E5110
+            Code{0x83, 0xC4, 0x04},  // add esp,4
+            Code{0x8B, 0x10},        // mov edx,[eax]
+            Code{0x8B, 0xC8},        // mov ecx,eax
             Code{0xFF, 0x92, 0xDC, 0x03, 0, 0},  // call dword ptr [edx+3DC]
             Code{0x84, 0xC0},                    // test al,al
             JumpShort{Code{0x75}, Label{220}},   // jz Label{220}

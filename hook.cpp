@@ -34,13 +34,11 @@ static int32_t get_align_size(int32_t current_ptr, int32_t size) {
 struct GetCodeSizeUpperBoundVisitor {
     int32_t operator()(const Code& code) { return code.size(); }
 
-    int32_t operator()(const Jump& jump) { return 5; }
+    int32_t operator()(const Jump& jump) { return jump.code.size() + 4; }
 
-    int32_t operator()(const JumpShort& jump) { return 2; }
+    int32_t operator()(const JumpShort& jump) { return jump.code.size() + 1; }
 
     int32_t operator()(const Ptr& ptr) { return 4; }
-
-    int32_t operator()(const PtrToLabel& ptr) { return 4; }
 
     int32_t operator()(const Fill& fill) { return fill.size; }
 
@@ -57,13 +55,13 @@ struct GetLabelPtrsVisitor {
 
     void operator()(const Code& code) { current_ptr += code.size(); }
 
-    void operator()(const Jump& jump) { current_ptr += 5; };
+    void operator()(const Jump& jump) { current_ptr += jump.code.size() + 4; };
 
-    void operator()(const JumpShort& jump) { current_ptr += 2; }
+    void operator()(const JumpShort& jump) {
+        current_ptr += jump.code.size() + 1;
+    }
 
     void operator()(const Ptr& ptr) { current_ptr += 4; }
-
-    void operator()(const PtrToLabel& ptr) { current_ptr += 4; }
 
     void operator()(const Fill& fill) { current_ptr += fill.size; }
 
@@ -81,6 +79,16 @@ struct GetLabelPtrsVisitor {
     }
 };
 
+struct GetPtrVisitor {
+    const LabelPtrs& label_ptrs;
+
+    int32_t operator()(const Label& label) const {
+        return label_ptrs.at(label.index);
+    }
+
+    int32_t operator()(int32_t ptr) const { return ptr; }
+};
+
 struct GetCodeVisitor {
     int32_t current_ptr;
     const LabelPtrs& label_ptrs;
@@ -92,26 +100,22 @@ struct GetCodeVisitor {
 
     Code operator()(const Jump& jump) {
         current_ptr += jump.code.size() + 4;
-        return add_code(
-            jump.code, get_code(label_ptrs.at(jump.label.index) - current_ptr)
-        );
+        auto offset
+            = std::visit(GetPtrVisitor{label_ptrs}, jump.ptr) - current_ptr;
+        return add_code(jump.code, get_code(offset));
     };
 
     Code operator()(const JumpShort& jump) {
         current_ptr += jump.code.size() + 1;
-        auto offset = label_ptrs.at(jump.label.index) - current_ptr;
+        auto offset
+            = std::visit(GetPtrVisitor{label_ptrs}, jump.ptr) - current_ptr;
         assert((-128 <= offset) && (offset <= 127));
         return add_code(jump.code, Code{static_cast<uint8_t>(offset)});
     };
 
     Code operator()(const Ptr& ptr) {
         current_ptr += 4;
-        return get_code(ptr.ptr);
-    }
-
-    Code operator()(const PtrToLabel& ptr) {
-        current_ptr += 4;
-        return get_code(label_ptrs.at(ptr.label.index));
+        return get_code(std::visit(GetPtrVisitor{label_ptrs}, ptr));
     }
 
     Code operator()(const Fill& fill) {
