@@ -26,6 +26,12 @@ struct Label {
 };
 
 struct Jump {
+    Code code;
+    Label label;
+};
+
+struct JumpShort {
+    Code code;
     Label label;
 };
 
@@ -33,15 +39,11 @@ struct PtrToLabel {
     Label label;
 };
 
-struct Call {
-    int32_t ptr;
-};
-
 struct Ptr {
     int32_t ptr;
 };
 
-using Assembly = std::variant<Code, Align, Fill, Label, Jump, PtrToLabel, Call, Ptr>;
+using Assembly = std::variant<Code, Align, Fill, Label, Jump, JumpShort, PtrToLabel, Ptr>;
 
 using AssemblyCode = std::vector<Assembly>;
 

@@ -7,26 +7,18 @@
 
 static_assert(sizeof(int32_t) == sizeof(void*));
 
-static Code get_code(int32_t offset) {
+static Code get_code(int32_t value) {
     return {
-        static_cast<uint8_t>(offset),
-        static_cast<uint8_t>(static_cast<uint32_t>(offset) >> 8),
-        static_cast<uint8_t>(static_cast<uint32_t>(offset) >> 16),
-        static_cast<uint8_t>(static_cast<uint32_t>(offset) >> 24)
+        static_cast<uint8_t>(value),
+        static_cast<uint8_t>(static_cast<uint32_t>(value) >> 8),
+        static_cast<uint8_t>(static_cast<uint32_t>(value) >> 16),
+        static_cast<uint8_t>(static_cast<uint32_t>(value) >> 24)
     };
 }
 
-static Code get_jump_code(int32_t offset) {
-    Code code{0xE9};
-    auto offset_code = get_code(offset);
-    code.insert(code.end(), offset_code.begin(), offset_code.end());
-    return code;
-}
-
-static Code get_call_code(int32_t offset) {
-    Code code{0xE8};
-    auto offset_code = get_code(offset);
-    code.insert(code.end(), offset_code.begin(), offset_code.end());
+static Code add_code(const Code& code1, const Code& code2) {
+    Code code{code1};
+    code.insert(code.end(), code2.begin(), code2.end());
     return code;
 }
 
@@ -44,7 +36,7 @@ struct GetCodeSizeUpperBoundVisitor {
 
     int32_t operator()(const Jump& jump) { return 5; }
 
-    int32_t operator()(const Call& call) { return 5; }
+    int32_t operator()(const JumpShort& jump) { return 2; }
 
     int32_t operator()(const Ptr& ptr) { return 4; }
 
@@ -67,7 +59,7 @@ struct GetLabelPtrsVisitor {
 
     void operator()(const Jump& jump) { current_ptr += 5; };
 
-    void operator()(const Call& call) { current_ptr += 5; }
+    void operator()(const JumpShort& jump) { current_ptr += 2; }
 
     void operator()(const Ptr& ptr) { current_ptr += 4; }
 
@@ -99,14 +91,18 @@ struct GetCodeVisitor {
     }
 
     Code operator()(const Jump& jump) {
-        current_ptr += 5;
-        return get_jump_code(label_ptrs.at(jump.label.index) - current_ptr);
+        current_ptr += jump.code.size() + 4;
+        return add_code(
+            jump.code, get_code(label_ptrs.at(jump.label.index) - current_ptr)
+        );
     };
 
-    Code operator()(const Call& call) {
-        current_ptr += 5;
-        return get_call_code(call.ptr - current_ptr);
-    }
+    Code operator()(const JumpShort& jump) {
+        current_ptr += jump.code.size() + 1;
+        auto offset = label_ptrs.at(jump.label.index) - current_ptr;
+        assert((-128 <= offset) && (offset <= 127));
+        return add_code(jump.code, Code{static_cast<uint8_t>(offset)});
+    };
 
     Code operator()(const Ptr& ptr) {
         current_ptr += 4;
