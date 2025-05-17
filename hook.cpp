@@ -101,21 +101,21 @@ struct GetCodeVisitor {
     Code operator()(const Jump& jump) {
         current_ptr += jump.code.size() + 4;
         auto offset
-            = std::visit(GetPtrVisitor{label_ptrs}, jump.ptr) - current_ptr;
+            = std::visit(GetPtrVisitor{label_ptrs}, jump.ptr.ptr) - current_ptr;
         return add_code(jump.code, get_code(offset));
     };
 
     Code operator()(const JumpShort& jump) {
         current_ptr += jump.code.size() + 1;
         auto offset
-            = std::visit(GetPtrVisitor{label_ptrs}, jump.ptr) - current_ptr;
+            = std::visit(GetPtrVisitor{label_ptrs}, jump.ptr.ptr) - current_ptr;
         assert((-128 <= offset) && (offset <= 127));
         return add_code(jump.code, Code{static_cast<uint8_t>(offset)});
     };
 
     Code operator()(const Ptr& ptr) {
         current_ptr += 4;
-        return get_code(std::visit(GetPtrVisitor{label_ptrs}, ptr));
+        return get_code(std::visit(GetPtrVisitor{label_ptrs}, ptr.ptr));
     }
 
     Code operator()(const Fill& fill) {

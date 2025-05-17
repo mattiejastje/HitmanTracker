@@ -25,7 +25,9 @@ struct Label {
     int32_t index;
 };
 
-using Ptr = std::variant<Label, int32_t>;
+struct Ptr {
+    std::variant<Label, int32_t> ptr;
+};
 
 struct Jump {
     Code code;
