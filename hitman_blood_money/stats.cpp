@@ -24,7 +24,8 @@ Solutions.
 
 - Use engine timer for main, game stats time for postmission.
 
-- Hook LevelControl.FrameUpdate to update witnesses, etc. during main.
+- Hook LevelControl.FrameUpdate to update witnesses and custom weapons left
+during main.
 
 - Use suit pointers during main (they are not valid premission or postmission)
 to track whether suit was left.
@@ -234,16 +235,6 @@ static void set_suit_left_on_level(
     // nothing to do in pre/post stage
 }
 
-static void set_custom_weapons_left_on_level(
-    MapStage map_stage, GameStats& game_stats
-) {
-    if (map_stage == MapStage::main) {
-        // TODO use hook
-        game_stats.custom_weapons_left_on_level = 0;
-    }
-    // nothing to do in pre/post stage
-}
-
 static Status get_silent_assassin(const Stats& stats) {
     bool items_left_on_map
         = stats.difficulty > 2
@@ -313,7 +304,6 @@ void hitman_blood_money::update_slow(
             set_suit_left_on_level(
                 handle, base_ptrs, stats.map_stage, game_stats
             );
-            set_custom_weapons_left_on_level(stats.map_stage, game_stats);
         }
         stats.innocents_killed = stats_value(game_stats.innocents_killed);
         stats.innocents_wounded = stats_value(game_stats.innocents_wounded);
@@ -336,6 +326,8 @@ void hitman_blood_money::update_slow(
         stats.suit_left
             = stats_value(game_stats.suit_left_on_level, stats.difficulty > 2);
         stats.witnesses = stats_value(game_stats.witnesses);
+        stats.cust_weapons_left
+            = stats_value(game_stats.custom_weapons_left_on_level);
         stats.silent_assassin = get_silent_assassin(stats);
     }
 }
