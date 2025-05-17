@@ -261,8 +261,17 @@ void hitman_blood_money::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
+    auto difficulty = read<int32_t>(handle, base_ptrs[0] + 0x41F83C, {0x6664});
+    if (difficulty) {
+        stats.difficulty = difficulty.value();
+    } else {
+        logging::error("Unable to read difficulty");
+    }
     auto scene = read_string(handle, label_ptrs.at(150), 64);
-    if (!scene) return;
+    if (!scene) {
+        logging::error("Unable to read scene");
+        return;
+    }
     logging::trace("Scene {}", scene.value());
     auto iter = scenes.find(scene.value());
     if (iter != scenes.end()) {
@@ -275,13 +284,6 @@ void hitman_blood_money::update_slow(
             : stats.map_stage == MapStage::main ? "main"
                                                 : "post"
         );
-        auto difficulty
-            = read<int32_t>(handle, base_ptrs[0] + 0x41F83C, {0x6664});
-        if (difficulty) {
-            stats.difficulty = difficulty.value();
-        } else {
-            logging::error("Unable to read difficulty");
-        }
     } else {
         if (!scene.value().empty()) {
             logging::error("No map registered for scene {}", scene.value());
