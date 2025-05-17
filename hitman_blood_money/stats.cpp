@@ -26,6 +26,9 @@ Solutions.
 
 - Hook LevelControl.FrameUpdate to update witnesses, etc. during main.
 
+- Use suit pointers during main (they are not valid premission or postmission)
+to track whether suit was left.
+
 */
 
 struct Scene {
