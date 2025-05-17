@@ -42,11 +42,11 @@ void hitman_blood_money::gui(
             {"Frisk Failed", stats.frisk_failed},
             {"Cover Blown", stats.cover_blown},
             {"Bodies Found", stats.bodies_fnd},
-            {"Target Bodies Fnd", stats.target_bodies_fnd},
-            {"Uncon Bodies Fnd", stats.uncon_bodies_fnd},
+            {"Target Bodies Found", stats.target_bodies_fnd},
+            {"Unconscious Bodies Found", stats.uncon_bodies_fnd},
             {"Witnesses", stats.witnesses},
             {"On Camera", stats.on_camera},
-            {"Cust Weapons Left", stats.cust_weapons_left},
+            {"Custom Weapons Left", stats.cust_weapons_left},
             {"Suit Left", stats.suit_left},
         }
     );
