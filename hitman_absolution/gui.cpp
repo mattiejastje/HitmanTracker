@@ -82,6 +82,14 @@ void hitman_absolution::gui(
     const settings::Gui& settings, const Fonts& fonts, const Stats& stats
 ) {
     hitman_common::gui(
-        settings, fonts, stats, "Hitman: Absolution", "", map_names, {}
+        settings,
+        fonts,
+        stats,
+        "Hitman: Absolution",
+        "",
+        map_names,
+        {
+            {"Spotted", stats.spotted},
+        }
     );
 }
