@@ -75,6 +75,10 @@ const std::unordered_map<int32_t, MapInfo> scenes = {
     // map 55 is also (25, 2)?
 };
 
+static Status get_silent_assassin(const Stats& stats) {
+    return (stats.spotted.value != 0) ? Status::RED : Status::GREEN;
+};
+
 void hitman_absolution::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
@@ -107,6 +111,13 @@ void hitman_absolution::update_slow(
         );
     }
     stats.map_stage = MapStage::main;  // always render stats
+    if (stats.map > 0) {
+        auto spotted = read<int32_t>(handle, base_ptrs[0] + 0xD61568);
+        if (spotted) {
+            stats.spotted = stats_value(spotted.value());
+        }
+        stats.silent_assassin = get_silent_assassin(stats);
+    }
 }
 
 void hitman_absolution::update_fast(

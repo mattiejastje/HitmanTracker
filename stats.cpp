@@ -1,0 +1,9 @@
+#include "stats.hpp"
+
+static Status status(int32_t value, bool required) {
+    return required ? (value ? Status::RED : Status::YELLOW) : Status::GREEN;
+}
+
+StatsValue stats_value(int32_t value, bool required) {
+    return StatsValue{value, status(value, required)};
+}

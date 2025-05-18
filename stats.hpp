@@ -9,6 +9,8 @@ struct StatsValue {
     Status status;
 };
 
+StatsValue stats_value(int32_t value, bool required = true);
+
 enum class MapStage { pre, main, post };
 
 struct Stats {
@@ -36,4 +38,5 @@ struct Stats {
     StatsValue on_camera;          // bm
     StatsValue cust_weapons_left;  // bm
     StatsValue suit_left;          // bm
+    StatsValue spotted;            // hma
 };

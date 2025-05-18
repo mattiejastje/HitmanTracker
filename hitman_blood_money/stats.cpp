@@ -197,14 +197,6 @@ struct SuitPtrs {
     int32_t starting_suit;
 };
 
-static Status status(int32_t value, bool required = true) {
-    return required ? (value ? Status::RED : Status::YELLOW) : Status::GREEN;
-}
-
-static StatsValue stats_value(int32_t value, bool required = true) {
-    return StatsValue{value, status(value, required)};
-}
-
 static std::optional<int32_t> get_time(
     void* handle, const BasePtrs& base_ptrs, MapStage map_stage
 ) {
