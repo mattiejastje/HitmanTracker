@@ -18,23 +18,23 @@ struct MapInfo {
 };
 
 const std::unordered_map<int32_t, MapInfo> scenes = {
-    {map_key(-1, -1), {0}},                               // game loading
-    {map_key(25, 0), {0}},                                // menu
-    {map_key(0, 0), {1, 0, MaxRating::unrated}},          // garden
-    {map_key(0, 1), {2, 0, MaxRating::unrated}},          // greenhouse
-    {map_key(0, 2), {3, 1, MaxRating::unrated}},          // cliffside
-    {map_key(0, 3), {4, 1, MaxRating::shadow}},           // mansion ground
-    {map_key(0, 4), {5, 0, MaxRating::unrated}},          // mansion 2nd
-    {map_key(1, 0), {6, 1, MaxRating::silent_assassin}},  // king of chinatown
-    {map_key(2, 0), {7, 1, MaxRating::shadow}},           // terminus hotel
-    {map_key(2, 1), {8, 1, MaxRating::shadow}},           // upper floors
-    {map_key(3, 0), {9, 0, MaxRating::shadow}},           // burning hotel
-    {map_key(3, 1), {10, 1, MaxRating::shadow}},          // library
-    {map_key(3, 3), {11, 0, MaxRating::shadow}},          // pigeon coop
-    {map_key(3, 4), {12, 1, MaxRating::shadow}},          // shangri'la
-    {map_key(3, 5), {13, 1, MaxRating::shadow}},          // train station
-    {map_key(4, 0), {14}},
-    {map_key(4, 1), {15}},
+    {map_key(-1, -1), {0}},                                // game loading
+    {map_key(25, 0), {0}},                                 // menu
+    {map_key(0, 0), {1, 0, MaxRating::unrated}},           // garden
+    {map_key(0, 1), {2, 0, MaxRating::unrated}},           // greenhouse
+    {map_key(0, 2), {3, 1, MaxRating::unrated}},           // cliffside
+    {map_key(0, 3), {4, 1, MaxRating::shadow}},            // mansion ground
+    {map_key(0, 4), {5, 0, MaxRating::unrated}},           // mansion 2nd
+    {map_key(1, 0), {6, 1, MaxRating::silent_assassin}},   // king of chinatown
+    {map_key(2, 0), {7, 1, MaxRating::shadow}},            // terminus hotel
+    {map_key(2, 1), {8, 1, MaxRating::shadow}},            // upper floors
+    {map_key(3, 0), {9, 0, MaxRating::shadow}},            // burning hotel
+    {map_key(3, 1), {10, 1, MaxRating::shadow}},           // library
+    {map_key(3, 3), {11, 0, MaxRating::shadow}},           // pigeon coop
+    {map_key(3, 4), {12, 1, MaxRating::shadow}},           // shangri'la
+    {map_key(3, 5), {13, 1, MaxRating::shadow}},           // train station
+    {map_key(4, 0), {14, 1, MaxRating::shadow}},           // courtyard
+    {map_key(4, 1), {15, 1, MaxRating::silent_assassin}},  // vixen club
     {map_key(4, 2), {16}},
     {map_key(4, 3), {17}},
     {map_key(4, 4), {18}},
