@@ -17,6 +17,7 @@ struct MapInfo {
 };
 
 const std::unordered_map<int32_t, MapInfo> scenes = {
+    {map_key(-1, -1), {0}},                            // game loading
     {map_key(25, 0), {0}},                             // menu
     {map_key(0, 0), {1, MaxRating::unrated}},          // garden
     {map_key(0, 1), {2, MaxRating::unrated}},          // greenhouse
@@ -31,20 +32,20 @@ const std::unordered_map<int32_t, MapInfo> scenes = {
     {map_key(3, 3), {11, MaxRating::shadow}},          // pigeon coop
     {map_key(3, 4), {12, MaxRating::shadow}},          // shangri'la
     {map_key(3, 5), {13, MaxRating::shadow}},          // train station
-    {map_key(4, 1), {14}},
-    {map_key(4, 2), {15}},
-    {map_key(4, 3), {16}},
-    {map_key(4, 4), {17}},
-    {map_key(4, 5), {18}},
-    {map_key(4, 6), {19}},
-    {map_key(4, 7), {20}},
-    {map_key(6, 1), {21}},
-    {map_key(6, 2), {22}},
-    {map_key(6, 3), {23}},
+    {map_key(4, 0), {14}},
+    {map_key(4, 1), {15}},
+    {map_key(4, 2), {16}},
+    {map_key(4, 3), {17}},
+    {map_key(4, 4), {18}},
+    {map_key(4, 5), {19}},
+    {map_key(4, 6), {20}},
+    {map_key(6, 0), {21}},
+    {map_key(6, 1), {22}},
+    {map_key(6, 2), {23}},
     {map_key(7, 0), {24}},
     {map_key(8, 0), {25}},
-    {map_key(9, 1), {26}},
-    {map_key(9, 2), {27}},
+    {map_key(9, 0), {26}},
+    {map_key(9, 1), {27}},
     {map_key(10, 0), {28}},
     {map_key(11, 2), {29}},
     {map_key(11, 3), {30}},
