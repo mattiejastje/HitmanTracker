@@ -13,25 +13,26 @@ enum class MaxRating { unrated, specialist, shadow, silent_assassin };
 
 struct MapInfo {
     int map;
+    int num_evidence;
     MaxRating max_rating;
 };
 
 const std::unordered_map<int32_t, MapInfo> scenes = {
-    {map_key(-1, -1), {0}},                            // game loading
-    {map_key(25, 0), {0}},                             // menu
-    {map_key(0, 0), {1, MaxRating::unrated}},          // garden
-    {map_key(0, 1), {2, MaxRating::unrated}},          // greenhouse
-    {map_key(0, 2), {3, MaxRating::unrated}},          // cliffside
-    {map_key(0, 3), {4, MaxRating::shadow}},           // mansion ground
-    {map_key(0, 4), {5, MaxRating::unrated}},          // mansion 2nd
-    {map_key(1, 0), {6, MaxRating::silent_assassin}},  // king of chinatown
-    {map_key(2, 0), {7, MaxRating::shadow}},           // terminus hotel
-    {map_key(2, 1), {8, MaxRating::shadow}},           // upper floors
-    {map_key(3, 0), {9, MaxRating::shadow}},           // burning hotel
-    {map_key(3, 1), {10, MaxRating::shadow}},          // library
-    {map_key(3, 3), {11, MaxRating::shadow}},          // pigeon coop
-    {map_key(3, 4), {12, MaxRating::shadow}},          // shangri'la
-    {map_key(3, 5), {13, MaxRating::shadow}},          // train station
+    {map_key(-1, -1), {0}},                               // game loading
+    {map_key(25, 0), {0}},                                // menu
+    {map_key(0, 0), {1, 0, MaxRating::unrated}},          // garden
+    {map_key(0, 1), {2, 0, MaxRating::unrated}},          // greenhouse
+    {map_key(0, 2), {3, 1, MaxRating::unrated}},          // cliffside
+    {map_key(0, 3), {4, 1, MaxRating::shadow}},           // mansion ground
+    {map_key(0, 4), {5, 0, MaxRating::unrated}},          // mansion 2nd
+    {map_key(1, 0), {6, 1, MaxRating::silent_assassin}},  // king of chinatown
+    {map_key(2, 0), {7, 1, MaxRating::shadow}},           // terminus hotel
+    {map_key(2, 1), {8, 1, MaxRating::shadow}},           // upper floors
+    {map_key(3, 0), {9, 0, MaxRating::shadow}},           // burning hotel
+    {map_key(3, 1), {10, 1, MaxRating::shadow}},          // library
+    {map_key(3, 3), {11, 0, MaxRating::shadow}},          // pigeon coop
+    {map_key(3, 4), {12, 1, MaxRating::shadow}},          // shangri'la
+    {map_key(3, 5), {13, 1, MaxRating::shadow}},          // train station
     {map_key(4, 0), {14}},
     {map_key(4, 1), {15}},
     {map_key(4, 2), {16}},
@@ -77,7 +78,9 @@ const std::unordered_map<int32_t, MapInfo> scenes = {
 };
 
 static Status get_silent_assassin(const Stats& stats) {
-    return (stats.spotted.value != 0) ? Status::RED : Status::GREEN;
+    return (stats.spotted.value != 0)         ? Status::RED
+           : (stats.evidence_left.value != 0) ? Status::YELLOW
+                                              : Status::GREEN;
 };
 
 void hitman_absolution::update_slow(
@@ -116,6 +119,13 @@ void hitman_absolution::update_slow(
         auto spotted = read<int32_t>(handle, base_ptrs[0] + 0xD61568);
         if (spotted) {
             stats.spotted = stats_value(spotted.value());
+        }
+        auto evidence_collected
+            = read<int32_t>(handle, base_ptrs[0] + 0xE20FB0, {0x9C});
+        if (evidence_collected) {
+            stats.evidence_left = stats_value(
+                iter->second.num_evidence - evidence_collected.value()
+            );
         }
         stats.silent_assassin = get_silent_assassin(stats);
     }

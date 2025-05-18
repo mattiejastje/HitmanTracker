@@ -90,6 +90,7 @@ void hitman_absolution::gui(
         map_names,
         {
             {"Spotted", stats.spotted},
+            {"Evidence Left", stats.evidence_left},
         }
     );
 }

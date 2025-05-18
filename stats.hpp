@@ -39,4 +39,5 @@ struct Stats {
     StatsValue cust_weapons_left;  // bm
     StatsValue suit_left;          // bm
     StatsValue spotted;            // hma
+    StatsValue evidence_left;      // hma
 };
