@@ -15,6 +15,7 @@
 #include "hitman2_silent_assassin/gui.hpp"
 #include "hitman2_silent_assassin/stats.hpp"
 #include "hitman_absolution/gui.hpp"
+#include "hitman_absolution/stats.hpp"
 #include "hitman_blood_money/gui.hpp"
 #include "hitman_blood_money/hook.hpp"
 #include "hitman_blood_money/stats.hpp"
@@ -84,7 +85,11 @@ static std::optional<GameInfo> get_game_info(const char* exe_file) {
         };
     } else if (stricmp("hma.exe", exe_file) == 0) {
         return GameInfo{
-            GameMethods{hitman_absolution::gui, stats_nothing, stats_nothing},
+            GameMethods{
+                hitman_absolution::gui,
+                hitman_absolution::update_slow,
+                hitman_absolution::update_fast
+            },
             {{"hma.exe"}},
             hook_nothing,
         };

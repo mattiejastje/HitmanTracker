@@ -23,6 +23,8 @@ add_executable (HitmanTracker
 	"mem/read_write.cpp"
 	"hitman2_silent_assassin/gui.cpp"
 	"hitman2_silent_assassin/stats.cpp"
+	"hitman_absolution/gui.cpp"
+	"hitman_absolution/stats.cpp"
 	"hitman_common/gui.cpp"
 	"hitman_contracts/gui.cpp"
 	"hitman_codename_47/gui.cpp"
