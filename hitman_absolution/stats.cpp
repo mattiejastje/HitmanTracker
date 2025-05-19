@@ -133,6 +133,7 @@ void hitman_absolution::update_slow(
             level.value(),
             section.value()
         );
+        return;
     }
     stats.map_stage = MapStage::main;  // always render stats
     if (stats.map > 0) {
