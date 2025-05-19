@@ -30,21 +30,22 @@ const std::unordered_map<int32_t, MapInfo> scenes = {
     {map_key(2, 0), {7, 1, Rating::shadow}},           // terminus hotel
     {map_key(2, 1), {8, 1, Rating::shadow}},           // upper floors
     // TODO (2, 2)
-    {map_key(3, 0), {9, 0, Rating::specialist}},         // burning hotel
-    {map_key(3, 1), {10, 1, Rating::shadow}},            // library
-    {map_key(3, 3), {11, 0}},                            // pigeon coop
-    {map_key(3, 4), {12, 1, Rating::shadow}},            // shangri-la
-    {map_key(3, 5), {13, 1, Rating::shadow}},            // train station
-    {map_key(4, 0), {14, 1, Rating::shadow}},            // courtyard
-    {map_key(4, 1), {15, 1, Rating::silent_assassin}},   // vixen club
-    {map_key(4, 2), {16, 0, Rating::specialist}},        // dressing rooms
-    {map_key(4, 3), {17, 1, Rating::shadow}},            // derelict building
-    {map_key(4, 4), {18, 1, Rating::shadow}},            // convenience store
-    {map_key(4, 5), {19, 1}},                            // loading area
-    {map_key(4, 6), {20, 1, Rating::silent_assassin}},   // chinese new year
-    {map_key(6, 0), {21, 0}},                            // victoria's ward
-    {map_key(6, 1), {22, 1, Rating::shadow}},            // orphanage halls
-    {map_key(6, 2), {23, 1, Rating::silent_assassin}},   // central heating
+    {map_key(3, 0), {9, 0, Rating::specialist}},        // burning hotel
+    {map_key(3, 1), {10, 1, Rating::shadow}},           // library
+    {map_key(3, 3), {11, 0}},                           // pigeon coop
+    {map_key(3, 4), {12, 1, Rating::shadow}},           // shangri-la
+    {map_key(3, 5), {13, 1, Rating::shadow}},           // train station
+    {map_key(4, 0), {14, 1, Rating::shadow}},           // courtyard
+    {map_key(4, 1), {15, 1, Rating::silent_assassin}},  // vixen club
+    {map_key(4, 2), {16, 0, Rating::specialist}},       // dressing rooms
+    {map_key(4, 3), {17, 1, Rating::shadow}},           // derelict building
+    {map_key(4, 4), {18, 1, Rating::shadow}},           // convenience store
+    {map_key(4, 5), {19, 1}},                           // loading area
+    {map_key(4, 6), {20, 1, Rating::silent_assassin}},  // chinese new year
+    {map_key(6, 0), {21, 0}},                           // victoria's ward
+    {map_key(6, 1), {22, 1, Rating::shadow}},           // orphanage halls
+    {map_key(6, 2), {0}},  // "sister mary" cutscene
+    {map_key(6, 3), {23, 1, Rating::silent_assassin}},   // central heating
     {map_key(7, 0), {24, 1, Rating::shadow}},            // great balls of fire
     {map_key(8, 0), {25, 1, Rating::veteran}},           // gunshop
     {map_key(9, 0), {26, 1, Rating::silent_assassin}},   // streets of hope
