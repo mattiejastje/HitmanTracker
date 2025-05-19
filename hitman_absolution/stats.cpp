@@ -79,27 +79,27 @@ const std::unordered_map<int32_t, MapInfo> scenes = {
     {map_key(25, 2), {55, 1, Rating::silent_assassin}},  // crematorium
 };
 
-static Status get_rating_status(const MapInfo& map_info, const Stats& stats) {
-    return (map_info.max_rating != Rating::unrated && stats.spotted.value != 0)
+static Status get_rating_status(Rating max_rating, const Stats& stats) {
+    return (max_rating != Rating::unrated && stats.spotted.value != 0)
                ? Status::RED
-           : (map_info.max_rating != Rating::unrated
-              && map_info.max_rating != Rating::silent_assassin
+           : (max_rating != Rating::unrated
+              && max_rating != Rating::silent_assassin
               && stats.evidence_left.value != 0)
                ? Status::YELLOW
                : Status::GREEN;
 };
 
-static std::string get_rating_value(const MapInfo& map_info, Status status) {
-    if (map_info.max_rating == Rating::unrated) {
+static std::string get_rating_value(Rating max_rating, Status status) {
+    if (max_rating == Rating::unrated) {
         return "Unrated";
     }
     return std::format(
         "{}{}",
         status == Status::GREEN ? "" : "No ",
-        map_info.max_rating == Rating::veteran      ? "Veteran"
-        : map_info.max_rating == Rating::specialist ? "Specialist"
-        : map_info.max_rating == Rating::shadow     ? "Shadow"
-                                                    : "Silent Assassin"
+        max_rating == Rating::veteran      ? "Veteran"
+        : max_rating == Rating::specialist ? "Specialist"
+        : max_rating == Rating::shadow     ? "Shadow"
+                                           : "Silent Assassin"
     );
 }
 
@@ -151,8 +151,9 @@ void hitman_absolution::update_slow(
                     && iter->second.max_rating != Rating::silent_assassin
             );
         }
-        auto status = get_rating_status(iter->second, stats);
-        stats.rating = {get_rating_value(iter->second, status), status};
+        auto status = get_rating_status(iter->second.max_rating, stats);
+        stats.rating
+            = {get_rating_value(iter->second.max_rating, status), status};
     }
 }
 
