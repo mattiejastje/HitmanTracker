@@ -42,4 +42,5 @@ struct Stats {
     StatsValue<int32_t> suit_left;          // bm
     StatsValue<int32_t> spotted;            // hma
     StatsValue<int32_t> evidence_left;      // hma
+    StatsValue<int32_t> target_not_located; // hma
 };
