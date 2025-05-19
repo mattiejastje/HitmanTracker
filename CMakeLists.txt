@@ -26,6 +26,7 @@ add_executable (HitmanTracker
 	"hitman_absolution/gui.cpp"
 	"hitman_absolution/stats.cpp"
 	"hitman_common/gui.cpp"
+	"hitman_common/stats.cpp"
 	"hitman_contracts/gui.cpp"
 	"hitman_codename_47/gui.cpp"
 	"hitman_blood_money/gui.cpp"

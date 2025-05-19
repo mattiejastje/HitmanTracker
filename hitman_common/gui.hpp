@@ -6,7 +6,7 @@ namespace hitman_common {
 
 struct TableRow {
     std::string name;
-    StatsValue stats_value;
+    StatsValue<int32_t> stats_value;
 };
 
 void gui(

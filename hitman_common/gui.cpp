@@ -32,18 +32,16 @@ void hitman_common::gui(
                 format_duration(stats.time).c_str()
             );
             auto rating_font
-                = stats.silent_assassin == Status::RED     ? fonts.rating_bad
-                  : stats.silent_assassin == Status::GREEN ? fonts.rating_good
-                                                           : fonts.rating_maybe;
-            auto rating_color = stats.silent_assassin == Status::RED
+                = stats.rating.status == Status::RED     ? fonts.rating_bad
+                  : stats.rating.status == Status::GREEN ? fonts.rating_good
+                                                         : fonts.rating_maybe;
+            auto rating_color = stats.rating.status == Status::RED
                                     ? settings.rating_bad.color
-                                : stats.silent_assassin == Status::GREEN
+                                : stats.rating.status == Status::GREEN
                                     ? settings.rating_good.color
                                     : settings.rating_maybe.color;
-            auto rating_text = stats.silent_assassin == Status::GREEN
-                                   ? "Silent Assassin"
-                                   : "No Silent Assassin";
-            text(rating_font, rating_color, rating_text);
+            auto rating_text = stats.rating.value;
+            text(rating_font, rating_color, rating_text.c_str());
             ImGui::Spacing();
             ImGui::BeginTable(
                 "Statistics",

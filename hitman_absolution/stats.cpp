@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 
+#include "../hitman_common/stats.hpp"
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
 
@@ -15,20 +16,20 @@ struct MapInfo {
 };
 
 const std::unordered_map<int32_t, MapInfo> scenes = {
-    {map_key(-1, -1), {0}},     // game loading
-    {map_key(25, 0), {0}},      // menu
-    {map_key(0, 0), {1, 0}},    // garden
-    {map_key(0, 1), {2, 0}},    // greenhouse
-    {map_key(0, 2), {3, 1}},    // cliffside
-    {map_key(0, 3), {4, 1}},    // mansion ground
-    {map_key(0, 4), {5, 0}},    // mansion 2nd
-    {map_key(1, 0), {6, 1}},    // king of chinatown
-    {map_key(2, 0), {7, 1}},    // terminus hotel
-    {map_key(2, 1), {8, 1}},    // upper floors
+    {map_key(-1, -1), {0}},   // game loading
+    {map_key(0, 0), {1, 0}},  // garden
+    {map_key(0, 1), {2, 0}},  // greenhouse
+    {map_key(0, 2), {3, 1}},  // cliffside
+    {map_key(0, 3), {4, 1}},  // mansion ground
+    {map_key(0, 4), {5, 0}},  // mansion 2nd
+    {map_key(1, 0), {6, 1}},  // king of chinatown
+    {map_key(2, 0), {7, 1}},  // terminus hotel
+    {map_key(2, 1), {8, 1}},  // upper floors
+    // TODO (2, 2)
     {map_key(3, 0), {9, 0}},    // burning hotel
     {map_key(3, 1), {10, 1}},   // library
     {map_key(3, 3), {11, 0}},   // pigeon coop
-    {map_key(3, 4), {12, 1}},   // shangri'la
+    {map_key(3, 4), {12, 1}},   // shangri-la
     {map_key(3, 5), {13, 1}},   // train station
     {map_key(4, 0), {14, 1}},   // courtyard
     {map_key(4, 1), {15, 1}},   // vixen club
@@ -69,12 +70,12 @@ const std::unordered_map<int32_t, MapInfo> scenes = {
     {map_key(22, 1), {50, 1}},  // blackwater park
     {map_key(22, 2), {51, 1}},  // the penthouse
     {map_key(24, 0), {52, 1}},  // blackwater roof
-    {map_key(25, 0), {53, 1}},  // cemetary entrance
+    {map_key(25, 0), {53, 1}},  // cemetary entrance (also main menu)?
     {map_key(25, 1), {54, 1}},  // burnwood family tomb
     {map_key(25, 2), {55, 1}},  // crematorium
 };
 
-static Status get_silent_assassin(const Stats& stats) {
+static Status get_rating_status(const Stats& stats) {
     return (stats.spotted.value != 0)         ? Status::RED
            : (stats.evidence_left.value != 0) ? Status::YELLOW
                                               : Status::GREEN;
@@ -124,7 +125,8 @@ void hitman_absolution::update_slow(
                 iter->second.num_evidence - evidence_collected.value()
             );
         }
-        stats.silent_assassin = get_silent_assassin(stats);
+        auto status = get_rating_status(stats);
+        stats.rating = {get_simple_rating_value(status), status};
     }
 }
 

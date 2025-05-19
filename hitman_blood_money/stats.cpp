@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "../hitman_common/stats.hpp"
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
 
@@ -227,7 +228,7 @@ static void set_suit_left_on_level(
     // nothing to do in pre/post stage
 }
 
-static Status get_silent_assassin(const Stats& stats) {
+static Status get_rating_status(const Stats& stats) {
     bool items_left_on_map
         = stats.difficulty > 2
           && (stats.cust_weapons_left.value != 0 || stats.suit_left.value != 0);
@@ -320,7 +321,8 @@ void hitman_blood_money::update_slow(
         );
         stats.suit_left
             = stats_value(game_stats.suit_left_on_level, stats.difficulty > 2);
-        stats.silent_assassin = get_silent_assassin(stats);
+        auto status = get_rating_status(stats);
+        stats.rating = {get_simple_rating_value(status), status};
     }
 }
 

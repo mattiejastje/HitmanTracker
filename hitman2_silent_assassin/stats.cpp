@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "../hitman_common/stats.hpp"
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
 
@@ -213,8 +214,8 @@ void hitman2_silent_assassin::update_slow(
             stats.enemies_wounded.status = get_status(stats_arr, 5, arg_min);
             stats.innocents_killed.status = get_status(stats_arr, 6, arg_min);
             stats.innocents_wounded.status = get_status(stats_arr, 7, arg_min);
-            stats.silent_assassin
-                = arg_min.maximum <= 0 ? Status::GREEN : Status::RED;
+            auto rating = arg_min.maximum <= 0 ? Status::GREEN : Status::RED;
+            stats.rating = {get_simple_rating_value(rating), rating};
         } else {
             logging::warn("Unable to read game stats");
         }
