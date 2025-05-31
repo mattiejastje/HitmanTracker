@@ -7,6 +7,33 @@
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
 
+// https://github.com/pavledev/HitmanAbsolutionSDK/blob/4599042d197d8ead470c66ea002e6a9e573ae8ae/HitmanAbsolutionSDK/include/Glacier/ZGameTimeManager.h
+struct GameTimeManager {
+    int32_t vtable;
+    int32_t _pad0;
+    int64_t ticks_per_second;
+    int64_t last_time_ticks;
+    int64_t game_time;
+    int64_t game_time_prev;
+    int64_t game_time_delta;
+    int64_t real_time;
+    int64_t real_time_prev;
+    int64_t real_time_delta;
+    float game_time_multiplier;
+    float debug_time_multiplier;
+    int64_t frame_wait;
+    int64_t frame_step;
+    int64_t frame_remain;
+    int32_t is_paused;
+    int32_t frame_count;
+    int32_t is_forced_time_step;
+    int32_t _pad1;
+    double forced_time_step;
+    double forced_time_target;
+};
+
+static_assert(sizeof(GameTimeManager) == 0x88);
+
 static int32_t map_key(int32_t level, int32_t section) {
     return (level << 8) + section;
 }
@@ -159,6 +186,8 @@ void hitman_absolution::update_slow(
     }
 }
 
+constexpr float time_scale = 1.0f / (1024 * 1024);
+
 void hitman_absolution::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
@@ -166,9 +195,9 @@ void hitman_absolution::update_fast(
     Stats& stats
 ) {
     if (stats.map > 0) {
-        auto time = read<int32_t>(handle, base_ptrs[0] + 0xE24640);
+        auto time = read<GameTimeManager>(handle, base_ptrs[0] + 0xE24730);
         if (time) {
-            stats.time = time.value() * 9.5367431640625E-7f;  // 1 / 1024 / 1024
+            stats.time = time.value().game_time * time_scale;
         } else {
             logging::error("Unable to read time");
         }
