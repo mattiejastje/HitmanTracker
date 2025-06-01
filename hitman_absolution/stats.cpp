@@ -34,6 +34,20 @@ struct GameTimeManager {
 
 static_assert(sizeof(GameTimeManager) == 0x88);
 
+// https://github.com/pavledev/HitmanAbsolutionSDK/blob/main/HitmanAbsolutionSDK/include/Glacier/ZLevelManager.h
+// https://github.com/pavledev/HitmanAbsolutionSDK/blob/main/HitmanAbsolutionSDK/include/Glacier/SSceneParameters.h
+struct LevelManager {
+    int32_t vtable;
+    int32_t scene_resource_length;
+    int32_t scene_resource_ptr;
+    int32_t game_mode;  // 1 = story mode
+    int64_t bonus_weapon;
+    int64_t bonus_outfit;
+    int32_t checkpoint_index;
+    int8_t is_restoring;
+    int8_t use_savegame;
+};
+
 static int32_t map_key(int32_t level, int32_t section) {
     return (level << 8) + section;
 }
@@ -143,6 +157,30 @@ void hitman_absolution::update_slow(
     } else {
         logging::error("Unable to read difficulty");
     }
+    auto level_manager = read<LevelManager>(handle, base_ptrs[0] + 0xE21310);
+    if (!level_manager) {
+        logging::error("Unable to read level manager");
+        return;
+    }
+    if (level_manager.value().scene_resource_length > 64) {
+        logging::error("Scene resource length overflow");
+        return;
+    }
+    if (level_manager.value().scene_resource_length < 0
+        || level_manager.value().game_mode != 1) {
+        stats.map = 0;
+        return;
+    }
+    auto scene = read_string(
+        handle,
+        level_manager.value().scene_resource_ptr,
+        level_manager.value().scene_resource_length
+    );
+    if (!scene) {
+        logging::error("Unable to read scene");
+        return;
+    }
+    // TODO use scene & level_manager.checkpoint_index instead of level/section
     auto level = read<int32_t>(handle, base_ptrs[0] + 0xE20F48);
     auto section = read<int32_t>(handle, base_ptrs[0] + 0xD60F94);
     if (!level) {
@@ -155,7 +193,11 @@ void hitman_absolution::update_slow(
     }
     auto key = map_key(level.value(), section.value());
     logging::trace(
-        "Level {}, section {}, key {}", level.value(), section.value(), key
+        "Scene {}, level {}, section {}, key {}",
+        scene.value(),
+        level.value(),
+        section.value(),
+        key
     );
     auto iter = scenes.find(key);
     if (iter != scenes.end()) {
