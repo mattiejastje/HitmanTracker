@@ -86,7 +86,11 @@ void hitman_absolution::gui(
         fonts,
         stats,
         "Hitman: Absolution",
-        "",
+        stats.difficulty == 0   ? "Easy"
+        : stats.difficulty == 1 ? "Normal"
+        : stats.difficulty == 2 ? "Hard"
+        : stats.difficulty == 3 ? "Expert"
+                                : "Purist",
         map_names,
         {
             {"Spotted", stats.spotted},

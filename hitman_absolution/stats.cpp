@@ -137,6 +137,12 @@ void hitman_absolution::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
+    auto difficulty = read<int32_t>(handle, base_ptrs[0] + 0xD58D04);
+    if (difficulty) {
+        stats.difficulty = difficulty.value();
+    } else {
+        logging::error("Unable to read difficulty");
+    }
     auto level = read<int32_t>(handle, base_ptrs[0] + 0xE20F48);
     auto section = read<int32_t>(handle, base_ptrs[0] + 0xD60F94);
     if (!level) {
