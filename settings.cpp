@@ -34,15 +34,12 @@ static void add_text_style_options(
     )
         ->transform(CLI::PositiveNumber)
         ->capture_default_str();
-    // broken with current CLI11
-    /*
     app.add_option(
            std::format("--{}-color", name),
            style.color,
            std::format("Color for {}", desc)
     )
         ->capture_default_str();
-    */
 };
 
 static std::unique_ptr<CLI::App> make_app(Settings& settings) {
@@ -62,11 +59,8 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     );
     app->add_option("--font-size", settings.gui.font_size, "Font size")
         ->capture_default_str();
-    // broken with current CLI11
-    /*
     app->add_option("--bg-color", settings.gui.bg_color, "Background color")
         ->capture_default_str();
-    */
     add_text_style_options(*app, "title", "title", settings.gui.title);
     add_text_style_options(*app, "map", "map", settings.gui.map);
     add_text_style_options(*app, "time", "time", settings.gui.time);
