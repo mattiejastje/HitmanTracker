@@ -21,6 +21,7 @@
 #include "hitman_blood_money/stats.hpp"
 #include "hitman_codename_47/gui.hpp"
 #include "hitman_contracts/gui.hpp"
+#include "hitman_contracts/stats.hpp"
 #include "logging.hpp"
 #include "mem/read_write.hpp"
 
@@ -69,7 +70,11 @@ static std::optional<GameInfo> get_game_info(const char* exe_file) {
         };
     } else if (stricmp("hitmancontracts.exe", exe_file) == 0) {
         return GameInfo{
-            GameMethods{hitman_contracts::gui, stats_nothing, stats_nothing},
+            GameMethods{
+                hitman_contracts::gui,
+                hitman_contracts::update_slow,
+                hitman_contracts::update_fast
+            },
             {{"hitmancontracts.exe"}},
             hook_nothing,
         };

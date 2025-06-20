@@ -1,9 +1,6 @@
 #include "stats.hpp"
 
-#include <array>
-#include <cassert>
 #include <cstdint>
-#include <set>
 #include <unordered_map>
 #include <vector>
 
@@ -41,33 +38,6 @@ const std::vector<int32_t> second_offsets
     = {0x838, 0xB24, 0x8A0, 0x138, 0xB88, 0xBB8, 0xB48, 0xCE8, 0x136C, 0xAD0,
        0xF50, 0x8D4, 0x9EC, 0x400, 0x9EC, 0x644, 0xB08, 0x96C, 0xB00,  0x8};
 
-struct GameStats {
-    int32_t headshots;          // 0x208
-    int32_t enemies_wounded;    // 0x20C
-    int32_t enemies_killed;     // 0x210
-    int32_t innocents_wounded;  // 0x214
-    int32_t innocents_killed;   // 0x218
-    int32_t alerts;             // 0x21C
-    int32_t close_encounters;   // 0x220
-};
-
-static_assert(sizeof(GameStats) == 28);
-
-using StatsArray = std::array<int32_t, 8>;
-
-static StatsArray stats_as_array(const Stats& stats) {
-    return StatsArray{
-        stats.shots_fired.value,
-        stats.close_encounters.value,
-        stats.headshots.value,
-        stats.alerts.value,
-        stats.enemies_killed.value,
-        stats.enemies_wounded.value,
-        stats.innocents_killed.value,
-        stats.innocents_wounded.value,
-    };
-}
-
 // https://docs.google.com/spreadsheets/d/1i6dmzcBROqoJlsQjUGY8wxdqwxt2hXzjB9fPVggTf2k/edit?gid=1074822823#gid=1074822823
 const std::vector<StatsArray> silent_assassin_combinations
     = {{0, 1, 0, 0, 1, 2, 0, 0}, {0, 1, 0, 0, 0, 5, 0, 0},
@@ -84,73 +54,6 @@ const std::vector<StatsArray> silent_assassin_combinations
        {2, 1, 1, 0, 0, 0, 0, 0}, {2, 1, 0, 0, 0, 1, 0, 0},
        {2, 0, 2, 1, 0, 0, 0, 0}, {2, 0, 1, 1, 0, 1, 0, 0},
        {3, 0, 0, 1, 0, 0, 0, 0}};
-
-using StatsExcess = StatsArray;
-
-// excess values above a silent assassin combination
-// any values > 0 mean no silent assassin
-static StatsExcess get_subtract(
-    const StatsArray& stats, const StatsArray& stats_sa
-) {
-    StatsArray result{};
-    for (int i = 0; i < 8; i++) {
-        result[i] = stats[i] - stats_sa[i];
-    };
-    return result;
-}
-
-struct Excess {
-    int32_t maximum;         // the maximum excess
-    std::set<int> positive;  // strictly positive excess stats ("red")
-};
-
-static Excess get_arg_max(const StatsExcess& excess) {
-    auto maximum = excess[0];
-    for (int i = 1; i < 8; i++) {
-        auto value = excess[i];
-        if (maximum < value) maximum = value;
-    };
-    Excess arg_max{maximum, {}};
-    for (int i = 0; i < 8; i++) {
-        if (excess[i] > 0) arg_max.positive.insert(i);
-    }
-    return arg_max;
-}
-
-static std::vector<Excess> get_arg_maxs(const StatsArray& stats) {
-    std::vector<Excess> arg_maxs{};
-    for (auto& stats_sa : silent_assassin_combinations) {
-        arg_maxs.push_back(get_arg_max(get_subtract(stats, stats_sa)));
-    }
-    return arg_maxs;
-}
-
-static Excess get_arg_min(const std::vector<Excess>& arg_maxs) {
-    assert(!arg_maxs.empty());
-    Excess arg_min{arg_maxs[0]};
-    for (auto& arg_max : arg_maxs) {
-        if (arg_min.maximum > arg_max.maximum) {
-            arg_min = arg_max;
-        } else if (arg_min.maximum == arg_max.maximum) {
-            for (auto i : arg_max.positive) arg_min.positive.insert(i);
-        }
-    }
-    return arg_min;
-};
-
-static bool is_at_risk(const StatsArray& stats, int index) {
-    StatsArray stats_inc = stats;
-    stats_inc[index] += 1;
-    return get_arg_min(get_arg_maxs(stats_inc)).positive.contains(index);
-}
-
-static Status get_status(
-    const StatsArray& stats, int index, const Excess& arg_min
-) {
-    return arg_min.positive.contains(index) ? Status::RED
-           : is_at_risk(stats, index)       ? Status::YELLOW
-                                            : Status::GREEN;
-};
 
 void hitman2_silent_assassin::update_slow(
     void* handle,
@@ -180,7 +83,7 @@ void hitman2_silent_assassin::update_slow(
         } else {
             logging::warn("Unable to read shots fired");
         }
-        GameStats game_stats{0};
+        CommonGameStats game_stats{0};
         if (read_bytes(
                 handle,
                 base_ptrs[0] + 0x2A6C50,
@@ -188,34 +91,9 @@ void hitman2_silent_assassin::update_slow(
                 &game_stats,
                 sizeof(game_stats)
             )) {
-            logging::trace("Headshots {}", game_stats.headshots);
-            logging::trace("Enemies wounded {}", game_stats.enemies_wounded);
-            logging::trace("Enemies killed {}", game_stats.enemies_killed);
-            logging::trace(
-                "Innocents wounded {}", game_stats.innocents_wounded
+            process_common_game_stats(
+                silent_assassin_combinations, game_stats, stats
             );
-            logging::trace("Innocents killed {}", game_stats.innocents_killed);
-            logging::trace("Alerts {}", game_stats.alerts);
-            logging::trace("Close encounters {}", game_stats.close_encounters);
-            stats.headshots.value = game_stats.headshots;
-            stats.enemies_wounded.value = game_stats.enemies_wounded;
-            stats.enemies_killed.value = game_stats.enemies_killed;
-            stats.innocents_killed.value = game_stats.innocents_killed;
-            stats.innocents_wounded.value = game_stats.innocents_wounded;
-            stats.alerts.value = game_stats.alerts;
-            stats.close_encounters.value = game_stats.close_encounters;
-            auto stats_arr = stats_as_array(stats);
-            auto arg_min = get_arg_min(get_arg_maxs(stats_arr));
-            stats.shots_fired.status = get_status(stats_arr, 0, arg_min);
-            stats.close_encounters.status = get_status(stats_arr, 1, arg_min);
-            stats.headshots.status = get_status(stats_arr, 2, arg_min);
-            stats.alerts.status = get_status(stats_arr, 3, arg_min);
-            stats.enemies_killed.status = get_status(stats_arr, 4, arg_min);
-            stats.enemies_wounded.status = get_status(stats_arr, 5, arg_min);
-            stats.innocents_killed.status = get_status(stats_arr, 6, arg_min);
-            stats.innocents_wounded.status = get_status(stats_arr, 7, arg_min);
-            auto rating = arg_min.maximum <= 0 ? Status::GREEN : Status::RED;
-            stats.rating = {get_simple_rating_value(rating), rating};
         } else {
             logging::warn("Unable to read game stats");
         }
