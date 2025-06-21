@@ -4,10 +4,11 @@ A statistics tracker for Hitman games.
 
 ## Supported Games
 
+For now, only the steam versions are supported.
+
 ### Hitman: Codename 47
 
 Game detected, but currently no stats are tracked.
-Note the game has no rating system of its own.
 
 ### Hitman 2: Silent Assassin
 
