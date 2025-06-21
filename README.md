@@ -8,20 +8,23 @@ For now, only the steam versions are supported.
 
 ### Hitman: Codename 47
 
-Game detected, but currently no stats are tracked.
+Basic support to tracks map name and internal game timer.
+Known issues:
+
+* On fast systems, the game will run too fast and the timer will as well.
 
 ### Hitman 2: Silent Assassin
 
 Nearly fully supported. Known issues:
 
-* Difficulty is not yet tracked.
+* Difficulty is not tracked.
 * Shots fired pointer is experimental.
 
 ### Hitman: Contracts
 
 Nearly fully supported. Known issues:
 
-* Difficulty is not yet tracked.
+* Difficulty is not tracked.
 
 ### Hitman: Blood Money
 

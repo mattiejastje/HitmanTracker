@@ -38,7 +38,7 @@ struct Scene {
     MapStage map_stage{MapStage::pre};
 };
 
-std::unordered_map<std::string, Scene> scenes = {
+const std::unordered_map<std::string, Scene> scenes = {
     {"hitmanbloodmoney", {}},
     {"scenes/hitmanbloodmoney.gms", {}},
     {"saveandcontinue", {}},

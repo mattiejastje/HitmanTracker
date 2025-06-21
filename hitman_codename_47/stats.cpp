@@ -1,0 +1,72 @@
+#include "stats.hpp"
+
+#include <cstdint>
+#include <string>
+#include <unordered_map>
+
+#include "../logging.hpp"
+#include "../mem/read_write.hpp"
+
+// OptionsScreen gets loaded during missions, assign negative value to ignore
+const std::unordered_map<std::string, int> scenes = {
+    {R"(OptionsScreen)", -1},             // options
+    {R"(Intro.zip)", 0},                  // menu
+    {R"(CutScenes/Intro/Intro.zip)", 0},  // menu
+    {R"(C0_Training\C0_1)", 1},
+    {R"(C1_HongKong\C1_1_Pre)", 2},
+    {R"(C1_HongKong\C1_1)", 2},
+    {R"(CutScenes/C1_HongKong/C1_1_HitmanArrive.zip)", 2},
+    {R"(C1_Hongkong\C1_1_Laptop)", 2},
+    {R"(C1_HongKong\C1_2)", 3},
+    {R"(C1_Hongkong\C1_2_Laptop)", 3},
+    {R"(C1_HongKong\C1_3)", 4},
+    {R"(C1_Hongkong\C1_3_Laptop)", 4},
+    {R"(C1_HongKong\C1_4)", 5},
+    {R"(C1_Hongkong\C1_4_Laptop)", 5},
+    {R"(CutScenes/FlashBacks/FlashBack1_4)", 5},
+    {R"(C4_ColombianRainforest\C4_1)", 6},
+    {R"(C4_ColombianRainForest\C4_1_Laptop)", 6},
+};
+
+void hitman_codename_47::update_slow(
+    void* handle,
+    const BasePtrs& base_ptrs,
+    const LabelPtrs& label_ptrs,
+    Stats& stats
+) {
+    auto scene = read_string(handle, label_ptrs.at(150), {0}, 64);
+    if (!scene) return;  // when game starts, scene will be null
+    logging::trace("Scene {}", scene.value());
+    auto iter = scenes.find(scene.value());
+    if (iter != scenes.end()) {
+        // ignore negative value from OptionsScreen
+        if (iter->second >= 0) {
+            stats.map = iter->second;
+            stats.map_stage = MapStage::main;
+            logging::trace("Map {}", stats.map);
+        }
+    } else {
+        if (!scene.value().empty()) {
+            logging::error("No map registered for scene {}", scene.value());
+        }
+    }
+    if (stats.map > 0) {
+        // TODO
+    }
+}
+
+void hitman_codename_47::update_fast(
+    void* handle,
+    const BasePtrs& base_ptrs,
+    const LabelPtrs& label_ptrs,
+    Stats& stats
+) {
+    if (stats.map > 0) {
+        auto time = read<int32_t>(handle, label_ptrs.at(250));
+        if (time) {
+            stats.time = time.value() / 30.0f;
+        } else {
+            logging::error("Unable to read time");
+        }
+    }
+}
