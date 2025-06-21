@@ -29,7 +29,9 @@ Fully supported.
 ## Related projects
 
 * https://github.com/nvillemin/HitmanStatistics (statistics tracker for Hitman 2: Silent Assassin and Hitman: Contracts)
-* https://github.com/Attrup/StatTracker (statistics tracker for Hitman 2: Silent Assassin and Hitman: Contracts)
+* https://github.com/SuiMachine/HitmanStatisticsUber (extended version of HitmanStatistics)
+* https://github.com/Attrup/StatTracker (similar to HitmanStatistics but written in rust)
+* https://github.com/kurtis2221/hitmanstat (similar to HitmanStatistics, also supporting Hitman: Blood Money)
 * https://github.com/OrfeasZ/Statman (statistics tracker for Hitman: Blood Money and later)
 * https://github.com/ReGlacier/ReHitman (Hitman: Blood Money reverse engineering project)
 * https://github.com/0danny/re47 (Hitman: Codename 47 reverse engineering project)
