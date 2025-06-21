@@ -33,12 +33,15 @@ const std::unordered_map<std::string, int> scenes = {
     {R"(C4_ColombianRainForest\C4_3_Laptop)", 8},
     {R"(C3_BudapestHotel\C3_1)", 9},
     {R"(C3_BudapestHotel\C3_1_Laptop)", 9},
+    {R"(CutScenes/FlashBacks/FlashBack3_1)", 9},
     {R"(C2_RotterdamHarbor\C2_1)", 10},
     {R"(C2_RotterdamHarbor\C2_1_Laptop)", 10},
     {R"(C2_RotterdamHarbor\C2_2)", 11},
     {R"(C2_RotterdamHarbor\C2_2_Laptop)", 11},
+    {R"(CutScenes/FlashBacks/FlashBack2_2)", 11},
     {R"(C5_Sanitarium\C5_1)", 12},
     {R"(C5_Sanitarium\C5_1_Laptop)", 12},
+    {R"(C5_Sanitarium\C5_2_Pre)", 13},
     {R"(C5_Sanitarium\C5_2)", 13},
 };
 
