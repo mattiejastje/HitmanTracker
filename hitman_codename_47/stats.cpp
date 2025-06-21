@@ -12,6 +12,7 @@ const std::unordered_map<std::string, int> scenes = {
     {R"(OptionsScreen)", -1},             // options
     {R"(Intro.zip)", 0},                  // menu
     {R"(CutScenes/Intro/Intro.zip)", 0},  // menu
+    {R"(Intro)", 0},                      // menu (after beating game)
     {R"(C0_Training\C0_1)", 1},
     {R"(C1_HongKong\C1_1_Pre)", 2},
     {R"(C1_HongKong\C1_1)", 2},
