@@ -43,7 +43,7 @@ struct LevelManager {
     int32_t game_mode;  // 1 = story mode
     int64_t bonus_weapon;
     int64_t bonus_outfit;
-    int32_t checkpoint_index;
+    int32_t checkpoint_index; // checkpoint the game was loaded from, not necessarily current checkpoint
     int8_t is_restoring;
     int8_t use_savegame;
 };
