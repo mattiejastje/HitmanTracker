@@ -28,9 +28,6 @@ HookPtr hitman_codename_47::hook(
             // scene load
             Label{110},
             Code{0x56},                    // push esi
-            Code{0x33, 0xF6},              // xor esi,esi
-            Code{0x89, 0x35},              // mov [Label{250}],esi
-            Ptr{Label{250}},               // ...
             Code{0x8B, 0x74, 0x24, 0x18},  // mov esi,[esp+18]
             Code{0x89, 0x35},              // mov [Label{150}],esi
             Ptr{Label{150}},               // ...
