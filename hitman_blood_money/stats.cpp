@@ -335,7 +335,7 @@ void hitman_blood_money::update_fast(
     if (stats.map > 0) {
         auto time = get_time(handle, base_ptrs, stats.map_stage);
         if (time) {
-            stats.time = time.value() * 0.0009765625f;  // 1 / 1024.0f
+            stats.time = time.value() * 0.001f;
         } else {
             logging::error("Unable to read time");
         }
