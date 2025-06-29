@@ -92,7 +92,6 @@ void hitman_absolution::gui(
         : stats.difficulty == 3 ? "Expert"
                                 : "Purist",
         map_names,
-        {
-        }
+        {}
     );
 }
