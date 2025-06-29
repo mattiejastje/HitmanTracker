@@ -93,8 +93,6 @@ void hitman_absolution::gui(
                                 : "Purist",
         map_names,
         {
-            {"Spotted", stats.spotted},
-            {"Evidence Left", stats.evidence_left},
         }
     );
 }

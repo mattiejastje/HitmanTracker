@@ -43,14 +43,11 @@ struct LevelManager {
     int32_t game_mode;  // 1 = story mode
     int64_t bonus_weapon;
     int64_t bonus_outfit;
-    int32_t checkpoint_index; // checkpoint the game was loaded from, not necessarily current checkpoint
+    int32_t checkpoint_index;  // checkpoint the game was loaded from, not
+                               // necessarily current checkpoint
     int8_t is_restoring;
     int8_t use_savegame;
 };
-
-static int32_t map_key(int32_t level, int32_t section) {
-    return (level << 8) + section;
-}
 
 enum class Rating { unrated, veteran, specialist, shadow, silent_assassin };
 
@@ -60,65 +57,125 @@ struct MapInfo {
     Rating max_rating;
 };
 
-const std::unordered_map<int32_t, MapInfo> scenes = {
-    {map_key(-1, -1), {0}},                            // game loading
-    {map_key(0, 0), {1, 0}},                           // garden
-    {map_key(0, 1), {2, 0}},                           // greenhouse
-    {map_key(0, 2), {3, 1}},                           // cliffside
-    {map_key(0, 3), {4, 1, Rating::shadow}},           // mansion ground
-    {map_key(0, 4), {5, 0}},                           // mansion 2nd
-    {map_key(1, 0), {6, 1, Rating::silent_assassin}},  // king of chinatown
-    {map_key(2, 0), {7, 1, Rating::shadow}},           // terminus hotel
-    {map_key(2, 1), {8, 1, Rating::shadow}},           // upper floors
-    // TODO (2, 2)
-    {map_key(3, 0), {9, 0, Rating::specialist}},        // burning hotel
-    {map_key(3, 1), {10, 1, Rating::shadow}},           // library
-    {map_key(3, 3), {11, 0}},                           // pigeon coop
-    {map_key(3, 4), {12, 1, Rating::shadow}},           // shangri-la
-    {map_key(3, 5), {13, 1, Rating::shadow}},           // train station
-    {map_key(4, 0), {14, 1, Rating::shadow}},           // courtyard
-    {map_key(4, 1), {15, 1, Rating::silent_assassin}},  // vixen club
-    {map_key(4, 2), {16, 0, Rating::specialist}},       // dressing rooms
-    {map_key(4, 3), {17, 1, Rating::shadow}},           // derelict building
-    {map_key(4, 4), {18, 1, Rating::shadow}},           // convenience store
-    {map_key(4, 5), {19, 1}},                           // loading area
-    {map_key(4, 6), {20, 1, Rating::silent_assassin}},  // chinese new year
-    {map_key(6, 0), {21, 0}},                           // victoria's ward
-    {map_key(6, 1), {22, 1, Rating::shadow}},           // orphanage halls
-    {map_key(6, 2), {0}},  // "sister mary" cutscene
-    {map_key(6, 3), {23, 1, Rating::silent_assassin}},   // central heating
-    {map_key(7, 0), {24, 1, Rating::shadow}},            // great balls of fire
-    {map_key(8, 0), {25, 1, Rating::veteran}},           // gunshop
-    {map_key(9, 0), {26, 1, Rating::silent_assassin}},   // streets of hope
-    {map_key(9, 1), {27, 1, Rating::silent_assassin}},   // barber shop
-    {map_key(10, 0), {28, 0}},                           // the desert
-    {map_key(11, 0), {29, 1, Rating::shadow}},           // dead end
-    {map_key(11, 1), {30, 1, Rating::shadow}},           // old mill
-    {map_key(11, 2), {31, 1, Rating::shadow}},           // descent
-    {map_key(11, 3), {32, 1, Rating::shadow}},           // factory compound
-    {map_key(12, 0), {33, 1, Rating::silent_assassin}},  // test facility
-    {map_key(12, 1), {34, 1, Rating::shadow}},           // decontamination
-    {map_key(12, 2), {35, 1, Rating::silent_assassin}},  // r&d
-    {map_key(13, 0), {36, 1, Rating::shadow}},           // patriot's hangar
-    {map_key(13, 1), {37, 1, Rating::silent_assassin}},  // arena
-    {map_key(14, 0), {38, 1, Rating::silent_assassin}},  // parking
-    {map_key(14, 1), {39, 1, Rating::silent_assassin}},  // reception
-    {map_key(14, 2), {40, 1, Rating::silent_assassin}},  // cornfield
-    {map_key(17, 0), {41, 1, Rating::shadow}},           // courthouse
-    {map_key(17, 1), {42, 1}},                           // holding cells
-    {map_key(17, 2), {43, 1, Rating::shadow}},           // prison
-    {map_key(18, 0), {44, 1, Rating::shadow}},           // county jail
-    {map_key(18, 1), {45, 1, Rating::shadow}},           // outgunned
-    {map_key(18, 2), {46, 1, Rating::shadow}},           // burn
-    {map_key(18, 3), {47, 1, Rating::shadow}},           // hope fair
-    {map_key(18, 4), {48, 0}},                           // church
-    {map_key(21, 0), {49, 1}},                           // tailor shop
-    {map_key(22, 1), {50, 1, Rating::shadow}},           // blackwater park
-    {map_key(22, 2), {51, 1, Rating::silent_assassin}},  // the penthouse
-    {map_key(24, 0), {52, 1, Rating::silent_assassin}},  // blackwater roof
-    {map_key(25, 0), {53, 1, Rating::shadow}},           // cemetary entrance
-    {map_key(25, 1), {54, 1, Rating::silent_assassin}},  // burnwood family tomb
-    {map_key(25, 2), {55, 1, Rating::silent_assassin}},  // crematorium
+const std::unordered_map<std::string, std::vector<MapInfo>> scenes = {
+    {"assembly:/Scenes/L01/L01_Main.entity",
+     {
+         {1, 0},                  // 0 garden
+         {2, 0},                  // 1 greenhouse
+         {3, 1},                  // 2 cliffside
+         {4, 1, Rating::shadow},  // 3 mansion ground
+         {5, 0},                  // 4 mansion 2nd
+     }},
+    {"assembly:/Scenes/L02/L02_Main.entity",
+     {
+         {6, 1, Rating::silent_assassin},  // 0 king of chinatown
+     }},
+    {"assembly:/Scenes/L03/L03_Main.entity",
+     {
+         {9, 0, Rating::specialist},  // 0 burning hotel
+         {10, 1, Rating::shadow},     // 1 library
+         {0},                         // non-existing checkpoint
+         {11, 0},                     // 3 pigeon coop
+         {12, 1, Rating::shadow},     // 4 shangri-la
+         {13, 1, Rating::shadow},     // 5 train station
+     }},
+    {"assembly:/Scenes/L04/L04_Main.entity",
+     {
+         {7, 1, Rating::shadow},  // 0 terminus hotel
+         {8, 1, Rating::shadow},  // 1 upper floors
+     }},
+    {"assembly:/Scenes/L05/L05_Main.entity",
+     {
+         {14, 1, Rating::shadow},           // 0 courtyard
+         {15, 1, Rating::silent_assassin},  // 1 vixen club
+         {16, 0, Rating::specialist},       // 2 dressing rooms
+         {17, 1, Rating::shadow},           // 3 derelict building
+         {18, 1, Rating::shadow},           // 4 convenience store
+         {19, 1},                           // 5 loading area
+         {20, 1, Rating::silent_assassin},  // 6 chinese new year
+     }},
+    {"assembly:/Scenes/L06/L06_Main.entity",
+     {
+         {21, 0},                           // 0 victoria's ward
+         {22, 1, Rating::shadow},           // 1 orphanage halls
+         {0},                               // 2 "sister mary" cutscene
+         {23, 1, Rating::silent_assassin},  // 3 central heating
+     }},
+    {"assembly:/Scenes/L07/L07_Main.entity",
+     {
+         {24, 1, Rating::shadow},  // 0 great balls of fire
+     }},
+    {"assembly:/Scenes/L08/L08_Main.entity",
+     {
+         {25, 1, Rating::veteran},  // 0 gunshop
+     }},
+    {"assembly:/Scenes/L09/L09_Main.entity",
+     {
+         {26, 1, Rating::silent_assassin},  // 0 streets of hope
+         {27, 1, Rating::silent_assassin},  // 1 barber shop
+     }},
+    {"assembly:/Scenes/L10/L10_Main.entity",
+     {
+         {28, 0},  // 0 the desert
+     }},
+    {"assembly:/Scenes/L11/L11_Main.entity",
+     {
+         {29, 1, Rating::shadow},  // 0 dead end
+         {30, 1, Rating::shadow},  // 1 old mill
+         {31, 1, Rating::shadow},  // 2 descent
+         {32, 1, Rating::shadow},  // 3 factory compound
+     }},
+    {"assembly:/Scenes/L12/L12_Main.entity",
+     {
+         {33, 1, Rating::silent_assassin},  // 0 test facility
+         {34, 1, Rating::shadow},           // 1 decontamination
+         {35, 1, Rating::silent_assassin},  // 2 r&d
+     }},
+    {"assembly:/Scenes/L13/L13_Main.entity",
+     {
+         {36, 1, Rating::shadow},           // 0 patriot's hangar
+         {37, 1, Rating::silent_assassin},  // 1 arena
+     }},
+    {"assembly:/Scenes/L14/L14_Main.entity",
+     {
+         {38, 1, Rating::silent_assassin},  // 0 parking
+         {39, 1, Rating::silent_assassin},  // 1 reception
+         {40, 1, Rating::silent_assassin},  // 2 cornfield
+     }},
+    {"assembly:/Scenes/L17/L17_Main.entity",
+     {
+         {41, 1, Rating::shadow},  // courthouse
+         {42, 1},                  // holding cells
+         {43, 1, Rating::shadow},  // prison
+     }},
+    {"assembly:/Scenes/L18/L18_Main.entity",
+     {
+         {44, 1, Rating::shadow},  // 0 county jail
+         {45, 1, Rating::shadow},  // 1 outgunned
+         {46, 1, Rating::shadow},  // 2 burn
+         {47, 1, Rating::shadow},  // 3 hope fair
+         {48, 0},                  // 4 church
+     }},
+    {"assembly:/Scenes/L21/L21_Main.entity",
+     {
+         {49, 1},  // 0 tailor shop
+     }},
+    {"assembly:/Scenes/L22/L22_Main.entity",
+     {
+         {0},                               // non-existing checkpoint
+         {50, 1, Rating::shadow},           // 1 blackwater park
+         {51, 1, Rating::silent_assassin},  // 2 the penthouse
+     }},
+    {"assembly:/Scenes/L24/L24_Main.entity",
+     {
+         {52, 1, Rating::silent_assassin},  // 0 blackwater roof
+     }},
+    {"assembly:/Scenes/L25/L25_Main.entity",
+     {
+         {53, 1, Rating::shadow},           // 0 cemetary entrance
+         {54, 1, Rating::silent_assassin},  // 1 burnwood family tomb
+         {55, 1, Rating::silent_assassin},  // 2 crematorium
+     }},
 };
 
 static Status get_rating_status(Rating max_rating, const Stats& stats) {
@@ -180,57 +237,45 @@ void hitman_absolution::update_slow(
         logging::error("Unable to read scene");
         return;
     }
-    // TODO use scene & level_manager.checkpoint_index instead of level/section
-    auto level = read<int32_t>(handle, base_ptrs[0] + 0xE20F48);
-    auto section = read<int32_t>(handle, base_ptrs[0] + 0xD60F94);
-    if (!level) {
-        logging::error("Unable to read level");
+    auto checkpoint = read<int32_t>(handle, base_ptrs[0] + 0xD60F94).value_or(-1);
+    logging::trace("Scene {}, checkpoint {}", scene.value(), checkpoint);
+    auto iter = scenes.find(scene.value());
+    if (iter == scenes.end()) {
+        logging::error("No map registered for scene {}", scene.value());
         return;
-    }
-    if (!section) {
-        logging::error("Unable to read section");
-        return;
-    }
-    auto key = map_key(level.value(), section.value());
-    logging::trace(
-        "Scene {}, level {}, section {}, key {}",
-        scene.value(),
-        level.value(),
-        section.value(),
-        key
-    );
-    auto iter = scenes.find(key);
-    if (iter != scenes.end()) {
-        stats.map = iter->second.map;
-        logging::trace("Map {}", stats.map);
-    } else {
+    } else if (checkpoint < 0 || checkpoint >= iter->second.size()) {
         logging::error(
-            "No map registered for level {} section {}",
-            level.value(),
-            section.value()
+            "No map registered for checkpoint {} of scene {}",
+            checkpoint,
+            scene.value()
         );
         return;
     }
+    auto& map_info = iter->second.at(checkpoint);
+    logging::trace("Map {}", map_info.map);
+    stats.map = map_info.map;
     stats.map_stage = MapStage::main;  // always render stats
     if (stats.map > 0) {
+        // spotted/evidence pointers are not working
+        /*
         auto spotted = read<int32_t>(handle, base_ptrs[0] + 0xD61568);
         if (spotted) {
             stats.spotted = stats_value(
-                spotted.value(), iter->second.max_rating != Rating::unrated
+                spotted.value(), map_info.max_rating != Rating::unrated
             );
         }
         auto evidence_collected
             = read<int32_t>(handle, base_ptrs[0] + 0xE20FB0, {0x9C});
         if (evidence_collected) {
             stats.evidence_left = stats_value(
-                iter->second.num_evidence - evidence_collected.value(),
-                iter->second.max_rating != Rating::unrated
-                    && iter->second.max_rating != Rating::silent_assassin
+                map_info.num_evidence - evidence_collected.value(),
+                map_info.max_rating != Rating::unrated
+                    && map_info.max_rating != Rating::silent_assassin
             );
         }
-        auto status = get_rating_status(iter->second.max_rating, stats);
-        stats.rating
-            = {get_rating_value(iter->second.max_rating, status), status};
+        auto status = get_rating_status(map_info.max_rating, stats);
+        stats.rating = {get_rating_value(map_info.max_rating, status), status};
+        */
     }
 }
 
