@@ -66,25 +66,28 @@ const std::unordered_map<std::string, std::vector<MapInfo>> scenes = {
          {4, 1, Rating::shadow},  // 3 mansion ground
          {5, 0},                  // 4 mansion 2nd
      }},
-    {"assembly:/Scenes/L02/L02_Main.entity",
+    {"assembly:/Scenes/L01B/L01B_Main.entity",
      {
          {6, 1, Rating::silent_assassin},  // 0 king of chinatown
      }},
-    {"assembly:/Scenes/L03/L03_Main.entity",
+    {"assembly:/Scenes/L02B/L02B_Main.entity",
+     {
+         {7, 1, Rating::shadow},  // 0 terminus hotel
+         {8, 1, Rating::shadow},  // 1 upper floors (elevator cutscene)
+         {8, 1, Rating::shadow},  // 2 upper floors
+         {8, 1, Rating::shadow},  // 3 upper floors (after picking the lock)
+     }},
+    {"assembly:/Scenes/L02C/L02C_Main.entity",
      {
          {9, 0, Rating::specialist},  // 0 burning hotel
          {10, 1, Rating::shadow},     // 1 library
-         {0},                         // non-existing checkpoint
-         {11, 0},                     // 3 pigeon coop
+         {11, 0},                     // 2 pigeon coop (part with heli)
+         {11, 0},                     // 3 pigeon coop (part with cops)
          {12, 1, Rating::shadow},     // 4 shangri-la
-         {13, 1, Rating::shadow},     // 5 train station
+         {13, 1, Rating::shadow},     // 5 train station (elevator cutscene)
+         {13, 1, Rating::shadow},     // 6 train station
      }},
-    {"assembly:/Scenes/L04/L04_Main.entity",
-     {
-         {7, 1, Rating::shadow},  // 0 terminus hotel
-         {8, 1, Rating::shadow},  // 1 upper floors
-     }},
-    {"assembly:/Scenes/L05/L05_Main.entity",
+    {"assembly:/Scenes/L02D/L02D_Main.entity",
      {
          {14, 1, Rating::shadow},           // 0 courtyard
          {15, 1, Rating::silent_assassin},  // 1 vixen club
@@ -93,84 +96,89 @@ const std::unordered_map<std::string, std::vector<MapInfo>> scenes = {
          {18, 1, Rating::shadow},           // 4 convenience store
          {19, 1},                           // 5 loading area
          {20, 1, Rating::silent_assassin},  // 6 chinese new year
+         {20, 1, Rating::silent_assassin},  // 7 chinese new year (lock pick)
      }},
-    {"assembly:/Scenes/L06/L06_Main.entity",
+    {"assembly:/Scenes/L03/L03_Main.entity",
      {
          {21, 0},                           // 0 victoria's ward
          {22, 1, Rating::shadow},           // 1 orphanage halls
-         {0},                               // 2 "sister mary" cutscene
+         {23, 1, Rating::silent_assassin},  // 2 central heating (cutscene)
          {23, 1, Rating::silent_assassin},  // 3 central heating
      }},
-    {"assembly:/Scenes/L07/L07_Main.entity",
+    {"assembly:/Scenes/L04B/L04B_Main.entity",
      {
          {24, 1, Rating::shadow},  // 0 great balls of fire
      }},
-    {"assembly:/Scenes/L08/L08_Main.entity",
+    {"assembly:/Scenes/L04C/L04C_Main.entity",
      {
          {25, 1, Rating::veteran},  // 0 gunshop
      }},
-    {"assembly:/Scenes/L09/L09_Main.entity",
+    {"assembly:/Scenes/L04D/L04D_Main.entity",
      {
          {26, 1, Rating::silent_assassin},  // 0 streets of hope
          {27, 1, Rating::silent_assassin},  // 1 barber shop
+         {27, 1, Rating::silent_assassin},  // 1 barber shop (cutscene)
      }},
-    {"assembly:/Scenes/L10/L10_Main.entity",
+    {"assembly:/Scenes/L04E/L04E_Main.entity",
      {
          {28, 0},  // 0 the desert
      }},
-    {"assembly:/Scenes/L11/L11_Main.entity",
+    {"assembly:/Scenes/L05A/L05A_Main.entity",
      {
-         {29, 1, Rating::shadow},  // 0 dead end
-         {30, 1, Rating::shadow},  // 1 old mill
-         {31, 1, Rating::shadow},  // 2 descent
-         {32, 1, Rating::shadow},  // 3 factory compound
+         {29, 1, Rating::shadow},  // 0 dead end (loading)
+         {29, 1, Rating::shadow},  // 1 dead end
+         {30, 1, Rating::shadow},  // 2 old mill
+         {31, 1, Rating::shadow},  // 3 descent
+         {32, 1, Rating::shadow},  // 4 factory compound
      }},
-    {"assembly:/Scenes/L12/L12_Main.entity",
+    {"assembly:/Scenes/L05B/L05B_Main.entity",
      {
          {33, 1, Rating::silent_assassin},  // 0 test facility
          {34, 1, Rating::shadow},           // 1 decontamination
          {35, 1, Rating::silent_assassin},  // 2 r&d
      }},
-    {"assembly:/Scenes/L13/L13_Main.entity",
+    {"assembly:/Scenes/L05C/L05C_Main.entity",
      {
          {36, 1, Rating::shadow},           // 0 patriot's hangar
          {37, 1, Rating::silent_assassin},  // 1 arena
      }},
-    {"assembly:/Scenes/L14/L14_Main.entity",
+    {"assembly:/Scenes/L06A/L06A_Main.entity",
      {
          {38, 1, Rating::silent_assassin},  // 0 parking
          {39, 1, Rating::silent_assassin},  // 1 reception
          {40, 1, Rating::silent_assassin},  // 2 cornfield
      }},
-    {"assembly:/Scenes/L17/L17_Main.entity",
+    {"assembly:/Scenes/L06D/L06D_Main.entity",
      {
          {41, 1, Rating::shadow},  // courthouse
          {42, 1},                  // holding cells
          {43, 1, Rating::shadow},  // prison
+         {43, 1, Rating::shadow},  // prison (cutscene)
      }},
-    {"assembly:/Scenes/L18/L18_Main.entity",
+    {"assembly:/Scenes/L07A/L07A_Main.entity",
      {
          {44, 1, Rating::shadow},  // 0 county jail
          {45, 1, Rating::shadow},  // 1 outgunned
          {46, 1, Rating::shadow},  // 2 burn
          {47, 1, Rating::shadow},  // 3 hope fair
-         {48, 0},                  // 4 church
+         {48, 0},                  // 4 church (outside)
+         {48, 0},                  // 4 church (inside)
      }},
-    {"assembly:/Scenes/L21/L21_Main.entity",
+    {"assembly:/Scenes/L08A/L08A_Main.entity",
      {
          {49, 1},  // 0 tailor shop
      }},
-    {"assembly:/Scenes/L22/L22_Main.entity",
+    {"assembly:/Scenes/L08B/L08B_Main.entity",
      {
-         {0},                               // non-existing checkpoint
+         {50, 1, Rating::shadow},           // 0 blackwater park
          {50, 1, Rating::shadow},           // 1 blackwater park
          {51, 1, Rating::silent_assassin},  // 2 the penthouse
      }},
-    {"assembly:/Scenes/L24/L24_Main.entity",
+    {"assembly:/Scenes/L09/L09_Main.entity",
      {
          {52, 1, Rating::silent_assassin},  // 0 blackwater roof
      }},
-    {"assembly:/Scenes/L25/L25_Main.entity",
+    {"assembly:/Scenes/L10/L10_Main.entity",
      {
          {53, 1, Rating::shadow},           // 0 cemetary entrance
          {54, 1, Rating::silent_assassin},  // 1 burnwood family tomb
@@ -237,7 +245,8 @@ void hitman_absolution::update_slow(
         logging::error("Unable to read scene");
         return;
     }
-    auto checkpoint = read<int32_t>(handle, base_ptrs[0] + 0xD60F94).value_or(-1);
+    auto checkpoint
+        = read<int32_t>(handle, base_ptrs[0] + 0xD60F94).value_or(-1);
     logging::trace("Scene {}, checkpoint {}", scene.value(), checkpoint);
     auto iter = scenes.find(scene.value());
     if (iter == scenes.end()) {
