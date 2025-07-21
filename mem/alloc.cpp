@@ -13,7 +13,7 @@ void AllocDeleter::operator()(Alloc *alloc) const {
     }
 };
 
-AllocPtr virtual_alloc_ex(std::shared_ptr<void> handle, int32_t size) {
+AllocPtr virtual_alloc_ex(std::shared_ptr<void> handle, ptrdiff_t size) {
     auto ptr = VirtualAllocEx(
         handle.get(),
         nullptr,
@@ -22,7 +22,7 @@ AllocPtr virtual_alloc_ex(std::shared_ptr<void> handle, int32_t size) {
         PAGE_EXECUTE_READWRITE
     );
     if (ptr) {
-        auto alloc_ptr = reinterpret_cast<int32_t>(ptr);
+        auto alloc_ptr = reinterpret_cast<intptr_t>(ptr);
         logging::debug("Allocated {} bytes at {:#x}", size, alloc_ptr);
         return AllocPtr{new Alloc{handle, alloc_ptr}};
     };

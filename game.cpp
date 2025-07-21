@@ -104,12 +104,12 @@ static std::optional<GameInfo> get_game_info(const char* exe_file) {
     return {};
 }
 
-static std::unordered_map<std::string, int32_t> get_all_base_ptrs(
+static std::unordered_map<std::string, intptr_t> get_all_base_ptrs(
     HANDLE process_handle, DWORD process_id
 ) {
     logging::debug("Finding modules of process id {:#x}", process_id);
     BasePtrs base_ptrs{};
-    std::unordered_map<std::string, int32_t> all_base_ptrs{};
+    std::unordered_map<std::string, intptr_t> all_base_ptrs{};
     WaitForSingleObject(process_handle, 1000);  // wait until dlls are loaded
     auto snapshot_handle = open_snapshot_handle(TH32CS_SNAPMODULE, process_id);
     if (snapshot_handle) {
@@ -125,7 +125,7 @@ static std::unordered_map<std::string, int32_t> get_all_base_ptrs(
                     [](char& c) { return std::tolower(c); }
                 );
                 auto base_ptr
-                    = reinterpret_cast<int32_t>(module_entry.modBaseAddr);
+                    = reinterpret_cast<intptr_t>(module_entry.modBaseAddr);
                 logging::trace("Found module {} at {:#x}", name, base_ptr);
                 all_base_ptrs[name] = base_ptr;
             } while (Module32Next(snapshot_handle.get(), &module_entry));
@@ -135,7 +135,7 @@ static std::unordered_map<std::string, int32_t> get_all_base_ptrs(
 }
 
 static std::optional<BasePtrs> get_base_ptrs(
-    const std::unordered_map<std::string, int32_t>& all_base_ptrs,
+    const std::unordered_map<std::string, intptr_t>& all_base_ptrs,
     const std::array<std::string, 5>& module_names
 ) {
     BasePtrs base_ptrs{};

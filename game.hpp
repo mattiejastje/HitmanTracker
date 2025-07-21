@@ -4,10 +4,10 @@
 #include <functional>
 #include <optional>
 
+#include "base_ptrs.hpp"
 #include "gui/ui.hpp"
 #include "hook.hpp"
 #include "mem/handle.hpp"
-#include "base_ptrs.hpp"
 #include "settings.hpp"
 #include "stats.hpp"
 

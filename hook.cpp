@@ -5,9 +5,12 @@
 #include "logging.hpp"
 #include "mem/read_write.hpp"
 
-static_assert(sizeof(int32_t) == sizeof(void*));
+// note: hardcoded for 32 bit
 
-static Code get_code(int32_t value) {
+static Code get_code(intptr_t value) {
+    if ((value >= INT32_MAX) || (value <= INT32_MIN)) {
+        logging::critical("value {} out of range", value);
+    };
     return {
         static_cast<uint8_t>(value),
         static_cast<uint8_t>(static_cast<uint32_t>(value) >> 8),
@@ -22,9 +25,9 @@ static Code add_code(const Code& code1, const Code& code2) {
     return code;
 }
 
-static int32_t get_align_size(int32_t current_ptr, int32_t size) {
+static ptrdiff_t get_align_size(intptr_t current_ptr, ptrdiff_t size) {
     auto ptr = size * ((current_ptr + size - 1) / size);
-    int32_t final_size = ptr - current_ptr;
+    ptrdiff_t final_size = ptr - current_ptr;
     assert(final_size >= 0);
     assert(final_size <= size);
     assert(ptr % size == 0);
@@ -32,25 +35,25 @@ static int32_t get_align_size(int32_t current_ptr, int32_t size) {
 }
 
 struct GetCodeSizeUpperBoundVisitor {
-    int32_t operator()(const Code& code) { return code.size(); }
+    ptrdiff_t operator()(const Code& code) { return code.size(); }
 
-    int32_t operator()(const Jump& jump) { return jump.code.size() + 4; }
+    ptrdiff_t operator()(const Jump& jump) { return jump.code.size() + 4; }
 
-    int32_t operator()(const JumpShort& jump) { return jump.code.size() + 1; }
+    ptrdiff_t operator()(const JumpShort& jump) { return jump.code.size() + 1; }
 
-    int32_t operator()(const Ptr& ptr) { return 4; }
+    ptrdiff_t operator()(const Ptr& ptr) { return 4; }
 
-    int32_t operator()(const Fill& fill) { return fill.size; }
+    ptrdiff_t operator()(const Fill& fill) { return fill.size; }
 
-    int32_t operator()(const Align& align) {
+    ptrdiff_t operator()(const Align& align) {
         return align.size - 1;  // upper bound
     }
 
-    int32_t operator()(const Label& label) { return 0; }
+    ptrdiff_t operator()(const Label& label) { return 0; }
 };
 
 struct GetLabelPtrsVisitor {
-    int32_t current_ptr;
+    intptr_t current_ptr;
     LabelPtrs& label_ptrs;
 
     void operator()(const Code& code) { current_ptr += code.size(); }
@@ -82,15 +85,15 @@ struct GetLabelPtrsVisitor {
 struct GetPtrVisitor {
     const LabelPtrs& label_ptrs;
 
-    int32_t operator()(const Label& label) const {
+    intptr_t operator()(const Label& label) const {
         return label_ptrs.at(label.index);
     }
 
-    int32_t operator()(int32_t ptr) const { return ptr; }
+    intptr_t operator()(intptr_t ptr) const { return ptr; }
 };
 
 struct GetCodeVisitor {
-    int32_t current_ptr;
+    intptr_t current_ptr;
     const LabelPtrs& label_ptrs;
 
     Code operator()(const Code& code) {
@@ -137,8 +140,8 @@ struct GetCodeVisitor {
     }
 };
 
-static int32_t get_code_size_upper_bound(const AssemblyCode& assembly) {
-    int32_t result{0};
+static ptrdiff_t get_code_size_upper_bound(const AssemblyCode& assembly) {
+    ptrdiff_t result{0};
     GetCodeSizeUpperBoundVisitor get_code_size_upper_bound_visitor{};
     for (auto& item : assembly)
         result += std::visit(get_code_size_upper_bound_visitor, item);
@@ -147,7 +150,7 @@ static int32_t get_code_size_upper_bound(const AssemblyCode& assembly) {
 
 // Find all labels in assembly and add them to label_ptrs.
 static void get_label_ptrs(
-    int32_t current_ptr, const AssemblyCode& assembly, LabelPtrs& label_ptrs
+    intptr_t current_ptr, const AssemblyCode& assembly, LabelPtrs& label_ptrs
 ) {
     logging::debug(
         "Hook: calculating label pointers for {:#x}...", current_ptr
@@ -157,7 +160,7 @@ static void get_label_ptrs(
 }
 
 static Code get_code(
-    int32_t current_ptr,
+    intptr_t current_ptr,
     const LabelPtrs& label_ptrs,
     const AssemblyCode& assembly
 ) {
@@ -171,7 +174,7 @@ static Code get_code(
 }
 
 static bool hook_check_source_code(
-    void* handle, int32_t source_ptr, const Code& source_code_orig
+    void* handle, intptr_t source_ptr, const Code& source_code_orig
 ) {
     logging::debug("Hook: verifying source at {:#x}", source_ptr);
     // check source is large enough
@@ -259,7 +262,7 @@ static bool hook_install_target_code(
 static SourceHookPtr hook_install_source_code(
     std::shared_ptr<void> handle,
     const LabelPtrs& label_ptrs,
-    int32_t source_ptr,
+    intptr_t source_ptr,
     const Code& source_orig_code,
     const AssemblyCode& source_new_asm
 ) {

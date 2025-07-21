@@ -51,7 +51,7 @@ void hitman_codename_47::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
-    auto scene = read_string(handle, label_ptrs.at(150), {0}, 64);
+    auto scene = read_string(handle, label_ptrs.at(150), {0}, INT32_MAX, 64);
     if (!scene) return;  // when game starts, scene will be null
     logging::trace("Scene {}", scene.value());
     auto iter = scenes.find(scene.value());

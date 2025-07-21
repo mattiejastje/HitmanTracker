@@ -39,7 +39,7 @@ add_executable (HitmanTracker
 	"stats.cpp"
 )
 set_property(TARGET HitmanTracker PROPERTY CXX_STANDARD 20)
-add_definitions(-DWIN32_LEAN_AND_MEAN)
+add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
 target_link_libraries(HitmanTracker PRIVATE CLI11::CLI11)
 target_link_libraries(HitmanTracker PRIVATE imgui::imgui)
 target_link_libraries(HitmanTracker PRIVATE spdlog::spdlog_header_only)

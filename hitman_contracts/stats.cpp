@@ -8,7 +8,7 @@
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
 
-const std::vector<std::pair<int32_t, std::vector<int32_t>>> map_pointers
+const std::vector<std::pair<ptrdiff_t, std::vector<ptrdiff_t>>> map_pointers
     = {{0x00393D58, {0x234, 0xBDE}},
        {0x00394598, {0x10, 0x194, 0xC0E}},
        {0x00394598, {0x214, 0xC0E}},
@@ -78,6 +78,7 @@ void hitman_contracts::update_slow(
         handle,
         base_ptrs[0] + map_pointers[map_pointer_number].first,
         map_pointers[map_pointer_number].second,
+        INT32_MAX,
         8
     );
     if (!scene) {
@@ -98,7 +99,7 @@ void hitman_contracts::update_slow(
     stats.map_stage = MapStage::main;  // always render stats
     if (stats.map >= 1) {
         auto shots_fired = read<int32_t>(
-            handle, base_ptrs[0] + 0x3947B0, {0xBA0, 0x104, 0x82F}
+            handle, base_ptrs[0] + 0x3947B0, {0xBA0, 0x104, 0x82F}, INT32_MAX
         );
         if (shots_fired) {
             logging::trace("Shots fired {}", shots_fired.value());
@@ -111,6 +112,7 @@ void hitman_contracts::update_slow(
                 handle,
                 base_ptrs[0] + 0x3947C0,
                 {0xB17},
+                INT32_MAX,
                 &game_stats,
                 sizeof(game_stats)
             )) {
@@ -133,7 +135,8 @@ void hitman_contracts::update_fast(
     Stats& stats
 ) {
     if (stats.map > 0) {
-        stats.time = read<float>(handle, base_ptrs[0] + 0x39457C, {0x24})
-                         .value_or(stats.time);
+        stats.time
+            = read<float>(handle, base_ptrs[0] + 0x39457C, {0x24}, INT32_MAX)
+                  .value_or(stats.time);
     }
 }

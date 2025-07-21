@@ -34,7 +34,7 @@ const std::unordered_map<std::string, int> scenes = {
 };
 
 // note: index 0 is for map 2 etc.
-const std::vector<int32_t> second_offsets
+const std::vector<ptrdiff_t> second_offsets
     = {0x838, 0xB24, 0x8A0, 0x138, 0xB88, 0xBB8, 0xB48, 0xCE8, 0x136C, 0xAD0,
        0xF50, 0x8D4, 0x9EC, 0x400, 0x9EC, 0x644, 0xB08, 0x96C, 0xB00,  0x8};
 
@@ -61,8 +61,9 @@ void hitman2_silent_assassin::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
-    auto scene
-        = read_string(handle, base_ptrs[0] + 0x2A6C5C, {0x98, 0xBBB}, 64);
+    auto scene = read_string(
+        handle, base_ptrs[0] + 0x2A6C5C, {0x98, 0xBBB}, INT32_MAX, 64
+    );
     if (!scene) return;
     logging::trace("Scene {}", scene.value());
     auto iter = scenes.find(scene.value());
@@ -75,7 +76,7 @@ void hitman2_silent_assassin::update_slow(
     stats.map_stage = MapStage::main;  // always render stats
     if (stats.map >= 2) {
         auto shots_fired = read<int32_t>(
-            handle, base_ptrs[0] + 0x092894, {0x2E0, 0x4, 0x11C7}
+            handle, base_ptrs[0] + 0x092894, {0x2E0, 0x4, 0x11C7}, INT32_MAX
         );
         if (shots_fired) {
             logging::trace("Shots fired {}", shots_fired.value());
@@ -88,6 +89,7 @@ void hitman2_silent_assassin::update_slow(
                 handle,
                 base_ptrs[0] + 0x2A6C50,
                 {0x28, second_offsets.at(stats.map - 2), 0x208},
+                INT32_MAX,
                 &game_stats,
                 sizeof(game_stats)
             )) {
@@ -110,7 +112,8 @@ void hitman2_silent_assassin::update_fast(
         stats.time = read<int32_t>(
                          handle,
                          base_ptrs[0] + 0x2A6C58,
-                         {0x118, 0xB38, 0x8, 0x1084, 0x24}
+                         {0x118, 0xB38, 0x8, 0x1084, 0x24},
+                         INT32_MAX
                      )
                          .value_or(stats.time)
                      * 0.0166666666666666f;  // 1 / 60.0f

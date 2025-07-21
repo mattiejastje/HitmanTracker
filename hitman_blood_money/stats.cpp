@@ -202,7 +202,9 @@ static std::optional<int32_t> get_time(
     void* handle, const BasePtrs& base_ptrs, MapStage map_stage
 ) {
     if (map_stage == MapStage::main)
-        return read<int32_t>(handle, base_ptrs[0] + 0x41F820, {0x48});
+        return read<int32_t>(
+            handle, base_ptrs[0] + 0x41F820, {0x48}, INT32_MAX
+        );
     if (map_stage == MapStage::post)
         return read<int32_t>(handle, base_ptrs[0] + 0x5B2538 + 0x009C);
     // map_stage == MapStage::pre
@@ -216,8 +218,9 @@ static void set_suit_left_on_level(
     GameStats& game_stats
 ) {
     if (map_stage == MapStage::main) {
-        auto suit_ptrs
-            = read<SuitPtrs>(handle, base_ptrs[0] + 0x41F83C, {0x0A40, 0x0FD0});
+        auto suit_ptrs = read<SuitPtrs>(
+            handle, base_ptrs[0] + 0x41F83C, {0x0A40, 0x0FD0}, INT32_MAX
+        );
         if (suit_ptrs) {
             game_stats.suit_left_on_level = suit_ptrs.value().current_suit
                                             != suit_ptrs.value().starting_suit;
@@ -254,7 +257,8 @@ void hitman_blood_money::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
-    auto difficulty = read<int32_t>(handle, base_ptrs[0] + 0x41F83C, {0x6664});
+    auto difficulty
+        = read<int32_t>(handle, base_ptrs[0] + 0x41F83C, {0x6664}, INT32_MAX);
     if (difficulty) {
         stats.difficulty = difficulty.value();
     } else {

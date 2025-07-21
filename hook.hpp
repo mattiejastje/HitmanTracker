@@ -12,21 +12,21 @@
 using Code = std::vector<uint8_t>;
 
 struct Align {
-    int32_t size;
+    ptrdiff_t size;
     uint8_t filler{0};
 };
 
 struct Fill {
-    int32_t size;
+    ptrdiff_t size;
     uint8_t filler{0};
 };
 
 struct Label {
-    int32_t index;
+    int index;
 };
 
 struct Ptr {
-    std::variant<Label, int32_t> ptr;
+    std::variant<Label, intptr_t> ptr;
 };
 
 struct Jump {
@@ -45,7 +45,7 @@ using AssemblyCode = std::vector<Assembly>;
 
 struct SourceHook {
     std::shared_ptr<void> handle;
-    int32_t ptr;
+    intptr_t ptr;
     Code original_code;
 };
 
@@ -69,7 +69,7 @@ struct HookDeleter {
 using HookPtr = std::unique_ptr<Hook, HookDeleter>;
 
 struct Source {
-    int32_t ptr;
+    intptr_t ptr;
     Code original_code;
     AssemblyCode new_asm;
 };
