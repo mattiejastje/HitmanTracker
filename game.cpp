@@ -14,6 +14,7 @@
 #include "base_ptrs.hpp"
 #include "hitman2_silent_assassin/gui.hpp"
 #include "hitman2_silent_assassin/stats.hpp"
+#include "hitman_2016/gui.hpp"
 #include "hitman_absolution/gui.hpp"
 #include "hitman_absolution/stats.hpp"
 #include "hitman_blood_money/gui.hpp"
@@ -48,19 +49,26 @@ static HookPtr hook_nothing(
     return HookPtr{};
 }
 
-static std::optional<GameInfo> get_game_info(const char* exe_file) {
+static std::vector<GameInfo> get_game_info(const char* exe_file) {
     if (stricmp("hitman.exe", exe_file) == 0) {
-        return GameInfo{
-            GameMethods{
-                hitman_codename_47::gui,
-                hitman_codename_47::update_slow,
-                hitman_codename_47::update_fast,
+        return {
+            GameInfo{
+                GameMethods{
+                    hitman_codename_47::gui,
+                    hitman_codename_47::update_slow,
+                    hitman_codename_47::update_fast,
+                },
+                {{"hitman.exe", "hitmandlc.dlc", "enginedata.dll"}},
+                hitman_codename_47::hook,
             },
-            {{"hitman.exe", "hitmandlc.dlc", "enginedata.dll"}},
-            hitman_codename_47::hook,
+            GameInfo{
+                GameMethods{hitman_2016::gui, stats_nothing, stats_nothing},
+                {{"hitman.exe", "tobii.gameintegration.dll"}},
+                hook_nothing,
+            }
         };
     } else if (stricmp("hitman2.exe", exe_file) == 0) {
-        return GameInfo{
+        return {GameInfo{
             GameMethods{
                 hitman2_silent_assassin::gui,
                 hitman2_silent_assassin::update_slow,
@@ -69,9 +77,9 @@ static std::optional<GameInfo> get_game_info(const char* exe_file) {
             {{"hitman2.exe"}},
             hook_nothing,
 
-        };
+        }};
     } else if (stricmp("hitmancontracts.exe", exe_file) == 0) {
-        return GameInfo{
+        return {GameInfo{
             GameMethods{
                 hitman_contracts::gui,
                 hitman_contracts::update_slow,
@@ -79,9 +87,9 @@ static std::optional<GameInfo> get_game_info(const char* exe_file) {
             },
             {{"hitmancontracts.exe"}},
             hook_nothing,
-        };
+        }};
     } else if (stricmp("hitmanbloodmoney.exe", exe_file) == 0) {
-        return GameInfo{
+        return {GameInfo{
             GameMethods{
                 hitman_blood_money::gui,
                 hitman_blood_money::update_slow,
@@ -89,9 +97,9 @@ static std::optional<GameInfo> get_game_info(const char* exe_file) {
             },
             {{"hitmanbloodmoney.exe"}},
             hitman_blood_money::hook,
-        };
+        }};
     } else if (stricmp("hma.exe", exe_file) == 0) {
-        return GameInfo{
+        return {GameInfo{
             GameMethods{
                 hitman_absolution::gui,
                 hitman_absolution::update_slow,
@@ -99,7 +107,7 @@ static std::optional<GameInfo> get_game_info(const char* exe_file) {
             },
             {{"hma.exe"}},
             hook_nothing,
-        };
+        }};
     }
     return {};
 }
@@ -162,22 +170,22 @@ static std::optional<Game> get_game_for_process(
     const char* exe_file, DWORD process_id
 ) {
     logging::trace("Inspecting process {} with id {:#x}", exe_file, process_id);
-    auto info = get_game_info(exe_file);
-    if (info) {
+    auto infos = get_game_info(exe_file);
+    for (auto& info : infos) {
         logging::info("Found game {}", exe_file);
         auto process_handle = open_process_handle(process_id);
         if (process_handle) {
             auto base_ptrs = get_base_ptrs(
                 get_all_base_ptrs(process_handle.get(), process_id),
-                info.value().module_names
+                info.module_names
             );
             if (base_ptrs) {
                 std::shared_ptr<void> handle = std::move(process_handle);
-                auto hook_ptr = info.value().hook(handle, base_ptrs.value());
+                auto hook_ptr = info.hook(handle, base_ptrs.value());
                 return Game{
                     handle,
                     base_ptrs.value(),
-                    info.value().methods,
+                    info.methods,
                     std::move(hook_ptr),
                 };
             }
