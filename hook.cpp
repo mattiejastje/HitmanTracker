@@ -23,9 +23,9 @@ static Code add_code(const Code& code1, const Code& code2) {
     return code;
 }
 
-static ptrdiff_t get_align_size(intptr_t current_ptr, ptrdiff_t size) {
+static intptr_t get_align_size(intptr_t current_ptr, intptr_t size) {
     auto ptr = size * ((current_ptr + size - 1) / size);
-    ptrdiff_t final_size = ptr - current_ptr;
+    intptr_t final_size = ptr - current_ptr;
     assert(final_size >= 0);
     assert(final_size <= size);
     assert(ptr % size == 0);
@@ -33,21 +33,21 @@ static ptrdiff_t get_align_size(intptr_t current_ptr, ptrdiff_t size) {
 }
 
 struct GetCodeSizeUpperBoundVisitor {
-    ptrdiff_t operator()(const Code& code) { return code.size(); }
+    intptr_t operator()(const Code& code) { return code.size(); }
 
-    ptrdiff_t operator()(const Jump& jump) { return jump.code.size() + 4; }
+    intptr_t operator()(const Jump& jump) { return jump.code.size() + 4; }
 
-    ptrdiff_t operator()(const JumpShort& jump) { return jump.code.size() + 1; }
+    intptr_t operator()(const JumpShort& jump) { return jump.code.size() + 1; }
 
-    ptrdiff_t operator()(const Ptr& ptr) { return 4; }
+    intptr_t operator()(const Ptr& ptr) { return 4; }
 
-    ptrdiff_t operator()(const Fill& fill) { return fill.size; }
+    intptr_t operator()(const Fill& fill) { return fill.size; }
 
-    ptrdiff_t operator()(const Align& align) {
+    intptr_t operator()(const Align& align) {
         return align.size - 1;  // upper bound
     }
 
-    ptrdiff_t operator()(const Label& label) { return 0; }
+    intptr_t operator()(const Label& label) { return 0; }
 };
 
 struct GetLabelPtrsVisitor {
@@ -138,8 +138,8 @@ struct GetCodeVisitor {
     }
 };
 
-static ptrdiff_t get_code_size_upper_bound(const AssemblyCode& assembly) {
-    ptrdiff_t result{0};
+static intptr_t get_code_size_upper_bound(const AssemblyCode& assembly) {
+    intptr_t result{0};
     GetCodeSizeUpperBoundVisitor get_code_size_upper_bound_visitor{};
     for (auto& item : assembly)
         result += std::visit(get_code_size_upper_bound_visitor, item);

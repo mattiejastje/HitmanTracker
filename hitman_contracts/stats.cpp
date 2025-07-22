@@ -8,7 +8,7 @@
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
 
-const std::vector<std::pair<ptrdiff_t, std::vector<ptrdiff_t>>> map_pointers
+const std::vector<std::pair<intptr_t, std::vector<intptr_t>>> map_pointers
     = {{0x00393D58, {0x234, 0xBDE}},
        {0x00394598, {0x10, 0x194, 0xC0E}},
        {0x00394598, {0x214, 0xC0E}},

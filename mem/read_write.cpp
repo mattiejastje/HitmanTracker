@@ -3,20 +3,20 @@
 #include <windows.h>
 
 static bool read_process_memory(
-    void* handle, void* ptr, void* buffer, ptrdiff_t size
+    void* handle, void* ptr, void* buffer, intptr_t size
 ) {
     SIZE_T bytes_read = 0;
     return ReadProcessMemory(handle, ptr, buffer, size, &bytes_read);
 }
 
 static bool write_process_memory(
-    void* handle, void* ptr, void* buffer, ptrdiff_t size
+    void* handle, void* ptr, void* buffer, intptr_t size
 ) {
     SIZE_T bytes_written = 0;
     return WriteProcessMemory(handle, ptr, buffer, size, &bytes_written);
 }
 
-bool read_bytes(void* handle, intptr_t ptr, void* buffer, ptrdiff_t size) {
+bool read_bytes(void* handle, intptr_t ptr, void* buffer, intptr_t size) {
     if (handle && ptr) {
         if (read_process_memory(
                 handle, reinterpret_cast<void*>(ptr), buffer, size
@@ -29,7 +29,7 @@ bool read_bytes(void* handle, intptr_t ptr, void* buffer, ptrdiff_t size) {
     return false;
 }
 
-bool write_bytes(void* handle, intptr_t ptr, void* buffer, ptrdiff_t size) {
+bool write_bytes(void* handle, intptr_t ptr, void* buffer, intptr_t size) {
     if (handle && ptr) {
         if (write_process_memory(
                 handle, reinterpret_cast<void*>(ptr), buffer, size
@@ -43,7 +43,7 @@ bool write_bytes(void* handle, intptr_t ptr, void* buffer, ptrdiff_t size) {
 }
 
 std::optional<std::string> read_string(
-    void* handle, intptr_t ptr, ptrdiff_t size
+    void* handle, intptr_t ptr, intptr_t size
 ) {
     auto value = std::make_unique<char[]>(size);
     if (read_bytes(handle, ptr, value.get(), size)) {

@@ -13,7 +13,7 @@ void AllocDeleter::operator()(Alloc *alloc) const {
     }
 };
 
-AllocPtr virtual_alloc_ex(std::shared_ptr<void> handle, ptrdiff_t size) {
+AllocPtr virtual_alloc_ex(std::shared_ptr<void> handle, intptr_t size) {
     auto ptr = VirtualAllocEx(
         handle.get(),
         nullptr,

@@ -12,12 +12,12 @@
 using Code = std::vector<uint8_t>;
 
 struct Align {
-    ptrdiff_t size;
+    intptr_t size;
     uint8_t filler{0};
 };
 
 struct Fill {
-    ptrdiff_t size;
+    intptr_t size;
     uint8_t filler{0};
 };
 

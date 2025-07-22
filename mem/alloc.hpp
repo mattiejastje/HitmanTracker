@@ -15,4 +15,4 @@ struct AllocDeleter {
 
 using AllocPtr = std::unique_ptr<Alloc, AllocDeleter>;
 
-AllocPtr virtual_alloc_ex(std::shared_ptr<void> handle, ptrdiff_t size);
+AllocPtr virtual_alloc_ex(std::shared_ptr<void> handle, intptr_t size);
