@@ -119,7 +119,9 @@ static std::unordered_map<std::string, intptr_t> get_all_base_ptrs(
     BasePtrs base_ptrs{};
     std::unordered_map<std::string, intptr_t> all_base_ptrs{};
     WaitForSingleObject(process_handle, 1000);  // wait until dlls are loaded
-    auto snapshot_handle = open_snapshot_handle(TH32CS_SNAPMODULE, process_id);
+    auto snapshot_handle = open_snapshot_handle(
+        TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, process_id
+    );
     if (snapshot_handle) {
         MODULEENTRY32 module_entry = {0};
         module_entry.dwSize = sizeof(MODULEENTRY32);
