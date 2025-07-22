@@ -10,6 +10,7 @@
 // OptionsScreen gets loaded during missions, assign negative value to ignore
 const std::unordered_map<std::string, int> scenes = {
     {R"(OptionsScreen)", -1},             // options
+    {R"(OptionsScreen.zip)", -1},         // options
     {R"(Intro.zip)", 0},                  // menu
     {R"(CutScenes/Intro/Intro.zip)", 0},  // menu
     {R"(Intro)", 0},                      // menu (after beating game)
