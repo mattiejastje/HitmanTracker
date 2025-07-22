@@ -8,9 +8,7 @@
 // note: hardcoded for 32 bit
 
 static Code get_code(intptr_t value) {
-    if ((value >= INT32_MAX) || (value <= INT32_MIN)) {
-        logging::critical("value {} out of range", value);
-    };
+    assert((INT32_MIN <= value) && (value <= INT32_MAX));
     return {
         static_cast<uint8_t>(value),
         static_cast<uint8_t>(static_cast<uint32_t>(value) >> 8),
