@@ -78,37 +78,23 @@ void hitman2_silent_assassin::update_slow(
     if (stats.map >= 2) {
         intptr_t shots_fired_ptr
             = read<int32_t>(handle, label_ptrs.at(150)).value_or(0);
-        if (shots_fired_ptr != 0) {
-            auto shots_fired = read<int32_t>(handle, shots_fired_ptr + 0x11C7);
-            if (shots_fired) {
-                logging::trace("Shots fired {}", shots_fired.value());
-                // status handled by process_common_game_stats
-                stats.shots_fired.value = shots_fired.value();
-            } else {
-                logging::warn("Unable to read shots fired");
-            }
-        } else {
-            // the hook only updates the pointer when shots are fired
-            // so if no pointer, no shots were fired
-            // set status in this case to display correctly during reload
-            stats.shots_fired = {0, Status::GREEN};
-        }
+        stats.shots_fired.value
+            = shots_fired_ptr
+                  ? read<int32_t>(handle, shots_fired_ptr + 0x11C7).value_or(0)
+                  : 0;
         CommonGameStats game_stats{0};
-        if (read_bytes(
-                handle,
-                base_ptrs[0] + 0x2A6C50,
-                {0x28, second_offsets.at(stats.map - 2), 0x208},
-                INT32_MAX,
-                &game_stats,
-                sizeof(game_stats)
-            )) {
-            process_common_game_stats(
-                silent_assassin_combinations, game_stats, stats
-            );
-        } else {
-            // mission is being reloaded but map change not yet registered
-            logging::warn("Unable to read game stats");
-        }
+        // note: reading game_stats may fail if we are reloading
+        read_bytes(
+            handle,
+            base_ptrs[0] + 0x2A6C50,
+            {0x28, second_offsets.at(stats.map - 2), 0x208},
+            INT32_MAX,
+            &game_stats,
+            sizeof(game_stats)
+        );
+        process_common_game_stats(
+            silent_assassin_combinations, game_stats, stats
+        );
     }
 }
 
