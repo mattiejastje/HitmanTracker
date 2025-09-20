@@ -64,25 +64,33 @@ void hitman2_silent_assassin::update_slow(
     auto scene = read_string(
         handle, base_ptrs[0] + 0x2A6C5C, {0x98, 0xBBB}, INT32_MAX, 64
     );
-    if (!scene) return;
-    logging::trace("Scene {}", scene.value());
-    auto iter = scenes.find(scene.value());
-    if (iter != scenes.end()) {
-        stats.map = iter->second;
-        logging::trace("Map {}", stats.map);
-    } else {
-        stats.map = 0;
+    if (scene) logging::trace("Scene {}", scene.value());
+    auto iter = scene ? scenes.find(scene.value()) : scenes.end();
+    auto previous_map = stats.map;
+    stats.map = iter != scenes.end() ? iter->second : 0;
+    if (previous_map != stats.map) {
+        // mission load or reload
+        // reset shots fired pointer
+        write<intptr_t>(handle, label_ptrs.at(150), 0);
+        logging::debug("Map {}", stats.map);
     }
     stats.map_stage = MapStage::main;  // always render stats
     if (stats.map >= 2) {
-        auto shots_fired = read<int32_t>(
-            handle, base_ptrs[0] + 0x092894, {0x2E0, 0x4, 0x11C7}, INT32_MAX
-        );
-        if (shots_fired) {
-            logging::trace("Shots fired {}", shots_fired.value());
-            stats.shots_fired.value = shots_fired.value();
+        auto shots_fired_ptr
+            = read<intptr_t>(handle, label_ptrs.at(150)).value_or(0);
+        if (shots_fired_ptr != 0) {
+            auto shots_fired = read<int32_t>(handle, shots_fired_ptr + 0x11C7);
+            if (shots_fired) {
+                logging::trace("Shots fired {}", shots_fired.value());
+                stats.shots_fired.value = shots_fired.value();
+            } else {
+                logging::warn("Unable to read shots fired");
+                stats.shots_fired.value = 0;
+            }
         } else {
-            logging::warn("Unable to read shots fired");
+            // the hook only updates the pointer when shots are fired
+            // so if no pointer, no shots were fired
+            stats.shots_fired.value = 0;
         }
         CommonGameStats game_stats{0};
         if (read_bytes(
@@ -97,6 +105,7 @@ void hitman2_silent_assassin::update_slow(
                 silent_assassin_combinations, game_stats, stats
             );
         } else {
+            // usually means the mission is being reloaded
             logging::warn("Unable to read game stats");
         }
     }

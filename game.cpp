@@ -13,6 +13,7 @@
 
 #include "base_ptrs.hpp"
 #include "hitman2_silent_assassin/gui.hpp"
+#include "hitman2_silent_assassin/hook.hpp"
 #include "hitman2_silent_assassin/stats.hpp"
 #include "hitman_2016/gui.hpp"
 #include "hitman_absolution/gui.hpp"
@@ -75,8 +76,7 @@ static std::vector<GameInfo> get_game_info(const char* exe_file) {
                 hitman2_silent_assassin::update_fast
             },
             {{"hitman2.exe"}},
-            hook_nothing,
-
+            hitman2_silent_assassin::hook,
         }};
     } else if (stricmp("hitmancontracts.exe", exe_file) == 0) {
         return {GameInfo{
