@@ -8,10 +8,15 @@ For now, only the steam versions are supported.
 
 ### Hitman: Codename 47
 
-Basic support to tracks map name and internal game timer.
+This game has no rating system, so no stats are tracked.
+However, there is basic support to track map name and internal game timer.
+
 Known issues:
 
-* On fast systems, the game will run too fast and the timer will as well.
+* The internal game timer is linked to the frame rate and is inaccurate.
+  In particular, when playing at very high frame rates, the clock will run too fast
+  (you will also experience game bugs if you do this).
+  Play at 60 frames per second for best experience.
 
 ### Hitman 2: Silent Assassin
 
