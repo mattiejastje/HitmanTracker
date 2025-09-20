@@ -18,7 +18,6 @@ Known issues:
 Nearly fully supported. Known issues:
 
 * Difficulty is not tracked.
-* Shots fired pointer is experimental.
 
 ### Hitman: Contracts
 
