@@ -82,15 +82,16 @@ void hitman2_silent_assassin::update_slow(
             auto shots_fired = read<int32_t>(handle, shots_fired_ptr + 0x11C7);
             if (shots_fired) {
                 logging::trace("Shots fired {}", shots_fired.value());
+                // status handled by process_common_game_stats
                 stats.shots_fired.value = shots_fired.value();
             } else {
                 logging::warn("Unable to read shots fired");
-                stats.shots_fired.value = 0;
             }
         } else {
             // the hook only updates the pointer when shots are fired
             // so if no pointer, no shots were fired
-            stats.shots_fired.value = 0;
+            // set status in this case to display correctly during reload
+            stats.shots_fired = {0, Status::GREEN};
         }
         CommonGameStats game_stats{0};
         if (read_bytes(
@@ -105,7 +106,7 @@ void hitman2_silent_assassin::update_slow(
                 silent_assassin_combinations, game_stats, stats
             );
         } else {
-            // usually means the mission is being reloaded
+            // mission is being reloaded but map change not yet registered
             logging::warn("Unable to read game stats");
         }
     }
