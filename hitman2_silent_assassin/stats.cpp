@@ -71,13 +71,13 @@ void hitman2_silent_assassin::update_slow(
     if (previous_map != stats.map) {
         // mission load or reload
         // reset shots fired pointer
-        write<intptr_t>(handle, label_ptrs.at(150), 0);
+        write<int32_t>(handle, label_ptrs.at(150), 0);
         logging::debug("Map {}", stats.map);
     }
     stats.map_stage = MapStage::main;  // always render stats
     if (stats.map >= 2) {
-        auto shots_fired_ptr
-            = read<intptr_t>(handle, label_ptrs.at(150)).value_or(0);
+        intptr_t shots_fired_ptr
+            = read<int32_t>(handle, label_ptrs.at(150)).value_or(0);
         if (shots_fired_ptr != 0) {
             auto shots_fired = read<int32_t>(handle, shots_fired_ptr + 0x11C7);
             if (shots_fired) {
