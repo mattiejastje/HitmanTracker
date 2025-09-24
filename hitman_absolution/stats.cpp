@@ -117,7 +117,7 @@ const std::unordered_map<std::string, std::vector<MapInfo>> scenes = {
      {
          {26, 1, Rating::silent_assassin},  // 0 streets of hope
          {27, 1, Rating::silent_assassin},  // 1 barber shop
-         {27, 1, Rating::silent_assassin},  // 1 barber shop (cutscene)
+         {27, 1, Rating::silent_assassin},  // 2 barber shop (cutscene)
      }},
     {"assembly:/Scenes/L04E/L04E_Main.entity",
      {
@@ -150,10 +150,10 @@ const std::unordered_map<std::string, std::vector<MapInfo>> scenes = {
      }},
     {"assembly:/Scenes/L06D/L06D_Main.entity",
      {
-         {41, 1, Rating::shadow},  // courthouse
-         {42, 1},                  // holding cells
-         {43, 1, Rating::shadow},  // prison
-         {43, 1, Rating::shadow},  // prison (cutscene)
+         {41, 1, Rating::shadow},  // 0 courthouse
+         {42, 1},                  // 1 holding cells
+         {43, 1, Rating::shadow},  // 2 prison
+         {43, 1, Rating::shadow},  // 3 prison (cutscene)
      }},
     {"assembly:/Scenes/L07A/L07A_Main.entity",
      {
