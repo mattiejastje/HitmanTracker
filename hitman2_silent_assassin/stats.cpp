@@ -66,14 +66,11 @@ void hitman2_silent_assassin::update_slow(
     );
     if (scene) logging::trace("Scene {}", scene.value());
     auto iter = scene ? scenes.find(scene.value()) : scenes.end();
-    auto previous_map = stats.map;
     stats.map = iter != scenes.end() ? iter->second : 0;
-    if (previous_map != stats.map) {
-        // mission load or reload
-        // reset shots fired pointer
-        write<int32_t>(handle, label_ptrs.at(150), 0);
-        logging::debug("Map {}", stats.map);
-    }
+    // the hook does not reset shots fired pointer on mission load/reload
+    // so we reset the pointer when the mission has just started i.e. during the
+    // first second (assuming no shots in first second of the mission...)
+    if (stats.time < 1.0f) write<int32_t>(handle, label_ptrs.at(150), 0);
     stats.map_stage = MapStage::main;  // always render stats
     if (stats.map >= 2) {
         intptr_t shots_fired_ptr
