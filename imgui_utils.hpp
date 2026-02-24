@@ -12,22 +12,19 @@ ImVec4 im_vec4(const std::array<float, 3>& color);
 
 template <typename... Args>
 void text(
-    ImFont* font,
-    std::optional<std::array<float, 3>> color,
-    const char* fmt,
-    Args... args
+    ImFont* font, std::array<float, 3> color, const char* fmt, Args... args
 ) {
     if (font) ImGui::PushFont(font);
-    ImGui::TextColored(im_vec4(color.value()), fmt, args...);
+    ImGui::TextColored(im_vec4(color), fmt, args...);
     if (font) ImGui::PopFont();
 }
 
 template <typename... Args>
 void table_row(
     ImFont* label_font,
-    std::optional<std::array<float, 3>> label_color,
+    std::array<float, 3> label_color,
     ImFont* value_font,
-    std::optional<std::array<float, 3>> value_color,
+    std::array<float, 3> value_color,
     const char* label,
     const char* value,
     Args... args
