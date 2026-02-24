@@ -48,3 +48,4 @@ Experimental support. Not ready for general use.
 * https://github.com/0danny/re47 (Hitman: Codename 47 reverse engineering project)
 * https://github.com/ReGlacier/ReHitman (Hitman: Blood Money reverse engineering project)
 * https://github.com/pavledev/HitmanAbsolutionSDK (Hitman: Absolution development kit)
+* https://github.com/OrfeasZ/HitmanUnlocker (Hitman: Codename 47 configurable draw distance)
