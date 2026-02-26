@@ -72,6 +72,7 @@ void hitman2_silent_assassin::update_slow(
     // first second (assuming no shots in first second of the mission...)
     if (stats.time < 1.0f) write<int32_t>(handle, label_ptrs.at(150), 0);
     stats.map_stage = MapStage::main;  // always render stats
+    stats.difficulty = read<int32_t>(handle, label_ptrs.at(250)).value_or(0);
     if (stats.map >= 2) {
         intptr_t shots_fired_ptr
             = read<int32_t>(handle, label_ptrs.at(150)).value_or(0);

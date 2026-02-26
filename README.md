@@ -20,9 +20,7 @@ Known issues:
 
 ### Hitman 2: Silent Assassin
 
-Nearly fully supported. Known issues:
-
-* Difficulty is not tracked.
+Fully supported.
 
 ### Hitman: Contracts
 
