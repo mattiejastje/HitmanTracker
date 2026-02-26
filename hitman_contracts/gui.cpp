@@ -27,7 +27,10 @@ void hitman_contracts::gui(
         fonts,
         stats,
         "Hitman Contracts",
-        "",  // TODO get difficulty
+        stats.difficulty == 1   ? "Normal"
+        : stats.difficulty == 2 ? "Expert"
+        : stats.difficulty == 3 ? "Professional"
+                                : "",
         map_names,
         {
             {"Close Encounters", stats.close_encounters},

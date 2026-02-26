@@ -25,6 +25,7 @@
 #include "hitman_codename_47/hook.hpp"
 #include "hitman_codename_47/stats.hpp"
 #include "hitman_contracts/gui.hpp"
+#include "hitman_contracts/hook.hpp"
 #include "hitman_contracts/stats.hpp"
 #include "logging.hpp"
 #include "mem/read_write.hpp"
@@ -86,7 +87,7 @@ static std::vector<GameInfo> get_game_info(const char* exe_file) {
                 hitman_contracts::update_fast
             },
             {{"hitmancontracts.exe"}},
-            hook_nothing,
+            hitman_contracts::hook,
         }};
     } else if (stricmp("hitmanbloodmoney.exe", exe_file) == 0) {
         return {GameInfo{

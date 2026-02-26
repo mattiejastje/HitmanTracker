@@ -97,6 +97,7 @@ void hitman_contracts::update_slow(
         stats.map = 0;
     }
     stats.map_stage = MapStage::main;  // always render stats
+    stats.difficulty = read<int32_t>(handle, label_ptrs.at(250)).value_or(0);
     if (stats.map >= 1) {
         auto shots_fired = read<int32_t>(
             handle, base_ptrs[0] + 0x3947B0, {0xBA0, 0x104, 0x82F}, INT32_MAX

@@ -18,15 +18,15 @@ Known issues:
   (you will also experience game bugs if you do this).
   Play at 60 frames per second for best experience.
 
+* Difficulty is not tracked.
+
 ### Hitman 2: Silent Assassin
 
 Fully supported.
 
 ### Hitman: Contracts
 
-Nearly fully supported. Known issues:
-
-* Difficulty is not tracked.
+Fully supported.
 
 ### Hitman: Blood Money
 
