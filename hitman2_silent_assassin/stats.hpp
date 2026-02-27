@@ -2,7 +2,6 @@
 
 #include "../base_ptrs.hpp"
 #include "../label_ptrs.hpp"
-#include "../mem/handle.hpp"
 #include "../stats.hpp"
 
 namespace hitman2_silent_assassin {

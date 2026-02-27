@@ -7,7 +7,6 @@
 
 #include "label_ptrs.hpp"
 #include "mem/alloc.hpp"
-#include "mem/handle.hpp"
 
 using Code = std::vector<uint8_t>;
 

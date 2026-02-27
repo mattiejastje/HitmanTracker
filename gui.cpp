@@ -17,6 +17,7 @@
 #include "gui/window.hpp"
 #include "imgui_utils.hpp"
 #include "logging.hpp"
+#include "mem/handle.hpp"
 
 // Data
 constexpr auto TIMER_FIND_GAME = 1;

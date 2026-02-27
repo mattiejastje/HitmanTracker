@@ -28,6 +28,7 @@
 #include "hitman_contracts/hook.hpp"
 #include "hitman_contracts/stats.hpp"
 #include "logging.hpp"
+#include "mem/handle.hpp"
 #include "mem/read_write.hpp"
 
 using GameHook = std::function<HookPtr(std::shared_ptr<void>, const BasePtrs&)>;
@@ -130,10 +131,9 @@ static std::unordered_map<std::string, intptr_t> get_all_base_ptrs(
             do {
                 std::string name{module_entry.szModule};
                 std::transform(
-                    name.begin(),
-                    name.end(),
-                    name.begin(),
-                    [](char& c) { return std::tolower(c); }
+                    name.begin(), name.end(), name.begin(), [](char& c) {
+                        return std::tolower(c);
+                    }
                 );
                 auto base_ptr
                     = reinterpret_cast<intptr_t>(module_entry.modBaseAddr);
