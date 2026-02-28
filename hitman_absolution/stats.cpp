@@ -246,7 +246,7 @@ void hitman_absolution::update_slow(
         return;
     }
     auto checkpoint
-        = read<int32_t>(handle, base_ptrs[0] + 0xD60F94).value_or(-1);
+        = read<int32_t>(handle, base_ptrs[0] + 0xD59670 + 0x7924).value_or(-1);
     logging::trace("Scene {}, checkpoint {}", scene.value(), checkpoint);
     auto iter = scenes.find(scene.value());
     if (iter == scenes.end()) {
