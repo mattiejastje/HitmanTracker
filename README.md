@@ -34,7 +34,28 @@ Fully supported.
 
 ### Hitman: Absolution
 
-Experimental support. Not ready for general use.
+Partial support.
+
+A very simple silent assassin rating is implemented
+to mimick how the rating system works in the other games,
+whilst retaining some consistency with the scoring system in Absolution:
+
+* If a checkpoint is unrated,
+  at the moment the tracker is unable to track the statistics,
+  and awards an "Unrated" rating.
+  The technical reason for this is that the tracker verifies score board,
+  but the engine keeps no score board for unrated checkpoints.
+
+* If a checkpoint is rated, the tracker awards a "Silent Assassin" rating
+  in these circumstances:
+
+    - Not spotted.
+    - No civilians killed.
+    - No non-targets killed if the map has dedicated targets (i.e. if the map
+      has no dedicated targets, every non-civilian is considered a target).
+
+For convenience, the tracker shows whether evidence is left,
+but this currently does not affect the rating awarded by the tracker.
 
 ## Related projects
 

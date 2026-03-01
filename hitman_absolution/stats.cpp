@@ -55,6 +55,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
     // level 1
     {
         {6, 1, Rating::silent_assassin},  // 0 king of chinatown
+        {},                               // 1 cutscene
     },
     // level 2
     {
@@ -185,10 +186,10 @@ const std::vector<std::vector<MapInfo>> scenes = {
 };
 
 static Status get_rating_status(Rating max_rating, const Stats& stats) {
-    return (max_rating != Rating::unrated
-            && (stats.alerts.value != 0 || stats.innocents_killed.value != 0
-                || (max_rating == Rating::silent_assassin
-                    && stats.enemies_killed.value != 0)))
+    if (max_rating == Rating::unrated) return Status::GREEN;
+    return (stats.alerts.value != 0 || stats.innocents_killed.value != 0
+            || (max_rating == Rating::silent_assassin
+                && stats.enemies_killed.value != 0))
                ? Status::RED
                : Status::GREEN;
 };
@@ -362,6 +363,9 @@ void hitman_absolution::update_slow(
             map_info.max_rating == Rating::silent_assassin
         );
         stats.alerts = stats_value(game_stats->spotted);
+        stats.on_camera = stats_value(
+            map_info.num_evidence - game_stats->evidence_removed, false
+        );
         auto status = get_rating_status(map_info.max_rating, stats);
         stats.rating
             = {map_info.max_rating == Rating::unrated
