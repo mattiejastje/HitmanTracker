@@ -363,8 +363,7 @@ void hitman_absolution::update_slow(
             logging::error("Unable to read game stats");
             return;
         }
-        // note: stats are not shown for unrated maps
-        // so we don't bother about individual stats rating in this case
+        // note: stats are always 0 for unrated maps
         stats.innocents_killed = stats_value(game_stats->civilian_casualty);
         stats.enemies_killed = stats_value(
             game_stats->non_target_casualty - game_stats->civilian_casualty,
