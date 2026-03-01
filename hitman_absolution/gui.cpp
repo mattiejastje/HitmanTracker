@@ -92,6 +92,11 @@ void hitman_absolution::gui(
         : stats.difficulty == 3 ? "Expert"
                                 : "Purist",
         map_names,
-        {}
+        stats.rating.value != "Unrated" ? 
+        std::vector<hitman_common::TableRow>{
+            {"Innocents Killed", stats.innocents_killed},
+            {"Enemies Killed", stats.enemies_killed},
+            {"Spotted", stats.alerts},
+        } : std::vector<hitman_common::TableRow>{}
     );
 }

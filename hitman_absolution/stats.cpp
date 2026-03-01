@@ -46,11 +46,11 @@ struct MapInfo {
 const std::vector<std::vector<MapInfo>> scenes = {
     // level 0
     {
-        {1, 0},                  // 0 garden
-        {2, 0},                  // 1 greenhouse
+        {1},                     // 0 garden
+        {2},                     // 1 greenhouse
         {3, 1},                  // 2 cliffside
         {4, 1, Rating::shadow},  // 3 mansion ground
-        {5, 0},                  // 4 mansion 2nd
+        {5},                     // 4 mansion 2nd
     },
     // level 1
     {
@@ -184,31 +184,14 @@ const std::vector<std::vector<MapInfo>> scenes = {
     },
 };
 
-/*
 static Status get_rating_status(Rating max_rating, const Stats& stats) {
-    return (max_rating != Rating::unrated && stats.spotted.value != 0)
+    return (max_rating != Rating::unrated
+            && (stats.alerts.value != 0 || stats.innocents_killed.value != 0
+                || (max_rating == Rating::silent_assassin
+                    && stats.enemies_killed.value != 0)))
                ? Status::RED
-           : (max_rating != Rating::unrated
-              && max_rating != Rating::silent_assassin
-              && stats.evidence_left.value != 0)
-               ? Status::YELLOW
                : Status::GREEN;
 };
-
-static std::string get_rating_value(Rating max_rating, Status status) {
-    if (max_rating == Rating::unrated) {
-        return "Unrated";
-    }
-    return std::format(
-        "{}{}",
-        status == Status::GREEN ? "" : "No ",
-        max_rating == Rating::veteran      ? "Veteran"
-        : max_rating == Rating::specialist ? "Specialist"
-        : max_rating == Rating::shadow     ? "Shadow"
-                                           : "Silent Assassin"
-    );
-}
-*/
 
 constexpr int32_t NUM_LEVELS = 26;
 constexpr int32_t NUM_CHECKPOINTS_PER_LEVEL
@@ -226,6 +209,22 @@ struct CheckpointContainer {
     int32_t keys_end_ptr;    // +0x10 points one past last entry
     int8_t _pad1[0x3C];      // ...
     int32_t current_key;     // +0x50
+};
+
+struct GameStats {
+    int16_t unknown;  // silent assassin bonus?
+    int16_t objective_complete;
+    int16_t target_kill;
+    int16_t spotted;
+    int16_t evidence_removed;
+    int16_t silent_assassin_bonus;
+    int16_t signature_kill;
+    int16_t silent_kill;
+    int16_t headshot;
+    int16_t body_hidden;
+    int16_t civilian_casualty;
+    int16_t non_target_casualty;
+    int16_t pacification;
 };
 
 static int32_t get_level(void* handle, const BasePtrs& base_ptrs) {
@@ -313,13 +312,11 @@ void hitman_absolution::update_slow(
         logging::error("Unable to read difficulty");
     }
     auto level = get_level(handle, base_ptrs);
-    stats.level = stats_value(level, false);
     if (level < 0) {
         stats.map = 0;
         return;
     }
     auto checkpoint = get_checkpoint(handle, base_ptrs);
-    stats.checkpoint = stats_value(checkpoint, false);
     if (checkpoint < 0) {
         stats.map = 0;
         return;
@@ -341,26 +338,36 @@ void hitman_absolution::update_slow(
     stats.map = map_info.map;
     stats.map_stage = MapStage::main;  // always render stats
     if (stats.map > 0) {
-        // spotted/evidence pointers are not working
-        /*
-        auto spotted = read<int32_t>(handle, base_ptrs[0] + 0xD61568);
-        if (spotted) {
-            stats.spotted = stats_value(
-                spotted.value(), map_info.max_rating != Rating::unrated
-            );
+        auto game_stats_ptr
+            = read<int32_t>(handle, base_ptrs[0] + 0xD61710 + 0x28);
+        if (!game_stats_ptr) {
+            logging::error("Unable to read game stats pointer");
+            return;
         }
-        auto evidence_collected
-            = read<int32_t>(handle, base_ptrs[0] + 0xE20FB0, {0x9C});
-        if (evidence_collected) {
-            stats.evidence_left = stats_value(
-                map_info.num_evidence - evidence_collected.value(),
-                map_info.max_rating != Rating::unrated
-                    && map_info.max_rating != Rating::silent_assassin
-            );
+        auto game_stats = read<GameStats>(
+            handle,
+            game_stats_ptr.value()
+                + ((level * NUM_CHECKPOINTS_PER_LEVEL + checkpoint) * 200)
+        );
+        if (!game_stats) {
+            logging::error("Unable to read game stats");
+            return;
         }
+        // note: stats are not shown for unrated maps
+        // so we don't bother about individual stats rating in this case
+        stats.innocents_killed = stats_value(game_stats->civilian_casualty);
+        stats.enemies_killed = stats_value(
+            game_stats->non_target_casualty - game_stats->civilian_casualty,
+            // maps without silent assassin rating allow enemies killed
+            map_info.max_rating == Rating::silent_assassin
+        );
+        stats.alerts = stats_value(game_stats->spotted);
         auto status = get_rating_status(map_info.max_rating, stats);
-        stats.rating = {get_rating_value(map_info.max_rating, status), status};
-        */
+        stats.rating
+            = {map_info.max_rating == Rating::unrated
+                   ? "Unrated"
+                   : get_simple_rating_value(status),
+               status};
     }
 }
 
