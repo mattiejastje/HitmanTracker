@@ -27,20 +27,29 @@ struct Stats {
     StatsValue<int32_t> enemies_wounded;
     StatsValue<int32_t> innocents_killed;
     StatsValue<int32_t> innocents_wounded;
-    StatsValue<int32_t> close_encounters;   // h2sa
-    StatsValue<int32_t> alerts;             // h2sa
-    StatsValue<int32_t> police_killed;      // bm
-    StatsValue<int32_t> police_wounded;     // bm
-    StatsValue<int32_t> frisk_failed;       // bm
-    StatsValue<int32_t> cover_blown;        // bm
-    StatsValue<int32_t> bodies_fnd;         // bm
-    StatsValue<int32_t> target_bodies_fnd;  // bm
-    StatsValue<int32_t> uncon_bodies_fnd;   // bm
-    StatsValue<int32_t> witnesses;          // bm
-    StatsValue<int32_t> on_camera;          // bm
-    StatsValue<int32_t> cust_weapons_left;  // bm
-    StatsValue<int32_t> suit_left;          // bm
-    StatsValue<int32_t> spotted;            // hma
-    StatsValue<int32_t> evidence_left;      // hma
-    StatsValue<int32_t> target_not_located; // hma
+    StatsValue<int32_t> close_encounters;       // h2sa, hc
+    StatsValue<int32_t> alerts;                 // h2sa, hc
+    StatsValue<int32_t> police_killed;          // bm
+    StatsValue<int32_t> police_wounded;         // bm
+    StatsValue<int32_t> frisk_failed;           // bm
+    StatsValue<int32_t> cover_blown;            // bm
+    StatsValue<int32_t> bodies_fnd;             // bm
+    StatsValue<int32_t> target_bodies_fnd;      // bm
+    StatsValue<int32_t> uncon_bodies_fnd;       // bm
+    StatsValue<int32_t> witnesses;              // bm
+    StatsValue<int32_t> on_camera;              // bm
+    StatsValue<int32_t> cust_weapons_left;      // bm
+    StatsValue<int32_t> suit_left;              // bm
+    StatsValue<int32_t> level;                  // hma (debug, to be removed)
+    StatsValue<int32_t> checkpoint;             // hma (debug, to be removed)
+    StatsValue<int32_t> silent_assassin_bonus;  // hma
+    StatsValue<int32_t> target_kill;            // hma
+    StatsValue<int32_t> spotted;                // hma
+    StatsValue<int32_t> pacification;           // hma
+    StatsValue<int32_t> objective_complete;     // hma
+    StatsValue<int32_t> evidence_removed;       // hma
+    StatsValue<int32_t> body_hidden;            // hma
+    StatsValue<int32_t> headshot;               // hma
+    StatsValue<int32_t> silent_kill;            // hma
+    StatsValue<int32_t> signature_kill;         // hma
 };
