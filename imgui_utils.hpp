@@ -40,14 +40,16 @@ template <typename... Args>
 void table_row(
     const Fonts& fonts,
     const settings::Gui& settings,
-    Status status,
+    std::optional<Status> status,
     const char* label,
     const char* value,
     Args... args
 ) {
-    auto value_color = status == Status::GREEN ? settings.rating_good.color
-                       : status == Status::RED ? settings.rating_bad.color
-                                               : settings.rating_maybe.color;
+    auto value_color
+        = !status.has_value()               ? settings.value.color
+          : status.value() == Status::GREEN ? settings.rating_good.color
+          : status.value() == Status::RED   ? settings.rating_bad.color
+                                            : settings.rating_maybe.color;
     table_row(
         fonts.label,
         settings.label.color,

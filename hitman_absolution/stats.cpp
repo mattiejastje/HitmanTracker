@@ -39,6 +39,7 @@ enum class Rating { unrated, veteran, specialist, shadow, silent_assassin };
 struct MapInfo {
     int map;
     int num_evidence;
+    int num_objectives;
     Rating max_rating;
 };
 
@@ -46,96 +47,103 @@ struct MapInfo {
 const std::vector<std::vector<MapInfo>> scenes = {
     // level 0
     {
-        {1},                     // 0 garden
-        {2},                     // 1 greenhouse
-        {3, 1},                  // 2 cliffside
-        {4, 1, Rating::shadow},  // 3 mansion ground
-        {5},                     // 4 mansion 2nd
+        {1},                        // 0 garden
+        {2},                        // 1 greenhouse
+        {3, 1},                     // 2 cliffside
+        {4, 1, 2, Rating::shadow},  // 3 mansion ground
+        {5},                        // 4 mansion 2nd
+        {},                         // 5 victoria cutscene
     },
     // level 1
     {
-        {6, 1, Rating::silent_assassin},  // 0 king of chinatown
-        {},                               // 1 cutscene
+        {6, 1, 3, Rating::silent_assassin},  // 0 king of chinatown
+        {},                                  // 1 cutscene
     },
     // level 2
     {
-        {7, 1, Rating::shadow},  // 0 terminus hotel
-        {8, 1, Rating::shadow},  // 1 upper floors (elevator cutscene)
-        {8, 1, Rating::shadow},  // 2 upper floors
-        {8, 1, Rating::shadow},  // 3 upper floors (after picking the lock)
+        {7, 1, 1, Rating::shadow},  // 0 terminus hotel
+        {},                         // 1 elevator going up (cutscene)
+        {8, 1, 2, Rating::shadow},  // 2 upper floors
+        {},  // 3 short section after picking the lock (not a cutscene)
+        {},  // 4 cleaning lady murder (cutscene)
     },
     // level 3
     {
-        {9, 0, Rating::specialist},  // 0 burning hotel
-        {10, 1, Rating::shadow},     // 1 library
-        {11, 0},                     // 2 pigeon coop (part with heli)
-        {11, 0},                     // 3 pigeon coop (part with cops)
-        {12, 1, Rating::shadow},     // 4 shangri-la
-        {13, 1, Rating::shadow},     // 5 train station (elevator cutscene)
-        {13, 1, Rating::shadow},     // 6 train station
+        {9, 0, 1, Rating::specialist},  // 0 burning hotel
+        {10, 1, 1, Rating::shadow},     // 1 library
+        {11},                           // 2 pigeon coop
+        {12},                           // 3 rooftops
+        {13, 1, 1, Rating::shadow},     // 4 shangri-la
+        {},                             // 5 elevator going down (cutscene)
+        {14, 1, 3, Rating::shadow},     // 6 train station
+        {},                             // 7 train exit (cutscene)
     },
     // level 4
     {
-        {14, 1, Rating::shadow},           // 0 courtyard
-        {15, 1, Rating::silent_assassin},  // 1 vixen club
-        {16, 0, Rating::specialist},       // 2 dressing rooms
-        {17, 1, Rating::shadow},           // 3 derelict building
-        {18, 1, Rating::shadow},           // 4 convenience store
-        {19, 1},                           // 5 loading area
-        {20, 1, Rating::silent_assassin},  // 6 chinese new year
-        {20, 1, Rating::silent_assassin},  // 7 chinese new year (lock pick)
+        {15, 1, 1, Rating::shadow},           // 0 courtyard
+        {16, 1, 3, Rating::silent_assassin},  // 1 vixen club
+        {17, 0, 1, Rating::specialist},       // 2 dressing rooms
+        {18, 1, 1, Rating::shadow},           // 3 derelict building
+        {19, 1, 1, Rating::shadow},           // 4 convenience store
+        {20, 1},                              // 5 loading area
+        {21, 1, 4, Rating::silent_assassin},  // 6 chinese new year
+        {},                                   // 7 lock pick (cutscene)
+        {},                                   // 8 total level score
     },
     // level 5
     {},
     // level 6
     {
-        {21, 0},                           // 0 victoria's ward
-        {22, 1, Rating::shadow},           // 1 orphanage halls
-        {23, 1, Rating::silent_assassin},  // 2 central heating (cutscene)
-        {23, 1, Rating::silent_assassin},  // 3 central heating
+        {22},                                 // 0 victoria's ward
+        {23, 1, 5, Rating::shadow},           // 1 orphanage halls
+        {},                                   // 2 lenny shoots nun (cutscene)
+        {24, 1, 2, Rating::silent_assassin},  // 3 central heating
+        {},                                   // 4 total level score
     },
     // level 7
     {
-        {24, 1, Rating::shadow},  // 0 great balls of fire
+        {25, 1, 1, Rating::shadow},  // 0 great balls of fire
+        {},                          // 1 total level score
     },
     // level 8
     {
-        {25, 1, Rating::veteran},  // 0 gunshop
+        {26, 1, 2, Rating::veteran},  // 0 gunshop
+        {},                           // 1 total level score
     },
     // level 9
     {
-        {26, 1, Rating::silent_assassin},  // 0 streets of hope
-        {27, 1, Rating::silent_assassin},  // 1 barber shop
-        {27, 1, Rating::silent_assassin},  // 2 barber shop (cutscene)
+        {27, 1, 4, Rating::silent_assassin},  // 0 streets of hope
+        {28, 1, 3, Rating::silent_assassin},  // 1 barber shop
+        {},                                   // 2 lenny kidnap (cutscene)
     },
     // level 10
     {
-        {28, 0},  // 0 the desert
+        {29},  // 0 the desert
     },
     // level 11
     {
-        {29, 1, Rating::shadow},  // 0 dead end (loading)
-        {29, 1, Rating::shadow},  // 1 dead end
-        {30, 1, Rating::shadow},  // 2 old mill
-        {31, 1, Rating::shadow},  // 3 descent
-        {32, 1, Rating::shadow},  // 4 factory compound
+        {30},                        // 0 dead end (loading)
+        {30, 1, 1, Rating::shadow},  // 1 dead end
+        {31, 1, 1, Rating::shadow},  // 2 old mill
+        {32, 1, 1, Rating::shadow},  // 3 descent
+        {33, 1, 1, Rating::shadow},  // 4 factory compound
     },
     // level 12
     {
-        {33, 1, Rating::silent_assassin},  // 0 test facility
-        {34, 1, Rating::shadow},           // 1 decontamination
-        {35, 1, Rating::silent_assassin},  // 2 r&d
+        {34, 1, 1, Rating::silent_assassin},  // 0 test facility
+        {35, 1, 1, Rating::shadow},           // 1 decontamination
+        {36, 1, 1, Rating::silent_assassin},  // 2 r&d
     },
     // level 13
     {
-        {36, 1, Rating::shadow},           // 0 patriot's hangar
-        {37, 1, Rating::silent_assassin},  // 1 arena
+        {37, 1, 1, Rating::shadow},           // 0 patriot's hangar
+        {38, 1, 1, Rating::silent_assassin},  // 1 arena
     },
     // level 14
     {
-        {38, 1, Rating::silent_assassin},  // 0 parking
-        {39, 1, Rating::silent_assassin},  // 1 reception
-        {40, 1, Rating::silent_assassin},  // 2 cornfield
+        {39, 1, 1, Rating::silent_assassin},  // 0 parking
+        {40, 1, 1, Rating::silent_assassin},  // 1 reception
+        {41, 1, 1, Rating::silent_assassin},  // 2 cornfield
     },
     // level 15
     {},
@@ -143,19 +151,19 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {},
     // level 17
     {
-        {41, 1, Rating::shadow},  // 0 courthouse
-        {42, 1},                  // 1 holding cells
-        {43, 1, Rating::shadow},  // 2 prison
-        {43, 1, Rating::shadow},  // 3 prison (cutscene)
+        {42, 1, 1, Rating::shadow},  // 0 courthouse
+        {43, 1, 1},                  // 1 holding cells
+        {44, 1, 1, Rating::shadow},  // 2 prison
+        {44},                        // 3 prison (cutscene)
     },
     // level 18
     {
-        {44, 1, Rating::shadow},  // 0 county jail
-        {45, 1, Rating::shadow},  // 1 outgunned
-        {46, 1, Rating::shadow},  // 2 burn
-        {47, 1, Rating::shadow},  // 3 hope fair
-        {48, 0},                  // 4 church (outside)
-        {48, 0},                  // 4 church (inside)
+        {45, 1, 1, Rating::shadow},  // 0 county jail
+        {46, 1, 1, Rating::shadow},  // 1 outgunned
+        {47, 1, 1, Rating::shadow},  // 2 burn
+        {48, 1, 1, Rating::shadow},  // 3 hope fair
+        {49},                        // 4 church (outside)
+        {49},                        // 4 church (inside)
     },
     // level 19
     {},
@@ -163,25 +171,26 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {},
     // level 21
     {
-        {49, 1},  // 0 tailor shop
+        {50, 1, 1},  // 0 tailor shop
     },
     // level 22
     {
-        {50, 1, Rating::shadow},           // 0 blackwater park
-        {50, 1, Rating::shadow},           // 1 blackwater park
-        {51, 1, Rating::silent_assassin},  // 2 the penthouse
+        // TODO check which is cutscene
+        {51, 1, 1, Rating::shadow},           // 0 blackwater park
+        {51, 1, 1, Rating::shadow},           // 1 blackwater park
+        {52, 1, 1, Rating::silent_assassin},  // 2 the penthouse
     },
     // level 23
     {},
     // level 24
     {
-        {52, 1, Rating::silent_assassin},  // 0 blackwater roof
+        {53, 1, 1, Rating::silent_assassin},  // 0 blackwater roof
     },
     // level 25
     {
-        {53, 1, Rating::shadow},           // 0 cemetary entrance
-        {54, 1, Rating::silent_assassin},  // 1 burnwood family tomb
-        {55, 1, Rating::silent_assassin},  // 2 crematorium
+        {54, 1, 1, Rating::shadow},           // 0 cemetary entrance
+        {55, 1, 1, Rating::silent_assassin},  // 1 burnwood family tomb
+        {56, 1, 1, Rating::silent_assassin},  // 2 crematorium
     },
 };
 
@@ -213,7 +222,7 @@ struct CheckpointContainer {
 };
 
 struct GameStats {
-    int16_t unknown;  // silent assassin bonus?
+    int16_t unknown;
     int16_t objective_complete;
     int16_t target_kill;
     int16_t spotted;
@@ -363,9 +372,16 @@ void hitman_absolution::update_slow(
             map_info.max_rating == Rating::silent_assassin
         );
         stats.alerts = stats_value(game_stats->spotted);
-        stats.on_camera = stats_value(
-            map_info.num_evidence - game_stats->evidence_removed, false
-        );
+        stats.on_camera
+            = {map_info.num_evidence - game_stats->evidence_removed};
+        stats.objectives_left
+            = {map_info.num_objectives - game_stats->objective_complete};
+        stats.pacifications = {game_stats->pacification};
+        stats.bodies_hidden = {game_stats->body_hidden};
+        stats.headshots = {game_stats->headshot};
+        stats.silent_kills = {game_stats->silent_kill};
+        stats.signature_kills = {game_stats->signature_kill};
+        stats.sa_bonus = {game_stats->silent_assassin_bonus};
         auto status = get_rating_status(map_info.max_rating, stats);
         stats.rating
             = {map_info.max_rating == Rating::unrated
