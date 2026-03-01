@@ -35,7 +35,7 @@ const std::vector<std::string> map_names = {
     // Welcome To Hope
     "#24 Great Balls Of Fire",
     // Birdie's Gift
-    "#25 GunShop",
+    "#25 Gun Shop",
     // Shaving Lenny
     "#26 Streets Of Hope",
     "#27 Barbershop",
