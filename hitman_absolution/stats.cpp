@@ -57,7 +57,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
     // level 1
     {
         {6, 1, 3, Rating::silent_assassin},  // 0 king of chinatown
-        {},                                  // 1 cutscene
+        {},                                  // 1 level summary screen
     },
     // level 2
     {
@@ -88,7 +88,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
         {20, 1},                              // 5 loading area
         {21, 1, 4, Rating::silent_assassin},  // 6 chinese new year
         {},                                   // 7 lock pick (cutscene)
-        {},                                   // 8 total level score
+        {},                                   // 8 level summary screen
     },
     // level 5
     {},
@@ -98,52 +98,57 @@ const std::vector<std::vector<MapInfo>> scenes = {
         {23, 1, 5, Rating::shadow},           // 1 orphanage halls
         {},                                   // 2 lenny shoots nun (cutscene)
         {24, 1, 2, Rating::silent_assassin},  // 3 central heating
-        {},                                   // 4 total level score
+        {},                                   // 4 level summary screen
     },
     // level 7
     {
         {25, 1, 1, Rating::shadow},  // 0 great balls of fire
-        {},                          // 1 total level score
+        {},                          // 1 level summary screen
     },
     // level 8
     {
         {26, 1, 2, Rating::veteran},  // 0 gunshop
-        {},                           // 1 total level score
+        {},                           // 1 level summary screen
     },
     // level 9
     {
         {27, 1, 4, Rating::silent_assassin},  // 0 streets of hope
         {28, 1, 3, Rating::silent_assassin},  // 1 barber shop
         {},                                   // 2 lenny kidnap (cutscene)
+        {},                                   // 3 level summary screen
     },
     // level 10
     {
         {29},  // 0 the desert
+        {},    // 1 level summary screen
     },
     // level 11
     {
-        {30},                        // 0 dead end (loading)
-        {30, 1, 1, Rating::shadow},  // 1 dead end
+        {},                          // 0 dog & oil fields (cutscene)
+        {30, 1, 3, Rating::shadow},  // 1 dead end
         {31, 1, 1, Rating::shadow},  // 2 old mill
         {32, 1, 1, Rating::shadow},  // 3 descent
-        {33, 1, 1, Rating::shadow},  // 4 factory compound
+        {33, 1, 3, Rating::shadow},  // 4 factory compound
+        {},                          // 5 level summary screen
     },
     // level 12
     {
-        {34, 1, 1, Rating::silent_assassin},  // 0 test facility
-        {35, 1, 1, Rating::shadow},           // 1 decontamination
-        {36, 1, 1, Rating::silent_assassin},  // 2 r&d
+        {34, 1, 5, Rating::silent_assassin},  // 0 test facility
+        {35, 1, 2, Rating::shadow},           // 1 decontamination
+        {36, 1, 3, Rating::silent_assassin},  // 2 r&d
+        {},                                   // 3 level summary screen
     },
     // level 13
     {
         {37, 1, 1, Rating::shadow},           // 0 patriot's hangar
-        {38, 1, 1, Rating::silent_assassin},  // 1 arena
+        {38, 1, 2, Rating::silent_assassin},  // 1 arena
+        {},                                   // 2 level summary screen
     },
     // level 14
     {
-        {39, 1, 1, Rating::silent_assassin},  // 0 parking
-        {40, 1, 1, Rating::silent_assassin},  // 1 reception
-        {41, 1, 1, Rating::silent_assassin},  // 2 cornfield
+        {39, 1, 3, Rating::silent_assassin},  // 0 parking
+        {40, 1, 3, Rating::silent_assassin},  // 1 reception
+        {41, 1, 2, Rating::silent_assassin},  // 2 cornfield
     },
     // level 15
     {},
