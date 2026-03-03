@@ -70,13 +70,13 @@ const std::vector<std::vector<MapInfo>> scenes = {
     // level 3
     {
         {10, 0, 1, Rating::specialist},  // 0 burning hotel
-        {11, 1, 1, Rating::shadow},     // 1 library
-        {12},                           // 2 pigeon coop
-        {13},                           // 3 rooftops
-        {14, 1, 1, Rating::shadow},     // 4 shangri-la
-        {},                             // 5 elevator going down (cutscene)
-        {15, 1, 3, Rating::shadow},     // 6 train station
-        {},                             // 7 level summary screen
+        {11, 1, 1, Rating::shadow},      // 1 library
+        {12},                            // 2 pigeon coop
+        {13},                            // 3 rooftops
+        {14, 1, 1, Rating::shadow},      // 4 shangri-la
+        {},                              // 5 elevator going down (cutscene)
+        {15, 1, 3, Rating::shadow},      // 6 train station
+        {},                              // 7 level summary screen
     },
     // level 4
     {
