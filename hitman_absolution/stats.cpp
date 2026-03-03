@@ -52,7 +52,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
         {3, 1},                     // 2 cliffside
         {4, 1, 2, Rating::shadow},  // 3 mansion ground
         {5},                        // 4 mansion 2nd
-        {},                         // 5 victoria cutscene
+        {},                         // 5 level summary screen
     },
     // level 1
     {
@@ -64,29 +64,29 @@ const std::vector<std::vector<MapInfo>> scenes = {
         {7, 1, 1, Rating::shadow},  // 0 terminus hotel
         {},                         // 1 elevator going up (cutscene)
         {8, 1, 2, Rating::shadow},  // 2 upper floors
-        {},  // 3 short section after picking the lock (not a cutscene)
-        {},  // 4 cleaning lady murder (cutscene)
+        {9},                        // 3 room 899
+        {},                         // 4 level summary screen
     },
     // level 3
     {
-        {9, 0, 1, Rating::specialist},  // 0 burning hotel
-        {10, 1, 1, Rating::shadow},     // 1 library
-        {11},                           // 2 pigeon coop
-        {12},                           // 3 rooftops
-        {13, 1, 1, Rating::shadow},     // 4 shangri-la
+        {10, 0, 1, Rating::specialist},  // 0 burning hotel
+        {11, 1, 1, Rating::shadow},     // 1 library
+        {12},                           // 2 pigeon coop
+        {13},                           // 3 rooftops
+        {14, 1, 1, Rating::shadow},     // 4 shangri-la
         {},                             // 5 elevator going down (cutscene)
-        {14, 1, 3, Rating::shadow},     // 6 train station
-        {},                             // 7 train exit (cutscene)
+        {15, 1, 3, Rating::shadow},     // 6 train station
+        {},                             // 7 level summary screen
     },
     // level 4
     {
-        {15, 1, 1, Rating::shadow},           // 0 courtyard
-        {16, 1, 3, Rating::silent_assassin},  // 1 vixen club
-        {17, 0, 1, Rating::specialist},       // 2 dressing rooms
-        {18, 1, 1, Rating::shadow},           // 3 derelict building
-        {19, 1, 1, Rating::shadow},           // 4 convenience store
-        {20, 1},                              // 5 loading area
-        {21, 1, 4, Rating::silent_assassin},  // 6 chinese new year
+        {16, 1, 1, Rating::shadow},           // 0 courtyard
+        {17, 1, 3, Rating::silent_assassin},  // 1 vixen club
+        {18, 0, 1, Rating::specialist},       // 2 dressing rooms
+        {19, 1, 1, Rating::shadow},           // 3 derelict building
+        {20, 1, 1, Rating::shadow},           // 4 convenience store
+        {21, 1},                              // 5 loading area
+        {22, 1, 4, Rating::silent_assassin},  // 6 chinese new year
         {},                                   // 7 lock pick (cutscene)
         {},                                   // 8 level summary screen
     },
@@ -94,61 +94,63 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {},
     // level 6
     {
-        {22},                                 // 0 victoria's ward
-        {23, 1, 5, Rating::shadow},           // 1 orphanage halls
+        {23},                                 // 0 victoria's ward
+        {24, 1, 5, Rating::shadow},           // 1 orphanage halls
         {},                                   // 2 lenny shoots nun (cutscene)
-        {24, 1, 2, Rating::silent_assassin},  // 3 central heating
+        {25, 1, 2, Rating::silent_assassin},  // 3 central heating
         {},                                   // 4 level summary screen
     },
     // level 7
     {
-        {25, 1, 1, Rating::shadow},  // 0 great balls of fire
+        {26, 1, 1, Rating::shadow},  // 0 great balls of fire
         {},                          // 1 level summary screen
     },
     // level 8
     {
-        {26, 1, 2, Rating::veteran},  // 0 gunshop
+        {27, 1, 2, Rating::veteran},  // 0 gunshop
         {},                           // 1 level summary screen
     },
     // level 9
     {
-        {27, 1, 4, Rating::silent_assassin},  // 0 streets of hope
-        {28, 1, 3, Rating::silent_assassin},  // 1 barber shop
+        {28, 1, 4, Rating::silent_assassin},  // 0 streets of hope
+        {29, 1, 3, Rating::silent_assassin},  // 1 barber shop
         {},                                   // 2 lenny kidnap (cutscene)
         {},                                   // 3 level summary screen
     },
     // level 10
     {
-        {29},  // 0 the desert
+        {30},  // 0 the desert
         {},    // 1 level summary screen
     },
     // level 11
     {
         {},                          // 0 dog & oil fields (cutscene)
-        {30, 1, 3, Rating::shadow},  // 1 dead end
-        {31, 1, 1, Rating::shadow},  // 2 old mill
-        {32, 1, 1, Rating::shadow},  // 3 descent
-        {33, 1, 3, Rating::shadow},  // 4 factory compound
+        {31, 1, 3, Rating::shadow},  // 1 dead end
+        {32, 1, 1, Rating::shadow},  // 2 old mill
+        {33, 1, 1, Rating::shadow},  // 3 descent
+        {34, 1, 3, Rating::shadow},  // 4 factory compound
         {},                          // 5 level summary screen
     },
     // level 12
     {
-        {34, 1, 5, Rating::silent_assassin},  // 0 test facility
-        {35, 1, 2, Rating::shadow},           // 1 decontamination
-        {36, 1, 3, Rating::silent_assassin},  // 2 r&d
+        {35, 1, 5, Rating::silent_assassin},  // 0 test facility
+        {36, 1, 2, Rating::shadow},           // 1 decontamination
+        {37, 1, 3, Rating::silent_assassin},  // 2 r&d
         {},                                   // 3 level summary screen
     },
     // level 13
     {
-        {37, 1, 1, Rating::shadow},           // 0 patriot's hangar
-        {38, 1, 2, Rating::silent_assassin},  // 1 arena
+        {38, 1, 1, Rating::shadow},           // 0 patriot's hangar
+        {39, 1, 2, Rating::silent_assassin},  // 1 arena
         {},                                   // 2 level summary screen
     },
     // level 14
     {
-        {39, 1, 3, Rating::silent_assassin},  // 0 parking
-        {40, 1, 3, Rating::silent_assassin},  // 1 reception
-        {41, 1, 2, Rating::silent_assassin},  // 2 cornfield
+        {40, 1, 3, Rating::silent_assassin},  // 0 parking
+        {41, 1, 3, Rating::silent_assassin},  // 1 reception
+        {42, 1, 4, Rating::silent_assassin},  // 2 cornfield
+        {},                                   // 3 cutscene
+        {},                                   // 4 level summary screen
     },
     // level 15
     {},
@@ -156,19 +158,21 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {},
     // level 17
     {
-        {42, 1, 1, Rating::shadow},  // 0 courthouse
-        {43, 1, 1},                  // 1 holding cells
-        {44, 1, 1, Rating::shadow},  // 2 prison
-        {44},                        // 3 prison (cutscene)
+        {43, 1, 1, Rating::shadow},  // 0 courthouse
+        {44, 1},                     // 1 holding cells
+        {45, 1, 2, Rating::shadow},  // 2 prison
+        {},                          // 3 electrocution cutscene
+        {},                          // 4 level summary screen
     },
     // level 18
     {
-        {45, 1, 1, Rating::shadow},  // 0 county jail
-        {46, 1, 1, Rating::shadow},  // 1 outgunned
-        {47, 1, 1, Rating::shadow},  // 2 burn
-        {48, 1, 1, Rating::shadow},  // 3 hope fair
-        {49},                        // 4 church (outside)
-        {49},                        // 4 church (inside)
+        {46, 1, 2, Rating::shadow},  // 0 county jail
+        {47, 1, 1, Rating::shadow},  // 1 outgunned
+        {48, 1, 1, Rating::shadow},  // 2 burn
+        {49, 1, 1, Rating::shadow},  // 3 hope fair
+        {50},                        // 4 outskirts
+        {51},                        // 5 church
+        {},                          // 6 level summary screen
     },
     // level 19
     {},
@@ -176,26 +180,29 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {},
     // level 21
     {
-        {50, 1, 1},  // 0 tailor shop
+        {52, 1, 1},  // 0 tailor shop
+        {},          // 1 level summary screen
     },
     // level 22
     {
-        // TODO check which is cutscene
-        {51, 1, 1, Rating::shadow},           // 0 blackwater park
-        {51, 1, 1, Rating::shadow},           // 1 blackwater park
-        {52, 1, 1, Rating::silent_assassin},  // 2 the penthouse
+        {53, 1, 2, Rating::shadow},           // 0 blackwater park
+        {},                                   // 1 sushi guy cutscene
+        {54, 1, 3, Rating::silent_assassin},  // 2 the penthouse
+        {},                                   // 3 level summary screen
     },
     // level 23
     {},
     // level 24
     {
-        {53, 1, 1, Rating::silent_assassin},  // 0 blackwater roof
+        {55, 1, 1, Rating::silent_assassin},  // 0 blackwater roof
+        {},                                   // 1 level summary screen
     },
     // level 25
     {
-        {54, 1, 1, Rating::shadow},           // 0 cemetary entrance
-        {55, 1, 1, Rating::silent_assassin},  // 1 burnwood family tomb
-        {56, 1, 1, Rating::silent_assassin},  // 2 crematorium
+        {56, 1, 1, Rating::shadow},           // 0 cemetary entrance
+        {57, 1, 3, Rating::silent_assassin},  // 1 burnwood family tomb
+        {58, 1, 5, Rating::silent_assassin},  // 2 crematorium
+        {},                                   // 3 level summary screen
     },
 };
 
