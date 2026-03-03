@@ -23,7 +23,7 @@ const std::vector<std::string> map_names = {
     "#14 Shangri-La",
     "#15 Train Station",
     // Hunter and Hunted
-    "#16 Countryard",
+    "#16 Courtyard",
     "#17 The Vixen Club",
     "#18 Dressing Rooms",
     "#19 Derelict Building",

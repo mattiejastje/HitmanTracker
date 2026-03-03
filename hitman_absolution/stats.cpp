@@ -56,7 +56,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
     },
     // level 1
     {
-        {6, 1, 3, Rating::silent_assassin},  // 0 king of chinatown
+        {6, 1, 2, Rating::silent_assassin},  // 0 king of chinatown
         {},                                  // 1 level summary screen
     },
     // level 2
