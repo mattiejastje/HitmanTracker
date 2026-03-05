@@ -113,7 +113,7 @@ function main()
     local challenges = getChallenges(base)
     print("Challenges: " .. challenges)
     if checkpoint >= 0 then
-        statsManager = getStatsManager(base)
+        local statsManager = getStatsManager(base)
         local statsValues = getStatsValues(statsManager, level, checkpoint)
         print("Stats values: " .. table.concat(statsValues, ", "))
         local rawScore = getRawScore(statsManager, statsValues)
