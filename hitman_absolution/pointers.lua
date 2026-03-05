@@ -79,7 +79,7 @@ function getRawScore(statsManager, statsValues)
     local entryPtr = statsManager.entryBeginPtr
     local sum = 0
     local num_entries = 0
-    while entryPtr ~= statsManager.entryEndPtr and num_entries < STATS_COUNT do
+    while entryPtr ~= statsManager.entryEndPtr do
         local descriptorPtr = safeRead("entry descriptor", readPointer, entryPtr + 0x04)
         if descriptorPtr ~= 0 then
             local index = safeRead("entry index", readInteger, descriptorPtr + 0x34, true)
@@ -90,6 +90,7 @@ function getRawScore(statsManager, statsValues)
         end
         num_entries = num_entries + 1
         entryPtr = entryPtr + 0x08
+        if num_entries >= STATS_COUNT then error("Too many entries") end
     end
     return sum
 end
