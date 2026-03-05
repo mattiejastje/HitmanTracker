@@ -215,39 +215,91 @@ static Status get_rating_status(Rating max_rating, const Stats& stats) {
                : Status::GREEN;
 };
 
+// note: not all levels are used, and levels have fewer than 13 checkpoints
+// the 13 is an upper bound from the engine, used in the array of stats values
 constexpr int32_t NUM_LEVELS = 26;
-constexpr int32_t NUM_CHECKPOINTS_PER_LEVEL
-    = 13;  // hard upper bound (seen in assembly code)
+constexpr int32_t NUM_CHECKPOINTS_PER_LEVEL = 13;
 
+// manages checkpoints for the currently loaded level
 struct CheckpointManager {
     int8_t _pad0[0x24];
-    int32_t unknown_24;                // +0x24
-    int32_t checkpoint_container_ptr;  // +0x28
+    int32_t _unknown24;       // +0x24
+    int32_t checkpoints_ptr;  // +0x28
 };
 
-struct CheckpointContainer {
+static_assert(offsetof(CheckpointManager, checkpoints_ptr) == 0x28);
+
+// stores checkpoint entries (each 8 bytes, see CheckpointEntry)
+// for currently loaded level
+// along with the key of the currently active checkpoint
+struct Checkpoints {
     int8_t _pad0[0x0C];
-    int32_t keys_start_ptr;  // +0x0C points to entry[0].key
-    int32_t keys_end_ptr;    // +0x10 points one past last entry
-    int8_t _pad1[0x3C];      // ...
-    int32_t current_key;     // +0x50
+    int32_t entry_begin_ptr;  // +0x0C first CheckpointEntry
+    int32_t entry_end_ptr;    // +0x10 past last CheckpointEntry
+    int8_t _pad1[0x3C];       // ...
+    int32_t current_key;      // +0x50
 };
+
+static_assert(offsetof(Checkpoints, entry_begin_ptr) == 0x0C);
+static_assert(offsetof(Checkpoints, entry_end_ptr) == 0x10);
+static_assert(offsetof(Checkpoints, current_key) == 0x50);
+
+// stores a unique key per checkpoint
+struct CheckpointEntry {
+    int32_t key;
+    int32_t _unknown;
+};
+
+static_assert(sizeof(CheckpointEntry) == 0x08);
+static_assert(offsetof(CheckpointEntry, key) == 0x00);
+
+struct StatsManager {
+    int8_t _pad0[4];
+    int32_t entry_begin_ptr;  // 04
+    int32_t entry_end_ptr;    // 08
+    int8_t _pad1[0x1C];       // ...
+    int32_t values_ptr;       // 28
+};
+
+static_assert(offsetof(StatsManager, entry_begin_ptr) == 0x04);
+static_assert(offsetof(StatsManager, entry_end_ptr) == 0x08);
+static_assert(offsetof(StatsManager, values_ptr) == 0x28);
+
+struct StatsEntry {
+    int32_t _unknown00;
+    int32_t descriptor_ptr;
+};
+
+static_assert(offsetof(StatsEntry, descriptor_ptr) == 0x04);
+
+struct StatsDescriptor {
+    int8_t _pad0[0x34];
+    int32_t index;
+    int8_t _pad1[0x04];
+    int32_t multiplier;
+};
+
+static_assert(offsetof(StatsDescriptor, index) == 0x34);
+static_assert(offsetof(StatsDescriptor, multiplier) == 0x3C);
 
 struct GameStats {
-    int16_t unknown;
-    int16_t objective_complete;
-    int16_t target_kill;
-    int16_t spotted;
-    int16_t evidence_removed;
-    int16_t silent_assassin_bonus;
-    int16_t signature_kill;
-    int16_t silent_kill;
-    int16_t headshot;
-    int16_t body_hidden;
-    int16_t civilian_casualty;
-    int16_t non_target_casualty;
-    int16_t pacification;
+    int16_t unknown;                // 00
+    int16_t objective_complete;     // 02
+    int16_t target_kill;            // 04
+    int16_t spotted;                // 06
+    int16_t evidence_removed;       // 08
+    int16_t silent_assassin_bonus;  // 0A
+    int16_t signature_kill;         // 0C
+    int16_t silent_kill;            // 0E
+    int16_t headshot;               // 10
+    int16_t body_hidden;            // 12
+    int16_t civilian_casualty;      // 14
+    int16_t non_target_casualty;    // 16
+    int16_t pacification;           // 18
+    int16_t _unknown[87];           // 1A
 };
+
+static_assert(sizeof(GameStats) == 200);
 
 static int32_t get_level(void* handle, const BasePtrs& base_ptrs) {
     auto level = read<int32_t>(handle, base_ptrs[0] + 0xE21394);
@@ -273,51 +325,37 @@ static int32_t get_checkpoint(void* handle, const BasePtrs& base_ptrs) {
         logging::error("Unable to read checkpoint manager");
         return -1;
     }
-    if (manager->checkpoint_container_ptr == 0) {
+    if (manager->checkpoints_ptr == 0) {
         // in main menu and haven't loaded level yet
-        logging::debug("Checkpoint container pointer is null");
+        logging::trace("Checkpoints pointer is null");
         return -1;
     }
-    const auto container
-        = read<CheckpointContainer>(handle, manager->checkpoint_container_ptr);
-    if (!container) {
-        logging::error("Unable to read checkpoint container");
+    const auto checkpoints
+        = read<Checkpoints>(handle, manager->checkpoints_ptr);
+    if (!checkpoints) {
+        logging::error("Unable to read checkpoints");
         return -1;
     }
-    if (container->current_key == 0) {
+    if (checkpoints->current_key == 0) {
         // level is loading but we have not started yet
-        logging::debug("Current checkpoint key is null");
+        logging::trace("Current checkpoint key is null");
         return -1;
     }
-    // each checkpoint entry is 8 bytes: check and calculate num_checkpoints
-    const auto total_bytes
-        = container->keys_end_ptr - container->keys_start_ptr;
-    if ((total_bytes & 7) != 0) {
-        logging::error(
-            "Checkpoint table size {} not divisible by 8", total_bytes
-        );
-        return -1;
-    }
-    const auto num_checkpoints = total_bytes >> 3;
-    logging::trace("Number of checkpoints is {}", num_checkpoints);
-    if ((num_checkpoints <= 0)
-        || (num_checkpoints > NUM_CHECKPOINTS_PER_LEVEL)) {
-        logging::error(
-            "Number of checkpoints {} out of range", num_checkpoints
-        );
-        return -1;
-    };
-    // look up current checkpoint key in the checkpoint keys table
-    for (int32_t checkpoint = 0; checkpoint < num_checkpoints; checkpoint++) {
-        auto key
-            = read<int32_t>(handle, container->keys_start_ptr + checkpoint * 8);
-        if (!key) {
-            logging::error("Unable to read from checkpoint table");
+    int32_t checkpoint = 0;
+    auto entry_ptr = checkpoints->entry_begin_ptr;
+    // note: upper bound on checkpoint to avoid
+    while (entry_ptr != checkpoints->entry_end_ptr
+           && checkpoint < NUM_CHECKPOINTS_PER_LEVEL) {
+        auto entry = read<CheckpointEntry>(handle, entry_ptr);
+        if (!entry) {
+            logging::error("Unable to read checkpoint entry");
             return -1;
         }
-        if (key.value() == container->current_key) return checkpoint;
-    };
-    logging::error("Checkpoint key {:#x} not found", container->current_key);
+        if (checkpoints->current_key == entry->key) return checkpoint;
+        entry_ptr += sizeof(CheckpointEntry);
+        checkpoint++;
+    }
+    logging::error("Unable to find current checkpoint key");
     return -1;
 }
 
