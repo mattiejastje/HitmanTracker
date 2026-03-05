@@ -41,10 +41,18 @@ function getCheckpoint(base)
     error("Unable to find current checkpoint key")
 end
 
-function getStatsValues(base, level, checkpoint)
-    local statsValuesPtr = safeRead("stats values pointer", readPointer, base + 0xD61710 + 0x28)
+function getStatsManager(base)
+    local statsManagerPtr = base + 0xD61710
+    return {
+        entryBeginPtr = safeRead("entry begin pointer", readPointer, statsManagerPtr + 0x04),
+        entryEndPtr = safeRead("entry end pointer", readPointer, statsManagerPtr + 0x08),
+        valuesPtr = safeRead("stats values pointer", readPointer, statsManagerPtr + 0x28),
+    }
+end
+
+function getStatsValues(statsManager, level, checkpoint)
     local blockIndex = (level * NUM_CHECKPOINTS_PER_LEVEL) + checkpoint
-    local blockPtr = statsValuesPtr + (blockIndex * STATS_COUNT * STAT_SIZE_BYTES)
+    local blockPtr = statsManager.valuesPtr + (blockIndex * STATS_COUNT * STAT_SIZE_BYTES)
     local statsValues = {}
     for i = 1,STATS_COUNT do
         local value = safeRead("stats value " .. i, readShortInteger, blockPtr, true)
@@ -67,12 +75,11 @@ function getChallenges(base)
     return count
 end
 
-function getRawScore(base, statsValues)
-    local entryPtr = safeRead("first entry pointer", readPointer, base + 0xD61710 + 0x04)
-    local entryEndPtr = safeRead("end entry pointer", readPointer, base + 0xD61710 + 0x08)
+function getRawScore(statsManager, statsValues)
+    local entryPtr = statsManager.entryBeginPtr
     local sum = 0
     local num_entries = 0
-    while entryPtr ~= entryEndPtr do
+    while entryPtr ~= statsManager.entryEndPtr and num_entries < STATS_COUNT do
         local descriptorPtr = safeRead("entry descriptor", readPointer, entryPtr + 0x04)
         if descriptorPtr ~= 0 then
             local index = safeRead("entry index", readInteger, descriptorPtr + 0x34, true)
@@ -82,7 +89,6 @@ function getRawScore(base, statsValues)
             sum = sum + value * multiplier
         end
         num_entries = num_entries + 1
-        if num_entries >= STATS_COUNT then error("Too many entries") end
         entryPtr = entryPtr + 0x08
     end
     return sum
@@ -102,14 +108,15 @@ function main()
     print("Difficulty: " .. difficulty)
     local level = getLevel(base)
     print("Level: " .. level)
-    local challenges = getChallenges(base)
-    print("Challenges: " .. challenges)
     local checkpoint = getCheckpoint(base)
     print("Checkpoint: " .. checkpoint)
+    local challenges = getChallenges(base)
+    print("Challenges: " .. challenges)
     if checkpoint >= 0 then
-        local statsValues = getStatsValues(base, level, checkpoint)
+        statsManager = getStatsManager(base)
+        local statsValues = getStatsValues(statsManager, level, checkpoint)
         print("Stats values: " .. table.concat(statsValues, ", "))
-        local rawScore = getRawScore(base, statsValues)
+        local rawScore = getRawScore(statsManager, statsValues)
         print("Raw score: " .. rawScore)
         local score = getScore(rawScore, difficulty, challenges)
         print("Score: " .. score)
