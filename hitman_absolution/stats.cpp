@@ -398,15 +398,15 @@ void hitman_absolution::update_slow(
     stats.map = map_info.map;
     stats.map_stage = MapStage::main;  // always render stats
     if (stats.map > 0) {
-        auto game_stats_ptr
-            = read<int32_t>(handle, base_ptrs[0] + 0xD61710 + 0x28);
-        if (!game_stats_ptr) {
-            logging::error("Unable to read game stats pointer");
+        auto stats_manager
+            = read<StatsManager>(handle, base_ptrs[0] + 0xD61710);
+        if (!stats_manager) {
+            logging::error("Unable to read stats manager");
             return;
         }
         auto game_stats = read<GameStats>(
             handle,
-            game_stats_ptr.value()
+            stats_manager->values_ptr
                 + ((level * NUM_CHECKPOINTS_PER_LEVEL + checkpoint) * 200)
         );
         if (!game_stats) {
