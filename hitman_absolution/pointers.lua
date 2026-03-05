@@ -32,12 +32,11 @@ function getCheckpoint(base)
     local checkpoint = 0
     local entryPtr = safeRead("first entry pointer", readPointer, checkpointsPtr + 0x0C)
     local entryEndPtr = safeRead("end entry pointer", readPointer, checkpointsPtr + 0x10)
-    while entryPtr ~= entryEndPtr do
+    while entryPtr ~= entryEndPtr and checkpoint < NUM_CHECKPOINTS_PER_LEVEL do
         local entryKey = safeRead("checkpoint key", readInteger, entryPtr)
         if entryKey == key then return checkpoint end
         entryPtr = entryPtr + 8  -- each checkpoint entry is 8 bytes
         checkpoint = checkpoint + 1
-        if checkpoint >= NUM_CHECKPOINTS_PER_LEVEL then error("Checkpoint overflow") end
     end
     error("Unable to find current checkpoint key")
 end
