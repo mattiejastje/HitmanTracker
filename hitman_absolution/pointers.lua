@@ -6,6 +6,12 @@ local NUM_CHECKPOINTS_PER_LEVEL = 13
 local STATS_COUNT               = 100
 local MAX_CHALLENGES            = 278  -- actual total number
 
+function printTable(t)
+    for k,v in pairs(t) do
+        print("> " .. k .. " = " .. v)
+    end
+end
+
 function safe_func(fn, ...)
     local val = fn(...)
     if val == nil then error("Failed", 2) end
@@ -64,12 +70,14 @@ function get_stats_manager(base)
         entry_begin_ptr = safe_func(readPointer, stats_manager_ptr + 0x04),
         entry_end_ptr = safe_func(readPointer, stats_manager_ptr + 0x08),
         values_ptr = safe_func(readPointer, stats_manager_ptr + 0x28),
+        score = safe_func(readInteger, stats_manager_ptr + 0x80, true),
+        difficulties_ptr = safe_func(readPointer, stats_manager_ptr + 0x9C),
     }
 end
 
-function get_stats_values(stats_manager, level, checkpoint_index)
+function get_stats_values(stats_values_ptr, level, checkpoint_index)
     local block_index = (level * NUM_CHECKPOINTS_PER_LEVEL) + checkpoint_index
-    local block_ptr = stats_manager.values_ptr + (block_index * STATS_COUNT * 2)
+    local block_ptr = stats_values_ptr + (block_index * STATS_COUNT * 2)
     local stats_values = {}
     for i = 1, STATS_COUNT do
         local value = safe_func(readShortInteger, block_ptr, true)
@@ -77,6 +85,17 @@ function get_stats_values(stats_manager, level, checkpoint_index)
         block_ptr = block_ptr + 2  -- each value is 2 bytes
     end
     return stats_values
+end
+
+function get_stats_difficulties(difficulties_ptr)
+    return {
+        -- score scale for difficulty 0 (easy) to 4 (purist)
+        scale0 = safe_func(readFloat, difficulties_ptr + 0x08),  -- 1.0
+        scale1 = safe_func(readFloat, difficulties_ptr + 0x0C),  -- 1.25
+        scale2 = safe_func(readFloat, difficulties_ptr + 0x10),  -- 1.5
+        scale3 = safe_func(readFloat, difficulties_ptr + 0x14),  -- 2.0
+        scale4 = safe_func(readFloat, difficulties_ptr + 0x18),  -- 2.5
+    }
 end
 
 function get_challenge_manager(base)
@@ -112,18 +131,30 @@ function get_num_challenges_completed(challenge_manager)
     return count
 end
 
+function get_stats_entry(entry_ptr)
+    return {
+        descriptor_ptr = safe_func(readPointer, entry_ptr + 0x04),
+    }
+end
+
+function get_stats_descriptor(descriptor_ptr)
+    descriptor = {
+        index = safe_func(readInteger, descriptor_ptr + 0x34, true),
+        multiplier = safe_func(readInteger, descriptor_ptr + 0x3C, true),
+    }
+    if descriptor.index < 0 or descriptor.index >= STATS_COUNT then error("Index out of range: " .. index) end
+    return descriptor
+end
+
 function get_raw_score(stats_manager, stats_values)
     local entry_ptr = stats_manager.entry_begin_ptr
     local sum = 0
     local num_entries = 0
     while entry_ptr ~= stats_manager.entry_end_ptr do
-        local descriptor_ptr = safe_func(readPointer, entry_ptr + 0x04)
-        if descriptor_ptr ~= 0 then
-            local index = safe_func(readInteger, descriptor_ptr + 0x34, true)
-            if index < 0 or index >= STATS_COUNT then error("Index out of range: " .. index) end
-            local multiplier = safe_func(readInteger, descriptor_ptr + 0x3C, true)
-            local value = stats_values[index + 1]
-            sum = sum + value * multiplier
+        local entry = get_stats_entry(entry_ptr)
+        if entry.descriptor_ptr ~= 0 then
+            descriptor = get_stats_descriptor(entry.descriptor_ptr)
+            sum = sum + stats_values[descriptor.index + 1] * descriptor.multiplier
         end
         num_entries = num_entries + 1
         entry_ptr = entry_ptr + 0x08
@@ -135,6 +166,8 @@ end
 local DIFFICULTY_SCALE = {100, 125, 150, 200, 250}
 
 function get_score(raw_score, difficulty, num_challenges_completed)
+    -- game uses high precision floats, we use exact integer arithmetic
+    -- in practice this should give the same result
     return (raw_score * (DIFFICULTY_SCALE[difficulty + 1] + 5 * num_challenges_completed) + 50) // 100
 end
 
@@ -147,21 +180,27 @@ function main()
     local level = get_level(base)
     print("Level: " .. level)
     local challenge_manager = get_challenge_manager(base)
+    print("Challenge manager:")
+    printTable(challenge_manager)
     local num_challenges_completed = get_num_challenges_completed(challenge_manager)
     print("Num challenges completed: " .. num_challenges_completed)
+    local stats_manager = get_stats_manager(base)
+    print("Stats manager:")
+    printTable(stats_manager)
+    local stats_difficulties = get_stats_difficulties(stats_manager.difficulties_ptr)
+    print("Stats difficulties:")
+    printTable(stats_difficulties)
     local checkpoint_manager = get_checkpoint_manager(base)
     if checkpoint_manager.checkpoints_ptr == 0 then return end  -- no level loaded
     local checkpoints = get_checkpoints(checkpoint_manager.checkpoints_ptr)
     local checkpoint_index = get_current_checkpoint_index(checkpoints)
     print("Checkpoint index: " .. checkpoint_index)
     if checkpoint_index < 0 then return end  -- no checkpoint loaded
-    local stats_manager = get_stats_manager(base)
-    local stats_values = get_stats_values(stats_manager, level, checkpoint_index)
+    local stats_values = get_stats_values(stats_manager.values_ptr, level, checkpoint_index)
     print("Stats values: " .. table.concat(stats_values, ", "))
     local raw_score = get_raw_score(stats_manager, stats_values)
-    print("Raw score: " .. raw_score)
     local score = get_score(raw_score, difficulty, num_challenges_completed)
-    print("Score: " .. score)
+    print("Score (calculated): " .. score)
 end
 
 main()

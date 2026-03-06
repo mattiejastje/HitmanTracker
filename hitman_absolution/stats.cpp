@@ -262,28 +262,14 @@ struct StatsManager {
     int32_t entry_end_ptr;    // 08
     int8_t _pad1[0x1C];       // ...
     int32_t values_ptr;       // 28
+    int8_t _pad2[0x54];       // ...
+    int32_t score;            // 80
 };
 
 static_assert(offsetof(StatsManager, entry_begin_ptr) == 0x04);
 static_assert(offsetof(StatsManager, entry_end_ptr) == 0x08);
 static_assert(offsetof(StatsManager, values_ptr) == 0x28);
-
-struct StatsEntry {
-    int32_t _unknown00;
-    int32_t descriptor_ptr;
-};
-
-static_assert(offsetof(StatsEntry, descriptor_ptr) == 0x04);
-
-struct StatsDescriptor {
-    int8_t _pad0[0x34];
-    int32_t index;
-    int8_t _pad1[0x04];
-    int32_t multiplier;
-};
-
-static_assert(offsetof(StatsDescriptor, index) == 0x34);
-static_assert(offsetof(StatsDescriptor, multiplier) == 0x3C);
+static_assert(offsetof(StatsManager, score) == 0x80);
 
 struct GameStats {
     int16_t unknown;                // 00
