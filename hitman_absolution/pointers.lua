@@ -31,9 +31,7 @@ function get_checkpoint_manager(base)
     }
 end
 
-function get_checkpoints(checkpoint_manager)
-    local checkpoints_ptr = checkpoint_manager.checkpoints_ptr
-    if checkpoints_ptr == 0 then return nil end  -- no level loaded
+function get_checkpoints(checkpoints_ptr)
     return {
         entry_begin_ptr = safe_func(readPointer, checkpoints_ptr + 0x0C),
         entry_end_ptr = safe_func(readPointer, checkpoints_ptr + 0x10),
@@ -48,7 +46,6 @@ function get_checkpoint_entry(entry_ptr)
 end
 
 function get_current_checkpoint_index(checkpoints)
-    if checkpoints == nil then return -1 end  -- no level loaded
     if checkpoints.current_key == 0 then return -1 end  -- no checkpoint loaded
     local index = 0
     local entry_ptr = checkpoints.entry_begin_ptr
@@ -153,18 +150,18 @@ function main()
     local num_challenges_completed = get_num_challenges_completed(challenge_manager)
     print("Num challenges completed: " .. num_challenges_completed)
     local checkpoint_manager = get_checkpoint_manager(base)
-    local checkpoints = get_checkpoints(checkpoint_manager)
+    if checkpoint_manager.checkpoints_ptr == 0 then return end  -- no level loaded
+    local checkpoints = get_checkpoints(checkpoint_manager.checkpoints_ptr)
     local checkpoint_index = get_current_checkpoint_index(checkpoints)
     print("Checkpoint index: " .. checkpoint_index)
-    if checkpoint_index >= 0 then
-        local stats_manager = get_stats_manager(base)
-        local stats_values = get_stats_values(stats_manager, level, checkpoint_index)
-        print("Stats values: " .. table.concat(stats_values, ", "))
-        local raw_score = get_raw_score(stats_manager, stats_values)
-        print("Raw score: " .. raw_score)
-        local score = get_score(raw_score, difficulty, num_challenges_completed)
-        print("Score: " .. score)
-    end
+    if checkpoint_index < 0 then return end  -- no checkpoint loaded
+    local stats_manager = get_stats_manager(base)
+    local stats_values = get_stats_values(stats_manager, level, checkpoint_index)
+    print("Stats values: " .. table.concat(stats_values, ", "))
+    local raw_score = get_raw_score(stats_manager, stats_values)
+    print("Raw score: " .. raw_score)
+    local score = get_score(raw_score, difficulty, num_challenges_completed)
+    print("Score: " .. score)
 end
 
 main()

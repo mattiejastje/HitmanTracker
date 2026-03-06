@@ -215,10 +215,13 @@ static Status get_rating_status(Rating max_rating, const Stats& stats) {
                : Status::GREEN;
 };
 
-// note: not all levels are used, and levels have fewer than 13 checkpoints
-// the 13 is an upper bound from the engine, used in the array of stats values
+constexpr int32_t NUM_DIFFICULTIES = 5;
+// note: not all levels are used
 constexpr int32_t NUM_LEVELS = 26;
+// levels have fewer than 13 checkpoints
+// the 13 is an upper bound from the engine, used in the array of stats values
 constexpr int32_t NUM_CHECKPOINTS_PER_LEVEL = 13;
+constexpr int32_t MAX_CHALLENGES = 278;
 
 // manages checkpoints for the currently loaded level
 struct CheckpointManager {
@@ -301,59 +304,76 @@ struct GameStats {
 
 static_assert(sizeof(GameStats) == 200);
 
+static int32_t get_difficulty(void* handle, const BasePtrs& base_ptrs) {
+    auto difficulty = read<int32_t>(handle, base_ptrs[0] + 0xD58D04);
+    if (!difficulty) {
+        logging::error("Unable to read difficulty");
+        return -1;
+    }
+    auto value = difficulty.value();
+    if (value < 0 || value >= NUM_DIFFICULTIES) {
+        logging::error("Difficulty {} out of bounds", value);
+        return -1;
+    }
+    return value;
+}
+
 static int32_t get_level(void* handle, const BasePtrs& base_ptrs) {
     auto level = read<int32_t>(handle, base_ptrs[0] + 0xE21394);
     if (!level) {
         logging::error("Unable to read level");
         return -1;
     }
-    auto level_value = level.value();
+    auto value = level.value();
     // engine may set level to -1 if not in a mission
     // sadly it's not a reliable way to detect if we are in a mission
-    if (level_value < -1 || level_value >= NUM_LEVELS) {
-        logging::error("Level {} out of bounds", level_value);
+    if (value < -1 || value >= NUM_LEVELS) {
+        logging::error("Level {} out of bounds", value);
         return -1;
     }
-    return level_value;
+    return value;
+}
+
+static std::optional<CheckpointManager> get_checkpoint_manager(
+    void* handle, const BasePtrs& base_ptrs
+) {
+    return read<CheckpointManager>(handle, base_ptrs[0] + 0xE21580);
+}
+
+static std::optional<Checkpoints> get_checkpoints(
+    void* handle, int32_t checkpoints_ptr
+) {
+    return read<Checkpoints>(handle, checkpoints_ptr);
+}
+
+static std::optional<CheckpointEntry> get_checkpoint_entry(
+    void* handle, int32_t entry_ptr
+) {
+    return read<CheckpointEntry>(handle, entry_ptr);
 }
 
 // replicate game engine logic for calculating checkpoint
-static int32_t get_checkpoint(void* handle, const BasePtrs& base_ptrs) {
-    const auto manager
-        = read<CheckpointManager>(handle, base_ptrs[0] + 0xE21580);
-    if (!manager) {
-        logging::error("Unable to read checkpoint manager");
-        return -1;
-    }
-    if (manager->checkpoints_ptr == 0) {
-        // in main menu and haven't loaded level yet
-        logging::trace("Checkpoints pointer is null");
-        return -1;
-    }
-    const auto checkpoints
-        = read<Checkpoints>(handle, manager->checkpoints_ptr);
-    if (!checkpoints) {
-        logging::error("Unable to read checkpoints");
-        return -1;
-    }
-    if (checkpoints->current_key == 0) {
+static int32_t get_current_checkpoint_index(
+    void* handle, const Checkpoints& checkpoints
+) {
+    if (checkpoints.current_key == 0) {
         // level is loading but we have not started yet
         logging::trace("Current checkpoint key is null");
         return -1;
     }
-    int32_t checkpoint = 0;
-    auto entry_ptr = checkpoints->entry_begin_ptr;
-    // note: upper bound on checkpoint to avoid
-    while (entry_ptr != checkpoints->entry_end_ptr
-           && checkpoint < NUM_CHECKPOINTS_PER_LEVEL) {
-        auto entry = read<CheckpointEntry>(handle, entry_ptr);
+    int32_t index = 0;
+    auto entry_ptr = checkpoints.entry_begin_ptr;
+    // note: upper bound on index to avoid infinite loop on corrupt data
+    while (entry_ptr != checkpoints.entry_end_ptr
+           && index < NUM_CHECKPOINTS_PER_LEVEL) {
+        auto entry = get_checkpoint_entry(handle, entry_ptr);
         if (!entry) {
             logging::error("Unable to read checkpoint entry");
             return -1;
         }
-        if (checkpoints->current_key == entry->key) return checkpoint;
+        if (checkpoints.current_key == entry->key) return index;
         entry_ptr += sizeof(CheckpointEntry);
-        checkpoint++;
+        index++;
     }
     logging::error("Unable to find current checkpoint key");
     return -1;
@@ -365,35 +385,49 @@ void hitman_absolution::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
-    auto difficulty = read<int32_t>(handle, base_ptrs[0] + 0xD58D04);
-    if (difficulty) {
-        stats.difficulty = difficulty.value();
-    } else {
-        logging::error("Unable to read difficulty");
-    }
+    auto difficulty = get_difficulty(handle, base_ptrs);
+    if (difficulty >= 0) stats.difficulty = difficulty;
     auto level = get_level(handle, base_ptrs);
     if (level < 0) {
         stats.map = 0;
         return;
     }
-    auto checkpoint = get_checkpoint(handle, base_ptrs);
-    if (checkpoint < 0) {
+    const auto checkpoint_manager = get_checkpoint_manager(handle, base_ptrs);
+    if (!checkpoint_manager) {
+        logging::error("Unable to read checkpoint manager");
+        return;
+    }
+    if (checkpoint_manager->checkpoints_ptr == 0) {
+        // in main menu and haven't loaded level yet
+        logging::trace("Checkpoints pointer is null");
+        return;
+    }
+    const auto checkpoints
+        = get_checkpoints(handle, checkpoint_manager->checkpoints_ptr);
+    if (!checkpoints) {
+        logging::error("Unable to read checkpoints");
+        return;
+    }
+    auto checkpoint_index = get_current_checkpoint_index(handle, *checkpoints);
+    if (checkpoint_index < 0) {
         stats.map = 0;
         return;
     }
-    logging::trace("Level {} at checkpoint {}", level, checkpoint);
-    if (level >= scenes.size()) {  // checked previously... but just in case
+    logging::trace("Level {} at checkpoint {}", level, checkpoint_index);
+    if (level >= scenes.size()) {
         logging::error("No map registered for level {}", level);
         return;
     }
     auto& map_infos = scenes.at(level);
-    if (checkpoint >= map_infos.size()) {
+    if (checkpoint_index >= map_infos.size()) {
         logging::error(
-            "No map registered for level {}, checkpoint {}", level, checkpoint
+            "No map registered for level {}, checkpoint {}",
+            level,
+            checkpoint_index
         );
         return;
     }
-    auto& map_info = map_infos.at(checkpoint);
+    auto& map_info = map_infos.at(checkpoint_index);
     logging::trace("Map {}", map_info.map);
     stats.map = map_info.map;
     stats.map_stage = MapStage::main;  // always render stats
@@ -407,7 +441,7 @@ void hitman_absolution::update_slow(
         auto game_stats = read<GameStats>(
             handle,
             stats_manager->values_ptr
-                + ((level * NUM_CHECKPOINTS_PER_LEVEL + checkpoint) * 200)
+                + ((level * NUM_CHECKPOINTS_PER_LEVEL + checkpoint_index) * 200)
         );
         if (!game_stats) {
             logging::error("Unable to read game stats");
