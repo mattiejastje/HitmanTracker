@@ -87,6 +87,8 @@ function get_stats_manager(base)
     return {
         entry_begin_ptr = safe_func(readPointer, stats_manager_ptr + 0x04),
         entry_end_ptr = safe_func(readPointer, stats_manager_ptr + 0x08),
+        rating_begin_ptr = safe_func(readPointer, stats_manager_ptr + 0x10),
+        rating_end_ptr = safe_func(readPointer, stats_manager_ptr + 0x14),
         values_ptr = safe_func(readPointer, stats_manager_ptr + 0x28),
         score = safe_func(readInteger, stats_manager_ptr + 0x80, true),
         difficulties_ptr = safe_func(readPointer, stats_manager_ptr + 0x9C),
@@ -164,8 +166,8 @@ function get_stats_descriptor(descriptor_ptr)
     return descriptor
 end
 
--- just for debugging
-function print_stats_multipliers(stats_manager)
+-- for debugging
+function get_stats_multipliers(stats_manager)
     local entry_ptr = stats_manager.entry_begin_ptr
     local num_entries = 0
     local multipliers = {}
@@ -182,7 +184,7 @@ function print_stats_multipliers(stats_manager)
         entry_ptr = entry_ptr + 0x08
         if num_entries > STATS_COUNT then error("Too many entries") end
     end
-    print_table(multipliers)
+    return multipliers
 end
 
 function get_raw_score(stats_manager, stats_values)
@@ -221,43 +223,88 @@ function get_score(raw_score, difficulty, num_challenges_completed)
     return (raw_score * (DIFFICULTY_SCALE[difficulty + 1] + 5 * num_challenges_completed) + 50) // 100
 end
 
+function get_stats_rating(rating_ptr)
+    return {
+        data_ptr = safe_func(readPointer, rating_ptr + 0x04),
+    }
+end
+
+function get_stats_rating_data(rating_data_ptr)
+    return {
+        unknown = safe_func(readInteger, rating_data_ptr + 0x38, true),
+        min_val = safe_func(readInteger, rating_data_ptr + 0x3C, true),
+        max_val = safe_func(readInteger, rating_data_ptr + 0x40, true),
+    }
+end
+
+-- for debugging
+function print_stats_rating_datas(stats_manager)
+    local rating_ptr = stats_manager.rating_begin_ptr
+    local index = 0
+    local datas = {}
+    while rating_ptr ~= stats_manager.rating_end_ptr do
+        local rating = get_stats_rating(rating_ptr)
+        local data = get_stats_rating_data(rating.data_ptr)
+        print(index)
+        print_table(data)
+        index = index + 1
+        rating_ptr = rating_ptr + 8
+    end
+end
+
 function main()
     print("---")
     local base = getAddressSafe("HMA.exe")
     if base == nil then error("HMA.exe not found") end
+
     local difficulty = get_difficulty(base)
     print("Difficulty: " .. difficulty)
+
     local level = get_level(base)
     print("Level: " .. level)
+
     local challenge_manager = get_challenge_manager(base)
     print("Challenge manager:")
     print_table(challenge_manager)
+
     local num_challenges_completed = get_num_challenges_completed(challenge_manager)
     print("Num challenges completed: " .. num_challenges_completed)
+
     local stats_manager = get_stats_manager(base)
     print("Stats manager:")
     print_table(stats_manager)
+
     local stats_difficulties = get_stats_difficulties(stats_manager.difficulties_ptr)
     print("Stats difficulties:")
     print_table(stats_difficulties)
+
+    local stats_multipliers = get_stats_multipliers(stats_manager)
     print("Stats multipliers:")
-    print_stats_multipliers(stats_manager)
+    print_table(stats_multipliers)
+
+    print("Stats rating datas:")
+    print_stats_rating_datas(stats_manager)
+
     local checkpoint_manager = get_checkpoint_manager(base)
     if checkpoint_manager.checkpoints_ptr == 0 then return end  -- no level loaded
+
     local checkpoints = get_checkpoints(checkpoint_manager.checkpoints_ptr)
     local checkpoint_index = get_current_checkpoint_index(checkpoints)
     print("Checkpoint index: " .. checkpoint_index)
+
     if checkpoint_index < 0 then return end  -- no checkpoint loaded
+
     local stats_values = get_stats_values(stats_manager.values_ptr, level, checkpoint_index)
     print("Stats values: " .. table.concat(stats_values, ", "))
+
     local raw_score = get_raw_score(stats_manager, stats_values)
     local raw_score_fast = get_raw_score_fast(stats_values)
     if raw_score ~= raw_score_fast then
-        error("Raw score mismatch: fast calculation gives " .. raw_score_fast .. " but should be " .. raw_score)
+        error("Raw score mismatch: fast calculation is " .. raw_score_fast .. " but expected " .. raw_score)
     end
     local score = get_score(raw_score, difficulty, num_challenges_completed)
     if score ~= stats_manager.score then
-        error("Calculated score does not match in-game score")
+        error("Score mismatch: calculation is " .. score .. " but expected " .. stats_manager.score)
     end
     print("Score: " .. score)
 end
