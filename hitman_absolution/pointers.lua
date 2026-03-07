@@ -6,7 +6,25 @@ local NUM_CHECKPOINTS_PER_LEVEL = 13
 local STATS_COUNT               = 100
 local MAX_CHALLENGES            = 278  -- actual total number
 
-function printTable(t)
+-- multipliers by descriptor index
+-- note the game only has non-zero multipliers for indices 1 to 12
+-- lua starts indexing at 1
+local SCORE_MULTIPLIERS = {
+  5000,   -- objective complete
+  10000,  -- target kill
+  -1000,  -- spotted
+  1000,   -- evidence removed
+  47000,  -- silent assassin bonus
+  5000,   -- signature kill
+  150,    -- silent kill
+  150,    -- headshot
+  100,    -- body hidden
+  -2500,  -- civilian casualty
+  -250,   -- non-target casualty
+  -100,   -- pacification
+}
+
+function print_table(t)
     for k,v in pairs(t) do
         print("> " .. k .. " = " .. v)
     end
@@ -19,7 +37,7 @@ function safe_func(fn, ...)
 end
 
 function get_difficulty(base)
-    local difficulty = safe_func(readInteger, base + 0xD58D04, true)
+    local difficulty = safe_func(readInteger, base + 0xD58C60 + 0x10 + 0x94, true)
     if difficulty < 0 or difficulty >= NUM_DIFFICULTIES then error("Difficulty " .. difficulty .. " out of bounds") end
     return difficulty
 end
@@ -125,8 +143,8 @@ function get_num_challenges_completed(challenge_manager)
         local node = get_challenge_node(node_ptr)
         local data = get_challenge_data(node.data_ptr)
         if data.completed ~= 0 then count = count + 1 end
-        node_ptr = node.next_node_ptr
         if count > MAX_CHALLENGES then error("Too many challenges") end
+        node_ptr = node.next_node_ptr
     end
     return count
 end
@@ -138,12 +156,33 @@ function get_stats_entry(entry_ptr)
 end
 
 function get_stats_descriptor(descriptor_ptr)
-    descriptor = {
+    local descriptor = {
         index = safe_func(readInteger, descriptor_ptr + 0x34, true),
         multiplier = safe_func(readInteger, descriptor_ptr + 0x3C, true),
     }
-    if descriptor.index < 0 or descriptor.index >= STATS_COUNT then error("Index out of range: " .. index) end
+    if descriptor.index < 0 or descriptor.index >= STATS_COUNT then error("Index out of range: " .. descriptor.index) end
     return descriptor
+end
+
+-- just for debugging
+function print_stats_multipliers(stats_manager)
+    local entry_ptr = stats_manager.entry_begin_ptr
+    local num_entries = 0
+    local multipliers = {}
+    while entry_ptr ~= stats_manager.entry_end_ptr do
+        local entry = get_stats_entry(entry_ptr)
+        if entry.descriptor_ptr ~= 0 then
+            local descriptor = get_stats_descriptor(entry.descriptor_ptr)
+            if descriptor.multiplier ~= 0 then
+                if multipliers[descriptor.index] ~= nil then error("Duplicate descriptor index") end
+                multipliers[descriptor.index] = descriptor.multiplier
+            end
+        end
+        num_entries = num_entries + 1
+        entry_ptr = entry_ptr + 0x08
+        if num_entries > STATS_COUNT then error("Too many entries") end
+    end
+    print_table(multipliers)
 end
 
 function get_raw_score(stats_manager, stats_values)
@@ -153,12 +192,23 @@ function get_raw_score(stats_manager, stats_values)
     while entry_ptr ~= stats_manager.entry_end_ptr do
         local entry = get_stats_entry(entry_ptr)
         if entry.descriptor_ptr ~= 0 then
-            descriptor = get_stats_descriptor(entry.descriptor_ptr)
+            local descriptor = get_stats_descriptor(entry.descriptor_ptr)
             sum = sum + stats_values[descriptor.index + 1] * descriptor.multiplier
         end
         num_entries = num_entries + 1
         entry_ptr = entry_ptr + 0x08
         if num_entries > STATS_COUNT then error("Too many entries") end
+    end
+    return sum
+end
+
+function get_raw_score_fast(stats_values)
+    local sum = 0
+    for i,v in ipairs(stats_values) do
+        local index = i - 1 -- since lua starts counting from 1
+        if 1 <= index and index <= 12 then
+            sum = sum + v * SCORE_MULTIPLIERS[index]
+        end
     end
     return sum
 end
@@ -181,15 +231,17 @@ function main()
     print("Level: " .. level)
     local challenge_manager = get_challenge_manager(base)
     print("Challenge manager:")
-    printTable(challenge_manager)
+    print_table(challenge_manager)
     local num_challenges_completed = get_num_challenges_completed(challenge_manager)
     print("Num challenges completed: " .. num_challenges_completed)
     local stats_manager = get_stats_manager(base)
     print("Stats manager:")
-    printTable(stats_manager)
+    print_table(stats_manager)
     local stats_difficulties = get_stats_difficulties(stats_manager.difficulties_ptr)
     print("Stats difficulties:")
-    printTable(stats_difficulties)
+    print_table(stats_difficulties)
+    print("Stats multipliers:")
+    print_stats_multipliers(stats_manager)
     local checkpoint_manager = get_checkpoint_manager(base)
     if checkpoint_manager.checkpoints_ptr == 0 then return end  -- no level loaded
     local checkpoints = get_checkpoints(checkpoint_manager.checkpoints_ptr)
@@ -199,8 +251,15 @@ function main()
     local stats_values = get_stats_values(stats_manager.values_ptr, level, checkpoint_index)
     print("Stats values: " .. table.concat(stats_values, ", "))
     local raw_score = get_raw_score(stats_manager, stats_values)
+    local raw_score_fast = get_raw_score_fast(stats_values)
+    if raw_score ~= raw_score_fast then
+        error("Raw score mismatch: fast calculation gives " .. raw_score_fast .. " but should be " .. raw_score)
+    end
     local score = get_score(raw_score, difficulty, num_challenges_completed)
-    print("Score (calculated): " .. score)
+    if score ~= stats_manager.score then
+        error("Calculated score does not match in-game score")
+    end
+    print("Score: " .. score)
 end
 
 main()

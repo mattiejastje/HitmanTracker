@@ -290,6 +290,22 @@ struct GameStats {
 
 static_assert(sizeof(GameStats) == 200);
 
+static constexpr std::array<int32_t, 13> STATS_MULTIPLIERS = {
+    0,      // 00 unknown
+    5000,   // 01 objective_complete
+    10000,  // 02 target_kill
+    -1000,  // 03 spotted
+    1000,   // 04 evidence_removed
+    47000,  // 05 silent_assassin_bonus
+    5000,   // 06 signature_kill
+    150,    // 07 silent_kill
+    150,    // 08 headshot
+    100,    // 09 body_hidden
+    -2500,  // 10 civilian_casualty
+    -250,   // 11 non_target_casualty
+    -100,   // 12 pacification
+};
+
 static int32_t get_difficulty(void* handle, const BasePtrs& base_ptrs) {
     auto difficulty = read<int32_t>(handle, base_ptrs[0] + 0xD58D04);
     if (!difficulty) {
