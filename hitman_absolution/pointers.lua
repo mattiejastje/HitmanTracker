@@ -89,6 +89,8 @@ function get_stats_manager(base)
         entry_end_ptr = safe_func(readPointer, stats_manager_ptr + 0x08),
         rating_begin_ptr = safe_func(readPointer, stats_manager_ptr + 0x10),
         rating_end_ptr = safe_func(readPointer, stats_manager_ptr + 0x14),
+        unknown1C_begin_ptr = safe_func(readPointer, stats_manager_ptr + 0x1C),
+        unknown1C_end_ptr = safe_func(readPointer, stats_manager_ptr + 0x20),
         values_ptr = safe_func(readPointer, stats_manager_ptr + 0x28),
         score = safe_func(readInteger, stats_manager_ptr + 0x80, true),
         difficulties_ptr = safe_func(readPointer, stats_manager_ptr + 0x9C),
@@ -98,6 +100,7 @@ end
 function get_stats_values(stats_values_ptr, level, checkpoint_index)
     local block_index = (level * NUM_CHECKPOINTS_PER_LEVEL) + checkpoint_index
     local block_ptr = stats_values_ptr + (block_index * STATS_COUNT * 2)
+    -- print(string.format("CURRENT STATS BLOCK: %X", block_ptr))
     local stats_values = {}
     for i = 1, STATS_COUNT do
         local value = safe_func(readShortInteger, block_ptr, true)
@@ -159,7 +162,10 @@ end
 
 function get_stats_descriptor(descriptor_ptr)
     local descriptor = {
+        unknown_id = safe_func(readInteger, descriptor_ptr + 0x1C, true),
+        rating_value = safe_func(readFloat, descriptor_ptr + 0x28),  -- always zero
         index = safe_func(readInteger, descriptor_ptr + 0x34, true),
+        -- threshold = safe_func(readInteger, descriptor_ptr + 0x38, true),
         multiplier = safe_func(readInteger, descriptor_ptr + 0x3C, true),
     }
     if descriptor.index < 0 or descriptor.index >= STATS_COUNT then error("Index out of range: " .. descriptor.index) end
@@ -167,24 +173,20 @@ function get_stats_descriptor(descriptor_ptr)
 end
 
 -- for debugging
-function get_stats_multipliers(stats_manager)
+function print_stats_descriptors(stats_manager)
     local entry_ptr = stats_manager.entry_begin_ptr
     local num_entries = 0
-    local multipliers = {}
     while entry_ptr ~= stats_manager.entry_end_ptr do
         local entry = get_stats_entry(entry_ptr)
         if entry.descriptor_ptr ~= 0 then
             local descriptor = get_stats_descriptor(entry.descriptor_ptr)
-            if descriptor.multiplier ~= 0 then
-                if multipliers[descriptor.index] ~= nil then error("Duplicate descriptor index") end
-                multipliers[descriptor.index] = descriptor.multiplier
-            end
+            print(num_entries)
+            print_table(descriptor)
         end
         num_entries = num_entries + 1
         entry_ptr = entry_ptr + 0x08
         if num_entries > STATS_COUNT then error("Too many entries") end
     end
-    return multipliers
 end
 
 function get_raw_score(stats_manager, stats_values)
@@ -278,9 +280,8 @@ function main()
     print("Stats difficulties:")
     print_table(stats_difficulties)
 
-    local stats_multipliers = get_stats_multipliers(stats_manager)
-    print("Stats multipliers:")
-    print_table(stats_multipliers)
+    print("Stats descriptors:")
+    print_stats_descriptors(stats_manager)
 
     print("Stats rating datas:")
     print_stats_rating_datas(stats_manager)
