@@ -1,43 +1,172 @@
-memreader = require("memreader")
-T = memreader.T
+local typedefs = require("typedefs")
+local T = typedefs.T
 
 local hitman_absolution = {}
 
-hitman_absolution.structs = {
+-- ----------------------------------------------------------------------------
+-- Game data structure
+-- ----------------------------------------------------------------------------
+
+hitman_absolution.struct_defs = {
     Game = {
-        size = 0x7FFFFFFF, -- placeholder
+        size = 0x7FFFFFFF,
         fields = {
-            {name = "difficulty", offset = 0xD58C60 + 0x10 + 0x94, type_def = T.i32},
-            {name = "level", offset = 0xE21394, type_def = T.i32},
-            {name = "checkpoints_manager", offset = 0xE21580, type_def = T.struct("CheckpointsManager")}
+            {name = "difficulty", offset = 0xD58C60 + 0x10 + 0x94, type_ref = T.i32},
+            {name = "level", offset = 0xE21394, type_ref = T.i32},
+            {name = "level_manager", offset = 0xE21310, type_ref = T.struct("LevelManager")},
+            {name = "checkpoints_manager", offset = 0xE21580, type_ref = T.struct("CheckpointsManager")},
+            {name = "time_manager", offset = 0xE24730, type_ref = T.struct("TimeManager")},
+            {name = "stats_manager",     offset = 0xD61710, type_ref = T.struct("StatsManager")},
+            {name = "challenge_manager", offset = 0xD617C0, type_ref = T.struct("ChallengeManager")},
         }
     },
-    CheckpointsManager = {
-        size = 0x2C, -- unknown
+    String = {
+        size = 0x08,
         fields = {
-            {name = "checkpoints", offset = 0x28, type_def = T.ptr(T.struct("Checkpoints"))}
+            {name = "length", offset = 0x00, type_ref = T.i32},
+            {name = "text", offset = 0x04, type_ref = T.ptr(T.string(0x40))},
+        },
+    },
+    LevelManager = {
+        size = 0x24,
+        fields = {
+            {name = "scene", offset = 0x04, type_ref = T.struct("String")},
+            {name = "game_mode", offset = 0x0C, type_ref = T.i32},
+            {name = "checkpoint_index", offset = 0x20, type_ref = T.i32},
+        },      
+    },
+    CheckpointsManager = {
+        size = 0x2C,
+        fields = {
+            {name = "checkpoints", offset = 0x28, type_ref = T.optional_ptr(T.struct("Checkpoints"))}
         }
     },
     Checkpoints = {
-        size = 0x54, -- unknown
+        size = 0x54,
         fields = {
-            {name = "checkpoint", offset = 0x0C, type_def = T.vector(T.struct("Checkpoint"))},
-            {name = "current_key", offset = 0x50, type_def = T.i32}
+            {name = "checkpoint", offset = 0x0C, type_ref = T.vector(T.struct("Checkpoint"))},
+            {name = "current_key", offset = 0x50, type_ref = T.i32}
         }
     },
     Checkpoint = {
         size = 0x08,
         fields = {
-            {name = "key", offset = 0x00, type_def = T.i32}, -- could be pointer
-            {name = "_unknown", offset = 0x04, type_def = T.i32} -- could be pointer
+            {name = "key", offset = 0x00, type_ref = T.i32}, -- could be pointer
+            {name = "_unknown", offset = 0x04, type_ref = T.i32} -- could be pointer
         }
-    }
+    },
+    TimeManager = {
+        size = 0x88,
+        fields = {
+            {name = "ticks_per_second", offset = 0x08, type_ref = T.i64},
+            {name = "last_time_ticks", offset = 0x10, type_ref = T.i64},
+            {name = "game_time", offset = 0x18, type_ref = T.i64},  -- divide by (1024 * 1024) to get seconds
+            {name = "game_time_previous", offset = 0x20, type_ref = T.i64},
+            {name = "game_time_delta", offset = 0x28, type_ref = T.i64},
+            {name = "real_time", offset = 0x30, type_ref = T.i64},
+            {name = "real_time_previous", offset = 0x38, type_ref = T.i64},
+            {name = "real_time_delta", offset = 0x40, type_ref = T.i64},
+            {name = "game_time_multiplier", offset = 0x48, type_ref = T.float},
+            {name = "debug_time_multiplier", offset = 0x4C, type_ref = T.float},
+            {name = "frame_wait", offset = 0x50, type_ref = T.i64},
+            {name = "frame_step", offset = 0x58, type_ref = T.i64},
+            {name = "frame_remain", offset = 0x60, type_ref = T.i64},
+            {name = "paused", offset = 0x68, type_ref = T.i32},
+            {name = "frame_count", offset = 0x6C, type_ref = T.i32},
+        }
+    },
+    StatsManager = {
+        size = 0xA0,
+        fields = {
+            {name = "scorings", offset = 0x04, type_ref = T.vector(T.struct("StatsScoring"))},
+            {name = "ratings", offset = 0x10, type_ref = T.vector(T.struct("StatsRating"))},
+            -- {name = "unknown", offset = 0x1C, type_ref = T.vector(T.struct("StatsUnknown"))},
+            {name = "values", offset = 0x28, type_ref = T.ptr(T.array(T.array(T.array(T.i16, 100), 13), 26)), print = false},
+            {name = "score",  offset = 0x80, type_ref = T.i32},
+            {name = "difficulties", offset = 0x9C, type_ref = T.ptr(T.struct("StatsDifficulties"))},
+        }
+    },
+    StatsScoring = {
+        size = 0x08,
+        fields = {
+            {name = "data", offset = 0x04, type_ref = T.ptr(T.struct("StatsScoringData"))},
+        }
+    },
+    StatsScoringData = {
+        size = 0x40,
+        fields = {
+            {name = "unknown_id",   offset = 0x1C, type_ref = T.i32},    -- 0 for indices with multiplier == 0, otherwise a fixed pointer?
+            {name = "rating_value", offset = 0x28, type_ref = T.float},  -- always zero
+            {name = "index",        offset = 0x34, type_ref = T.i32},    -- final index into StatsManager.values
+            {name = "multiplier",   offset = 0x3C, type_ref = T.i32},    -- see SCORE_MULTIPLIER below
+        }
+    },
+    StatsDifficulties = {
+        size = 0x1C,
+        fields = {
+            {name = "scales", offset = 0x08, type_ref = T.array(T.float, 5)},  -- 1.0, 1.25, 1.5, 2.0, 2.5; see DIFFICULTY_SCALE below
+        }
+    },
+    StatsRating = {
+        size = 0x08,
+        fields = {
+            {name = "data", offset = 0x04, type_ref = T.ptr(T.struct("StatsRatingData"))},
+        }
+    },
+    StatsRatingData = {
+        size = 0x54,
+        fields = {
+            {name = "condition_min",  offset = 0x08, type_ref = T.vector(T.struct("RatingCondition"))},
+            {name = "condition_max",  offset = 0x14, type_ref = T.vector(T.struct("RatingCondition"))},
+            {name = "unknown",        offset = 0x38, type_ref = T.i32},
+            {name = "percentage_min", offset = 0x3C, type_ref = T.i32},
+            {name = "percentage_max", offset = 0x40, type_ref = T.i32},
+            {name = "changed",        offset = 0x50, type_ref = T.i8},
+        }
+    },
+    RatingCondition = {
+        size = 0x08,
+        fields = {
+            {name = "data", offset = 0x04, type_ref = T.ptr(T.struct("RatingConditionData"))},
+        }
+    },
+    -- same layout as StatsScoringData?
+    RatingConditionData = {
+        size = 0x3C,
+        fields = {
+            {name = "index",     offset = 0x34, type_ref = T.i32},
+            {name = "threshold", offset = 0x38, type_ref = T.i32},
+        }
+    },
+    ChallengeManager = {
+        size = 0x10,
+        fields = {
+            {name = "challenges", offset = 0x08, type_ref = T.circular_list(T.struct("ChallengeNode"), "next_node")},
+        }
+    },
+    ChallengeNode = {
+        size = 0x10,
+        fields = {
+            {name = "next_node", offset = 0x00, type_ref = T.weak_ptr(T.struct("ChallengeNode"))},
+            {name = "data",      offset = 0x0C, type_ref = T.optional_ptr(T.struct("ChallengeData"))},
+        }
+    },
+    ChallengeData = {
+        size = 0xA0, -- unknown
+        fields = {
+            {name = "completed", offset = 0x98, type_ref = T.i8},
+        }
+    },
 }
 
-hitman_absolution.get_current_checkpoint_index = function(checkpoints)
+-- ----------------------------------------------------------------------------
+-- Helper functions
+-- ----------------------------------------------------------------------------
+
+local function get_current_checkpoint_index(checkpoints)
     if checkpoints.current_key == 0 then
-        return -1
-    end -- no checkpoint loaded
+        return -1  -- no checkpoint loaded
+    end
     for i, checkpoint in ipairs(checkpoints.checkpoint) do
         if checkpoint.key == checkpoints.current_key then
             return i - 1
@@ -45,5 +174,79 @@ hitman_absolution.get_current_checkpoint_index = function(checkpoints)
     end
     error("Unable to find checkpoint key")
 end
+
+local function get_num_challenges_completed(challenges)
+    local count = 0
+    for _, node in ipairs(challenges) do
+        local data = node.data  -- occasionally can be nil
+        if data and data.completed ~= 0 then count = count + 1 end
+    end
+    return count
+end
+
+-- score multipliers by final index into StatsManager.values
+-- note lua index starts at 1
+local MULTIPLIERS = {
+    0,      -- (unknown category)
+    5000,   -- objective complete
+    10000,  -- target kill
+    -1000,  -- spotted
+    1000,   -- evidence removed
+    47000,  -- silent assassin bonus
+    5000,   -- signature kill
+    150,    -- silent kill
+    150,    -- headshot
+    100,    -- body hidden
+    -2500,  -- civilian casualty
+    -250,   -- non-target casualty
+    -100,   -- pacification
+}
+
+-- result uses lua indexing
+local function get_multipliers(scorings)
+    local multipliers = {}
+    for _, scoring in ipairs(scorings) do
+        local data = scoring.data
+        if data.multiplier ~= 0 then
+            multipliers[data.index + 1] = data.multiplier
+        end
+    end
+    return multipliers
+end
+
+-- here values is stats_manager.values[level+1][checkpoint+1]
+-- should be array containing 100 entries
+local function get_raw_score(values, multipliers)
+    local sum = 0
+    for i, multiplier in pairs(multipliers) do
+        sum = sum + values[i] * multiplier
+    end
+    return sum
+end
+
+-- use hardcoded multipliers
+local function get_raw_score_2(values)
+    return get_raw_score(values, MULTIPLIERS)
+end
+
+local DIFFICULTY_SCALE = {100, 125, 150, 200, 250}
+
+-- game uses high precision floats via stats_manager.difficulties.scales
+-- we use hardcoded values and exact integer arithmetic
+-- in practice this should give the same result
+local function get_score(raw_score, difficulty, num_challenges_completed)
+    return (raw_score * (DIFFICULTY_SCALE[difficulty + 1] + 5 * num_challenges_completed) + 50) // 100
+end
+
+-- ----------------------------------------------------------------------------
+-- Public API
+-- ----------------------------------------------------------------------------
+
+hitman_absolution.get_current_checkpoint_index = get_current_checkpoint_index
+hitman_absolution.get_num_challenges_completed  = get_num_challenges_completed
+hitman_absolution.get_multipliers               = get_multipliers
+hitman_absolution.get_raw_score                 = get_raw_score
+hitman_absolution.get_raw_score_2               = get_raw_score_2
+hitman_absolution.get_score                     = get_score
 
 return hitman_absolution
