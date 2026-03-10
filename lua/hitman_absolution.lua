@@ -120,7 +120,7 @@ struct_defs = {
             {name = "condition_max",  offset = 0x14, type_ref = T.vector(T.struct("PlaystyleCondition"))},
             {name = "title",          offset = 0x20, type_ref = T.struct("String")},
             {name = "is_unlockable",  offset = 0x34, type_ref = T.i8},  -- if listed under "unlocks"
-            {name = "unknown",        offset = 0x38, type_ref = T.i32},
+            {name = "priority",       offset = 0x38, type_ref = T.i32}, -- higher values = higher ranking
             {name = "percentage_min", offset = 0x3C, type_ref = T.i32},
             {name = "percentage_max", offset = 0x40, type_ref = T.i32},
             {name = "is_achieved",    offset = 0x50, type_ref = T.i8},  -- for current mission
