@@ -81,6 +81,7 @@ struct_defs = {
             -- {name = "unknown", offset = 0x1C, type_ref = T.vector(T.struct("StatsUnknown"))},
             {name = "values", offset = 0x28, type_ref = T.ptr(T.array(T.array(T.array(T.i16, 100), 13), 26)), print = false},
             {name = "achieved_playstyles", offset = 0x34, type_ref = T.ptr(T.array(T.i8, 100))},
+            {name = "last_achieved_playstyle", offset = 0x64, type_ref = T.i32},
             {name = "score",  offset = 0x80, type_ref = T.i32},
             {name = "difficulties", offset = 0x9C, type_ref = T.ptr(T.struct("StatsDifficulties"))},
         }
