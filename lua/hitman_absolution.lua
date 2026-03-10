@@ -1,13 +1,11 @@
 local typedefs = require("typedefs")
 local T = typedefs.T
 
-local hitman_absolution = {}
-
 -- ----------------------------------------------------------------------------
 -- Game data structure
 -- ----------------------------------------------------------------------------
 
-hitman_absolution.struct_defs = {
+struct_defs = {
     Game = {
         size = 0x7FFFFFFF,
         fields = {
@@ -229,12 +227,15 @@ local function get_raw_score_2(values)
     return get_raw_score(values, MULTIPLIERS)
 end
 
+-- difficulty_scale is stats_manager.difficulties.scales[difficulty+1]
+local function get_score(raw_score, difficulty_scale, num_challenges_completed)
+    return math.floor(raw_score * (difficulty_scale + 0.05 * num_challenges_completed) + 0.5)
+end
+
 local DIFFICULTY_SCALE = {100, 125, 150, 200, 250}
 
--- game uses high precision floats via stats_manager.difficulties.scales
--- we use hardcoded values and exact integer arithmetic
--- in practice this should give the same result
-local function get_score(raw_score, difficulty, num_challenges_completed)
+-- use hardcoded scales and exact integer arithmetic
+local function get_score_2(raw_score, difficulty, num_challenges_completed)
     return (raw_score * (DIFFICULTY_SCALE[difficulty + 1] + 5 * num_challenges_completed) + 50) // 100
 end
 
@@ -242,11 +243,15 @@ end
 -- Public API
 -- ----------------------------------------------------------------------------
 
+local hitman_absolution = {}
+
+hitman_absolution.struct_defs                  = struct_defs
 hitman_absolution.get_current_checkpoint_index = get_current_checkpoint_index
-hitman_absolution.get_num_challenges_completed  = get_num_challenges_completed
-hitman_absolution.get_multipliers               = get_multipliers
-hitman_absolution.get_raw_score                 = get_raw_score
-hitman_absolution.get_raw_score_2               = get_raw_score_2
-hitman_absolution.get_score                     = get_score
+hitman_absolution.get_num_challenges_completed = get_num_challenges_completed
+hitman_absolution.get_multipliers              = get_multipliers
+hitman_absolution.get_raw_score                = get_raw_score
+hitman_absolution.get_raw_score_2              = get_raw_score_2
+hitman_absolution.get_score                    = get_score
+hitman_absolution.get_score_2                  = get_score_2
 
 return hitman_absolution
