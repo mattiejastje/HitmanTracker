@@ -77,9 +77,10 @@ struct_defs = {
         size = 0xA0,
         fields = {
             {name = "scorings", offset = 0x04, type_ref = T.vector(T.struct("StatsScoring"))},
-            {name = "ratings", offset = 0x10, type_ref = T.vector(T.struct("StatsRating"))},
+            {name = "playstyles", offset = 0x10, type_ref = T.vector(T.struct("StatsPlaystyle"))},
             -- {name = "unknown", offset = 0x1C, type_ref = T.vector(T.struct("StatsUnknown"))},
             {name = "values", offset = 0x28, type_ref = T.ptr(T.array(T.array(T.array(T.i16, 100), 13), 26)), print = false},
+            {name = "achieved_playstyles", offset = 0x34, type_ref = T.ptr(T.array(T.i8, 100))},
             {name = "score",  offset = 0x80, type_ref = T.i32},
             {name = "difficulties", offset = 0x9C, type_ref = T.ptr(T.struct("StatsDifficulties"))},
         }
@@ -105,31 +106,32 @@ struct_defs = {
             {name = "scales", offset = 0x08, type_ref = T.array(T.float, 5)},  -- 1.0, 1.25, 1.5, 2.0, 2.5; see DIFFICULTY_SCALE below
         }
     },
-    StatsRating = {
+    StatsPlaystyle = {
         size = 0x08,
         fields = {
-            {name = "data", offset = 0x04, type_ref = T.ptr(T.struct("StatsRatingData"))},
+            {name = "data", offset = 0x04, type_ref = T.ptr(T.struct("StatsPlaystyleData"))},
         }
     },
-    StatsRatingData = {
+    StatsPlaystyleData = {
         size = 0x54,
         fields = {
-            {name = "condition_min",  offset = 0x08, type_ref = T.vector(T.struct("RatingCondition"))},
-            {name = "condition_max",  offset = 0x14, type_ref = T.vector(T.struct("RatingCondition"))},
+            {name = "condition_min",  offset = 0x08, type_ref = T.vector(T.struct("PlaystyleCondition"))},
+            {name = "condition_max",  offset = 0x14, type_ref = T.vector(T.struct("PlaystyleCondition"))},
+            {name = "title",          offset = 0x20, type_ref = T.struct("String")},
             {name = "unknown",        offset = 0x38, type_ref = T.i32},
             {name = "percentage_min", offset = 0x3C, type_ref = T.i32},
             {name = "percentage_max", offset = 0x40, type_ref = T.i32},
-            {name = "changed",        offset = 0x50, type_ref = T.i8},
+            {name = "achieved",       offset = 0x50, type_ref = T.i8},
         }
     },
-    RatingCondition = {
+    PlaystyleCondition = {
         size = 0x08,
         fields = {
-            {name = "data", offset = 0x04, type_ref = T.ptr(T.struct("RatingConditionData"))},
+            {name = "data", offset = 0x04, type_ref = T.ptr(T.struct("PlaystyleConditionData"))},
         }
     },
     -- same layout as StatsScoringData?
-    RatingConditionData = {
+    PlaystyleConditionData = {
         size = 0x3C,
         fields = {
             {name = "index",     offset = 0x34, type_ref = T.i32},
@@ -237,6 +239,31 @@ local DIFFICULTY_SCALE = {100, 125, 150, 200, 250}
 -- use hardcoded scales and exact integer arithmetic
 local function get_score_2(raw_score, difficulty, num_challenges_completed)
     return (raw_score * (DIFFICULTY_SCALE[difficulty + 1] + 5 * num_challenges_completed) + 50) // 100
+end
+
+local function is_playstyle_achieved(values, playstyle_data)
+    for _, condition in ipairs(playstyle_data.condition_min) do
+        local data = condition.data
+        if values[data.index] < data.treshold then
+            return false
+        end
+    end
+    for _, condition in ipairs(playstyle_data.condition_max) do
+        local data = condition.data
+        if values[data.index] >= data.treshold then
+            return false
+        end
+    end
+    return true
+end
+
+local function get_playstyle(values, playstyles)
+    for _, playstyle in ipairs(playstyles) do
+        if is_playstyle_achieved(values, playstyle.data) then
+            return playstyle
+        end
+    end
+    return nil
 end
 
 -- ----------------------------------------------------------------------------
