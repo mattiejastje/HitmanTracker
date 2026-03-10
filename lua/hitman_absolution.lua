@@ -32,7 +32,7 @@ hitman_absolution.struct_defs = {
         fields = {
             {name = "scene", offset = 0x04, type_ref = T.struct("String")},
             {name = "game_mode", offset = 0x0C, type_ref = T.i32},
-            {name = "checkpoint_index", offset = 0x20, type_ref = T.i32},
+            {name = "checkpoint_index", offset = 0x20, type_ref = T.i32},  -- cached, not always up to date
         },      
     },
     CheckpointsManager = {
