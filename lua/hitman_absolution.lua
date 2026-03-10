@@ -80,8 +80,8 @@ struct_defs = {
             {name = "playstyles", offset = 0x10, type_ref = T.vector(T.struct("StatsPlaystyle"))},
             -- {name = "unknown", offset = 0x1C, type_ref = T.vector(T.struct("StatsUnknown"))},
             {name = "values", offset = 0x28, type_ref = T.ptr(T.array(T.array(T.array(T.i16, 100), 13), 26)), print = false},
-            {name = "achieved_playstyles", offset = 0x34, type_ref = T.ptr(T.array(T.i8, 100))},
-            {name = "last_achieved_playstyle", offset = 0x64, type_ref = T.i32},
+            {name = "achieved_playstyles", offset = 0x34, type_ref = T.ptr(T.array(T.i8, 100))},  -- across all gaming sessions
+            {name = "last_achieved_playstyle", offset = 0x64, type_ref = T.i32},  -- across all gaming sessions
             {name = "score",  offset = 0x80, type_ref = T.i32},
             {name = "difficulties", offset = 0x9C, type_ref = T.ptr(T.struct("StatsDifficulties"))},
         }
@@ -123,7 +123,7 @@ struct_defs = {
             {name = "unknown",        offset = 0x38, type_ref = T.i32},
             {name = "percentage_min", offset = 0x3C, type_ref = T.i32},
             {name = "percentage_max", offset = 0x40, type_ref = T.i32},
-            {name = "achieved",       offset = 0x50, type_ref = T.i8},
+            {name = "is_achieved",    offset = 0x50, type_ref = T.i8},  -- for current mission
         }
     },
     PlaystyleCondition = {
@@ -246,13 +246,13 @@ end
 local function is_playstyle_achieved(values, playstyle_data)
     for _, condition in ipairs(playstyle_data.condition_min) do
         local data = condition.data
-        if values[data.index] < data.treshold then
+        if values[data.index] < data.threshold then
             return false
         end
     end
     for _, condition in ipairs(playstyle_data.condition_max) do
         local data = condition.data
-        if values[data.index] >= data.treshold then
+        if values[data.index] >= data.threshold then
             return false
         end
     end
