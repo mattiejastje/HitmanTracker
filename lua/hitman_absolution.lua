@@ -48,16 +48,16 @@ struct_defs = {
     CheckpointInfo = {
         size = 0x18,
         fields = {
-            {name = "datas", offset = 0x10, type_ref = T.vector(T.struct("CheckpointData"))},
+            {name = "nodes", offset = 0x10, type_ref = T.vector(T.struct("CheckpointNode"))},
+        }
+    },
+    CheckpointNode = {
+        size = 0x08,
+        fields = {
+            {name = "data", offset = 0x04, type_ref = T.ptr(T.struct("CheckpointData"))},
         }
     },
     CheckpointData = {
-        size = 0x08,
-        fields = {
-            {name = "sub_data", offset = 0x04, type_ref = T.ptr(T.struct("CheckpointSubData"))},
-        }
-    },
-    CheckpointSubData = {
         size = 0x40,
         fields = {
             {name = "best_raw_score", offset = 0x38, type_ref = T.i32},
@@ -282,6 +282,9 @@ local function get_score_2(raw_score, difficulty, num_challenges_completed)
 end
 
 local function is_playstyle_condition_achieved(values, playstyle_data)
+    if next(playstyle_data.condition_min) == nil and next(playstyle_data.condition_max) == nil then
+        return false  -- not a condition-based playstyle
+    end
     for _, condition in ipairs(playstyle_data.condition_min) do
         local data = condition.data
         if values[data.index] < data.threshold then
@@ -319,7 +322,7 @@ local function get_level_info(level_infos, level)
 end
 
 local function get_best_raw_score(level_infos, level, checkpoint_index)
-    level_info = get_level_info(level_infos, level)
+    local level_info = get_level_info(level_infos, level)
     return level_info.checkpoint_info.datas[checkpoint_index + 1].sub_data.best_raw_score
 end
 
@@ -331,7 +334,7 @@ local function is_playstyle_percentage_achieved(percentage, playstyle_data)
 end
 
 local function get_playstyle_index_by_score(raw_score, best_raw_score, playstyles)
-    percentage = max(0, min(100, raw_score // best_raw_score))
+    local percentage = max(0, min(100, raw_score // best_raw_score))
     for i, playstyle in ipairs(playstyles) do
         if is_playstyle_percentage_achieved(percentage, playstyle.data) then
             return i - 1  -- lua index starts at 1
@@ -342,7 +345,8 @@ end
 
 -- use hardcoded bounds
 local function get_playstyle_index_by_score_2(raw_score, best_raw_score)
-    bounds = {49, 79, 89, 99}
+    local percentage = raw_score // best_raw_score
+    local bounds = {49, 79, 89, 99}
     for i, bound in ipairs(bounds) do
         if percentage <= bound then
             return i - 1  -- lua index starts at 1
@@ -357,13 +361,19 @@ end
 
 local hitman_absolution = {}
 
-hitman_absolution.struct_defs                  = struct_defs
-hitman_absolution.get_current_checkpoint_index = get_current_checkpoint_index
-hitman_absolution.get_num_challenges_completed = get_num_challenges_completed
-hitman_absolution.get_multipliers              = get_multipliers
-hitman_absolution.get_raw_score                = get_raw_score
-hitman_absolution.get_raw_score_2              = get_raw_score_2
-hitman_absolution.get_score                    = get_score
-hitman_absolution.get_score_2                  = get_score_2
+hitman_absolution.struct_defs                      = struct_defs
+hitman_absolution.get_current_checkpoint_index     = get_current_checkpoint_index
+hitman_absolution.get_num_challenges_completed     = get_num_challenges_completed
+hitman_absolution.get_multipliers                  = get_multipliers
+hitman_absolution.get_raw_score                    = get_raw_score
+hitman_absolution.get_raw_score_2                  = get_raw_score_2
+hitman_absolution.get_score                        = get_score
+hitman_absolution.get_score_2                      = get_score_2
+hitman_absolution.is_playstyle_condition_achieved  = is_playstyle_condition_achieved
+hitman_absolution.get_playstyle_index_by_condition = get_playstyle_index_by_condition
+hitman_absolution.get_level_info                   = get_level_info
+hitman_absolution.get_best_raw_score               = get_best_raw_score
+hitman_absolution.is_playstyle_percentage_achieved = is_playstyle_percentage_achieved
+hitman_absolution.get_playstyle_index_by_score     = get_playstyle_index_by_score
 
 return hitman_absolution
