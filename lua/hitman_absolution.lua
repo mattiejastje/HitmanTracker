@@ -10,8 +10,9 @@ struct_defs = {
         size = 0x7FFFFFFF,
         fields = {
             {name = "difficulty", offset = 0xD58C60 + 0x10 + 0x94, type_ref = T.i32},
-            {name = "level", offset = 0xE21394, type_ref = T.i32},
+            {name = "score_table", offset = 0xE212E0, type_ref = T.struct("ScoreTable")},
             {name = "level_manager", offset = 0xE21310, type_ref = T.struct("LevelManager")},
+            {name = "level", offset = 0xE21394, type_ref = T.i32},  -- part of level manager?
             {name = "checkpoints_manager", offset = 0xE21580, type_ref = T.struct("CheckpointsManager")},
             {name = "time_manager", offset = 0xE24730, type_ref = T.struct("TimeManager")},
             {name = "stats_manager",     offset = 0xD61710, type_ref = T.struct("StatsManager")},
@@ -22,8 +23,26 @@ struct_defs = {
         size = 0x08,
         fields = {
             {name = "length", offset = 0x00, type_ref = T.i32},
-            {name = "text", offset = 0x04, type_ref = T.ptr(T.string(0x40))},
+            {name = "text",   offset = 0x04, type_ref = T.ptr(T.string(0x40))},
         },
+    },
+    ScoreTable = {
+        size = 0x30,
+        fields = {
+            {name = "levels", offset = 0x20, type_ref = T.vector(T.struct("ScoreTableLevel"))},
+        }
+    },
+    ScoreTableLevel = {
+        size = 0xB0,
+        fields = {
+            {name = "data", offset = 0x04, type_ref = T.ptr(T.struct("ScoreTableLevelData"))},
+        }
+    },
+    ScoreTableLevelData = {
+        size = 0x0C,
+        fields = {
+            {name = "level", offset = 0x08, type_ref = T.i32},
+        }
     },
     LevelManager = {
         size = 0x24,
@@ -171,7 +190,7 @@ local function get_current_checkpoint_index(checkpoints)
     end
     for i, checkpoint in ipairs(checkpoints.checkpoint) do
         if checkpoint.key == checkpoints.current_key then
-            return i - 1
+            return i - 1  -- lua index started at 1
         end
     end
     error("Unable to find checkpoint key")
