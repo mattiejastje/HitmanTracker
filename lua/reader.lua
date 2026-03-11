@@ -134,6 +134,9 @@ end
 
 _readers.struct = function(addr, type_ref)
     local def = typedefs.struct_defs[type_ref.name]
+    if not def then
+        error("Unknown struct: " .. type_ref.name)
+    end
     local obj = {}
     local errors = {}
     for _, field in ipairs(def.fields) do

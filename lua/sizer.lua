@@ -55,7 +55,11 @@ _sizers.string = function(type_ref)
 end
 
 _sizers.struct = function(type_ref)
-    return typedefs.struct_defs[type_ref.name].size
+    local def = typedefs.struct_defs[type_ref.name]
+    if not def then
+        error("Unknown struct: " .. type_ref.name)
+    end
+    return def.size
 end
 
 _sizers.vector = function(type_ref)

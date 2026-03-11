@@ -76,6 +76,9 @@ end
 
 _printers.struct = function(type_ref, value, indent, prefix)
     local def = typedefs.struct_defs[type_ref.name]
+    if not def then
+        error("Unknown struct: " .. type_ref.name)
+    end
     print(prefix .. type_ref.name)
     for _, field in ipairs(def.fields) do
         if field.print ~= false then
