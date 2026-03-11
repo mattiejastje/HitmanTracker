@@ -78,7 +78,6 @@ struct_defs = {
         fields = {
             {name = "scorings", offset = 0x04, type_ref = T.vector(T.struct("StatsScoring"))},
             {name = "playstyles", offset = 0x10, type_ref = T.vector(T.struct("StatsPlaystyle"))},
-            -- {name = "unknown", offset = 0x1C, type_ref = T.vector(T.struct("StatsUnknown"))},
             {name = "values", offset = 0x28, type_ref = T.ptr(T.array(T.array(T.array(T.i16, 100), 13), 26)), print = false},
             {name = "achieved_playstyles", offset = 0x34, type_ref = T.ptr(T.array(T.i8, 100))},  -- across all gaming sessions
             {name = "last_achieved_playstyle", offset = 0x64, type_ref = T.i32},  -- across all gaming sessions
@@ -95,10 +94,10 @@ struct_defs = {
     StatsScoringData = {
         size = 0x40,
         fields = {
-            {name = "unknown_id",   offset = 0x1C, type_ref = T.i32},    -- 0 for indices with multiplier == 0, otherwise a fixed pointer?
-            {name = "rating_value", offset = 0x28, type_ref = T.float},  -- always zero
-            {name = "index",        offset = 0x34, type_ref = T.i32},    -- final index into StatsManager.values
-            {name = "multiplier",   offset = 0x3C, type_ref = T.i32},    -- see SCORE_MULTIPLIER below
+            {name = "title",      offset = 0x08, type_ref = T.struct("String")},
+            {name = "_unused",    offset = 0x28, type_ref = T.float},  -- always zero
+            {name = "index",      offset = 0x34, type_ref = T.i32},    -- final index into StatsManager.values
+            {name = "multiplier", offset = 0x3C, type_ref = T.i32},    -- see SCORE_MULTIPLIER below
         }
     },
     StatsDifficulties = {
@@ -119,7 +118,6 @@ struct_defs = {
             {name = "condition_min",  offset = 0x08, type_ref = T.vector(T.struct("PlaystyleCondition"))},
             {name = "condition_max",  offset = 0x14, type_ref = T.vector(T.struct("PlaystyleCondition"))},
             {name = "title",          offset = 0x20, type_ref = T.struct("String")},
-            {name = "unknown",        offset = 0x30, type_ref = T.i32},
             {name = "is_unlockable",  offset = 0x34, type_ref = T.i8},  -- if listed under "unlocks"
             {name = "priority",       offset = 0x38, type_ref = T.i32}, -- higher values = higher ranking
             {name = "percentage_min", offset = 0x3C, type_ref = T.i32},
