@@ -135,6 +135,7 @@ struct_defs = {
     PlaystyleConditionData = {
         size = 0x3C,
         fields = {
+            {name = "title",     offset = 0x08, type_ref = T.struct("String")},
             {name = "index",     offset = 0x34, type_ref = T.i32},
             {name = "threshold", offset = 0x38, type_ref = T.i32},
         }
