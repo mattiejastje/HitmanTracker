@@ -10,7 +10,7 @@ struct_defs = {
         size = 0x7FFFFFFF,
         fields = {
             {name = "difficulty", offset = 0xD58C60 + 0x10 + 0x94, type_ref = T.i32},
-            {name = "score_table", offset = 0xE212E0, type_ref = T.struct("ScoreTable")},
+            {name = "game_data", offset = 0xE212E0, type_ref = T.struct("GameData")},
             {name = "level_manager", offset = 0xE21310, type_ref = T.struct("LevelManager")},
             {name = "level", offset = 0xE21394, type_ref = T.i32},  -- part of level manager?
             {name = "checkpoints_manager", offset = 0xE21580, type_ref = T.struct("CheckpointsManager")},
@@ -26,22 +26,41 @@ struct_defs = {
             {name = "text",   offset = 0x04, type_ref = T.ptr(T.string(0x40))},
         },
     },
-    ScoreTable = {
-        size = 0x30,
+    GameData = {
+        size = 0x28,
         fields = {
-            {name = "levels", offset = 0x20, type_ref = T.vector(T.struct("ScoreTableLevel"))},
+            {name = "level_infos", offset = 0x20, type_ref = T.vector(T.struct("GameDataLevelInfo"))},
         }
     },
-    ScoreTableLevel = {
+    GameDataLevelInfo = {
         size = 0xB0,
         fields = {
-            {name = "data", offset = 0x04, type_ref = T.ptr(T.struct("ScoreTableLevelData"))},
+            {name = "level_data", offset = 0x04, type_ref = T.ptr(T.struct("LevelData"))},
+            {name = "checkpoint_info", offset = 0x0C, type_ref = T.ptr(T.struct("CheckpointInfo"))},
         }
     },
-    ScoreTableLevelData = {
+    LevelData = {
         size = 0x0C,
         fields = {
             {name = "level", offset = 0x08, type_ref = T.i32},
+        }
+    },
+    CheckpointInfo = {
+        size = 0x18,
+        fields = {
+            {name = "datas", offset = 0x10, type_ref = T.vector(T.struct("CheckpointData"))},
+        }
+    },
+    CheckpointData = {
+        size = 0x08,
+        fields = {
+            {name = "sub_data", offset = 0x04, type_ref = T.ptr(T.struct("CheckpointSubData"))},
+        }
+    },
+    CheckpointSubData = {
+        size = 0x40,
+        fields = {
+            {name = "best_raw_score", offset = 0x38, type_ref = T.i32},
         }
     },
     LevelManager = {
@@ -262,7 +281,7 @@ local function get_score_2(raw_score, difficulty, num_challenges_completed)
     return (raw_score * (DIFFICULTY_SCALE[difficulty + 1] + 5 * num_challenges_completed) + 50) // 100
 end
 
-local function is_playstyle_achieved(values, playstyle_data)
+local function is_playstyle_condition_achieved(values, playstyle_data)
     for _, condition in ipairs(playstyle_data.condition_min) do
         local data = condition.data
         if values[data.index] < data.threshold then
@@ -278,13 +297,58 @@ local function is_playstyle_achieved(values, playstyle_data)
     return true
 end
 
-local function get_playstyle(values, playstyles)
-    for _, playstyle in ipairs(playstyles) do
-        if is_playstyle_achieved(values, playstyle.data) then
-            return playstyle
+local function get_playstyle_index_by_condition(values, playstyles)
+    -- match highest priority playstyles first
+    table.sort(playstyles, function(a, b) return a.data.priority > b.data.priority end)
+    for i, playstyle in pairs(playstyles) do
+        local data = playstyle.data
+        if is_playstyle_condition_achieved(values, data) then
+            return i - 1
         end
     end
     return nil
+end
+
+local function get_level_info(level_infos, level)
+    for _, level_info in ipairs(level_infos) do
+        if level_info.level_data.level == level then
+            return level_info
+        end
+    end
+    return nil  -- not found
+end
+
+local function get_best_raw_score(level_infos, level, checkpoint_index)
+    level_info = get_level_info(level_infos, level)
+    return level_info.checkpoint_info.datas[checkpoint_index + 1].sub_data.best_raw_score
+end
+
+local function is_playstyle_percentage_achieved(percentage, playstyle_data)
+    return (
+        playstyle_data.percentage_min <= percentage
+        and percentage <= playstyle_data.percentage_max
+    )
+end
+
+local function get_playstyle_index_by_score(raw_score, best_raw_score, playstyles)
+    percentage = max(0, min(100, raw_score // best_raw_score))
+    for i, playstyle in ipairs(playstyles) do
+        if is_playstyle_percentage_achieved(percentage, playstyle.data) then
+            return i - 1  -- lua index starts at 1
+        end
+    end
+    return nil  -- no match
+end
+
+-- use hardcoded bounds
+local function get_playstyle_index_by_score_2(raw_score, best_raw_score)
+    bounds = {49, 79, 89, 99}
+    for i, bound in ipairs(bounds) do
+        if percentage <= bound then
+            return i - 1  -- lua index starts at 1
+        end
+    end
+    return 4
 end
 
 -- ----------------------------------------------------------------------------
