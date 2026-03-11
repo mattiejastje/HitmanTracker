@@ -36,7 +36,7 @@ struct_defs = {
         size = 0xB0,
         fields = {
             {name = "level_data", offset = 0x04, type_ref = T.ptr(T.struct("LevelData"))},
-            {name = "checkpoint_info", offset = 0x0C, type_ref = T.ptr(T.struct("CheckpointInfo"))},
+            {name = "checkpoint_info", offset = 0x0C, type_ref = T.optional_ptr(T.struct("CheckpointInfo"))},  -- null during missions
         }
     },
     LevelData = {
