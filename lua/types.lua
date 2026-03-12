@@ -1,8 +1,17 @@
+-- types.lua
+--
+-- Type reference constructors (T) and type_ref validation.
+--
+-- A type_ref is a plain table describing the type of a value in the target
+-- process.  These are consumed by sizer.lua, reader.lua, printer.lua, and
+-- unwrapper.lua.  They are produced here and used as arguments to the
+-- layout descriptors in layout.lua.
+
 local T = {}
 local _validators = {}
 
 -- ----------------------------------------------------------------------------
--- Type references
+-- Type reference constructors
 -- ----------------------------------------------------------------------------
 
 T.array = function(element_type_ref, count)
@@ -39,10 +48,10 @@ T.vector = function(element_type_ref)
 end
 
 -- ----------------------------------------------------------------------------
--- Validate
+-- Validation
 -- ----------------------------------------------------------------------------
 
-local function _validate_type_ref(type_ref)
+local function validate_type_ref(type_ref)
     if not type_ref.kind then
         error("type_ref has no kind")
     end
@@ -63,33 +72,16 @@ _validators.array = function(type_ref)
     if type_ref.count < 1 then
         error("array count must be at least 1")
     end
-    _validate_type_ref(type_ref.type_ref)
+    validate_type_ref(type_ref.type_ref)
 end
 
 _validators.circular_list = function(type_ref)
     if not type_ref.type_ref then
         error("circular_list has no type_ref")
     end
-    _validate_type_ref(type_ref.type_ref)
-    local sub_name = type_ref.type_ref.name
-    local def = layout.struct_defs[sub_name] -- always non-nil due to _validate_type_ref above
-    for _, field in ipairs(def.fields) do
-        if field.name == "next" then
-            if field.type_ref.kind ~= "ptr" or not field.type_ref.weak then
-                error(
-                    "circular_list 'next' field in struct '" .. sub_name .. "' must be a ptr, got: " .. field.type_ref.kind
-                )
-            end
-            local next_type = field.type_ref.type_ref
-            if next_type.kind ~= "struct" or next_type.name ~= sub_name then
-                error(
-                    "circular_list 'next' field must be a ptr to struct '" .. sub_name .. "'"
-                )
-            end
-            return -- found and validated
-        end
-    end
-    error("circular_list 'next' field not found in struct '" .. sub_name .. "'")
+    validate_type_ref(type_ref.type_ref)
+    -- Structural check (next field) is deferred to layout.validate_struct_defs,
+    -- where struct_defs is guaranteed to be populated.
 end
 
 _validators.float = function(type_ref) end
@@ -102,7 +94,7 @@ _validators.ptr = function(type_ref)
     if not type_ref.type_ref then
         error("ptr has no type_ref")
     end
-    _validate_type_ref(type_ref.type_ref)
+    validate_type_ref(type_ref.type_ref)
 end
 
 _validators.string = function(type_ref)
@@ -115,8 +107,10 @@ _validators.string = function(type_ref)
 end
 
 _validators.struct = function(type_ref)
-    if not layout.struct_defs[type_ref.name] then
-        error("Unknown struct: " .. type_ref.name)
+    -- Existence check is deferred to layout.validate_struct_defs,
+    -- where struct_defs is guaranteed to be populated.
+    if not type_ref.name then
+        error("struct type_ref has no name")
     end
 end
 
@@ -124,40 +118,16 @@ _validators.vector = function(type_ref)
     if not type_ref.type_ref then
         error("vector has no type_ref")
     end
-    _validate_type_ref(type_ref.type_ref)
+    validate_type_ref(type_ref.type_ref)
 end
 
 -- ----------------------------------------------------------------------------
 -- Public API
 -- ----------------------------------------------------------------------------
 
-local function validate_struct_defs()
-    for name, def in pairs(layout.struct_defs) do
-        if not def.fields then
-            error("Struct '" .. name .. "' has no fields")
-        end
-        if not def.size then
-            error("Struct '" .. name .. "' has no size")
-        end
-        for _, field in ipairs(def.fields) do
-            if not field.name then
-                error("Struct '" .. name .. "' has a field with no name")
-            end
-            if not field.offset then
-                error("Struct '" .. name .. "' field '" .. field.name .. "' has no offset")
-            end
-            if not field.type_ref then
-                error("Struct '" .. name .. "' field '" .. field.name .. "' has no type_ref")
-            end
-            _validate_type_ref(field.type_ref)
-        end
-    end
-end
+local types = {}
 
-local layout = {}
+types.T = T
+types.validate_type_ref = validate_type_ref
 
-layout.T = T
-layout.struct_defs = {}
-layout.validate_struct_defs = validate_struct_defs
-
-return layout
+return types
