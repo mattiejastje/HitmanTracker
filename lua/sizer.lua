@@ -1,4 +1,4 @@
-local typedefs = require("typedefs")
+local layout = require("layout")
 
 local _sizers = {}
 
@@ -55,7 +55,7 @@ _sizers.string = function(type_ref)
 end
 
 _sizers.struct = function(type_ref)
-    local def = typedefs.struct_defs[type_ref.name]
+    local def = layout.struct_defs[type_ref.name]
     if not def then
         error("Unknown struct: " .. type_ref.name)
     end

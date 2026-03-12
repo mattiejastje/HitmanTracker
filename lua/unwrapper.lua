@@ -1,4 +1,4 @@
-local typedefs = require("typedefs")
+local layout = require("layout")
 
 local _unwrappers = {}
 
@@ -95,7 +95,7 @@ _unwrappers.string = function(type_ref, value)
 end
 
 _unwrappers.struct = function(type_ref, value)
-    local def = typedefs.struct_defs[type_ref.name]
+    local def = layout.struct_defs[type_ref.name]
     if not def then
         error("Unknown struct: " .. type_ref.name)
     end

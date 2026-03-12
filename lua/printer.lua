@@ -1,4 +1,4 @@
-local typedefs = require("typedefs")
+local layout = require("layout")
 
 local _printers = {}
 
@@ -96,7 +96,7 @@ _printers.string = function(type_ref, value, addr, indent, label)
 end
 
 _printers.struct = function(type_ref, value, addr, indent, label)
-    local def = typedefs.struct_defs[type_ref.name]
+    local def = layout.struct_defs[type_ref.name]
     if not def then
         error("Unknown struct: " .. type_ref.name)
     end

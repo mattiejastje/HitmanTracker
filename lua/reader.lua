@@ -1,4 +1,4 @@
-local typedefs = require("typedefs")
+local layout = require("layout")
 
 local _readers = {}
 
@@ -36,7 +36,6 @@ end
 
 _readers.circular_list = function(addr, type_ref)
     local sub_type = type_ref.type_ref
-    local next_field = type_ref.next_field
     local items = {}
     local head = readPointer(addr)
     if head == nil then
@@ -48,7 +47,7 @@ _readers.circular_list = function(addr, type_ref)
             table.insert(items, rawval)
             local struct_value = rawval.value
             if struct_value then
-                local next_rawval = struct_value[next_field]
+                local next_rawval = struct_value["next"]
                 local next_addr = next_rawval and next_rawval.value
                 if next_addr == nil then
                     return {addr = addr, value = items, error = "Invalid next pointer"}
@@ -116,7 +115,7 @@ _readers.string = function(addr, type_ref)
 end
 
 _readers.struct = function(addr, type_ref)
-    local def = typedefs.struct_defs[type_ref.name]
+    local def = layout.struct_defs[type_ref.name]
     if not def then
         error("Unknown struct: " .. type_ref.name)
     end

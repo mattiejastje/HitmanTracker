@@ -8,8 +8,8 @@ local _validators = {}
 T.array = function(element_type_ref, count)
     return {kind = "array", type_ref = element_type_ref, count = count}
 end
-T.circular_list = function(element_type_ref, next_field)
-    return {kind = "circular_list", type_ref = element_type_ref, next_field = next_field}
+T.circular_list = function(element_type_ref)
+    return {kind = "circular_list", type_ref = element_type_ref}
 end
 T.float = {kind = "float"}
 T.i8 = {kind = "i8"}
@@ -17,12 +17,15 @@ T.i16 = {kind = "i16"}
 T.i32 = {kind = "i32"}
 T.i64 = {kind = "i64"}
 T.optional_ptr = function(type_ref)
-    return {kind = "ptr", type_ref = type_ref, optional = true, weak = false}
-end
-T.optional_weak_ptr = function(type_ref)
     return {kind = "ptr", type_ref = type_ref, optional = true, weak = true}
 end
+T.optional_ref = function(type_ref)
+    return {kind = "ptr", type_ref = type_ref, optional = true, weak = false}
+end
 T.ptr = function(type_ref)
+    return {kind = "ptr", type_ref = type_ref, optional = false, weak = true}
+end
+T.ref = function(type_ref)
     return {kind = "ptr", type_ref = type_ref, optional = false, weak = false}
 end
 T.string = function(max_length)
@@ -33,9 +36,6 @@ T.struct = function(name)
 end
 T.vector = function(element_type_ref)
     return {kind = "vector", type_ref = element_type_ref}
-end
-T.weak_ptr = function(type_ref)
-    return {kind = "ptr", type_ref = type_ref, optional = false, weak = true}
 end
 
 -- ----------------------------------------------------------------------------
@@ -70,32 +70,26 @@ _validators.circular_list = function(type_ref)
     if not type_ref.type_ref then
         error("circular_list has no type_ref")
     end
-    if not type_ref.next_field then
-        error("circular_list has no next_field")
-    end
     _validate_type_ref(type_ref.type_ref)
     local sub_name = type_ref.type_ref.name
-    local def = typedefs.struct_defs[sub_name] -- always non-nil due to _validate_type_ref above
+    local def = layout.struct_defs[sub_name] -- always non-nil due to _validate_type_ref above
     for _, field in ipairs(def.fields) do
-        if field.name == type_ref.next_field then
+        if field.name == "next" then
             if field.type_ref.kind ~= "ptr" or not field.type_ref.weak then
                 error(
-                    "circular_list next_field '" ..
-                        type_ref.next_field ..
-                            "' in struct '" .. sub_name .. "' must be a weak_ptr, got: " .. field.type_ref.kind
+                    "circular_list 'next' field in struct '" .. sub_name .. "' must be a ptr, got: " .. field.type_ref.kind
                 )
             end
             local next_type = field.type_ref.type_ref
             if next_type.kind ~= "struct" or next_type.name ~= sub_name then
                 error(
-                    "circular_list next_field '" ..
-                        type_ref.next_field .. "' must be a weak_ptr to struct '" .. sub_name .. "'"
+                    "circular_list 'next' field must be a ptr to struct '" .. sub_name .. "'"
                 )
             end
             return -- found and validated
         end
     end
-    error("circular_list next_field '" .. type_ref.next_field .. "' not found in struct '" .. sub_name .. "'")
+    error("circular_list 'next' field not found in struct '" .. sub_name .. "'")
 end
 
 _validators.float = function(type_ref) end
@@ -121,7 +115,7 @@ _validators.string = function(type_ref)
 end
 
 _validators.struct = function(type_ref)
-    if not typedefs.struct_defs[type_ref.name] then
+    if not layout.struct_defs[type_ref.name] then
         error("Unknown struct: " .. type_ref.name)
     end
 end
@@ -138,7 +132,7 @@ end
 -- ----------------------------------------------------------------------------
 
 local function validate_struct_defs()
-    for name, def in pairs(typedefs.struct_defs) do
+    for name, def in pairs(layout.struct_defs) do
         if not def.fields then
             error("Struct '" .. name .. "' has no fields")
         end
@@ -160,10 +154,10 @@ local function validate_struct_defs()
     end
 end
 
-local typedefs = {}
+local layout = {}
 
-typedefs.T = T
-typedefs.struct_defs = {}
-typedefs.validate_struct_defs = validate_struct_defs
+layout.T = T
+layout.struct_defs = {}
+layout.validate_struct_defs = validate_struct_defs
 
-return typedefs
+return layout
