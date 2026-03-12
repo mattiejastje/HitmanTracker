@@ -43,12 +43,12 @@ _readers.circular_list = function(addr, type_ref)
     elseif head ~= 0 then
         local p = head
         repeat
-            local node = read(p, sub_type)
-            table.insert(items, node)
-            local struct_value = node.value
+            local rawval = read(p, sub_type)
+            table.insert(items, rawval)
+            local struct_value = rawval.value
             if struct_value then
-                local next_node = struct_value[next_field]
-                local next_addr = next_node and next_node.value
+                local next_rawval = struct_value[next_field]
+                local next_addr = next_rawval and next_rawval.value
                 if next_addr == nil then
                     table.insert(items, {addr = p, value = nil, error = "Invalid next pointer"})
                     return {addr = addr, value = items}

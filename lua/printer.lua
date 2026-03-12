@@ -6,24 +6,24 @@ local _printers = {}
 -- Dispatch
 -- ----------------------------------------------------------------------------
 
-local function print_node(type_ref, node, indent, label)
+local function print_rawval(type_ref, rawval, indent, label)
     indent = indent or 0
     local pad = string.rep("  ", indent)
     local prefix = label and (pad .. label .. ": ") or pad
 
-    if node == nil then
+    if rawval == nil then
         print(prefix .. "nil")
         return
     end
 
-    local addr_str = node.addr and string.format("0x%X", node.addr) or "nil"
+    local addr_str = rawval.addr and string.format("0x%X", rawval.addr) or "nil"
 
-    if node.error then
-        print(prefix .. "ERROR @ " .. addr_str .. ": " .. node.error)
+    if rawval.error then
+        print(prefix .. "ERROR @ " .. addr_str .. ": " .. rawval.error)
         return
     end
 
-    if node.value == nil then
+    if rawval.value == nil then
         print(prefix .. "nil @ " .. addr_str)
         return
     end
@@ -32,7 +32,7 @@ local function print_node(type_ref, node, indent, label)
     if not printer then
         error("Unknown type kind: " .. type_ref.kind)
     end
-    printer(type_ref, node.value, node.addr, indent, prefix)
+    printer(type_ref, rawval.value, rawval.addr, indent, prefix)
 end
 
 -- ----------------------------------------------------------------------------
@@ -42,14 +42,14 @@ end
 _printers.array = function(type_ref, value, addr, indent, prefix)
     print(prefix .. "array(" .. #value .. ") @ " .. string.format("0x%X", addr))
     for i, elem in ipairs(value) do
-        print_node(type_ref.type_ref, elem, indent + 1, "[" .. i - 1 .. "]")
+        print_rawval(type_ref.type_ref, elem, indent + 1, "[" .. i - 1 .. "]")
     end
 end
 
 _printers.circular_list = function(type_ref, value, addr, indent, prefix)
     print(prefix .. "circular_list(" .. #value .. ") @ " .. string.format("0x%X", addr))
     for i, elem in ipairs(value) do
-        print_node(type_ref.type_ref, elem, indent + 1, "[" .. i - 1 .. "]")
+        print_rawval(type_ref.type_ref, elem, indent + 1, "[" .. i - 1 .. "]")
     end
 end
 
@@ -78,7 +78,7 @@ _printers.ptr = function(type_ref, value, addr, indent, prefix)
         print(prefix .. string.format("0x%X", value) .. " @ " .. string.format("0x%X", addr))
     else
         print(prefix .. "ptr @ " .. string.format("0x%X", addr))
-        print_node(type_ref.type_ref, value, indent + 1, nil)
+        print_rawval(type_ref.type_ref, value, indent + 1, nil)
     end
 end
 
@@ -94,7 +94,7 @@ _printers.struct = function(type_ref, value, addr, indent, prefix)
     print(prefix .. type_ref.name .. " @ " .. string.format("0x%X", addr))
     for _, field in ipairs(def.fields) do
         if field.print ~= false then
-            print_node(field.type_ref, value[field.name], indent + 1, field.name)
+            print_rawval(field.type_ref, value[field.name], indent + 1, field.name)
         end
     end
 end
@@ -102,7 +102,7 @@ end
 _printers.vector = function(type_ref, value, addr, indent, prefix)
     print(prefix .. "vector(" .. #value .. ") @ " .. string.format("0x%X", addr))
     for i, elem in ipairs(value) do
-        print_node(type_ref.type_ref, elem, indent + 1, "[" .. i - 1 .. "]")
+        print_rawval(type_ref.type_ref, elem, indent + 1, "[" .. i - 1 .. "]")
     end
 end
 
@@ -112,6 +112,6 @@ end
 
 local printer = {}
 
-printer.print = print_node
+printer.print = print_rawval
 
 return printer
