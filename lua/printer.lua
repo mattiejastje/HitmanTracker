@@ -20,7 +20,6 @@ local function print_rawval(type_ref, rawval, indent, label)
 
     if rawval.error then
         print(prefix .. "ERROR @ " .. addr_str .. ": " .. rawval.error)
-        return
     end
 
     if rawval.value == nil then

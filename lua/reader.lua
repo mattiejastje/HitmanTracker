@@ -7,6 +7,7 @@ local _readers = {}
 -- ----------------------------------------------------------------------------
 
 -- Returns {addr, value, error} always.
+-- error is a string if an error occurred, nil otherwise.
 -- For containers, value is a table of {addr, value, error} elements.
 local function read(addr, type_ref)
     if addr == nil then
@@ -50,12 +51,11 @@ _readers.circular_list = function(addr, type_ref)
                 local next_rawval = struct_value[next_field]
                 local next_addr = next_rawval and next_rawval.value
                 if next_addr == nil then
-                    table.insert(items, {addr = p, value = nil, error = "Invalid next pointer"})
-                    return {addr = addr, value = items}
+                    return {addr = addr, value = items, error = "Invalid next pointer"}
                 end
                 p = next_addr
             else
-                return {addr = addr, value = items}
+                return {addr = addr, value = items, error = "Could not read struct"}
             end
         until p == head
     end
