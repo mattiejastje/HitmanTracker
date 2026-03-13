@@ -50,10 +50,10 @@ end
 local function validate(structs)
     local validate_type_ref = types.validate_type_ref
 
-    -- Build a name set for cross-reference checks.
-    local known = {}
+    -- Build a name->struct lookup for cross-reference checks.
+    local struct_by_name = {}
     for _, s in ipairs(structs) do
-        known[s.name] = true
+        struct_by_name[s.name] = s
     end
 
     -- Pass 1: type_ref well-formedness on every field descriptor.
@@ -72,7 +72,7 @@ local function validate(structs)
                 local tr = desc.type_ref
 
                 if tr.kind == "struct" then
-                    if not known[tr.name] then
+                    if not struct_by_name[tr.name] then
                         error("struct_descriptor.validate: struct '" .. s.name ..
                               "' field '" .. desc.name ..
                               "' references unknown struct '" .. tr.name .. "'")
@@ -80,18 +80,13 @@ local function validate(structs)
 
                 elseif tr.kind == "circular_list" then
                     local sub_name  = tr.type_ref.name
-                    if not known[sub_name] then
+                    local sub_struct = struct_by_name[sub_name]
+                    if not sub_struct then
                         error("struct_descriptor.validate: circular_list references " ..
                               "unknown struct '" .. sub_name .. "'")
                     end
-                    -- Find the sub-struct and verify its 'next' field.
-                    local sub_descs
-                    for _, ss in ipairs(structs) do
-                        if ss.name == sub_name then
-                            sub_descs = ss.descriptors
-                            break
-                        end
-                    end
+                    -- Verify the 'next' field of the sub-struct.
+                    local sub_descs = sub_struct.descriptors
                     local found = false
                     for _, sub_desc in ipairs(sub_descs) do
                         if sub_desc.kind == "field" and sub_desc.name == "next" then

@@ -107,8 +107,7 @@ _validators.string = function(type_ref)
 end
 
 _validators.struct = function(type_ref)
-    -- Existence check is deferred to layout.validate_struct_defs,
-    -- where struct_defs is guaranteed to be populated.
+    -- Existence check is deferred to struct_descriptor.validate.
     if not type_ref.name then
         error("struct type_ref has no name")
     end
