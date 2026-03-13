@@ -1,14 +1,20 @@
 -- struct_builder.lua
 --
--- struct_builder.build(struct_descriptors, struct_size) -> struct
+-- struct_builder.build(struct_descriptors, struct_info) -> struct
 --
---   Walks each struct's descriptor array with a cursor, assigning each field
---   its offset.  struct_size (produced by struct_sizer.resolve) provides the
---   byte size of each struct, needed to advance the cursor past inline nested
---   struct fields.
+--   Assembles the fully resolved struct table consumed by reader, printer,
+--   and unwrapper.  All cursor arithmetic is done by struct_sizer.resolve;
+--   this module only zips the pre-computed offsets with type_refs and opts
+--   from the original descriptors.
 --
---   struct[name] is the fully resolved form consumed by reader, printer, and
---   unwrapper:
+--   struct_info is the table returned by struct_sizer.resolve:
+--
+--     struct_info[name] = {
+--         size   = <number>,
+--         fields = { {name=..., offset=...}, ... },
+--     }
+--
+--   Output:
 --
 --     struct[name] = {
 --         fields = {
@@ -18,49 +24,34 @@
 --         size = ...,
 --     }
 
-local struct_sizer = require("struct_sizer")
-
--- ----------------------------------------------------------------------------
--- build(struct_descriptors, struct_size) -> struct
--- ----------------------------------------------------------------------------
-
-local function build(struct_descriptors, struct_size)
-    local sizeof = struct_sizer.new(function(name) return struct_size[name] end)
+local function build(struct_descriptors, struct_info)
     local struct = {}
 
-    local desc_handlers = {
-        pad    = function(desc, cursor) return cursor + desc.n end,
-        offset = function(desc, cursor, name)
-            if desc.n < cursor then
-                error(string.format(
-                    "struct_builder.build: D.offset(%d) in struct '%s' would move cursor " ..
-                    "backwards (currently at %d)", desc.n, name, cursor))
+    for name, info in pairs(struct_info) do
+        local descriptors = struct_descriptors[name]
+
+        -- Index field descriptors by name for O(1) lookup.
+        local field_desc_by_name = {}
+        for _, desc in ipairs(descriptors) do
+            if desc.kind == "field" then
+                field_desc_by_name[desc.name] = desc
             end
-            return desc.n
-        end,
-        field  = function(desc, cursor, fields)
+        end
+
+        -- Zip pre-computed offsets with type_refs and opts.
+        -- info.fields is already in declaration order.
+        local fields = {}
+        for _, f in ipairs(info.fields) do
+            local desc = field_desc_by_name[f.name]
             fields[#fields + 1] = {
-                name     = desc.name,
+                name     = f.name,
                 type_ref = desc.type_ref,
-                offset   = cursor,
+                offset   = f.offset,
                 opts     = desc.opts,
             }
-            return cursor + sizeof(desc.type_ref)
-        end,
-    }
-
-    for name, descriptors in pairs(struct_descriptors) do
-        local fields = {}
-        local cursor = 0
-        for _, desc in ipairs(descriptors) do
-            local handler = desc_handlers[desc.kind]
-            if not handler then
-                error("struct_builder.build: unknown descriptor kind '" ..
-                      tostring(desc.kind) .. "'")
-            end
-            cursor = handler(desc, cursor, name, fields)
         end
-        struct[name] = {fields = fields, size = struct_size[name]}
+
+        struct[name] = {fields = fields, size = info.size}
     end
 
     return struct

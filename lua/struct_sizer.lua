@@ -1,12 +1,19 @@
 -- struct_sizer.lua
 --
--- struct_sizer.resolve(struct_descriptors) -> struct_size
+-- struct_sizer.resolve(struct_descriptors) -> struct_info
 --
---   Computes the size of each struct by summing its field sizes.  Structs
---   containing inline (non-pointer) nested structs must appear in
---   struct_descriptors before the structs that embed them.
+--   Computes the size and field offsets of each struct.
 --
---   struct_size[name] is a plain number: the byte size of that struct.
+--   struct_info[name] = {
+--       size   = <number>,          -- total byte size of the struct
+--       fields = {                  -- one entry per D.field descriptor, in order
+--           {name=..., offset=...},
+--           ...
+--       },
+--   }
+--
+--   Structs are resolved in dependency order: a struct containing an inline
+--   (non-pointer) nested struct will always be resolved after it.
 --
 -- struct_sizer.new(struct_size_lookup) -> sizeof
 --
@@ -15,13 +22,10 @@
 
 -- ----------------------------------------------------------------------------
 -- make_sizeof(struct_lookup, context) -> sizeof
---
--- Builds a sizeof(type_ref) function.  struct_lookup(name) must return the
--- byte size of a named struct as a number.
 -- ----------------------------------------------------------------------------
 
 local function make_sizeof(struct_lookup, context)
-    local sizeof  -- forward declaration for array recursion
+    local sizeof
     local _sizers = {
         i8            = function(tr) return 1 end,
         i16           = function(tr) return 2 end,
@@ -52,41 +56,84 @@ local function make_sizeof(struct_lookup, context)
 end
 
 -- ----------------------------------------------------------------------------
--- resolve(struct_descriptors) -> struct_size
+-- inline_deps(descriptors) -> list of struct names embedded inline
+--
+-- Only D.field descriptors whose type_ref.kind == "struct" create a size
+-- dependency; pointer-sized tags (ptr, vector, circular_list, array-of-struct)
+-- do not.
+-- ----------------------------------------------------------------------------
+
+local function inline_deps(descriptors)
+    local deps = {}
+    for _, desc in ipairs(descriptors) do
+        if desc.kind == "field" and desc.type_ref.kind == "struct" then
+            deps[#deps + 1] = desc.type_ref.name
+        end
+    end
+    return deps
+end
+
+-- ----------------------------------------------------------------------------
+-- resolve(struct_descriptors) -> struct_info
 -- ----------------------------------------------------------------------------
 
 local function resolve(struct_descriptors)
-    local struct_size = {}
-    local sizeof = make_sizeof(function(name) return struct_size[name] end,
-                               "struct_sizer.resolve")
+    local struct_info = {}
+    local resolving   = {}  -- cycle detection
 
-    local desc_handlers = {
-        pad    = function(desc, cursor, name) return cursor + desc.n end,
-        offset = function(desc, cursor, name)
-            if desc.n < cursor then
-                error(string.format(
-                    "struct_sizer.resolve: D.offset(%d) in struct '%s' would move cursor " ..
-                    "backwards (currently at %d)", desc.n, name, cursor))
-            end
-            return desc.n
-        end,
-        field  = function(desc, cursor, name) return cursor + sizeof(desc.type_ref) end,
-    }
+    local function resolve_one(name)
+        if struct_info[name] then return end
+        if resolving[name] then
+            error("struct_sizer.resolve: cyclic inline dependency on '" .. name .. "'")
+        end
+        resolving[name] = true
 
-    for name, descriptors in pairs(struct_descriptors) do
+        local descriptors = struct_descriptors[name]
+        if not descriptors then
+            error("struct_sizer.resolve: unknown struct '" .. name .. "'")
+        end
+
+        -- Resolve inline dependencies before this struct.
+        for _, dep in ipairs(inline_deps(descriptors)) do
+            resolve_one(dep)
+        end
+
+        local sizeof = make_sizeof(
+            function(n) return struct_info[n] and struct_info[n].size end,
+            "struct_sizer.resolve"
+        )
+
         local cursor = 0
+        local fields = {}
+
         for _, desc in ipairs(descriptors) do
-            local handler = desc_handlers[desc.kind]
-            if not handler then
+            if desc.kind == "pad" then
+                cursor = cursor + desc.n
+            elseif desc.kind == "offset" then
+                if desc.n < cursor then
+                    error(string.format(
+                        "struct_sizer.resolve: D.offset(%d) in struct '%s' would move " ..
+                        "cursor backwards (currently at %d)", desc.n, name, cursor))
+                end
+                cursor = desc.n
+            elseif desc.kind == "field" then
+                fields[#fields + 1] = {name = desc.name, offset = cursor}
+                cursor = cursor + sizeof(desc.type_ref)
+            else
                 error("struct_sizer.resolve: unknown descriptor kind '" ..
                       tostring(desc.kind) .. "'")
             end
-            cursor = handler(desc, cursor, name)
         end
-        struct_size[name] = cursor
+
+        struct_info[name] = {size = cursor, fields = fields}
+        resolving[name] = nil
     end
 
-    return struct_size
+    for name in pairs(struct_descriptors) do
+        resolve_one(name)
+    end
+
+    return struct_info
 end
 
 -- ----------------------------------------------------------------------------
