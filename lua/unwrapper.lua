@@ -1,12 +1,19 @@
 -- unwrapper.lua
 --
--- Provides unwrapper.new(struct) -> unwrap, where unwrap(type_ref, rawval)
+-- Provides unwrapper.new(structs) -> unwrap, where unwrap(type_ref, rawval)
 -- converts a raw value tree produced by reader into plain Lua values,
 -- surfacing errors as a flat list of context-prefixed strings.
 --
--- struct is the fully resolved struct table produced by struct_builder.build().
+-- structs is the ordered array produced with D.struct(...).
 
-local function new(struct)
+local function new(structs)
+
+    -- Build name->struct lookup for O(1) access.
+    local struct_by_name = {}
+    for _, s in ipairs(structs) do
+        struct_by_name[s.name] = s
+    end
+
     local unwrap  -- forward declaration for mutual recursion
 
     -- ----------------------------------------------------------------------------
@@ -70,16 +77,18 @@ local function new(struct)
     end
 
     _unwrappers.struct = function(type_ref, value)
-        local def = struct[type_ref.name]
-        if not def then
+        local s = struct_by_name[type_ref.name]
+        if not s then
             error("unwrap: unknown struct '" .. type_ref.name .. "'")
         end
         local result = {}
         local errors = {}
-        for _, field in ipairs(def.fields) do
-            local v, errs = unwrap(field.type_ref, value[field.name])
-            result[field.name] = v
-            merge_errors(errors, prefix_errors(errs, field.name))
+        for _, desc in ipairs(s.descriptors) do
+            if desc.kind == "field" then
+                local v, errs = unwrap(desc.type_ref, value[desc.name])
+                result[desc.name] = v
+                merge_errors(errors, prefix_errors(errs, desc.name))
+            end
         end
         return result, errors
     end

@@ -1,11 +1,19 @@
 -- printer.lua
 --
--- Provides printer.new(struct) -> print, where print(type_ref, rawval) prints
--- a human-readable representation of a raw value to stdout.
+-- Provides printer.new(structs) -> print_rawval, where
+-- print_rawval(type_ref, rawval, indent, label) prints a human-readable
+-- representation of a raw value to stdout.
 --
--- struct is the fully resolved struct table produced by struct_builder.build().
+-- structs is the ordered array produced with D.struct(...).
 
-local function new(struct)
+local function new(structs)
+
+    -- Build name->struct lookup for O(1) access.
+    local struct_by_name = {}
+    for _, s in ipairs(structs) do
+        struct_by_name[s.name] = s
+    end
+
     local print_rawval  -- forward declaration for mutual recursion
 
     local function print_line(addr, indent, label, value_str)
@@ -65,14 +73,16 @@ local function new(struct)
     end
 
     _printers.struct = function(type_ref, value, addr, indent, label)
-        local def = struct[type_ref.name]
-        if not def then
+        local s = struct_by_name[type_ref.name]
+        if not s then
             error("print: unknown struct '" .. type_ref.name .. "'")
         end
         print_line(addr, indent, label, type_ref.name)
-        for _, field in ipairs(def.fields) do
-            if not (field.opts and field.opts.print == false) then
-                print_rawval(field.type_ref, value[field.name], indent + 1, field.name)
+        for _, desc in ipairs(s.descriptors) do
+            if desc.kind == "field" then
+                if not (desc.opts and desc.opts.print == false) then
+                    print_rawval(desc.type_ref, value[desc.name], indent + 1, desc.name)
+                end
             end
         end
     end

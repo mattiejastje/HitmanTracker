@@ -1,28 +1,41 @@
 -- reader.lua
 --
--- Provides reader.new(struct) -> read, where read(addr, type_ref) reads a
--- typed value from the target process.
+-- Provides reader.new(structs, offsets) -> read, where read(addr, type_ref)
+-- reads a typed value from the target process.
 --
--- struct is the fully resolved struct table produced by struct_builder.build().
+-- structs is the ordered array produced with D.struct(...).
+-- offsets is the parallel array produced by offsetter.offsets(structs).
 --
 -- Returns {addr, value, error} always.
 -- error is a string if an error occurred, nil otherwise.
 -- For containers, value is a table of {addr, value, error} elements.
 
-local struct_sizer = require("struct_sizer")
+local offsetter = require("offsetter")
 
-local function new(struct)
-    local sizeof = struct_sizer.new(function(name)
-        local s = struct[name]
-        return s and s.size
-    end)
-    local read   -- forward declaration for mutual recursion
+local function new(structs, offsets)
+
+    -- Build name->index lookup for O(1) struct access.
+    local struct_index = {}
+    for i, s in ipairs(structs) do
+        struct_index[s.name] = i
+    end
+
+    -- Returns {name=..., descriptors=...} and its offsets array, or errors.
+    local function find_struct(name)
+        local i = struct_index[name]
+        if not i then
+            error("reader: unknown struct '" .. name .. "'")
+        end
+        return structs[i], offsets[i]
+    end
+
+    local read  -- forward declaration for mutual recursion
 
     local _readers = {}
 
     _readers.array = function(addr, type_ref)
         local sub_type = type_ref.type_ref
-        local size     = sizeof(sub_type)
+        local size     = offsetter.sizeof(sub_type, structs, offsets)
         local items    = {}
         local p        = addr
         for i = 1, type_ref.count do
@@ -113,13 +126,13 @@ local function new(struct)
     end
 
     _readers.struct = function(addr, type_ref)
-        local def = struct[type_ref.name]
-        if not def then
-            error("read: unknown struct '" .. type_ref.name .. "'")
-        end
-        local obj = {}
-        for _, field in ipairs(def.fields) do
-            obj[field.name] = read(addr + field.offset, field.type_ref)
+        local s, s_offsets = find_struct(type_ref.name)
+        local obj          = {}
+        for j, desc in ipairs(s.descriptors) do
+            if desc.kind == "field" then
+                local field_offset = j > 1 and s_offsets[j - 1] or 0
+                obj[desc.name] = read(addr + field_offset, desc.type_ref)
+            end
         end
         return {addr = addr, value = obj}
     end
@@ -136,7 +149,7 @@ local function new(struct)
         end
         local items = {}
         local p     = begin_ptr
-        local size  = sizeof(sub_type)
+        local size  = offsetter.sizeof(sub_type, structs, offsets)
         while p < end_ptr do
             table.insert(items, read(p, sub_type))
             p = p + size
@@ -153,7 +166,7 @@ local function new(struct)
         end
         local r = _readers[type_ref.kind]
         if not r then
-            error("read: unknown type kind: " .. type_ref.kind)
+            error("reader: unknown type kind: " .. type_ref.kind)
         end
         return r(addr, type_ref)
     end
