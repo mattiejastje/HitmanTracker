@@ -32,7 +32,7 @@ local structs = D.assert_valid({
     D.pad(0x04),
     D.field("level_data", T.ptr(T.struct("LevelData"))),
     D.pad(0x04),
-    D.field("checkpoint_info", T.ptr(T.struct("CheckpointInfo"), {optional = true})),  -- null during missions
+    D.field("checkpoint_info", T.ptr(T.struct("CheckpointInfo"))),
     D.pad(0xA0),  -- size 0xB0
   }),
   D.struct("LevelManager", {
@@ -279,6 +279,9 @@ local function is_playstyle_condition_achieved(values, playstyle_data)
     return true
 end
 
+--- Return currently achieved condition based playstyle.
+-- Condition based playstyles are numbered 5 to 25. Silent assassin is 24.
+-- @return The index of the playstyle, or nil if no playstyle is achieved yet.
 local function get_playstyle_index_by_condition(values, playstyles)
     -- match highest priority playstyles first
     table.sort(playstyles, function(a, b) return a.data.priority > b.data.priority end)
@@ -302,7 +305,7 @@ end
 
 local function get_best_raw_score(level_infos, level, checkpoint_index)
     local level_info = get_level_info(level_infos, level)
-    return level_info.checkpoint_info.datas[checkpoint_index + 1].sub_data.best_raw_score
+    return level_info.checkpoint_info.nodes[checkpoint_index + 1].data.best_raw_score
 end
 
 local function is_playstyle_percentage_achieved(percentage, playstyle_data)
@@ -312,8 +315,11 @@ local function is_playstyle_percentage_achieved(percentage, playstyle_data)
     )
 end
 
+--- Return currently achieved score based playstyle.
+-- Score based playstyles are agent (0), veteran (1), specialist (2), professional (3), and shadow (4).
+-- @return The index of the playstyle, or nil if no playstyle is achieved yet.
 local function get_playstyle_index_by_score(raw_score, best_raw_score, playstyles)
-    local percentage = max(0, min(100, raw_score // best_raw_score))
+    local percentage = math.max(0, math.min(100, raw_score // best_raw_score))
     for i, playstyle in ipairs(playstyles) do
         if is_playstyle_percentage_achieved(percentage, playstyle.data) then
             return i - 1  -- lua index starts at 1
