@@ -1,203 +1,182 @@
-local typedefs = require("typedefs")
-local T = typedefs.T
+mempeep = require("mempeep")
 
--- ----------------------------------------------------------------------------
--- Game data structure
--- ----------------------------------------------------------------------------
+local T = mempeep.T
+local D = mempeep.D
 
-struct_defs = {
-    Game = {
-        size = 0x7FFFFFFF,
-        fields = {
-            {name = "difficulty", offset = 0xD58C60 + 0x10 + 0x94, type_ref = T.i32},
-            {name = "game_data", offset = 0xE212E0, type_ref = T.struct("GameData")},
-            {name = "level_manager", offset = 0xE21310, type_ref = T.struct("LevelManager")},
-            {name = "level", offset = 0xE21394, type_ref = T.i32},  -- part of level manager?
-            {name = "checkpoints_manager", offset = 0xE21580, type_ref = T.struct("CheckpointsManager")},
-            {name = "time_manager", offset = 0xE24730, type_ref = T.struct("TimeManager")},
-            {name = "stats_manager",     offset = 0xD61710, type_ref = T.struct("StatsManager")},
-            {name = "challenge_manager", offset = 0xD617C0, type_ref = T.struct("ChallengeManager")},
-        }
-    },
-    String = {
-        size = 0x08,
-        fields = {
-            {name = "length", offset = 0x00, type_ref = T.i32},
-            {name = "text",   offset = 0x04, type_ref = T.ptr(T.string(0x40))},
-        },
-    },
-    GameData = {
-        size = 0x28,
-        fields = {
-            {name = "level_infos", offset = 0x20, type_ref = T.vector(T.struct("GameDataLevelInfo"))},
-        }
-    },
-    GameDataLevelInfo = {
-        size = 0xB0,
-        fields = {
-            {name = "level_data", offset = 0x04, type_ref = T.ptr(T.struct("LevelData"))},
-            {name = "checkpoint_info", offset = 0x0C, type_ref = T.optional_ptr(T.struct("CheckpointInfo"))},  -- null during missions
-        }
-    },
-    LevelData = {
-        size = 0x0C,
-        fields = {
-            {name = "level", offset = 0x08, type_ref = T.i32},
-        }
-    },
-    CheckpointInfo = {
-        size = 0x18,
-        fields = {
-            {name = "nodes", offset = 0x10, type_ref = T.vector(T.struct("CheckpointNode"))},
-        }
-    },
-    CheckpointNode = {
-        size = 0x08,
-        fields = {
-            {name = "data", offset = 0x04, type_ref = T.ptr(T.struct("CheckpointData"))},
-        }
-    },
-    CheckpointData = {
-        size = 0x40,
-        fields = {
-            {name = "best_raw_score", offset = 0x38, type_ref = T.i32},
-        }
-    },
-    LevelManager = {
-        size = 0x24,
-        fields = {
-            {name = "scene", offset = 0x04, type_ref = T.struct("String")},
-            {name = "game_mode", offset = 0x0C, type_ref = T.i32},
-            {name = "checkpoint_index", offset = 0x20, type_ref = T.i32},  -- cached, not always up to date
-        },      
-    },
-    CheckpointsManager = {
-        size = 0x2C,
-        fields = {
-            {name = "checkpoints", offset = 0x28, type_ref = T.optional_ptr(T.struct("Checkpoints"))}
-        }
-    },
-    Checkpoints = {
-        size = 0x54,
-        fields = {
-            {name = "checkpoint", offset = 0x0C, type_ref = T.vector(T.struct("Checkpoint"))},
-            {name = "current_key", offset = 0x50, type_ref = T.i32}
-        }
-    },
-    Checkpoint = {
-        size = 0x08,
-        fields = {
-            {name = "key", offset = 0x00, type_ref = T.i32}, -- could be pointer
-            {name = "_unknown", offset = 0x04, type_ref = T.i32} -- could be pointer
-        }
-    },
-    TimeManager = {
-        size = 0x88,
-        fields = {
-            {name = "ticks_per_second", offset = 0x08, type_ref = T.i64},
-            {name = "last_time_ticks", offset = 0x10, type_ref = T.i64},
-            {name = "game_time", offset = 0x18, type_ref = T.i64},  -- divide by (1024 * 1024) to get seconds
-            {name = "game_time_previous", offset = 0x20, type_ref = T.i64},
-            {name = "game_time_delta", offset = 0x28, type_ref = T.i64},
-            {name = "real_time", offset = 0x30, type_ref = T.i64},
-            {name = "real_time_previous", offset = 0x38, type_ref = T.i64},
-            {name = "real_time_delta", offset = 0x40, type_ref = T.i64},
-            {name = "game_time_multiplier", offset = 0x48, type_ref = T.float},
-            {name = "debug_time_multiplier", offset = 0x4C, type_ref = T.float},
-            {name = "frame_wait", offset = 0x50, type_ref = T.i64},
-            {name = "frame_step", offset = 0x58, type_ref = T.i64},
-            {name = "frame_remain", offset = 0x60, type_ref = T.i64},
-            {name = "paused", offset = 0x68, type_ref = T.i32},
-            {name = "frame_count", offset = 0x6C, type_ref = T.i32},
-        }
-    },
-    StatsManager = {
-        size = 0xA0,
-        fields = {
-            {name = "scorings", offset = 0x04, type_ref = T.vector(T.struct("StatsScoring"))},
-            {name = "playstyles", offset = 0x10, type_ref = T.vector(T.struct("StatsPlaystyle"))},
-            {name = "values", offset = 0x28, type_ref = T.ptr(T.array(T.array(T.array(T.i16, 100), 13), 26)), print = false},
-            {name = "achieved_playstyles", offset = 0x34, type_ref = T.ptr(T.array(T.i8, 100))},  -- across all gaming sessions
-            {name = "last_achieved_playstyle", offset = 0x64, type_ref = T.i32},  -- across all gaming sessions
-            {name = "score",  offset = 0x80, type_ref = T.i32},
-            {name = "difficulties", offset = 0x9C, type_ref = T.ptr(T.struct("StatsDifficulties"))},
-        }
-    },
-    StatsScoring = {
-        size = 0x08,
-        fields = {
-            {name = "data", offset = 0x04, type_ref = T.ptr(T.struct("StatsScoringData"))},
-        }
-    },
-    StatsScoringData = {
-        size = 0x40,
-        fields = {
-            {name = "title",      offset = 0x08, type_ref = T.struct("String")},
-            {name = "_unused",    offset = 0x28, type_ref = T.float},  -- always zero
-            {name = "index",      offset = 0x34, type_ref = T.i32},    -- final index into StatsManager.values
-            {name = "multiplier", offset = 0x3C, type_ref = T.i32},    -- see SCORE_MULTIPLIER below
-        }
-    },
-    StatsDifficulties = {
-        size = 0x1C,
-        fields = {
-            {name = "scales", offset = 0x08, type_ref = T.array(T.float, 5)},  -- 1.0, 1.25, 1.5, 2.0, 2.5; see DIFFICULTY_SCALE below
-        }
-    },
-    StatsPlaystyle = {
-        size = 0x08,
-        fields = {
-            {name = "data", offset = 0x04, type_ref = T.ptr(T.struct("StatsPlaystyleData"))},
-        }
-    },
-    StatsPlaystyleData = {
-        size = 0x54,
-        fields = {
-            {name = "condition_min",  offset = 0x08, type_ref = T.vector(T.struct("PlaystyleCondition"))},
-            {name = "condition_max",  offset = 0x14, type_ref = T.vector(T.struct("PlaystyleCondition"))},
-            {name = "title",          offset = 0x20, type_ref = T.struct("String")},
-            {name = "is_unlockable",  offset = 0x34, type_ref = T.i8},  -- if listed under "unlocks"
-            {name = "priority",       offset = 0x38, type_ref = T.i32}, -- higher values = higher ranking
-            {name = "percentage_min", offset = 0x3C, type_ref = T.i32},
-            {name = "percentage_max", offset = 0x40, type_ref = T.i32},
-            {name = "is_achieved",    offset = 0x50, type_ref = T.i8},  -- for current mission
-        }
-    },
-    PlaystyleCondition = {
-        size = 0x08,
-        fields = {
-            {name = "data", offset = 0x04, type_ref = T.ptr(T.struct("PlaystyleConditionData"))},
-        }
-    },
-    -- same layout as StatsScoringData?
-    PlaystyleConditionData = {
-        size = 0x3C,
-        fields = {
-            {name = "title",     offset = 0x08, type_ref = T.struct("String")},
-            {name = "index",     offset = 0x34, type_ref = T.i32},
-            {name = "threshold", offset = 0x38, type_ref = T.i32},
-        }
-    },
-    ChallengeManager = {
-        size = 0x10,
-        fields = {
-            {name = "challenges", offset = 0x08, type_ref = T.circular_list(T.struct("ChallengeNode"), "next_node")},
-        }
-    },
-    ChallengeNode = {
-        size = 0x10,
-        fields = {
-            {name = "next_node", offset = 0x00, type_ref = T.weak_ptr(T.struct("ChallengeNode"))},
-            {name = "data",      offset = 0x0C, type_ref = T.optional_ptr(T.struct("ChallengeData"))},
-        }
-    },
-    ChallengeData = {
-        size = 0xA0, -- unknown
-        fields = {
-            {name = "completed", offset = 0x98, type_ref = T.i8},
-        }
-    },
-}
+local structs = D.assert_valid({
+  D.struct("String", {
+    D.field("length", T.i32),
+    D.field("text", T.ptr(T.string(0x40))),
+  }),
+  D.struct("GameData", {
+    D.pad(0x20),
+    D.field("level_infos", T.vector(T.struct("GameDataLevelInfo"))),
+  }),
+  D.struct("LevelData", {
+    D.pad(0x08),
+    D.field("level", T.i32),
+  }),
+  D.struct("CheckpointData", {
+    D.pad(0x38),
+    D.field("best_raw_score", T.i32),
+  }),
+  D.struct("CheckpointNode", {
+    D.pad(0x04),
+    D.field("data", T.ptr(T.struct("CheckpointData"))),
+  }),
+  D.struct("CheckpointInfo", {
+    D.pad(0x10),
+    D.field("nodes", T.vector(T.struct("CheckpointNode"))),
+  }),
+  D.struct("GameDataLevelInfo", {
+    D.pad(0x04),
+    D.field("level_data", T.ptr(T.struct("LevelData"))),
+    D.pad(0x04),
+    D.field("checkpoint_info", T.ptr(T.struct("CheckpointInfo"), {optional = true})),  -- null during missions
+    D.pad(0xA0),  -- size 0xB0
+  }),
+  D.struct("LevelManager", {
+    D.pad(0x04),
+    D.field("scene", T.struct("String")),
+    D.field("game_mode", T.i32),
+    D.pad(0x10),
+    D.field("checkpoint_index", T.i32),  -- cached, not always up to date
+  }),
+  D.struct("CheckpointsManager", {
+    D.pad(0x28),
+    D.field("checkpoints", T.ptr(T.struct("Checkpoints"), {optional = true})),
+  }),
+  D.struct("Checkpoints", {
+    D.pad(0x0C),
+    D.field("checkpoint", T.vector(T.struct("Checkpoint"))),
+    D.pad(0x3C),
+    D.field("current_key", T.i32),
+  }),
+  D.struct("Checkpoint", {
+    D.field("key", T.i32), -- could be pointer
+    D.field("_unknown", T.i32), -- could be pointer
+  }),
+  D.struct("TimeManager", {
+    D.pad(0x08),
+    D.field("ticks_per_second", T.i64),
+    D.field("last_time_ticks", T.i64),
+    D.field("game_time", T.i64),  -- divide by (1024 * 1024) to get seconds
+    D.field("game_time_previous", T.i64),
+    D.field("game_time_delta", T.i64),
+    D.field("real_time", T.i64),
+    D.field("real_time_previous", T.i64),
+    D.field("real_time_delta", T.i64),
+    D.field("game_time_multiplier", T.f32),
+    D.field("debug_time_multiplier", T.f32),
+    D.field("frame_wait", T.i64),
+    D.field("frame_step", T.i64),
+    D.field("frame_remain", T.i64),
+    D.field("paused", T.i32),
+    D.field("frame_count", T.i32),
+    D.offset(0x88),  -- size
+  }),
+  D.struct("StatsScoringData", {
+    D.pad(0x08),
+    D.field("title", T.struct("String")),
+    D.pad(0x18),
+    D.field("_unused", T.f32),     -- always zero
+    D.pad(0x08),
+    D.field("index", T.i32),       -- last index into StatsManager.values
+    D.pad(0x04),
+    D.field("multiplier", T.i32),  -- see SCORE_MULTIPLIER below
+  }),
+  D.struct("StatsScoring", {
+    D.pad(0x04),
+    D.field("data", T.ptr(T.struct("StatsScoringData"))),
+  }),
+  -- same layout as StatsScoringData?
+  D.struct("PlaystyleConditionData", {
+    D.pad(0x08),
+    D.field("title", T.struct("String")),
+    D.pad(0x24),
+    D.field("index", T.i32),
+    D.field("threshold", T.i32),
+  }),
+  D.struct("PlaystyleCondition", {
+    D.pad(0x04),
+    D.field("data", T.ptr(T.struct("PlaystyleConditionData"))),
+  }),
+  D.struct("StatsPlaystyleData", {
+    D.pad(0x08),
+    D.field("condition_min", T.vector(T.struct("PlaystyleCondition"))),
+    D.pad(0x04),
+    D.field("condition_max", T.vector(T.struct("PlaystyleCondition"))),
+    D.pad(0x04),
+    D.field("title", T.struct("String")),
+    D.pad(0x0C),
+    D.field("is_unlockable", T.i8),  -- if listed under "unlocks"
+    D.pad(0x03),
+    D.field("priority", T.i32),  -- higher values = higher ranking
+    D.field("percentage_min", T.i32),
+    D.field("percentage_max", T.i32),
+    D.pad(0x0C),
+    D.field("is_achieved", T.i8),  -- for current mission
+    D.pad(0x03),
+  }),
+  D.struct("StatsPlaystyle", {
+    D.pad(0x04),
+    D.field("data", T.ptr(T.struct("StatsPlaystyleData"))),
+  }),
+  D.struct("StatsDifficulties", {
+    D.pad(0x08),
+    D.field("scales", T.array(T.f32, 5)),  -- 1.0, 1.25, 1.5, 2.0, 2.5; see DIFFICULTY_SCALE below
+  }),
+  D.struct("StatsManager", {
+    D.pad(0x04),
+    D.field("scorings", T.vector(T.struct("StatsScoring"))),
+    D.pad(0x04),
+    D.field("playstyles", T.vector(T.struct("StatsPlaystyle"))),
+    D.pad(0x10),
+    D.field("values", T.ptr(T.array(T.array(T.array(T.i16, 100), 13), 26)), { print = false }),
+    D.pad(0x08),
+    D.field("achieved_playstyles", T.ptr(T.array(T.i8, 100))),  -- across all gaming sessions
+    D.pad(0x2C),
+    D.field("last_achieved_playstyle", T.i32),  -- across all gaming sessions
+    D.pad(0x18),
+    D.field("score",  T.i32),
+    D.pad(0x18),
+    D.field("difficulties", T.ptr(T.struct("StatsDifficulties"), { optional = true })),
+  }),
+  D.struct("ChallengeData", {
+    D.pad(0x98),
+    D.field("completed", T.i8),
+  }),
+  D.struct("ChallengeNode", {
+    D.field("next_node", T.ptr(T.struct("ChallengeNode"), { weak = true })),
+    D.pad(0x08),
+    D.field("data", T.ptr(T.struct("ChallengeData"), { optional = true })),
+  }),
+  D.struct("ChallengeManager", {
+    D.pad(0x08),
+    D.field("challenges", T.circular_list(T.struct("ChallengeNode"), "next_node")),
+  }),
+  D.struct("Game", {
+    D.offset(0xD58C60 + 0x10 + 0x94),
+    D.field("difficulty", T.i32),
+    D.offset(0xD61710),
+    D.field("stats_manager", T.struct("StatsManager")),
+    D.offset(0xD617C0),
+    D.field("challenge_manager", T.struct("ChallengeManager")),
+    D.offset(0xE212E0),
+    D.field("game_data", T.struct("GameData")),
+    D.offset(0xE21310),
+    D.field("level_manager", T.struct("LevelManager")),
+    D.offset(0xE21394),
+    D.field("level", T.i32),  -- part of level manager?
+    D.offset(0xE21580),
+    D.field("checkpoints_manager", T.struct("CheckpointsManager")),
+    D.offset(0xE24730),
+    D.field("time_manager", T.struct("TimeManager")),
+  }),
+})
+
+local schema = mempeep.schema.new(4, structs)
+
 
 -- ----------------------------------------------------------------------------
 -- Helper functions
@@ -361,7 +340,7 @@ end
 
 local hitman_absolution = {}
 
-hitman_absolution.struct_defs                      = struct_defs
+hitman_absolution.schema                           = schema
 hitman_absolution.get_current_checkpoint_index     = get_current_checkpoint_index
 hitman_absolution.get_num_challenges_completed     = get_num_challenges_completed
 hitman_absolution.get_multipliers                  = get_multipliers
