@@ -32,7 +32,7 @@ local structs = D.assert_valid({
     D.pad(0x04),
     D.field("level_data", T.ptr(T.struct("LevelData"))),
     D.pad(0x04),
-    D.field("checkpoint_info", T.ptr(T.struct("CheckpointInfo"))),
+    D.field("checkpoint_info", T.ptr(T.struct("CheckpointInfo"), { optional = true })),  -- null when level is not loaded
     D.pad(0xA0),  -- size 0xB0
   }),
   D.struct("LevelManager", {
@@ -243,11 +243,14 @@ local function get_raw_score(values, multipliers)
     return sum
 end
 
--- use hardcoded multipliers
+--- Calculate raw score (before scaling by difficulty/challenges).
+-- Uses hardcoded multipliers.
 local function get_raw_score_2(values)
     return get_raw_score(values, MULTIPLIERS)
 end
 
+--- Calculate final score.
+-- Uses floating point arithmetic.
 -- difficulty_scale is stats_manager.difficulties.scales[difficulty+1]
 local function get_score(raw_score, difficulty_scale, num_challenges_completed)
     return math.floor(raw_score * (difficulty_scale + 0.05 * num_challenges_completed) + 0.5)
@@ -255,11 +258,13 @@ end
 
 local DIFFICULTY_SCALE = {100, 125, 150, 200, 250}
 
--- use hardcoded scales and exact integer arithmetic
+--- Calculate final score.
+-- This implementation uses hardcoded scales and exact integer arithmetic.
 local function get_score_2(raw_score, difficulty, num_challenges_completed)
     return (raw_score * (DIFFICULTY_SCALE[difficulty + 1] + 5 * num_challenges_completed) + 50) // 100
 end
 
+--- Check if conditions are achieved according to playstyle.
 local function is_playstyle_condition_achieved(values, playstyle_data)
     if next(playstyle_data.condition_min) == nil and next(playstyle_data.condition_max) == nil then
         return false  -- not a condition-based playstyle
@@ -294,6 +299,7 @@ local function get_playstyle_index_by_condition(values, playstyles)
     return nil
 end
 
+--- Find level info for given level.
 local function get_level_info(level_infos, level)
     for _, level_info in ipairs(level_infos) do
         if level_info.level_data.level == level then
@@ -303,11 +309,13 @@ local function get_level_info(level_infos, level)
     return nil  -- not found
 end
 
+--- Raw score needed for best score based playstyle (i.e. "Shadow").
 local function get_best_raw_score(level_infos, level, checkpoint_index)
     local level_info = get_level_info(level_infos, level)
     return level_info.checkpoint_info.nodes[checkpoint_index + 1].data.best_raw_score
 end
 
+--- Check if percentage is achieved according to playstyle.
 local function is_playstyle_percentage_achieved(percentage, playstyle_data)
     return (
         playstyle_data.percentage_min <= percentage
@@ -360,5 +368,6 @@ hitman_absolution.get_level_info                   = get_level_info
 hitman_absolution.get_best_raw_score               = get_best_raw_score
 hitman_absolution.is_playstyle_percentage_achieved = is_playstyle_percentage_achieved
 hitman_absolution.get_playstyle_index_by_score     = get_playstyle_index_by_score
+hitman_absolution.get_playstyle_index_by_score_2   = get_playstyle_index_by_score_2
 
 return hitman_absolution
