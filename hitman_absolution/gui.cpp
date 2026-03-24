@@ -100,6 +100,8 @@ void hitman_absolution::gui(
             {"Innocents Killed", stats.innocents_killed},
             {"Enemies Killed", stats.enemies_killed},
             {"Spotted", stats.alerts},
+            // TODO separate score-based rating table
+            /*
             {"Evidence Left", stats.on_camera},
             {"Objectives Left", stats.objectives_left},
             {"Pacifications", stats.pacifications},
@@ -108,6 +110,7 @@ void hitman_absolution::gui(
             {"Silent Kills", stats.silent_kills},
             {"Signature Kills", stats.signature_kills},
             {"Silent Assassin Bonus", stats.sa_bonus},
+            */
         } : std::vector<hitman_common::TableRow>{}
     );
 }

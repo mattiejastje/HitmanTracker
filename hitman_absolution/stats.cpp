@@ -209,8 +209,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
 static Status get_rating_status(Rating max_rating, const Stats& stats) {
     if (max_rating == Rating::unrated) return Status::GREEN;
     return (stats.alerts.value != 0 || stats.innocents_killed.value != 0
-            || (max_rating == Rating::silent_assassin
-                && stats.enemies_killed.value != 0))
+            || stats.enemies_killed.value != 0)
                ? Status::RED
                : Status::GREEN;
 };
@@ -452,9 +451,7 @@ void hitman_absolution::update_slow(
         // note: stats are always 0 for unrated maps
         stats.innocents_killed = stats_value(game_stats->civilian_casualty);
         stats.enemies_killed = stats_value(
-            game_stats->non_target_casualty - game_stats->civilian_casualty,
-            // maps without silent assassin rating allow enemies killed
-            map_info.max_rating == Rating::silent_assassin
+            game_stats->non_target_casualty - game_stats->civilian_casualty
         );
         stats.alerts = stats_value(game_stats->spotted);
         stats.on_camera
