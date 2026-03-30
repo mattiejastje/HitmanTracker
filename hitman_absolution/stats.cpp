@@ -1,11 +1,15 @@
 #include "stats.hpp"
 
 #include <format>
+#include <iostream>  // std::cout
+#include <mempeep/read.hpp>
+#include <mempeep/tracers/log_tracer.hpp>
 #include <unordered_map>
 
 #include "../hitman_common/stats.hpp"
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
+#include "structs.hpp"
 
 // https://github.com/pavledev/HitmanAbsolutionSDK/blob/4599042d197d8ead470c66ea002e6a9e573ae8ae/HitmanAbsolutionSDK/include/Glacier/ZGameTimeManager.h
 struct GameTimeManager {
@@ -386,6 +390,15 @@ void hitman_absolution::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
+    /*/
+    MemoryReader<uint32_t> reader{handle};
+    // TODO use logger instead of std::cout
+    auto tracer
+        = mempeep::make_stream_log_tracer(std::cout, mempeep::LogLevel::VALUES);
+    structs::Game game{};
+    if (!mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game)) return;
+    */
+    // TODO use game for everything
     auto difficulty = get_difficulty(handle, base_ptrs);
     if (difficulty >= 0) stats.difficulty = difficulty;
     auto level = get_level(handle, base_ptrs);

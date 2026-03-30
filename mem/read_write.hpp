@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstdint>
+#include <mempeep/detail/concepts/address.hpp>
 #include <optional>
 #include <string>
 #include <vector>
@@ -71,10 +72,7 @@ bool read_bytes(
 
 template <class T, class P>
 std::optional<T> read(
-    void *handle,
-    intptr_t ptr,
-    const std::vector<intptr_t> &offsets,
-    P ptr_max
+    void *handle, intptr_t ptr, const std::vector<intptr_t> &offsets, P ptr_max
 ) {
     auto ptr_ = find_pointer(handle, ptr, offsets, ptr_max);
     return ptr_ ? read<T>(handle, ptr_.value()) : std::nullopt;
@@ -90,4 +88,19 @@ std::optional<std::string> read_string(
 ) {
     auto ptr_ = find_pointer(handle, ptr, offsets, ptr_max);
     return ptr_ ? read_string(handle, ptr_.value(), size) : std::nullopt;
+};
+
+template <typename Address>
+    requires mempeep::IsAddress<Address>
+struct MemoryReader {
+    using address_type = Address;
+    void *handle;
+
+    bool operator()(Address address, std::size_t size, void *buffer) const {
+        if (buffer == nullptr) return false;
+        if (size == 0) return false;
+        return read_bytes(
+            handle, static_cast<intptr_t>(address), buffer, size
+        );
+    }
 };
