@@ -5,6 +5,8 @@ find_package(CLI11 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
+add_subdirectory("mempeep")
+
 add_executable (HitmanTracker
 	"HitmanTracker.cpp"
 	"gui.cpp"
@@ -46,3 +48,4 @@ add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
 target_link_libraries(HitmanTracker PRIVATE CLI11::CLI11)
 target_link_libraries(HitmanTracker PRIVATE imgui::imgui)
 target_link_libraries(HitmanTracker PRIVATE spdlog::spdlog_header_only)
+target_link_libraries(HitmanTracker PRIVATE mempeep)
