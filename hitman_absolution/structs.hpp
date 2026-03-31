@@ -17,7 +17,9 @@ constexpr int32_t NUM_LEVELS = 26;
 // levels have fewer than 13 checkpoints
 // the 13 is an upper bound from the engine, used in the array of stats values
 constexpr int32_t NUM_CHECKPOINTS_PER_LEVEL = 13;
-constexpr int32_t MAX_CHALLENGES = 278;
+constexpr int32_t MAX_CHALLENGES = 279;
+constexpr int32_t NUM_PLAYSTYLES = 26;
+constexpr int32_t NUM_STATS_VALUES = 100;
 
 using TI8 = Primitive<int8_t>;
 using TI16 = Primitive<int16_t>;
@@ -69,7 +71,9 @@ using TCheckpointInfo = Struct<
     CheckpointInfo,
     Fields<
         Pad<0x10>,
-        Field<Vector<TCheckpointNode, 0x1000>, &CheckpointInfo::nodes>>>;
+        Field<
+            Vector<TCheckpointNode, NUM_CHECKPOINTS_PER_LEVEL>,
+            &CheckpointInfo::nodes>>>;
 
 struct GameDataLevelInfo {
     LevelData level_data;
@@ -95,7 +99,7 @@ using TGameData = Struct<
     GameData,
     Fields<
         Pad<0x20>,
-        Field<Vector<TGameDataLevelInfo, 0x1000>, &GameData::level_infos>>>;
+        Field<Vector<TGameDataLevelInfo, NUM_LEVELS>, &GameData::level_infos>>>;
 
 struct LevelManager {
     String scene;
@@ -130,7 +134,9 @@ using TCheckpoints = Struct<
     Checkpoints,
     Fields<
         Pad<0x0C>,
-        Field<Vector<TCheckpoint, NUM_CHECKPOINTS_PER_LEVEL>, &Checkpoints::checkpoint>,
+        Field<
+            Vector<TCheckpoint, NUM_CHECKPOINTS_PER_LEVEL>,
+            &Checkpoints::checkpoint>,
         Pad<0x3C>,
         Field<TI32, &Checkpoints::current_key>>>;
 
@@ -250,11 +256,11 @@ using TStatsPlaystyleData = Struct<
     Fields<
         Pad<0x08>,
         Field<
-            Vector<TPlaystyleCondition, 0x1000>,
+            Vector<TPlaystyleCondition, NUM_PLAYSTYLES>,
             &StatsPlaystyleData::condition_min>,
         Pad<0x04>,
         Field<
-            Vector<TPlaystyleCondition, 0x1000>,
+            Vector<TPlaystyleCondition, NUM_PLAYSTYLES>,
             &StatsPlaystyleData::condition_max>,
         Pad<0x04>,
         Field<TString, &StatsPlaystyleData::title>,
@@ -277,14 +283,21 @@ using TStatsPlaystyle = Struct<
     Fields<Pad<0x04>, Field<Ref<TStatsPlaystyleData>, &StatsPlaystyle::data>>>;
 
 struct StatsDifficulties {
-    std::array<float, 5> scales;
+    std::array<float, NUM_DIFFICULTIES> scales;
 };
 
 using TStatsDifficulties = Struct<
     StatsDifficulties,
-    Fields<Pad<0x08>, Field<Array<TF32, 5>, &StatsDifficulties::scales>>>;
+    Fields<
+        Pad<0x08>,
+        Field<Array<TF32, NUM_DIFFICULTIES>, &StatsDifficulties::scales>>>;
 
-using StatsValues = std::array<std::array<std::array<int16_t, 100>, 13>, 26>;
+using StatsValues = std::array<
+    std::
+        array<std::array<int16_t, NUM_STATS_VALUES>, NUM_CHECKPOINTS_PER_LEVEL>,
+    NUM_LEVELS>;
+
+// only 26 playstyles but array has size 100
 using AchievedPlaystyles = std::array<int8_t, 100>;
 
 struct StatsManager {
@@ -301,9 +314,11 @@ using TStatsManager = Struct<
     StatsManager,
     Fields<
         Pad<0x04>,
-        Field<Vector<TStatsScoring, 0x1000>, &StatsManager::scorings>,
+        Field<Vector<TStatsScoring, NUM_STATS_VALUES>, &StatsManager::scorings>,
         Pad<0x04>,
-        Field<Vector<TStatsPlaystyle, 0x1000>, &StatsManager::playstyles>,
+        Field<
+            Vector<TStatsPlaystyle, NUM_PLAYSTYLES>,
+            &StatsManager::playstyles>,
         Pad<0x10>,
         Field<Ref<Primitive<StatsValues>>, &StatsManager::values>,
         Pad<0x08>,
@@ -346,7 +361,10 @@ using TChallengeManager = Struct<
     Fields<
         Pad<0x08>,
         Field<
-            CircularList<TChallengeNode, &ChallengeNode::next_node, 0x1000>,
+            CircularList<
+                TChallengeNode,
+                &ChallengeNode::next_node,
+                MAX_CHALLENGES>,
             &ChallengeManager::challenges>>>;
 
 struct Game {
@@ -364,7 +382,7 @@ using TGame = Struct<
     Game,
     Fields<
         Seek<0xD58C60 + 0x10 + 0x94>,
-        Field<TI32, &Game::difficulty>,
+        Field<Bounded<TI32, 0, NUM_DIFFICULTIES - 1>, &Game::difficulty>,
         Seek<0xD61710>,
         Field<TStatsManager, &Game::stats_manager>,
         Seek<0xD617C0>,
@@ -374,10 +392,11 @@ using TGame = Struct<
         Seek<0xE21310>,
         Field<TLevelManager, &Game::level_manager>,
         Seek<0xE21394>,
-        Field<TI32, &Game::level>,
+        // level == -1 used by game when no level selected
+        Field<Bounded<TI32, -1, NUM_LEVELS - 1>, &Game::level>,
         Seek<0xE21580>,
         Field<TCheckpointsManager, &Game::checkpoints_manager>,
         Seek<0xE24730>,
         Field<TTimeManager, &Game::time_manager>>>;
 
-}  // namespace hitman_absolution::descriptors
+}  // namespace hitman_absolution::structs

@@ -283,18 +283,10 @@ void hitman_absolution::update_slow(
         logging::warn("game memory read failure");
         return;
     }
-    // TODO BoundedPrimitive
-    if (game.difficulty >= 0 || game.difficulty < structs::NUM_DIFFICULTIES) {
-        stats.difficulty = game.difficulty;
-    } else {
-        logging::error("Difficulty {} out of bounds", game.difficulty);
-    }
+    stats.difficulty = game.difficulty;
     // engine may set level to -1 if not in a mission
     // sadly it's not a reliable way to detect if we are in a mission
-    // TODO BoundedPrimitive
-    if (game.level < -1 || game.level >= structs::NUM_LEVELS) {
-        logging::error("Level {} out of bounds", game.level);
-    } else if (game.level == -1) {
+    if (game.level == -1) {
         stats.map = 0;
         return;
     }
