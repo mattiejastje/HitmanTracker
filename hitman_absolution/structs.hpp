@@ -7,9 +7,17 @@
 #include <string>
 #include <vector>
 
+using namespace mempeep;
+
 namespace hitman_absolution::structs {
 
-using namespace mempeep;
+constexpr int32_t NUM_DIFFICULTIES = 5;
+// note: not all levels are used
+constexpr int32_t NUM_LEVELS = 26;
+// levels have fewer than 13 checkpoints
+// the 13 is an upper bound from the engine, used in the array of stats values
+constexpr int32_t NUM_CHECKPOINTS_PER_LEVEL = 13;
+constexpr int32_t MAX_CHALLENGES = 278;
 
 using TI8 = Primitive<int8_t>;
 using TI16 = Primitive<int16_t>;
@@ -122,7 +130,7 @@ using TCheckpoints = Struct<
     Checkpoints,
     Fields<
         Pad<0x0C>,
-        Field<Vector<TCheckpoint, 0x1000>, &Checkpoints::checkpoint>,
+        Field<Vector<TCheckpoint, NUM_CHECKPOINTS_PER_LEVEL>, &Checkpoints::checkpoint>,
         Pad<0x3C>,
         Field<TI32, &Checkpoints::current_key>>>;
 
@@ -297,7 +305,7 @@ using TStatsManager = Struct<
         Pad<0x04>,
         Field<Vector<TStatsPlaystyle, 0x1000>, &StatsManager::playstyles>,
         Pad<0x10>,
-        Field<Primitive<StatsValues>, &StatsManager::values>,
+        Field<Ref<Primitive<StatsValues>>, &StatsManager::values>,
         Pad<0x08>,
         Field<
             Primitive<AchievedPlaystyles>,

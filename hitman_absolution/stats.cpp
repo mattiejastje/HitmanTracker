@@ -4,6 +4,7 @@
 #include <iostream>  // std::cout
 #include <mempeep/read.hpp>
 #include <mempeep/tracers/log_tracer.hpp>
+#include <mempeep/tracers/ok_tracer.hpp>
 #include <unordered_map>
 
 #include "../hitman_common/stats.hpp"
@@ -218,80 +219,18 @@ static Status get_rating_status(Rating max_rating, const Stats& stats) {
                : Status::GREEN;
 };
 
-constexpr int32_t NUM_DIFFICULTIES = 5;
-// note: not all levels are used
-constexpr int32_t NUM_LEVELS = 26;
-// levels have fewer than 13 checkpoints
-// the 13 is an upper bound from the engine, used in the array of stats values
-constexpr int32_t NUM_CHECKPOINTS_PER_LEVEL = 13;
-constexpr int32_t MAX_CHALLENGES = 278;
-
-// manages checkpoints for the currently loaded level
-struct CheckpointManager {
-    int8_t _pad0[0x24];
-    int32_t _unknown24;       // +0x24
-    int32_t checkpoints_ptr;  // +0x28
-};
-
-static_assert(offsetof(CheckpointManager, checkpoints_ptr) == 0x28);
-
-// stores checkpoint entries (each 8 bytes, see CheckpointEntry)
-// for currently loaded level
-// along with the key of the currently active checkpoint
-struct Checkpoints {
-    int8_t _pad0[0x0C];
-    int32_t entry_begin_ptr;  // +0x0C first CheckpointEntry
-    int32_t entry_end_ptr;    // +0x10 past last CheckpointEntry
-    int8_t _pad1[0x3C];       // ...
-    int32_t current_key;      // +0x50
-};
-
-static_assert(offsetof(Checkpoints, entry_begin_ptr) == 0x0C);
-static_assert(offsetof(Checkpoints, entry_end_ptr) == 0x10);
-static_assert(offsetof(Checkpoints, current_key) == 0x50);
-
-// stores a unique key per checkpoint
-struct CheckpointEntry {
-    int32_t key;
-    int32_t _unknown;
-};
-
-static_assert(sizeof(CheckpointEntry) == 0x08);
-static_assert(offsetof(CheckpointEntry, key) == 0x00);
-
-struct StatsManager {
-    int8_t _pad0[4];
-    int32_t entry_begin_ptr;  // 04
-    int32_t entry_end_ptr;    // 08
-    int8_t _pad1[0x1C];       // ...
-    int32_t values_ptr;       // 28
-    int8_t _pad2[0x54];       // ...
-    int32_t score;            // 80
-};
-
-static_assert(offsetof(StatsManager, entry_begin_ptr) == 0x04);
-static_assert(offsetof(StatsManager, entry_end_ptr) == 0x08);
-static_assert(offsetof(StatsManager, values_ptr) == 0x28);
-static_assert(offsetof(StatsManager, score) == 0x80);
-
-struct GameStats {
-    int16_t unknown;                // 00
-    int16_t objective_complete;     // 02
-    int16_t target_kill;            // 04
-    int16_t spotted;                // 06
-    int16_t evidence_removed;       // 08
-    int16_t silent_assassin_bonus;  // 0A
-    int16_t signature_kill;         // 0C
-    int16_t silent_kill;            // 0E
-    int16_t headshot;               // 10
-    int16_t body_hidden;            // 12
-    int16_t civilian_casualty;      // 14
-    int16_t non_target_casualty;    // 16
-    int16_t pacification;           // 18
-    int16_t _unknown[87];           // 1A
-};
-
-static_assert(sizeof(GameStats) == 200);
+constexpr std::size_t OBJECTIVE_COMPLETE = 1;
+constexpr std::size_t TARGET_KILL = 2;
+constexpr std::size_t SPOTTED = 3;
+constexpr std::size_t EVIDENCE_REMOVED = 4;
+constexpr std::size_t SILENT_ASSASSIN_BONUS = 5;
+constexpr std::size_t SIGNATURE_KILL = 6;
+constexpr std::size_t SILENT_KILL = 7;
+constexpr std::size_t HEADSHOT = 8;
+constexpr std::size_t BODY_HIDDEN = 9;
+constexpr std::size_t CIVILIAN_CASUALTY = 10;
+constexpr std::size_t NON_TARGET_CASUALTY = 11;
+constexpr std::size_t PACIFICATION = 12;
 
 static constexpr std::array<int32_t, 13> STATS_MULTIPLIERS = {
     0,      // 00 unknown
@@ -309,57 +248,9 @@ static constexpr std::array<int32_t, 13> STATS_MULTIPLIERS = {
     -100,   // 12 pacification
 };
 
-static int32_t get_difficulty(void* handle, const BasePtrs& base_ptrs) {
-    auto difficulty = read<int32_t>(handle, base_ptrs[0] + 0xD58D04);
-    if (!difficulty) {
-        logging::error("Unable to read difficulty");
-        return -1;
-    }
-    auto value = difficulty.value();
-    if (value < 0 || value >= NUM_DIFFICULTIES) {
-        logging::error("Difficulty {} out of bounds", value);
-        return -1;
-    }
-    return value;
-}
-
-static int32_t get_level(void* handle, const BasePtrs& base_ptrs) {
-    auto level = read<int32_t>(handle, base_ptrs[0] + 0xE21394);
-    if (!level) {
-        logging::error("Unable to read level");
-        return -1;
-    }
-    auto value = level.value();
-    // engine may set level to -1 if not in a mission
-    // sadly it's not a reliable way to detect if we are in a mission
-    if (value < -1 || value >= NUM_LEVELS) {
-        logging::error("Level {} out of bounds", value);
-        return -1;
-    }
-    return value;
-}
-
-static std::optional<CheckpointManager> get_checkpoint_manager(
-    void* handle, const BasePtrs& base_ptrs
-) {
-    return read<CheckpointManager>(handle, base_ptrs[0] + 0xE21580);
-}
-
-static std::optional<Checkpoints> get_checkpoints(
-    void* handle, int32_t checkpoints_ptr
-) {
-    return read<Checkpoints>(handle, checkpoints_ptr);
-}
-
-static std::optional<CheckpointEntry> get_checkpoint_entry(
-    void* handle, int32_t entry_ptr
-) {
-    return read<CheckpointEntry>(handle, entry_ptr);
-}
-
 // replicate game engine logic for calculating checkpoint
 static int32_t get_current_checkpoint_index(
-    void* handle, const Checkpoints& checkpoints
+    const hitman_absolution::structs::Checkpoints& checkpoints
 ) {
     if (checkpoints.current_key == 0) {
         // level is loading but we have not started yet
@@ -367,22 +258,16 @@ static int32_t get_current_checkpoint_index(
         return -1;
     }
     int32_t index = 0;
-    auto entry_ptr = checkpoints.entry_begin_ptr;
-    // note: upper bound on index to avoid infinite loop on corrupt data
-    while (entry_ptr != checkpoints.entry_end_ptr
-           && index < NUM_CHECKPOINTS_PER_LEVEL) {
-        auto entry = get_checkpoint_entry(handle, entry_ptr);
-        if (!entry) {
-            logging::error("Unable to read checkpoint entry");
-            return -1;
-        }
-        if (checkpoints.current_key == entry->key) return index;
-        entry_ptr += sizeof(CheckpointEntry);
+    for (auto& checkpoint : checkpoints.checkpoint) {
+        if (checkpoints.current_key == checkpoint.key) return index;
         index++;
     }
     logging::error("Unable to find current checkpoint key");
     return -1;
 }
+
+// global to avoid allocating large object on stack
+static hitman_absolution::structs::Game game{};
 
 void hitman_absolution::update_slow(
     void* handle,
@@ -390,53 +275,50 @@ void hitman_absolution::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
-    /*/
     MemoryReader<uint32_t> reader{handle};
-    // TODO use logger instead of std::cout
-    auto tracer
-        = mempeep::make_stream_log_tracer(std::cout, mempeep::LogLevel::VALUES);
-    structs::Game game{};
-    if (!mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game)) return;
-    */
-    // TODO use game for everything
-    auto difficulty = get_difficulty(handle, base_ptrs);
-    if (difficulty >= 0) stats.difficulty = difficulty;
-    auto level = get_level(handle, base_ptrs);
-    if (level < 0) {
+    auto tracer = mempeep::OkTracer{};
+    // TODO this is very slow, must make LogTracer faster
+    // mempeep::LogTracer{mempeep_log_on_entry(), mempeep::LogLevel::VALUES};
+    if (!mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game)) {
+        logging::warn("game memory read failure");
+        return;
+    }
+    // TODO BoundedPrimitive
+    if (game.difficulty >= 0 || game.difficulty < structs::NUM_DIFFICULTIES) {
+        stats.difficulty = game.difficulty;
+    } else {
+        logging::error("Difficulty {} out of bounds", game.difficulty);
+    }
+    // engine may set level to -1 if not in a mission
+    // sadly it's not a reliable way to detect if we are in a mission
+    // TODO BoundedPrimitive
+    if (game.level < -1 || game.level >= structs::NUM_LEVELS) {
+        logging::error("Level {} out of bounds", game.level);
+    } else if (game.level == -1) {
         stats.map = 0;
         return;
     }
-    const auto checkpoint_manager = get_checkpoint_manager(handle, base_ptrs);
-    if (!checkpoint_manager) {
-        logging::error("Unable to read checkpoint manager");
-        return;
-    }
-    if (checkpoint_manager->checkpoints_ptr == 0) {
+    if (!game.checkpoints_manager.checkpoints) {
         // in main menu and haven't loaded level yet
         logging::trace("Checkpoints pointer is null");
         return;
     }
-    const auto checkpoints
-        = get_checkpoints(handle, checkpoint_manager->checkpoints_ptr);
-    if (!checkpoints) {
-        logging::error("Unable to read checkpoints");
-        return;
-    }
-    auto checkpoint_index = get_current_checkpoint_index(handle, *checkpoints);
+    auto checkpoints = *game.checkpoints_manager.checkpoints;
+    auto checkpoint_index = get_current_checkpoint_index(checkpoints);
     if (checkpoint_index < 0) {
         stats.map = 0;
         return;
     }
-    logging::trace("Level {} at checkpoint {}", level, checkpoint_index);
-    if (level >= scenes.size()) {
-        logging::error("No map registered for level {}", level);
+    logging::trace("Level {} at checkpoint {}", game.level, checkpoint_index);
+    if (game.level >= scenes.size()) {
+        logging::error("No map registered for level {}", game.level);
         return;
     }
-    auto& map_infos = scenes.at(level);
+    auto& map_infos = scenes.at(game.level);
     if (checkpoint_index >= map_infos.size()) {
         logging::error(
             "No map registered for level {}, checkpoint {}",
-            level,
+            game.level,
             checkpoint_index
         );
         return;
@@ -446,37 +328,14 @@ void hitman_absolution::update_slow(
     stats.map = map_info.map;
     stats.map_stage = MapStage::main;  // always render stats
     if (stats.map > 0) {
-        auto stats_manager
-            = read<StatsManager>(handle, base_ptrs[0] + 0xD61710);
-        if (!stats_manager) {
-            logging::error("Unable to read stats manager");
-            return;
-        }
-        auto game_stats = read<GameStats>(
-            handle,
-            stats_manager->values_ptr
-                + ((level * NUM_CHECKPOINTS_PER_LEVEL + checkpoint_index) * 200)
-        );
-        if (!game_stats) {
-            logging::error("Unable to read game stats");
-            return;
-        }
+        auto& stats_manager = game.stats_manager;
+        auto& game_stats = stats_manager.values[game.level][checkpoint_index];
         // note: stats are always 0 for unrated maps
-        stats.innocents_killed = stats_value(game_stats->civilian_casualty);
+        stats.innocents_killed = stats_value(game_stats[CIVILIAN_CASUALTY]);
         stats.enemies_killed = stats_value(
-            game_stats->non_target_casualty - game_stats->civilian_casualty
+            game_stats[NON_TARGET_CASUALTY] - game_stats[CIVILIAN_CASUALTY]
         );
-        stats.alerts = stats_value(game_stats->spotted);
-        stats.on_camera
-            = {map_info.num_evidence - game_stats->evidence_removed};
-        stats.objectives_left
-            = {map_info.num_objectives - game_stats->objective_complete};
-        stats.pacifications = {game_stats->pacification};
-        stats.bodies_hidden = {game_stats->body_hidden};
-        stats.headshots = {game_stats->headshot};
-        stats.silent_kills = {game_stats->silent_kill};
-        stats.signature_kills = {game_stats->signature_kill};
-        stats.sa_bonus = {game_stats->silent_assassin_bonus};
+        stats.alerts = stats_value(game_stats[SPOTTED]);
         auto status = get_rating_status(map_info.max_rating, stats);
         stats.rating
             = {map_info.max_rating == Rating::unrated

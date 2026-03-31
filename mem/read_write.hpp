@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdint>
 #include <mempeep/detail/concepts/address.hpp>
+#include <mempeep/tracers/log_tracer.hpp>
 #include <optional>
 #include <string>
 #include <vector>
@@ -99,8 +100,16 @@ struct MemoryReader {
     bool operator()(Address address, std::size_t size, void *buffer) const {
         if (buffer == nullptr) return false;
         if (size == 0) return false;
-        return read_bytes(
-            handle, static_cast<intptr_t>(address), buffer, size
-        );
+        return read_bytes(handle, static_cast<intptr_t>(address), buffer, size);
     }
+};
+
+inline mempeep::LogCallback mempeep_log_on_entry() {
+    return [](const mempeep::LogEntry &entry) {
+        if (entry.kind == mempeep::LogEntry::Kind::ERR) {
+            logging::error("{}", entry);
+        } else {
+            logging::trace("{}", entry);
+        }
+    };
 };
