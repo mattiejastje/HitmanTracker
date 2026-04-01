@@ -17,8 +17,9 @@ constexpr int32_t NUM_LEVELS = 26;
 // levels have fewer than 13 checkpoints
 // the 13 is an upper bound from the engine, used in the array of stats values
 constexpr int32_t NUM_CHECKPOINTS_PER_LEVEL = 13;
-constexpr int32_t MAX_CHALLENGES = 279;
+constexpr int32_t MAX_CHALLENGES = 300;  // never seen more than 279
 constexpr int32_t NUM_PLAYSTYLES = 26;
+constexpr int32_t MAX_PLAYSTYLE_CONDITIONS = 10;
 constexpr int32_t NUM_STATS_VALUES = 100;
 
 using TI8 = Primitive<int8_t>;
@@ -256,11 +257,11 @@ using TStatsPlaystyleData = Struct<
     Fields<
         Pad<0x08>,
         Field<
-            Vector<TPlaystyleCondition, NUM_PLAYSTYLES>,
+            Vector<TPlaystyleCondition, MAX_PLAYSTYLE_CONDITIONS>,
             &StatsPlaystyleData::condition_min>,
         Pad<0x04>,
         Field<
-            Vector<TPlaystyleCondition, NUM_PLAYSTYLES>,
+            Vector<TPlaystyleCondition, MAX_PLAYSTYLE_CONDITIONS>,
             &StatsPlaystyleData::condition_max>,
         Pad<0x04>,
         Field<TString, &StatsPlaystyleData::title>,
