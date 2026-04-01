@@ -1,186 +1,207 @@
-mempeep = require("mempeep")
+local M = {}
 
-local T = mempeep.T
-local D = mempeep.D
+local d = require("mempeep.descriptors")
 
-local structs = D.assert_valid({
-  D.struct("String", {
-    D.field("length", T.i32),
-    D.field("text", T.ptr(T.string(0x40))),
-  }),
-  D.struct("GameData", {
-    D.pad(0x20),
-    D.field("level_infos", T.vector(T.struct("GameDataLevelInfo"))),
-  }),
-  D.struct("LevelData", {
-    D.pad(0x08),
-    D.field("level", T.i32),
-  }),
-  D.struct("CheckpointData", {
-    D.pad(0x38),
-    D.field("best_raw_score", T.i32),
-  }),
-  D.struct("CheckpointNode", {
-    D.pad(0x04),
-    D.field("data", T.ptr(T.struct("CheckpointData"))),
-  }),
-  D.struct("CheckpointInfo", {
-    D.pad(0x10),
-    D.field("nodes", T.vector(T.struct("CheckpointNode"))),
-  }),
-  D.struct("GameDataLevelInfo", {
-    D.pad(0x04),
-    D.field("level_data", T.ptr(T.struct("LevelData"))),
-    D.pad(0x04),
-    D.field("checkpoint_info", T.ptr(T.struct("CheckpointInfo"), { optional = true })),  -- null when level is not loaded
-    D.pad(0xA0),  -- size 0xB0
-  }),
-  D.struct("LevelManager", {
-    D.pad(0x04),
-    D.field("scene", T.struct("String")),
-    D.field("game_mode", T.i32),
-    D.pad(0x10),
-    D.field("checkpoint_index", T.i32),  -- cached, not always up to date
-  }),
-  D.struct("CheckpointsManager", {
-    D.pad(0x28),
-    D.field("checkpoints", T.ptr(T.struct("Checkpoints"), {optional = true})),
-  }),
-  D.struct("Checkpoints", {
-    D.pad(0x0C),
-    D.field("checkpoint", T.vector(T.struct("Checkpoint"))),
-    D.pad(0x3C),
-    D.field("current_key", T.i32),
-  }),
-  D.struct("Checkpoint", {
-    D.field("key", T.i32), -- could be pointer
-    D.field("_unknown", T.i32), -- could be pointer
-  }),
-  D.struct("TimeManager", {
-    D.pad(0x08),
-    D.field("ticks_per_second", T.i64),
-    D.field("last_time_ticks", T.i64),
-    D.field("game_time", T.i64),  -- divide by (1024 * 1024) to get seconds
-    D.field("game_time_previous", T.i64),
-    D.field("game_time_delta", T.i64),
-    D.field("real_time", T.i64),
-    D.field("real_time_previous", T.i64),
-    D.field("real_time_delta", T.i64),
-    D.field("game_time_multiplier", T.f32),
-    D.field("debug_time_multiplier", T.f32),
-    D.field("frame_wait", T.i64),
-    D.field("frame_step", T.i64),
-    D.field("frame_remain", T.i64),
-    D.field("paused", T.i32),
-    D.field("frame_count", T.i32),
-    D.offset(0x88),  -- size
-  }),
-  D.struct("StatsScoringData", {
-    D.pad(0x08),
-    D.field("title", T.struct("String")),
-    D.pad(0x18),
-    D.field("_unused", T.f32),     -- always zero
-    D.pad(0x08),
-    D.field("index", T.i32),       -- last index into StatsManager.values
-    D.pad(0x04),
-    D.field("multiplier", T.i32),  -- see SCORE_MULTIPLIER below
-  }),
-  D.struct("StatsScoring", {
-    D.pad(0x04),
-    D.field("data", T.ptr(T.struct("StatsScoringData"))),
-  }),
-  -- same layout as StatsScoringData?
-  D.struct("PlaystyleConditionData", {
-    D.pad(0x08),
-    D.field("title", T.struct("String")),
-    D.pad(0x24),
-    D.field("index", T.i32),
-    D.field("threshold", T.i32),
-  }),
-  D.struct("PlaystyleCondition", {
-    D.pad(0x04),
-    D.field("data", T.ptr(T.struct("PlaystyleConditionData"))),
-  }),
-  D.struct("StatsPlaystyleData", {
-    D.pad(0x08),
-    D.field("condition_min", T.vector(T.struct("PlaystyleCondition"))),
-    D.pad(0x04),
-    D.field("condition_max", T.vector(T.struct("PlaystyleCondition"))),
-    D.pad(0x04),
-    D.field("title", T.struct("String")),
-    D.pad(0x0C),
-    D.field("is_unlockable", T.i8),  -- if listed under "unlocks"
-    D.pad(0x03),
-    D.field("priority", T.i32),  -- higher values = higher ranking
-    D.field("percentage_min", T.i32),
-    D.field("percentage_max", T.i32),
-    D.pad(0x0C),
-    D.field("is_achieved", T.i8),  -- for current mission
-    D.pad(0x03),
-  }),
-  D.struct("StatsPlaystyle", {
-    D.pad(0x04),
-    D.field("data", T.ptr(T.struct("StatsPlaystyleData"))),
-  }),
-  D.struct("StatsDifficulties", {
-    D.pad(0x08),
-    D.field("scales", T.array(T.f32, 5)),  -- 1.0, 1.25, 1.5, 2.0, 2.5; see DIFFICULTY_SCALE below
-  }),
-  D.struct("StatsManager", {
-    D.pad(0x04),
-    D.field("scorings", T.vector(T.struct("StatsScoring"))),
-    D.pad(0x04),
-    D.field("playstyles", T.vector(T.struct("StatsPlaystyle"))),
-    D.pad(0x10),
-    D.field("values", T.ptr(T.array(T.array(T.array(T.i16, 100), 13), 26)), { print = false }),
-    D.pad(0x08),
-    D.field("achieved_playstyles", T.ptr(T.array(T.i8, 100))),  -- across all gaming sessions
-    D.pad(0x2C),
-    D.field("last_achieved_playstyle", T.i32),  -- across all gaming sessions
-    D.pad(0x18),
-    D.field("score",  T.i32),
-    D.pad(0x18),
-    D.field("difficulties", T.ptr(T.struct("StatsDifficulties"), { optional = true })),
-  }),
-  D.struct("ChallengeData", {
-    D.pad(0x98),
-    D.field("completed", T.i8),
-  }),
-  D.struct("ChallengeNode", {
-    D.field("next_node", T.ptr(T.struct("ChallengeNode"), { weak = true })),
-    D.pad(0x08),
-    D.field("data", T.ptr(T.struct("ChallengeData"), { optional = true })),
-  }),
-  D.struct("ChallengeManager", {
-    D.pad(0x08),
-    D.field("challenges", T.circular_list(T.struct("ChallengeNode"), "next_node")),
-  }),
-  D.struct("Game", {
-    D.offset(0xD58C60 + 0x10 + 0x94),
-    D.field("difficulty", T.i32),
-    D.offset(0xD61710),
-    D.field("stats_manager", T.struct("StatsManager")),
-    D.offset(0xD617C0),
-    D.field("challenge_manager", T.struct("ChallengeManager")),
-    D.offset(0xE212E0),
-    D.field("game_data", T.struct("GameData")),
-    D.offset(0xE21310),
-    D.field("level_manager", T.struct("LevelManager")),
-    D.offset(0xE21394),
-    D.field("level", T.i32),  -- part of level manager?
-    D.offset(0xE21580),
-    D.field("checkpoints_manager", T.struct("CheckpointsManager")),
-    D.offset(0xE24730),
-    D.field("time_manager", T.struct("TimeManager")),
-  }),
-})
+local MAX_VEC = 0x1000  -- reasonable upper bound for all vectors/lists
 
-local schema = mempeep.schema.new(4, structs)
+local i8   = d.Primitive("i1")
+local i16  = d.Primitive("i2")
+local i32  = d.Primitive("i4")
+local i64  = d.Primitive("i8")
+local f32  = d.Primitive("f")
 
+local String = d.Struct(
+  d.Field(i32, "length"),
+  d.Field(d.Ref(d.Primitive("c64")), "text")
+)
 
--- ----------------------------------------------------------------------------
--- Helper functions
--- ----------------------------------------------------------------------------
+local LevelData = d.Struct(
+  d.Skip(0x08),
+  d.Field(i32, "level")
+)
+
+local CheckpointData = d.Struct(
+  d.Skip(0x38),
+  d.Field(i32, "best_raw_score")
+)
+
+local CheckpointNode = d.Struct(
+  d.Skip(0x04),
+  d.Field(d.Ref(CheckpointData), "data")
+)
+
+local CheckpointInfo = d.Struct(
+  d.Skip(0x10),
+  d.Field(d.Vector(CheckpointNode, MAX_VEC), "nodes")
+)
+
+local GameDataLevelInfo = d.Struct(
+  d.Skip(0x04),
+  d.Field(d.Ref(LevelData), "level_data"),
+  d.Skip(0x04),
+  d.Field(d.NullableRef(CheckpointInfo), "checkpoint_info"),  -- null when level is not loaded
+  d.Skip(0xA0)  -- size 0xB0
+)
+
+local GameData = d.Struct(
+  d.Skip(0x20),
+  d.Field(d.Vector(GameDataLevelInfo, MAX_VEC), "level_infos")
+)
+
+local LevelManager = d.Struct(
+  d.Skip(0x04),
+  d.Field(String, "scene"),
+  d.Field(i32, "game_mode"),
+  d.Skip(0x10),
+  d.Field(i32, "checkpoint_index")  -- cached, not always up to date
+)
+
+local Checkpoint = d.Struct(
+  d.Field(i32, "key"),  -- could be pointer
+  d.Field(i32, "_unknown")  -- could be pointer
+)
+
+local Checkpoints = d.Struct(
+  d.Skip(0x0C),
+  d.Field(d.Vector(Checkpoint, MAX_VEC), "checkpoint"),
+  d.Skip(0x3C),
+  d.Field(i32, "current_key")
+)
+
+local CheckpointsManager = d.Struct(
+  d.Skip(0x28),
+  d.Field(d.NullableRef(Checkpoints), "checkpoints")
+)
+
+local TimeManager = d.Struct(
+  d.Skip(0x08),
+  d.Field(i64, "ticks_per_second"),
+  d.Field(i64, "last_time_ticks"),
+  d.Field(i64, "game_time"),  -- divide by (1024 * 1024) to get seconds
+  d.Field(i64, "game_time_previous"),
+  d.Field(i64, "game_time_delta"),
+  d.Field(i64, "real_time"),
+  d.Field(i64, "real_time_previous"),
+  d.Field(i64, "real_time_delta"),
+  d.Field(f32, "game_time_multiplier"),
+  d.Field(f32, "debug_time_multiplier"),
+  d.Field(i64, "frame_wait"),
+  d.Field(i64, "frame_step"),
+  d.Field(i64, "frame_remain"),
+  d.Field(i32, "paused"),
+  d.Field(i32, "frame_count")
+)
+
+local StatsScoringData = d.Struct(
+  d.Skip(0x08),
+  d.Field(String, "title"),
+  d.Skip(0x18),
+  d.Field(f32, "_unused"),    -- always zero
+  d.Skip(0x08),
+  d.Field(i32, "index"),      -- last index into StatsManager.values
+  d.Skip(0x04),
+  d.Field(i32, "multiplier")  -- see SCORE_MULTIPLIER below
+)
+
+local StatsScoring = d.Struct(
+  d.Skip(0x04),
+  d.Field(d.Ref(StatsScoringData), "data")
+)
+
+-- same layout as StatsScoringData?
+local PlaystyleConditionData = d.Struct(
+  d.Skip(0x08),
+  d.Field(String, "title"),
+  d.Skip(0x24),
+  d.Field(i32, "index"),
+  d.Field(i32, "threshold")
+)
+
+-- same layout as StatsScoring?
+local PlaystyleCondition = d.Struct(
+  d.Skip(0x04),
+  d.Field(d.Ref(PlaystyleConditionData), "data")
+)
+
+local StatsPlaystyleData = d.Struct(
+  d.Skip(0x08),
+  d.Field(d.Vector(PlaystyleCondition, MAX_VEC), "condition_min"),
+  d.Skip(0x04),
+  d.Field(d.Vector(PlaystyleCondition, MAX_VEC), "condition_max"),
+  d.Skip(0x04),
+  d.Field(String, "title"),
+  d.Skip(0x0C),
+  d.Field(i8,  "is_unlockable"),  -- if listed under "unlocks"
+  d.Skip(0x03),
+  d.Field(i32, "priority"),  -- higher values = higher ranking
+  d.Field(i32, "percentage_min"),
+  d.Field(i32, "percentage_max"),
+  d.Skip(0x0C),
+  d.Field(i8,  "is_achieved"),  -- for current mission
+  d.Skip(0x03)
+)
+
+local StatsPlaystyle = d.Struct(
+  d.Skip(0x04),
+  d.Field(d.Ref(StatsPlaystyleData), "data")
+)
+
+local StatsDifficulties = d.Struct(
+  d.Skip(0x08),
+  d.Field(d.Array(f32, 5), "scales")
+)
+
+local StatsManager = d.Struct(
+  d.Skip(0x04),
+  d.Field(d.Vector(StatsScoring,   MAX_VEC), "scorings"),
+  d.Skip(0x04),
+  d.Field(d.Vector(StatsPlaystyle, MAX_VEC), "playstyles"),
+  d.Skip(0x10),
+  d.Field(d.Ref(d.Array(d.Array(d.Array(i16, 100), 13), 26)), "values"),
+  d.Skip(0x08),
+  d.Field(d.Ref(d.Array(i8, 100)), "achieved_playstyles"),  -- across all gaming sessions
+  d.Skip(0x2C),
+  d.Field(i32, "last_achieved_playstyle"),  -- across all gaming sessions
+  d.Skip(0x18),
+  d.Field(i32, "score"),
+  d.Skip(0x18),
+  d.Field(d.NullableRef(StatsDifficulties), "difficulties")  -- 1.0, 1.25, 1.5, 2.0, 2.5; see DIFFICULTY_SCALE below
+)
+
+local ChallengeData = d.Struct(
+  d.Skip(0x98),
+  d.Field(i8, "completed")
+)
+
+local ChallengeNode = d.Struct(
+  d.Field(d.RawAddr(), "next_node"),
+  d.Skip(0x08),
+  d.Field(d.NullableRef(ChallengeData), "data")
+)
+
+local ChallengeManager = d.Struct(
+  d.Skip(0x08),
+  d.Field(d.CircularList(ChallengeNode, "next_node", MAX_VEC), "challenges")
+)
+
+M.Game = d.Struct(
+  d.Seek(0xD58C60 + 0x10 + 0x94),
+  d.Field(i32, "difficulty"),
+  d.Seek(0xD61710),
+  d.Field(StatsManager, "stats_manager"),
+  d.Seek(0xD617C0),
+  d.Field(ChallengeManager, "challenge_manager"),
+  d.Seek(0xE212E0),
+  d.Field(GameData, "game_data"),
+  d.Seek(0xE21310),
+  d.Field(LevelManager, "level_manager"),
+  d.Seek(0xE21394),
+  d.Field(i32, "level"),  -- part of level manager?
+  d.Seek(0xE21580),
+  d.Field(CheckpointsManager, "checkpoints_manager"),
+  d.Seek(0xE24730),
+  d.Field(TimeManager, "time_manager")
+)
 
 local function get_current_checkpoint_index(checkpoints)
     if checkpoints.current_key == 0 then
@@ -348,26 +369,19 @@ local function get_playstyle_index_by_score_2(raw_score, best_raw_score)
     return 4
 end
 
--- ----------------------------------------------------------------------------
--- Public API
--- ----------------------------------------------------------------------------
+M.get_current_checkpoint_index     = get_current_checkpoint_index
+M.get_num_challenges_completed     = get_num_challenges_completed
+M.get_multipliers                  = get_multipliers
+M.get_raw_score                    = get_raw_score
+M.get_raw_score_2                  = get_raw_score_2
+M.get_score                        = get_score
+M.get_score_2                      = get_score_2
+M.is_playstyle_condition_achieved  = is_playstyle_condition_achieved
+M.get_playstyle_index_by_condition = get_playstyle_index_by_condition
+M.get_level_info                   = get_level_info
+M.get_best_raw_score               = get_best_raw_score
+M.is_playstyle_percentage_achieved = is_playstyle_percentage_achieved
+M.get_playstyle_index_by_score     = get_playstyle_index_by_score
+M.get_playstyle_index_by_score_2   = get_playstyle_index_by_score_2
 
-local hitman_absolution = {}
-
-hitman_absolution.schema                           = schema
-hitman_absolution.get_current_checkpoint_index     = get_current_checkpoint_index
-hitman_absolution.get_num_challenges_completed     = get_num_challenges_completed
-hitman_absolution.get_multipliers                  = get_multipliers
-hitman_absolution.get_raw_score                    = get_raw_score
-hitman_absolution.get_raw_score_2                  = get_raw_score_2
-hitman_absolution.get_score                        = get_score
-hitman_absolution.get_score_2                      = get_score_2
-hitman_absolution.is_playstyle_condition_achieved  = is_playstyle_condition_achieved
-hitman_absolution.get_playstyle_index_by_condition = get_playstyle_index_by_condition
-hitman_absolution.get_level_info                   = get_level_info
-hitman_absolution.get_best_raw_score               = get_best_raw_score
-hitman_absolution.is_playstyle_percentage_achieved = is_playstyle_percentage_achieved
-hitman_absolution.get_playstyle_index_by_score     = get_playstyle_index_by_score
-hitman_absolution.get_playstyle_index_by_score_2   = get_playstyle_index_by_score_2
-
-return hitman_absolution
+return M
