@@ -16,9 +16,13 @@ spdlog::level::level_enum spdlog_level[7]{
 };
 
 class SpdlogLogger : public logging::Logger {
-    virtual void log(int level, const std::string& msg) {
+    virtual void log(int level, const std::string& msg) override {
         assert((level >= 0) && (level < 7));
         spdlog::log(spdlog_level[level], msg);
+    };
+
+    virtual bool should_log(int level) override {
+        return spdlog::should_log(spdlog_level[level]);
     };
 };
 
