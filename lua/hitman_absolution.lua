@@ -10,70 +10,70 @@ local i32  = d.Primitive("i4")
 local i64  = d.Primitive("i8")
 local f32  = d.Primitive("f")
 
-local String = d.Struct(
+local String = d.Struct("String", {
   d.Field(i32, "length"),
   d.Field(d.Ref(d.Primitive("c64")), "text")
-)
+})
 
-local LevelData = d.Struct(
+local LevelData = d.Struct("LevelData", {
   d.Skip(0x08),
   d.Field(i32, "level")
-)
+})
 
-local CheckpointData = d.Struct(
+local CheckpointData = d.Struct("CheckpointData", {
   d.Skip(0x38),
   d.Field(i32, "best_raw_score")
-)
+})
 
-local CheckpointNode = d.Struct(
+local CheckpointNode = d.Struct("CheckpointNode", {
   d.Skip(0x04),
   d.Field(d.Ref(CheckpointData), "data")
-)
+})
 
-local CheckpointInfo = d.Struct(
+local CheckpointInfo = d.Struct("CheckpointInfo", {
   d.Skip(0x10),
   d.Field(d.Vector(CheckpointNode, MAX_VEC), "nodes")
-)
+})
 
-local GameDataLevelInfo = d.Struct(
+local GameDataLevelInfo = d.Struct("GameDataLevelInfo", {
   d.Skip(0x04),
   d.Field(d.Ref(LevelData), "level_data"),
   d.Skip(0x04),
   d.Field(d.NullableRef(CheckpointInfo), "checkpoint_info"),  -- null when level is not loaded
   d.Skip(0xA0)  -- size 0xB0
-)
+})
 
-local GameData = d.Struct(
+local GameData = d.Struct("GameData", {
   d.Skip(0x20),
   d.Field(d.Vector(GameDataLevelInfo, MAX_VEC), "level_infos")
-)
+})
 
-local LevelManager = d.Struct(
+local LevelManager = d.Struct("LevelManager", {
   d.Skip(0x04),
   d.Field(String, "scene"),
   d.Field(i32, "game_mode"),
   d.Skip(0x10),
   d.Field(i32, "checkpoint_index")  -- cached, not always up to date
-)
+})
 
-local Checkpoint = d.Struct(
+local Checkpoint = d.Struct("Checkpoint", {
   d.Field(i32, "key"),  -- could be pointer
   d.Field(i32, "_unknown")  -- could be pointer
-)
+})
 
-local Checkpoints = d.Struct(
+local Checkpoints = d.Struct("Checkpoints", {
   d.Skip(0x0C),
   d.Field(d.Vector(Checkpoint, MAX_VEC), "checkpoint"),
   d.Skip(0x3C),
   d.Field(i32, "current_key")
-)
+})
 
-local CheckpointsManager = d.Struct(
+local CheckpointsManager = d.Struct("CheckpointsManager", {
   d.Skip(0x28),
   d.Field(d.NullableRef(Checkpoints), "checkpoints")
-)
+})
 
-local TimeManager = d.Struct(
+local TimeManager = d.Struct("TimeManager", {
   d.Skip(0x08),
   d.Field(i64, "ticks_per_second"),
   d.Field(i64, "last_time_ticks"),
@@ -90,9 +90,9 @@ local TimeManager = d.Struct(
   d.Field(i64, "frame_remain"),
   d.Field(i32, "paused"),
   d.Field(i32, "frame_count")
-)
+})
 
-local StatsScoringData = d.Struct(
+local StatsScoringData = d.Struct("StatsScoringData", {
   d.Skip(0x08),
   d.Field(String, "title"),
   d.Skip(0x18),
@@ -101,29 +101,29 @@ local StatsScoringData = d.Struct(
   d.Field(i32, "index"),      -- last index into StatsManager.values
   d.Skip(0x04),
   d.Field(i32, "multiplier")  -- see SCORE_MULTIPLIER below
-)
+})
 
-local StatsScoring = d.Struct(
+local StatsScoring = d.Struct("StatsScoring", {
   d.Skip(0x04),
   d.Field(d.Ref(StatsScoringData), "data")
-)
+})
 
 -- same layout as StatsScoringData?
-local PlaystyleConditionData = d.Struct(
+local PlaystyleConditionData = d.Struct("PlaystyleConditionData", {
   d.Skip(0x08),
   d.Field(String, "title"),
   d.Skip(0x24),
   d.Field(i32, "index"),
   d.Field(i32, "threshold")
-)
+})
 
 -- same layout as StatsScoring?
-local PlaystyleCondition = d.Struct(
+local PlaystyleCondition = d.Struct("PlaystyleCondition", {
   d.Skip(0x04),
   d.Field(d.Ref(PlaystyleConditionData), "data")
-)
+})
 
-local StatsPlaystyleData = d.Struct(
+local StatsPlaystyleData = d.Struct("StatsPlaystyleData", {
   d.Skip(0x08),
   d.Field(d.Vector(PlaystyleCondition, MAX_VEC), "condition_min"),
   d.Skip(0x04),
@@ -139,19 +139,19 @@ local StatsPlaystyleData = d.Struct(
   d.Skip(0x0C),
   d.Field(i8,  "is_achieved"),  -- for current mission
   d.Skip(0x03)
-)
+})
 
-local StatsPlaystyle = d.Struct(
+local StatsPlaystyle = d.Struct("StatsPlaystyle", {
   d.Skip(0x04),
   d.Field(d.Ref(StatsPlaystyleData), "data")
-)
+})
 
-local StatsDifficulties = d.Struct(
+local StatsDifficulties = d.Struct("StatsDifficulties", {
   d.Skip(0x08),
   d.Field(d.Array(f32, 5), "scales")
-)
+})
 
-local StatsManager = d.Struct(
+local StatsManager = d.Struct("StatsManager", {
   d.Skip(0x04),
   d.Field(d.Vector(StatsScoring,   MAX_VEC), "scorings"),
   d.Skip(0x04),
@@ -166,25 +166,25 @@ local StatsManager = d.Struct(
   d.Field(i32, "score"),
   d.Skip(0x18),
   d.Field(d.NullableRef(StatsDifficulties), "difficulties")  -- 1.0, 1.25, 1.5, 2.0, 2.5; see DIFFICULTY_SCALE below
-)
+})
 
-local ChallengeData = d.Struct(
+local ChallengeData = d.Struct("ChallengeData", {
   d.Skip(0x98),
   d.Field(i8, "completed")
-)
+})
 
-local ChallengeNode = d.Struct(
+local ChallengeNode = d.Struct("ChallengeNode", {
   d.Field(d.RawAddr(), "next_node"),
   d.Skip(0x08),
   d.Field(d.NullableRef(ChallengeData), "data")
-)
+})
 
-local ChallengeManager = d.Struct(
+local ChallengeManager = d.Struct("ChallengeManager", {
   d.Skip(0x08),
   d.Field(d.CircularList(ChallengeNode, "next_node", MAX_VEC), "challenges")
-)
+})
 
-M.Game = d.Struct(
+M.Game = d.Struct("Game", {
   d.Seek(0xD58C60 + 0x10 + 0x94),
   d.Field(i32, "difficulty"),
   d.Seek(0xD61710),
@@ -201,7 +201,7 @@ M.Game = d.Struct(
   d.Field(CheckpointsManager, "checkpoints_manager"),
   d.Seek(0xE24730),
   d.Field(TimeManager, "time_manager")
-)
+})
 
 local function get_current_checkpoint_index(checkpoints)
     if checkpoints.current_key == 0 then
