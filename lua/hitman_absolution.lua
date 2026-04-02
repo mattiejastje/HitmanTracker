@@ -1,5 +1,6 @@
 local M = {}
 
+local c = require("mempeep.ctypes")
 local d = require("mempeep.descriptors")
 
 local MAX_VEC = 0x1000  -- reasonable upper bound for all vectors/lists
@@ -202,6 +203,10 @@ M.Game = d.Struct("Game", {
   d.Seek(0xE24730),
   d.Field(TimeManager, "time_manager")
 })
+
+M.remote_cdecl = function()
+  c.remote_struct_cdecl(M.Game, 4)
+end
 
 local function get_current_checkpoint_index(checkpoints)
     if checkpoints.current_key == 0 then
