@@ -44,7 +44,7 @@ struct LevelData {
 };
 
 using TLevelData
-    = Struct<LevelData, Fields<Pad<0x08>, Field<TI32, &LevelData::level>>>;
+    = Struct<LevelData, Fields<Skip<0x08>, Field<TI32, &LevelData::level>>>;
 
 struct CheckpointData {
     int32_t best_raw_score;
@@ -52,7 +52,7 @@ struct CheckpointData {
 
 using TCheckpointData = Struct<
     CheckpointData,
-    Fields<Pad<0x38>, Field<TI32, &CheckpointData::best_raw_score>>>;
+    Fields<Skip<0x38>, Field<TI32, &CheckpointData::best_raw_score>>>;
 
 struct CheckpointNode {
     std::optional<CheckpointData> data;
@@ -61,7 +61,7 @@ struct CheckpointNode {
 using TCheckpointNode = Struct<
     CheckpointNode,
     Fields<
-        Pad<0x04>,
+        Skip<0x04>,
         Field<NullableRef<TCheckpointData>, &CheckpointNode::data>>>;
 
 struct CheckpointInfo {
@@ -71,7 +71,7 @@ struct CheckpointInfo {
 using TCheckpointInfo = Struct<
     CheckpointInfo,
     Fields<
-        Pad<0x10>,
+        Skip<0x10>,
         Field<
             Vector<TCheckpointNode, NUM_CHECKPOINTS_PER_LEVEL>,
             &CheckpointInfo::nodes>>>;
@@ -84,13 +84,13 @@ struct GameDataLevelInfo {
 using TGameDataLevelInfo = Struct<
     GameDataLevelInfo,
     Fields<
-        Pad<0x04>,
+        Skip<0x04>,
         Field<Ref<TLevelData>, &GameDataLevelInfo::level_data>,
-        Pad<0x04>,
+        Skip<0x04>,
         Field<
             NullableRef<TCheckpointInfo>,
             &GameDataLevelInfo::checkpoint_info>,
-        Pad<0xA0>>>;
+        Skip<0xA0>>>;
 
 struct GameData {
     std::vector<GameDataLevelInfo> level_infos;
@@ -99,7 +99,7 @@ struct GameData {
 using TGameData = Struct<
     GameData,
     Fields<
-        Pad<0x20>,
+        Skip<0x20>,
         Field<Vector<TGameDataLevelInfo, NUM_LEVELS>, &GameData::level_infos>>>;
 
 struct LevelManager {
@@ -111,10 +111,10 @@ struct LevelManager {
 using TLevelManager = Struct<
     LevelManager,
     Fields<
-        Pad<0x04>,
+        Skip<0x04>,
         Field<TString, &LevelManager::scene>,
         Field<TI32, &LevelManager::game_mode>,
-        Pad<0x10>,
+        Skip<0x10>,
         Field<TI32, &LevelManager::checkpoint_index>>>;
 
 struct Checkpoint {
@@ -134,11 +134,11 @@ struct Checkpoints {
 using TCheckpoints = Struct<
     Checkpoints,
     Fields<
-        Pad<0x0C>,
+        Skip<0x0C>,
         Field<
             Vector<TCheckpoint, NUM_CHECKPOINTS_PER_LEVEL>,
             &Checkpoints::checkpoint>,
-        Pad<0x3C>,
+        Skip<0x3C>,
         Field<TI32, &Checkpoints::current_key>>>;
 
 struct CheckpointsManager {
@@ -148,7 +148,7 @@ struct CheckpointsManager {
 using TCheckpointsManager = Struct<
     CheckpointsManager,
     Fields<
-        Pad<0x28>,
+        Skip<0x28>,
         Field<NullableRef<TCheckpoints>, &CheckpointsManager::checkpoints>>>;
 
 struct TimeManager {
@@ -172,7 +172,7 @@ struct TimeManager {
 using TTimeManager = Struct<
     TimeManager,
     Fields<
-        Pad<0x08>,
+        Skip<0x08>,
         Field<TI64, &TimeManager::ticks_per_second>,
         Field<TI64, &TimeManager::last_time_ticks>,
         Field<TI64, &TimeManager::game_time>,
@@ -199,13 +199,13 @@ struct StatsScoringData {
 using TStatsScoringData = Struct<
     StatsScoringData,
     Fields<
-        Pad<0x08>,
+        Skip<0x08>,
         Field<TString, &StatsScoringData::title>,
-        Pad<0x18>,
+        Skip<0x18>,
         Field<TF32, &StatsScoringData::_unused>,
-        Pad<0x08>,
+        Skip<0x08>,
         Field<TI32, &StatsScoringData::index>,
-        Pad<0x04>,
+        Skip<0x04>,
         Field<TI32, &StatsScoringData::multiplier>>>;
 
 struct StatsScoring {
@@ -214,7 +214,7 @@ struct StatsScoring {
 
 using TStatsScoring = Struct<
     StatsScoring,
-    Fields<Pad<0x04>, Field<Ref<TStatsScoringData>, &StatsScoring::data>>>;
+    Fields<Skip<0x04>, Field<Ref<TStatsScoringData>, &StatsScoring::data>>>;
 
 struct PlaystyleConditionData {
     String title;
@@ -225,9 +225,9 @@ struct PlaystyleConditionData {
 using TPlaystyleConditionData = Struct<
     PlaystyleConditionData,
     Fields<
-        Pad<0x08>,
+        Skip<0x08>,
         Field<TString, &PlaystyleConditionData::title>,
-        Pad<0x24>,
+        Skip<0x24>,
         Field<TI32, &PlaystyleConditionData::index>,
         Field<TI32, &PlaystyleConditionData::threshold>>>;
 
@@ -238,7 +238,7 @@ struct PlaystyleCondition {
 using TPlaystyleCondition = Struct<
     PlaystyleCondition,
     Fields<
-        Pad<0x04>,
+        Skip<0x04>,
         Field<Ref<TPlaystyleConditionData>, &PlaystyleCondition::data>>>;
 
 struct StatsPlaystyleData {
@@ -255,25 +255,25 @@ struct StatsPlaystyleData {
 using TStatsPlaystyleData = Struct<
     StatsPlaystyleData,
     Fields<
-        Pad<0x08>,
+        Skip<0x08>,
         Field<
             Vector<TPlaystyleCondition, MAX_PLAYSTYLE_CONDITIONS>,
             &StatsPlaystyleData::condition_min>,
-        Pad<0x04>,
+        Skip<0x04>,
         Field<
             Vector<TPlaystyleCondition, MAX_PLAYSTYLE_CONDITIONS>,
             &StatsPlaystyleData::condition_max>,
-        Pad<0x04>,
+        Skip<0x04>,
         Field<TString, &StatsPlaystyleData::title>,
-        Pad<0x0C>,
+        Skip<0x0C>,
         Field<TI8, &StatsPlaystyleData::is_unlockable>,
-        Pad<0x03>,
+        Skip<0x03>,
         Field<TI32, &StatsPlaystyleData::priority>,
         Field<TI32, &StatsPlaystyleData::percentage_min>,
         Field<TI32, &StatsPlaystyleData::percentage_max>,
-        Pad<0x0C>,
+        Skip<0x0C>,
         Field<TI8, &StatsPlaystyleData::is_achieved>,
-        Pad<0x03>>>;
+        Skip<0x03>>>;
 
 struct StatsPlaystyle {
     StatsPlaystyleData data;
@@ -281,7 +281,7 @@ struct StatsPlaystyle {
 
 using TStatsPlaystyle = Struct<
     StatsPlaystyle,
-    Fields<Pad<0x04>, Field<Ref<TStatsPlaystyleData>, &StatsPlaystyle::data>>>;
+    Fields<Skip<0x04>, Field<Ref<TStatsPlaystyleData>, &StatsPlaystyle::data>>>;
 
 struct StatsDifficulties {
     std::array<float, NUM_DIFFICULTIES> scales;
@@ -290,7 +290,7 @@ struct StatsDifficulties {
 using TStatsDifficulties = Struct<
     StatsDifficulties,
     Fields<
-        Pad<0x08>,
+        Skip<0x08>,
         Field<Array<TF32, NUM_DIFFICULTIES>, &StatsDifficulties::scales>>>;
 
 using StatsValues = std::array<
@@ -314,23 +314,23 @@ struct StatsManager {
 using TStatsManager = Struct<
     StatsManager,
     Fields<
-        Pad<0x04>,
+        Skip<0x04>,
         Field<Vector<TStatsScoring, NUM_STATS_VALUES>, &StatsManager::scorings>,
-        Pad<0x04>,
+        Skip<0x04>,
         Field<
             Vector<TStatsPlaystyle, NUM_PLAYSTYLES>,
             &StatsManager::playstyles>,
-        Pad<0x10>,
+        Skip<0x10>,
         Field<Ref<Primitive<StatsValues>>, &StatsManager::values>,
-        Pad<0x08>,
+        Skip<0x08>,
         Field<
             Primitive<AchievedPlaystyles>,
             &StatsManager::achieved_playstyles>,
-        Pad<0x2C>,
+        Skip<0x2C>,
         Field<TI32, &StatsManager::last_achieved_playstyle>,
-        Pad<0x18>,
+        Skip<0x18>,
         Field<TI32, &StatsManager::score>,
-        Pad<0x18>,
+        Skip<0x18>,
         Field<NullableRef<TStatsDifficulties>, &StatsManager::difficulties>>>;
 
 struct ChallengeData {
@@ -339,7 +339,7 @@ struct ChallengeData {
 
 using TChallengeData = Struct<
     ChallengeData,
-    Fields<Pad<0x98>, Field<TI8, &ChallengeData::completed>>>;
+    Fields<Skip<0x98>, Field<TI8, &ChallengeData::completed>>>;
 
 struct ChallengeNode {
     uint32_t next_node;
@@ -350,7 +350,7 @@ using TChallengeNode = Struct<
     ChallengeNode,
     Fields<
         Field<RawAddr<uint32_t>, &ChallengeNode::next_node>,
-        Pad<0x08>,
+        Skip<0x08>,
         Field<NullableRef<TChallengeData>, &ChallengeNode::data>>>;
 
 struct ChallengeManager {
@@ -360,7 +360,7 @@ struct ChallengeManager {
 using TChallengeManager = Struct<
     ChallengeManager,
     Fields<
-        Pad<0x08>,
+        Skip<0x08>,
         Field<
             CircularList<
                 TChallengeNode,
