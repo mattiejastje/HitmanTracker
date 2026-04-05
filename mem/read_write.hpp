@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <concepts>
 #include <cstdint>
 #include <mempeep/detail/concepts/address.hpp>
 #include <mempeep/tracers/log_tracer.hpp>
@@ -104,12 +105,13 @@ struct MemoryReader {
     }
 };
 
-inline mempeep::LogCallback mempeep_log_on_entry() {
-    return [](const mempeep::LogEntry &entry) {
-        if (entry.kind == mempeep::LogEntry::Kind::ERR) {
+struct MempeepOnLogEntry {
+    template <typename T>
+    void operator()(const mempeep::LogEntry<T> &entry) const {
+        if constexpr (std::same_as<T, mempeep::Error>) {
             logging::error("{}", entry);
         } else {
             logging::trace("{}", entry);
         }
-    };
+    }
 };

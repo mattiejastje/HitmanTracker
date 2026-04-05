@@ -276,9 +276,9 @@ void hitman_absolution::update_slow(
     Stats& stats
 ) {
     MemoryReader<uint32_t> reader{handle};
-    auto tracer = mempeep::OkTracer{};
-    // TODO this is very slow, must make LogTracer faster
-    // auto tracer = mempeep::LogTracer{mempeep_log_on_entry(), mempeep::LogLevel::VALUES};
+    // auto tracer = mempeep::OkTracer{};
+    // TODO check performance against OkTracer
+    auto tracer = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::VALUES};
     if (!mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game)) {
         logging::warn("game memory read failure");
         return;
