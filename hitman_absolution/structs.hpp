@@ -22,6 +22,176 @@ using TString = Struct<
         Field<Int32, &String::length>,
         Field<Ref<Primitive<char[40]>>, &String::text>>>;
 
+struct StatsScoringData {
+    String title;
+    float _unused;
+    int32_t index;
+    int32_t multiplier;
+};
+
+using TStatsScoringData = Struct<
+    StatsScoringData,
+    Fields<
+        Skip<0x8>,
+        Field<TString, &StatsScoringData::title>,
+        Skip<0x18>,
+        Field<Float, &StatsScoringData::_unused>,
+        Skip<0x8>,
+        Field<Int32, &StatsScoringData::index>,
+        Skip<0x4>,
+        Field<Int32, &StatsScoringData::multiplier>>>;
+
+struct StatsScoring {
+    StatsScoringData data;
+};
+
+using TStatsScoring = Struct<
+    StatsScoring,
+    Fields<Skip<0x4>, Field<Ref<TStatsScoringData>, &StatsScoring::data>>>;
+
+struct PlaystyleConditionData {
+    String title;
+    int32_t index;
+    int32_t threshold;
+};
+
+using TPlaystyleConditionData = Struct<
+    PlaystyleConditionData,
+    Fields<
+        Skip<0x8>,
+        Field<TString, &PlaystyleConditionData::title>,
+        Skip<0x24>,
+        Field<Int32, &PlaystyleConditionData::index>,
+        Field<Int32, &PlaystyleConditionData::threshold>>>;
+
+struct PlaystyleCondition {
+    PlaystyleConditionData data;
+};
+
+using TPlaystyleCondition = Struct<
+    PlaystyleCondition,
+    Fields<
+        Skip<0x4>,
+        Field<Ref<TPlaystyleConditionData>, &PlaystyleCondition::data>>>;
+
+struct StatsPlaystyleData {
+    std::vector<PlaystyleCondition> condition_min;
+    std::vector<PlaystyleCondition> condition_max;
+    String title;
+    int8_t is_unlockable;
+    int32_t priority;
+    int32_t percentage_min;
+    int32_t percentage_max;
+    int8_t is_achieved;
+};
+
+using TStatsPlaystyleData = Struct<
+    StatsPlaystyleData,
+    Fields<
+        Skip<0x8>,
+        Field<
+            Vector<TPlaystyleCondition, 0xa>,
+            &StatsPlaystyleData::condition_min>,
+        Skip<0x4>,
+        Field<
+            Vector<TPlaystyleCondition, 0xa>,
+            &StatsPlaystyleData::condition_max>,
+        Skip<0x4>,
+        Field<TString, &StatsPlaystyleData::title>,
+        Skip<0xc>,
+        Field<Int8, &StatsPlaystyleData::is_unlockable>,
+        Skip<0x3>,
+        Field<Int32, &StatsPlaystyleData::priority>,
+        Field<Int32, &StatsPlaystyleData::percentage_min>,
+        Field<Int32, &StatsPlaystyleData::percentage_max>,
+        Skip<0xc>,
+        Field<Int8, &StatsPlaystyleData::is_achieved>,
+        Skip<0x3>>>;
+
+struct StatsPlaystyle {
+    StatsPlaystyleData data;
+};
+
+using TStatsPlaystyle = Struct<
+    StatsPlaystyle,
+    Fields<Skip<0x4>, Field<Ref<TStatsPlaystyleData>, &StatsPlaystyle::data>>>;
+
+struct StatsDifficulties {
+    std::array<float, 5> scales;
+};
+
+using TStatsDifficulties = Struct<
+    StatsDifficulties,
+    Fields<Skip<0x8>, Field<Array<Float, 5>, &StatsDifficulties::scales>>>;
+
+using StatsValues
+    = std::array<std::array<std::array<int16_t, 0x64>, 0xd>, 0x1a>;
+
+// only 26 playstyles but array has size 100
+using AchievedPlaystyles = std::array<int8_t, 100>;
+
+struct StatsManager {
+    std::vector<StatsScoring> scorings;
+    std::vector<StatsPlaystyle> playstyles;
+    StatsValues values;
+    AchievedPlaystyles achieved_playstyles;
+    int32_t last_achieved_playstyle;
+    int32_t score;
+    std::optional<StatsDifficulties> difficulties;
+};
+
+using TStatsManager = Struct<
+    StatsManager,
+    Fields<
+        Skip<0x4>,
+        Field<Vector<TStatsScoring, 0x64>, &StatsManager::scorings>,
+        Skip<0x4>,
+        Field<Vector<TStatsPlaystyle, 0x1a>, &StatsManager::playstyles>,
+        Skip<0x10>,
+        Field<Ref<Primitive<StatsValues>>, &StatsManager::values>,
+        Skip<0x8>,
+        Field<
+            Primitive<AchievedPlaystyles>,
+            &StatsManager::achieved_playstyles>,
+        Skip<0x2c>,
+        Field<Int32, &StatsManager::last_achieved_playstyle>,
+        Skip<0x18>,
+        Field<Int32, &StatsManager::score>,
+        Skip<0x18>,
+        Field<NullableRef<TStatsDifficulties>, &StatsManager::difficulties>>>;
+
+struct ChallengeData {
+    int8_t completed;
+};
+
+using TChallengeData = Struct<
+    ChallengeData,
+    Fields<Skip<0x98>, Field<Int8, &ChallengeData::completed>>>;
+
+struct ChallengeNode {
+    uint32_t next_node;
+    std::optional<ChallengeData> data;
+};
+
+using TChallengeNode = Struct<
+    ChallengeNode,
+    Fields<
+        Field<RawAddr<uint32_t>, &ChallengeNode::next_node>,
+        Skip<0x8>,
+        Field<NullableRef<TChallengeData>, &ChallengeNode::data>>>;
+
+struct ChallengeManager {
+    std::vector<ChallengeNode> challenges;
+};
+
+using TChallengeManager = Struct<
+    ChallengeManager,
+    Fields<
+        Skip<0x8>,
+        Field<
+            CircularList<TChallengeNode, &ChallengeNode::next_node, 0x12c>,
+            &ChallengeManager::challenges>>>;
+
 struct LevelData {
     int32_t level;
 };
@@ -171,185 +341,6 @@ using TTimeManager = Struct<
         Field<Int64, &TimeManager::frame_remain>,
         Field<Int32, &TimeManager::paused>,
         Field<Int32, &TimeManager::frame_count>>>;
-
-struct StatsScoringData {
-    String title;
-    float _unused;
-    int32_t index;
-    int32_t multiplier;
-};
-
-using TStatsScoringData = Struct<
-    StatsScoringData,
-    Fields<
-        Skip<0x8>,
-        Field<TString, &StatsScoringData::title>,
-        Skip<0x18>,
-        Field<Float, &StatsScoringData::_unused>,
-        Skip<0x8>,
-        Field<Int32, &StatsScoringData::index>,
-        Skip<0x4>,
-        Field<Int32, &StatsScoringData::multiplier>>>;
-
-struct StatsScoring {
-    StatsScoringData data;
-};
-
-using TStatsScoring = Struct<
-    StatsScoring,
-    Fields<Skip<0x4>, Field<Ref<TStatsScoringData>, &StatsScoring::data>>>;
-
-struct PlaystyleConditionData {
-    String title;
-    int32_t index;
-    int32_t threshold;
-};
-
-using TPlaystyleConditionData = Struct<
-    PlaystyleConditionData,
-    Fields<
-        Skip<0x8>,
-        Field<TString, &PlaystyleConditionData::title>,
-        Skip<0x24>,
-        Field<Int32, &PlaystyleConditionData::index>,
-        Field<Int32, &PlaystyleConditionData::threshold>>>;
-
-struct PlaystyleCondition {
-    PlaystyleConditionData data;
-};
-
-using TPlaystyleCondition = Struct<
-    PlaystyleCondition,
-    Fields<
-        Skip<0x4>,
-        Field<Ref<TPlaystyleConditionData>, &PlaystyleCondition::data>>>;
-
-struct StatsPlaystyleData {
-    std::vector<PlaystyleCondition> condition_min;
-    std::vector<PlaystyleCondition> condition_max;
-    String title;
-    int8_t is_unlockable;
-    int32_t priority;
-    int32_t percentage_min;
-    int32_t percentage_max;
-    int8_t is_achieved;
-};
-
-using TStatsPlaystyleData = Struct<
-    StatsPlaystyleData,
-    Fields<
-        Skip<0x8>,
-        Field<
-            Vector<TPlaystyleCondition, 0xa>,
-            &StatsPlaystyleData::condition_min>,
-        Skip<0x4>,
-        Field<
-            Vector<TPlaystyleCondition, 0xa>,
-            &StatsPlaystyleData::condition_max>,
-        Skip<0x4>,
-        Field<TString, &StatsPlaystyleData::title>,
-        Skip<0xc>,
-        Field<Int8, &StatsPlaystyleData::is_unlockable>,
-        Skip<0x3>,
-        Field<Int32, &StatsPlaystyleData::priority>,
-        Field<Int32, &StatsPlaystyleData::percentage_min>,
-        Field<Int32, &StatsPlaystyleData::percentage_max>,
-        Skip<0xc>,
-        Field<Int8, &StatsPlaystyleData::is_achieved>,
-        Skip<0x3>>>;
-
-struct StatsPlaystyle {
-    StatsPlaystyleData data;
-};
-
-using TStatsPlaystyle = Struct<
-    StatsPlaystyle,
-    Fields<Skip<0x4>, Field<Ref<TStatsPlaystyleData>, &StatsPlaystyle::data>>>;
-
-struct StatsDifficulties {
-    std::array<float, 5> scales;
-};
-
-using TStatsDifficulties = Struct<
-    StatsDifficulties,
-    Fields<
-        Skip<0x8>,
-        Field<Array<Float, 5>, &StatsDifficulties::scales>>>;
-
-using StatsValues = std::array<
-    std::
-        array<std::array<int16_t, 0x64>, 0xd>,
-    0x1a>;
-
-// only 26 playstyles but array has size 100
-using AchievedPlaystyles = std::array<int8_t, 100>;
-
-struct StatsManager {
-    std::vector<StatsScoring> scorings;
-    std::vector<StatsPlaystyle> playstyles;
-    StatsValues values;
-    AchievedPlaystyles achieved_playstyles;
-    int32_t last_achieved_playstyle;
-    int32_t score;
-    std::optional<StatsDifficulties> difficulties;
-};
-
-using TStatsManager = Struct<
-    StatsManager,
-    Fields<
-        Skip<0x4>,
-        Field<Vector<TStatsScoring, 0x64>, &StatsManager::scorings>,
-        Skip<0x4>,
-        Field<
-            Vector<TStatsPlaystyle, 0x1a>,
-            &StatsManager::playstyles>,
-        Skip<0x10>,
-        Field<Ref<Primitive<StatsValues>>, &StatsManager::values>,
-        Skip<0x8>,
-        Field<
-            Primitive<AchievedPlaystyles>,
-            &StatsManager::achieved_playstyles>,
-        Skip<0x2c>,
-        Field<Int32, &StatsManager::last_achieved_playstyle>,
-        Skip<0x18>,
-        Field<Int32, &StatsManager::score>,
-        Skip<0x18>,
-        Field<NullableRef<TStatsDifficulties>, &StatsManager::difficulties>>>;
-
-struct ChallengeData {
-    int8_t completed;
-};
-
-using TChallengeData = Struct<
-    ChallengeData,
-    Fields<Skip<0x98>, Field<Int8, &ChallengeData::completed>>>;
-
-struct ChallengeNode {
-    uint32_t next_node;
-    std::optional<ChallengeData> data;
-};
-
-using TChallengeNode = Struct<
-    ChallengeNode,
-    Fields<
-        Field<RawAddr<uint32_t>, &ChallengeNode::next_node>,
-        Skip<0x8>,
-        Field<NullableRef<TChallengeData>, &ChallengeNode::data>>>;
-
-struct ChallengeManager {
-    std::vector<ChallengeNode> challenges;
-};
-
-using TChallengeManager = Struct<
-    ChallengeManager,
-    Fields<
-        Skip<0x8>,
-        Field<
-            CircularList<
-                TChallengeNode,
-                &ChallengeNode::next_node,
-                0x12c>,
-            &ChallengeManager::challenges>>>;
 
 struct Game {
     int32_t difficulty;
