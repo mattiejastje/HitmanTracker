@@ -158,7 +158,7 @@ local StatsPlaystyle = d.Struct("StatsPlaystyle", {
 
 local StatsDifficulties = d.Struct("StatsDifficulties", {
   d.Skip(0x08),
-  d.Field(d.Array(f32, NUM_DIFFICULTIES), "scales"),
+  d.Field(d.PrimitiveArray("f", { NUM_DIFFICULTIES }), "scales"),
 })
 
 local StatsManager = d.Struct("StatsManager", {
@@ -167,9 +167,9 @@ local StatsManager = d.Struct("StatsManager", {
   d.Skip(0x04),
   d.Field(d.Vector(StatsPlaystyle, NUM_PLAYSTYLES), "playstyles"),
   d.Skip(0x10),
-  d.Field(d.Ref(d.Array(d.Array(d.Array(i16, NUM_STATS_VALUES), NUM_CHECKPOINTS_PER_LEVEL), NUM_LEVELS)), "values"),
+  d.Field(d.Ref(d.PrimitiveArray("i2", { NUM_LEVELS, NUM_CHECKPOINTS_PER_LEVEL, NUM_STATS_VALUES })), "values"),
   d.Skip(0x08),
-  d.Field(d.Ref(d.Array(i8, 100)), "achieved_playstyles"), -- across all gaming sessions
+  d.Field(d.Ref(d.PrimitiveArray("i1", { 100 })), "achieved_playstyles"), -- across all gaming sessions
   d.Skip(0x2C),
   d.Field(i32, "last_achieved_playstyle"), -- across all gaming sessions
   d.Skip(0x18),
