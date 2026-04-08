@@ -11,7 +11,6 @@ using namespace mempeep;
 
 namespace hitman_absolution::structs {
 
-constexpr int32_t NUM_DIFFICULTIES = 5;
 // note: not all levels are used
 constexpr int32_t NUM_LEVELS = 26;
 // levels have fewer than 13 checkpoints
@@ -278,14 +277,14 @@ using TStatsPlaystyle = Struct<
     Fields<Skip<0x4>, Field<Ref<TStatsPlaystyleData>, &StatsPlaystyle::data>>>;
 
 struct StatsDifficulties {
-    std::array<float, NUM_DIFFICULTIES> scales;
+    std::array<float, 5> scales;
 };
 
 using TStatsDifficulties = Struct<
     StatsDifficulties,
     Fields<
         Skip<0x8>,
-        Field<Array<Float, NUM_DIFFICULTIES>, &StatsDifficulties::scales>>>;
+        Field<Array<Float, 5>, &StatsDifficulties::scales>>>;
 
 using StatsValues = std::array<
     std::
@@ -377,7 +376,7 @@ using TGame = Struct<
     Game,
     Fields<
         Seek<0xd58c60 + 0x10 + 0x94>,
-        Field<Bounded<Int32, 0, NUM_DIFFICULTIES - 1>, &Game::difficulty>,
+        Field<Bounded<Int32, 0, 5 - 1>, &Game::difficulty>,
         Seek<0xd61710>,
         Field<TStatsManager, &Game::stats_manager>,
         Seek<0xd617c0>,
