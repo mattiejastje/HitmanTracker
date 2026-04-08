@@ -342,7 +342,11 @@ end
 --- Raw score needed for best score based playstyle (i.e. "Shadow").
 local function get_best_raw_score(level_infos, level, checkpoint_index)
   local level_info = get_level_info(level_infos, level)
-  return level_info.checkpoint_info.nodes[checkpoint_index + 1].data.best_raw_score
+  if level_info ~= nil then
+    return level_info.checkpoint_info.nodes[checkpoint_index + 1].data.best_raw_score
+  else
+    return nil
+  end
 end
 
 --- Check if percentage is achieved according to playstyle.
@@ -354,7 +358,7 @@ end
 -- Score based playstyles are agent (0), veteran (1), specialist (2), professional (3), and shadow (4).
 -- @return The index of the playstyle, or nil if no playstyle is achieved yet.
 local function get_playstyle_index_by_score(raw_score, best_raw_score, playstyles)
-  local percentage = math.max(0, math.min(100, raw_score // best_raw_score))
+  local percentage = math.max(0, math.min(100, (100 * raw_score) // best_raw_score))
   for i, playstyle in ipairs(playstyles) do
     if is_playstyle_percentage_achieved(percentage, playstyle.data) then
       return i - 1 -- lua index starts at 1
@@ -365,7 +369,7 @@ end
 
 -- use hardcoded bounds
 local function get_playstyle_index_by_score_2(raw_score, best_raw_score)
-  local percentage = raw_score // best_raw_score
+  local percentage = (100 * raw_score) // best_raw_score
   local bounds = { 49, 79, 89, 99 }
   for i, bound in ipairs(bounds) do
     if percentage <= bound then
