@@ -1,7 +1,7 @@
 local ctypes = require("mempeep.ctypes")
 local hma = require("hma")
 
-local out = io.open("hma_structs.hpp", "w")
+local out = io.open("hitman_absolution/structs.hpp", "w")
 if out then
   out:write([[#pragma once
 
@@ -13,8 +13,14 @@ if out then
 #include <vector>
 
 using namespace mempeep;
+
+namespace hitman_absolution::structs {
+
 ]])
   ctypes.native_struct_cdecls(hma.Game, out)
   ctypes.mempeep_struct_cdecls(hma.Game, out)
+    out:write([[
+}
+]])
   out:close()
 end
