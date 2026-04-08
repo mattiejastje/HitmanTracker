@@ -1,0 +1,5 @@
+{
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder};${workspaceFolder}/mempeep/cpp/include"
+    ]
+}
