@@ -17,7 +17,7 @@ using namespace mempeep;
 namespace hitman_absolution::structs {
 
 ]])
-  ctypes.native_struct_cdecls(hma.Game, out)
+  ctypes.native_struct_cdecls(hma.Game, "", out)
     out:write([[
 }
 ]])
