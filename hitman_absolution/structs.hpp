@@ -11,7 +11,7 @@ using namespace mempeep;
 
 namespace hitman_absolution::structs {
 
-constexpr int32_t MAX_PLAYSTYLE_CONDITIONS = 10;
+constexpr int32_t 0xa = 10;
 constexpr int32_t NUM_STATS_VALUES = 100;
 
 struct String {
@@ -243,11 +243,11 @@ using TStatsPlaystyleData = Struct<
     Fields<
         Skip<0x8>,
         Field<
-            Vector<TPlaystyleCondition, MAX_PLAYSTYLE_CONDITIONS>,
+            Vector<TPlaystyleCondition, 0xa>,
             &StatsPlaystyleData::condition_min>,
         Skip<0x4>,
         Field<
-            Vector<TPlaystyleCondition, MAX_PLAYSTYLE_CONDITIONS>,
+            Vector<TPlaystyleCondition, 0xa>,
             &StatsPlaystyleData::condition_max>,
         Skip<0x4>,
         Field<TString, &StatsPlaystyleData::title>,
