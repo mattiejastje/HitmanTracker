@@ -207,7 +207,7 @@ M.Game = d.Struct("Game", {
   d.Field(LevelManager, "level_manager"),
   d.Seek(0xE21394),
   -- level == -1 used by game when no level selected
-  d.Field(d.Bounded(i32, -1, NUM_LEVELS), "level"), -- part of level manager?
+  d.Field(d.Bounded(i32, -1, NUM_LEVELS - 1), "level"), -- part of level manager?
   d.Seek(0xE21580),
   d.Field(CheckpointsManager, "checkpoints_manager"),
   d.Seek(0xE24730),
