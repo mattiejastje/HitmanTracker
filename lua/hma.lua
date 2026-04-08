@@ -37,7 +37,7 @@ local CheckpointData = d.Struct("CheckpointData", {
 
 local CheckpointNode = d.Struct("CheckpointNode", {
   d.Skip(0x04),
-  d.Field(d.Ref(CheckpointData), "data"),
+  d.Field(d.NullableRef(CheckpointData), "data"),
 })
 
 local CheckpointInfo = d.Struct("CheckpointInfo", {
