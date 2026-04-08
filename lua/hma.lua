@@ -196,7 +196,7 @@ local ChallengeManager = d.Struct("ChallengeManager", {
 
 M.Game = d.Struct("Game", {
   d.Seek(0xD58C60 + 0x10 + 0x94),
-  d.Field(i32, "difficulty"),
+  d.Field(d.Bounded(i32, 0, NUM_DIFFICULTIES - 1), "difficulty"),
   d.Seek(0xD61710),
   d.Field(StatsManager, "stats_manager"),
   d.Seek(0xD617C0),
@@ -206,7 +206,8 @@ M.Game = d.Struct("Game", {
   d.Seek(0xE21310),
   d.Field(LevelManager, "level_manager"),
   d.Seek(0xE21394),
-  d.Field(i32, "level"), -- part of level manager?
+  -- level == -1 used by game when no level selected
+  d.Field(d.Bounded(i32, -1, NUM_LEVELS), "level"), -- part of level manager?
   d.Seek(0xE21580),
   d.Field(CheckpointsManager, "checkpoints_manager"),
   d.Seek(0xE24730),
