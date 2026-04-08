@@ -117,24 +117,20 @@ using TStatsPlaystyle = Struct<
     Fields<Skip<0x4>, Field<Ref<TStatsPlaystyleData>, &StatsPlaystyle::data>>>;
 
 struct StatsDifficulties {
-    std::array<float, 5> scales;
+    std::array<float, 0x5> scales;
 };
 
 using TStatsDifficulties = Struct<
     StatsDifficulties,
-    Fields<Skip<0x8>, Field<Array<Float, 5>, &StatsDifficulties::scales>>>;
-
-using StatsValues
-    = std::array<std::array<std::array<int16_t, 0x64>, 0xd>, 0x1a>;
-
-// only 26 playstyles but array has size 100
-using AchievedPlaystyles = std::array<int8_t, 100>;
+    Fields<
+        Skip<0x8>,
+        Field<Primitive<std::array<float, 0x5>>, &StatsDifficulties::scales>>>;
 
 struct StatsManager {
     std::vector<StatsScoring> scorings;
     std::vector<StatsPlaystyle> playstyles;
-    StatsValues values;
-    AchievedPlaystyles achieved_playstyles;
+    std::array<std::array<std::array<int16_t, 0x64>, 0xd>, 0x1a> values;
+    std::array<int8_t, 0x64> achieved_playstyles;
     int32_t last_achieved_playstyle;
     int32_t score;
     std::optional<StatsDifficulties> difficulties;
@@ -148,10 +144,13 @@ using TStatsManager = Struct<
         Skip<0x4>,
         Field<Vector<TStatsPlaystyle, 0x1a>, &StatsManager::playstyles>,
         Skip<0x10>,
-        Field<Ref<Primitive<StatsValues>>, &StatsManager::values>,
+        Field<
+            Ref<Primitive<
+                std::array<std::array<std::array<int16_t, 0x64>, 0xd>, 0x1a>>>,
+            &StatsManager::values>,
         Skip<0x8>,
         Field<
-            Primitive<AchievedPlaystyles>,
+            Ref<Primitive<std::array<int8_t, 0x64>>>,
             &StatsManager::achieved_playstyles>,
         Skip<0x2c>,
         Field<Int32, &StatsManager::last_achieved_playstyle>,
@@ -169,14 +168,14 @@ using TChallengeData = Struct<
     Fields<Skip<0x98>, Field<Int8, &ChallengeData::completed>>>;
 
 struct ChallengeNode {
-    uint32_t next_node;
+    uintptr_t next_node;
     std::optional<ChallengeData> data;
 };
 
 using TChallengeNode = Struct<
     ChallengeNode,
     Fields<
-        Field<RawAddr<uint32_t>, &ChallengeNode::next_node>,
+        Field<RawAddr<uintptr_t>, &ChallengeNode::next_node>,
         Skip<0x8>,
         Field<NullableRef<TChallengeData>, &ChallengeNode::data>>>;
 
@@ -354,8 +353,8 @@ struct Game {
 using TGame = Struct<
     Game,
     Fields<
-        Seek<0xd58c60 + 0x10 + 0x94>,
-        Field<Bounded<Int32, 0, 5 - 1>, &Game::difficulty>,
+        Seek<0xd58d04>,
+        Field<Bounded<Int32, 0, 4>, &Game::difficulty>,
         Seek<0xd61710>,
         Field<TStatsManager, &Game::stats_manager>,
         Seek<0xd617c0>,
@@ -365,8 +364,7 @@ using TGame = Struct<
         Seek<0xe21310>,
         Field<TLevelManager, &Game::level_manager>,
         Seek<0xe21394>,
-        // level == -1 used by game when no level selected
-        Field<Bounded<Int32, -1, 0x1a - 1>, &Game::level>,
+        Field<Bounded<Int32, -1, 25>, &Game::level>,
         Seek<0xe21580>,
         Field<TCheckpointsManager, &Game::checkpoints_manager>,
         Seek<0xe24730>,
