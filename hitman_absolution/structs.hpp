@@ -11,8 +11,6 @@ using namespace mempeep;
 
 namespace hitman_absolution::structs {
 
-// note: not all levels are used
-constexpr int32_t NUM_LEVELS = 26;
 // levels have fewer than 13 checkpoints
 // the 13 is an upper bound from the engine, used in the array of stats values
 constexpr int32_t NUM_CHECKPOINTS_PER_LEVEL = 13;
@@ -93,7 +91,7 @@ using TGameData = Struct<
     GameData,
     Fields<
         Skip<0x20>,
-        Field<Vector<TGameDataLevelInfo, NUM_LEVELS>, &GameData::level_infos>>>;
+        Field<Vector<TGameDataLevelInfo, 0x1a>, &GameData::level_infos>>>;
 
 struct LevelManager {
     String scene;
@@ -289,7 +287,7 @@ using TStatsDifficulties = Struct<
 using StatsValues = std::array<
     std::
         array<std::array<int16_t, NUM_STATS_VALUES>, NUM_CHECKPOINTS_PER_LEVEL>,
-    NUM_LEVELS>;
+    0x1a>;
 
 // only 26 playstyles but array has size 100
 using AchievedPlaystyles = std::array<int8_t, 100>;
@@ -387,7 +385,7 @@ using TGame = Struct<
         Field<TLevelManager, &Game::level_manager>,
         Seek<0xe21394>,
         // level == -1 used by game when no level selected
-        Field<Bounded<Int32, -1, NUM_LEVELS - 1>, &Game::level>,
+        Field<Bounded<Int32, -1, 0x1a - 1>, &Game::level>,
         Seek<0xe21580>,
         Field<TCheckpointsManager, &Game::checkpoints_manager>,
         Seek<0xe24730>,
