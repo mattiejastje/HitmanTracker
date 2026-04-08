@@ -90,7 +90,7 @@ using TGameDataLevelInfo = Struct<
         Field<
             NullableRef<TCheckpointInfo>,
             &GameDataLevelInfo::checkpoint_info>,
-        Skip<0xA0>>>;
+        Skip<0xa0>>>;
 
 struct GameData {
     std::vector<GameDataLevelInfo> level_infos;
@@ -134,11 +134,11 @@ struct Checkpoints {
 using TCheckpoints = Struct<
     Checkpoints,
     Fields<
-        Skip<0xC>,
+        Skip<0xc>,
         Field<
             Vector<TCheckpoint, NUM_CHECKPOINTS_PER_LEVEL>,
             &Checkpoints::checkpoint>,
-        Skip<0x3C>,
+        Skip<0x3c>,
         Field<TI32, &Checkpoints::current_key>>>;
 
 struct CheckpointsManager {
@@ -265,13 +265,13 @@ using TStatsPlaystyleData = Struct<
             &StatsPlaystyleData::condition_max>,
         Skip<0x4>,
         Field<TString, &StatsPlaystyleData::title>,
-        Skip<0xC>,
+        Skip<0xc>,
         Field<TI8, &StatsPlaystyleData::is_unlockable>,
         Skip<0x3>,
         Field<TI32, &StatsPlaystyleData::priority>,
         Field<TI32, &StatsPlaystyleData::percentage_min>,
         Field<TI32, &StatsPlaystyleData::percentage_max>,
-        Skip<0xC>,
+        Skip<0xc>,
         Field<TI8, &StatsPlaystyleData::is_achieved>,
         Skip<0x3>>>;
 
@@ -326,7 +326,7 @@ using TStatsManager = Struct<
         Field<
             Primitive<AchievedPlaystyles>,
             &StatsManager::achieved_playstyles>,
-        Skip<0x2C>,
+        Skip<0x2c>,
         Field<TI32, &StatsManager::last_achieved_playstyle>,
         Skip<0x18>,
         Field<TI32, &StatsManager::score>,
@@ -382,22 +382,22 @@ struct Game {
 using TGame = Struct<
     Game,
     Fields<
-        Seek<0xD58C60 + 0x10 + 0x94>,
+        Seek<0xd58c60 + 0x10 + 0x94>,
         Field<Bounded<TI32, 0, NUM_DIFFICULTIES - 1>, &Game::difficulty>,
-        Seek<0xD61710>,
+        Seek<0xd61710>,
         Field<TStatsManager, &Game::stats_manager>,
-        Seek<0xD617C0>,
+        Seek<0xd617c0>,
         Field<TChallengeManager, &Game::challenge_manager>,
-        Seek<0xE212E0>,
+        Seek<0xe212e0>,
         Field<TGameData, &Game::game_data>,
-        Seek<0xE21310>,
+        Seek<0xe21310>,
         Field<TLevelManager, &Game::level_manager>,
-        Seek<0xE21394>,
+        Seek<0xe21394>,
         // level == -1 used by game when no level selected
         Field<Bounded<TI32, -1, NUM_LEVELS - 1>, &Game::level>,
-        Seek<0xE21580>,
+        Seek<0xe21580>,
         Field<TCheckpointsManager, &Game::checkpoints_manager>,
-        Seek<0xE24730>,
+        Seek<0xe24730>,
         Field<TTimeManager, &Game::time_manager>>>;
 
 }  // namespace hitman_absolution::structs
