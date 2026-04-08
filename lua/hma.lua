@@ -3,7 +3,16 @@ local M = {}
 local c = require("mempeep.ctypes")
 local d = require("mempeep.descriptors")
 
-local MAX_VEC = 0x1000 -- reasonable upper bound for all vectors/lists
+local NUM_DIFFICULTIES = 5
+-- note: not all levels are used
+local NUM_LEVELS = 26
+-- levels have fewer than 13 checkpoints
+-- the 13 is an upper bound from the engine, used in the array of stats values
+local NUM_CHECKPOINTS_PER_LEVEL = 13
+local MAX_CHALLENGES = 300  -- never seen more than 279
+local NUM_PLAYSTYLES = 26
+local MAX_PLAYSTYLE_CONDITIONS = 10
+local NUM_STATS_VALUES = 100
 
 local i8 = d.Primitive("i1")
 local i16 = d.Primitive("i2")
@@ -33,7 +42,7 @@ local CheckpointNode = d.Struct("CheckpointNode", {
 
 local CheckpointInfo = d.Struct("CheckpointInfo", {
   d.Skip(0x10),
-  d.Field(d.Vector(CheckpointNode, MAX_VEC), "nodes"),
+  d.Field(d.Vector(CheckpointNode, NUM_CHECKPOINTS_PER_LEVEL), "nodes"),
 })
 
 local GameDataLevelInfo = d.Struct("GameDataLevelInfo", {
@@ -46,7 +55,7 @@ local GameDataLevelInfo = d.Struct("GameDataLevelInfo", {
 
 local GameData = d.Struct("GameData", {
   d.Skip(0x20),
-  d.Field(d.Vector(GameDataLevelInfo, MAX_VEC), "level_infos"),
+  d.Field(d.Vector(GameDataLevelInfo, NUM_LEVELS), "level_infos"),
 })
 
 local LevelManager = d.Struct("LevelManager", {
@@ -64,7 +73,7 @@ local Checkpoint = d.Struct("Checkpoint", {
 
 local Checkpoints = d.Struct("Checkpoints", {
   d.Skip(0x0C),
-  d.Field(d.Vector(Checkpoint, MAX_VEC), "checkpoint"),
+  d.Field(d.Vector(Checkpoint, NUM_CHECKPOINTS_PER_LEVEL), "checkpoint"),
   d.Skip(0x3C),
   d.Field(i32, "current_key"),
 })
@@ -126,9 +135,9 @@ local PlaystyleCondition = d.Struct("PlaystyleCondition", {
 
 local StatsPlaystyleData = d.Struct("StatsPlaystyleData", {
   d.Skip(0x08),
-  d.Field(d.Vector(PlaystyleCondition, MAX_VEC), "condition_min"),
+  d.Field(d.Vector(PlaystyleCondition, MAX_PLAYSTYLE_CONDITIONS), "condition_min"),
   d.Skip(0x04),
-  d.Field(d.Vector(PlaystyleCondition, MAX_VEC), "condition_max"),
+  d.Field(d.Vector(PlaystyleCondition, MAX_PLAYSTYLE_CONDITIONS), "condition_max"),
   d.Skip(0x04),
   d.Field(String, "title"),
   d.Skip(0x0C),
@@ -149,16 +158,16 @@ local StatsPlaystyle = d.Struct("StatsPlaystyle", {
 
 local StatsDifficulties = d.Struct("StatsDifficulties", {
   d.Skip(0x08),
-  d.Field(d.Array(f32, 5), "scales"),
+  d.Field(d.Array(f32, NUM_DIFFICULTIES), "scales"),
 })
 
 local StatsManager = d.Struct("StatsManager", {
   d.Skip(0x04),
-  d.Field(d.Vector(StatsScoring, MAX_VEC), "scorings"),
+  d.Field(d.Vector(StatsScoring, NUM_STATS_VALUES), "scorings"),
   d.Skip(0x04),
-  d.Field(d.Vector(StatsPlaystyle, MAX_VEC), "playstyles"),
+  d.Field(d.Vector(StatsPlaystyle, NUM_PLAYSTYLES), "playstyles"),
   d.Skip(0x10),
-  d.Field(d.Ref(d.Array(d.Array(d.Array(i16, 100), 13), 26)), "values"),
+  d.Field(d.Ref(d.Array(d.Array(d.Array(i16, NUM_STATS_VALUES), NUM_CHECKPOINTS_PER_LEVEL), NUM_LEVELS)), "values"),
   d.Skip(0x08),
   d.Field(d.Ref(d.Array(i8, 100)), "achieved_playstyles"), -- across all gaming sessions
   d.Skip(0x2C),
@@ -182,7 +191,7 @@ local ChallengeNode = d.Struct("ChallengeNode", {
 
 local ChallengeManager = d.Struct("ChallengeManager", {
   d.Skip(0x08),
-  d.Field(d.CircularList(ChallengeNode, "next_node", MAX_VEC), "challenges"),
+  d.Field(d.CircularList(ChallengeNode, "next_node", MAX_CHALLENGES), "challenges"),
 })
 
 M.Game = d.Struct("Game", {
