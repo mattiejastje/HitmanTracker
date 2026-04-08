@@ -11,7 +11,6 @@ using namespace mempeep;
 
 namespace hitman_absolution::structs {
 
-constexpr int32_t MAX_CHALLENGES = 300;  // never seen more than 279
 constexpr int32_t NUM_PLAYSTYLES = 26;
 constexpr int32_t MAX_PLAYSTYLE_CONDITIONS = 10;
 constexpr int32_t NUM_STATS_VALUES = 100;
@@ -353,7 +352,7 @@ using TChallengeManager = Struct<
             CircularList<
                 TChallengeNode,
                 &ChallengeNode::next_node,
-                MAX_CHALLENGES>,
+                0x12c>,
             &ChallengeManager::challenges>>>;
 
 struct Game {
