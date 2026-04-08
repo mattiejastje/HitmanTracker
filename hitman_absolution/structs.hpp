@@ -11,9 +11,6 @@ using namespace mempeep;
 
 namespace hitman_absolution::structs {
 
-constexpr int32_t 0xa = 10;
-constexpr int32_t NUM_STATS_VALUES = 100;
-
 struct String {
     int32_t length;
     char text[40];
@@ -281,7 +278,7 @@ using TStatsDifficulties = Struct<
 
 using StatsValues = std::array<
     std::
-        array<std::array<int16_t, NUM_STATS_VALUES>, 0xd>,
+        array<std::array<int16_t, 0x64>, 0xd>,
     0x1a>;
 
 // only 26 playstyles but array has size 100
@@ -301,7 +298,7 @@ using TStatsManager = Struct<
     StatsManager,
     Fields<
         Skip<0x4>,
-        Field<Vector<TStatsScoring, NUM_STATS_VALUES>, &StatsManager::scorings>,
+        Field<Vector<TStatsScoring, 0x64>, &StatsManager::scorings>,
         Skip<0x4>,
         Field<
             Vector<TStatsPlaystyle, 0x1a>,
