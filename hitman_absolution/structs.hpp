@@ -225,9 +225,7 @@ using TCheckpointInfo = Struct<
     CheckpointInfo,
     Fields<
         Skip<0x10>,
-        Field<
-            Vector<TCheckpointNode, 0xd>,
-            &CheckpointInfo::nodes>>>;
+        Field<Vector<TCheckpointNode, 0xd>, &CheckpointInfo::nodes>>>;
 
 struct GameDataLevelInfo {
     LevelData level_data;
@@ -277,7 +275,9 @@ struct Checkpoint {
 
 using TCheckpoint = Struct<
     Checkpoint,
-    Fields<Field<Int32, &Checkpoint::key>, Field<Int32, &Checkpoint::_unknown>>>;
+    Fields<
+        Field<Int32, &Checkpoint::key>,
+        Field<Int32, &Checkpoint::_unknown>>>;
 
 struct Checkpoints {
     std::vector<Checkpoint> checkpoint;
@@ -288,9 +288,7 @@ using TCheckpoints = Struct<
     Checkpoints,
     Fields<
         Skip<0xc>,
-        Field<
-            Vector<TCheckpoint, 0xd>,
-            &Checkpoints::checkpoint>,
+        Field<Vector<TCheckpoint, 0xd>, &Checkpoints::checkpoint>,
         Skip<0x3c>,
         Field<Int32, &Checkpoints::current_key>>>;
 
