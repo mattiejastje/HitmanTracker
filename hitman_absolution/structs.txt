@@ -1,0 +1,198 @@
+struct String {
+  int32_t length;  // offset 0x0
+  std::array<char, 0x40>* text;  // offset 0x4
+};
+
+struct StatsScoringData {
+  int8_t _unknown1[0x8];
+  String title;  // offset 0x8
+  int8_t _unknown3[0x18];
+  float _unused;  // offset 0x28
+  int8_t _unknown5[0x8];
+  int32_t index;  // offset 0x34
+  int8_t _unknown7[0x4];
+  int32_t multiplier;  // offset 0x3c
+};
+
+struct StatsScoring {
+  int8_t _unknown1[0x4];
+  StatsScoringData* data;  // offset 0x4
+};
+
+struct PlaystyleConditionData {
+  int8_t _unknown1[0x8];
+  String title;  // offset 0x8
+  int8_t _unknown3[0x24];
+  int32_t index;  // offset 0x34
+  int32_t threshold;  // offset 0x38
+};
+
+struct PlaystyleCondition {
+  int8_t _unknown1[0x4];
+  PlaystyleConditionData* data;  // offset 0x4
+};
+
+struct StatsPlaystyleData {
+  int8_t _unknown1[0x8];
+  PlaystyleCondition* condition_min_begin;  // offset 0x8
+  PlaystyleCondition* condition_min_end;    // offset 0xc
+  int8_t _unknown3[0x4];
+  PlaystyleCondition* condition_max_begin;  // offset 0x14
+  PlaystyleCondition* condition_max_end;    // offset 0x18
+  int8_t _unknown5[0x4];
+  String title;  // offset 0x20
+  int8_t _unknown7[0xc];
+  int8_t is_unlockable;  // offset 0x34
+  int8_t _unknown9[0x3];
+  int32_t priority;  // offset 0x38
+  int32_t percentage_min;  // offset 0x3c
+  int32_t percentage_max;  // offset 0x40
+  int8_t _unknown13[0xc];
+  int8_t is_achieved;  // offset 0x50
+  int8_t _unknown15[0x3];
+};
+
+struct StatsPlaystyle {
+  int8_t _unknown1[0x4];
+  StatsPlaystyleData* data;  // offset 0x4
+};
+
+struct StatsDifficulties {
+  int8_t _unknown1[0x8];
+  std::array<float, 0x5> scales;  // offset 0x8
+};
+
+struct StatsManager {
+  int8_t _unknown1[0x4];
+  StatsScoring* scorings_begin;  // offset 0x4
+  StatsScoring* scorings_end;    // offset 0x8
+  int8_t _unknown3[0x4];
+  StatsPlaystyle* playstyles_begin;  // offset 0x10
+  StatsPlaystyle* playstyles_end;    // offset 0x14
+  int8_t _unknown5[0x10];
+  std::array<std::array<std::array<int16_t, 0x64>, 0xd>, 0x1a>* values;  // offset 0x28
+  int8_t _unknown7[0x8];
+  std::array<int8_t, 0x64>* achieved_playstyles;  // offset 0x34
+  int8_t _unknown9[0x2c];
+  int32_t last_achieved_playstyle;  // offset 0x64
+  int8_t _unknown11[0x18];
+  int32_t score;  // offset 0x80
+  int8_t _unknown13[0x18];
+  StatsDifficulties* difficulties;  // offset 0x9c
+};
+
+struct ChallengeData {
+  int8_t _unknown1[0x98];
+  int8_t completed;  // offset 0x98
+};
+
+struct ChallengeNode {
+  void* next_node;  // offset 0x0
+  int8_t _unknown2[0x8];
+  ChallengeData* data;  // offset 0xc
+};
+
+struct ChallengeManager {
+  int8_t _unknown1[0x8];
+  ChallengeNode* challenges;  // offset 0x8
+};
+
+struct LevelData {
+  int8_t _unknown1[0x8];
+  int32_t level;  // offset 0x8
+};
+
+struct CheckpointData {
+  int8_t _unknown1[0x38];
+  int32_t best_raw_score;  // offset 0x38
+};
+
+struct CheckpointNode {
+  int8_t _unknown1[0x4];
+  CheckpointData* data;  // offset 0x4
+};
+
+struct CheckpointInfo {
+  int8_t _unknown1[0x10];
+  CheckpointNode* nodes_begin;  // offset 0x10
+  CheckpointNode* nodes_end;    // offset 0x14
+};
+
+struct GameDataLevelInfo {
+  int8_t _unknown1[0x4];
+  LevelData* level_data;  // offset 0x4
+  int8_t _unknown3[0x4];
+  CheckpointInfo* checkpoint_info;  // offset 0xc
+  int8_t _unknown5[0xa0];
+};
+
+struct GameData {
+  int8_t _unknown1[0x20];
+  GameDataLevelInfo* level_infos_begin;  // offset 0x20
+  GameDataLevelInfo* level_infos_end;    // offset 0x24
+};
+
+struct LevelManager {
+  int8_t _unknown1[0x4];
+  String scene;  // offset 0x4
+  int32_t game_mode;  // offset 0xc
+  int8_t _unknown4[0x10];
+  int32_t checkpoint_index;  // offset 0x20
+};
+
+struct Checkpoint {
+  int32_t key;  // offset 0x0
+  int32_t _unknown;  // offset 0x4
+};
+
+struct Checkpoints {
+  int8_t _unknown1[0xc];
+  Checkpoint* checkpoint_begin;  // offset 0xc
+  Checkpoint* checkpoint_end;    // offset 0x10
+  int8_t _unknown3[0x3c];
+  int32_t current_key;  // offset 0x50
+};
+
+struct CheckpointsManager {
+  int8_t _unknown1[0x28];
+  Checkpoints* checkpoints;  // offset 0x28
+};
+
+struct TimeManager {
+  int8_t _unknown1[0x8];
+  int64_t ticks_per_second;  // offset 0x8
+  int64_t last_time_ticks;  // offset 0x10
+  int64_t game_time;  // offset 0x18
+  int64_t game_time_previous;  // offset 0x20
+  int64_t game_time_delta;  // offset 0x28
+  int64_t real_time;  // offset 0x30
+  int64_t real_time_previous;  // offset 0x38
+  int64_t real_time_delta;  // offset 0x40
+  float game_time_multiplier;  // offset 0x48
+  float debug_time_multiplier;  // offset 0x4c
+  int64_t frame_wait;  // offset 0x50
+  int64_t frame_step;  // offset 0x58
+  int64_t frame_remain;  // offset 0x60
+  int32_t paused;  // offset 0x68
+  int32_t frame_count;  // offset 0x6c
+};
+
+struct Game {
+  int8_t _unknown1[0xd58d04];
+  int32_t difficulty;  // offset 0xd58d04
+  int8_t _unknown3[0x8a08];
+  StatsManager stats_manager;  // offset 0xd61710
+  int8_t _unknown5[0x10];
+  ChallengeManager challenge_manager;  // offset 0xd617c0
+  int8_t _unknown7[0xbfb14];
+  GameData game_data;  // offset 0xe212e0
+  int8_t _unknown9[0x8];
+  LevelManager level_manager;  // offset 0xe21310
+  int8_t _unknown11[0x60];
+  int32_t level;  // offset 0xe21394
+  int8_t _unknown13[0x1e8];
+  CheckpointsManager checkpoints_manager;  // offset 0xe21580
+  int8_t _unknown15[0x3184];
+  TimeManager time_manager;  // offset 0xe24730
+};
+

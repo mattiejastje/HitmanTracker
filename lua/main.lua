@@ -23,3 +23,9 @@ namespace hitman_absolution::structs {
 ]])
   out:close()
 end
+
+local out2 = io.open("hitman_absolution/structs.txt", "w")
+if out2 then
+   ctypes.remote_struct_cdecls(hma.Game, 4, out2)
+   out2:close()
+end
