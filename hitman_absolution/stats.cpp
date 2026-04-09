@@ -16,6 +16,12 @@
 Profiler profiler_slow{"update slow"};
 Profiler profiler_fast{"update fast"};
 Profiler profiler_read{"remote memory read"};
+SignalMonitor monitor_slow{
+    "Unable to read game memory", 0.2f, 0.5f
+};
+SignalMonitor monitor_fast{
+    "Unable to read game time", 0.2f, 0.5f
+};
 
 enum class Rating { unrated, veteran, specialist, shadow, silent_assassin };
 
@@ -254,21 +260,19 @@ void hitman_absolution::update_slow(
     Stats& stats,
     float dt
 ) {
-    auto scoped_slow = ScopedProfiler{profiler_slow};
+    auto scoped_slow = ScopedProfiler{profiler_slow, dt};
     MemoryReader<uint32_t> reader{handle};
     // auto tracer = mempeep::OkTracer{};
     // TODO check performance against OkTracer
     auto tracer
         = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::VALUES};
+    bool ok = false;
     {
-        auto scoped_read = ScopedProfiler{profiler_read};
-        if (!mempeep::read<structs::TGame>(
-                base_ptrs[0], reader, tracer, game
-            )) {
-            logging::warn("game memory read failure");
-            return;
-        }
+        auto scoped_read = ScopedProfiler{profiler_read, dt};
+        ok = mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game);
     }
+    monitor_slow.update(static_cast<float>(ok), dt);
+    if (!ok) return;
     stats.difficulty = game.difficulty;
     // engine may set level to -1 if not in a mission
     // sadly it's not a reliable way to detect if we are in a mission
@@ -332,13 +336,10 @@ void hitman_absolution::update_fast(
     Stats& stats,
     float dt
 ) {
-    auto scoped_fast = ScopedProfiler{profiler_fast};
+    auto scoped_fast = ScopedProfiler{profiler_fast, dt};
     if (stats.map > 0) {
         auto game_time = read<int64_t>(handle, base_ptrs[0] + 0xE24730 + 0x18);
-        if (game_time) {
-            stats.time = game_time.value() * time_scale;
-        } else {
-            logging::error("Unable to read time");
-        }
+        if (game_time) stats.time = game_time.value() * time_scale;
+        monitor_fast.update(static_cast<float>(game_time.has_value()), dt);
     }
 }

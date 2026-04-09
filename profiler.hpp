@@ -1,39 +1,38 @@
+#pragma once
+
 #include <chrono>
 #include <cmath>
 #include <iostream>
 
 #include "logging.hpp"
 
-// simple profiler with exponential smoothing
+struct Signal {
+    float value = 0.0f;
+    float inv_tau = 1.0f;
+
+    inline void update(float sample, float dt) {
+        float alpha = std::min(dt * inv_tau, 1.0f);
+        value += alpha * (sample - value);
+    }
+};
+
 struct Profiler {
     using clock = std::chrono::steady_clock;
-
     const char* name;
-    double inv_tau = 1.0;
-    double interval = 1.0;
-    double avg = 0.0;
+    float interval = 1.0f;
+    Signal signal{};
     clock::time_point start = clock::now();
-    clock::time_point last_update = clock::now();
     clock::time_point last_log = clock::now();
-    bool initialized = false;
 
-    void begin() { start = clock::now(); }
+    inline void begin() { start = clock::now(); }
 
-    void end() {
+    inline void end(float dt) {
         auto now = clock::now();
-        double sample
-            = std::chrono::duration<double, std::micro>(now - start).count();
-        double dt = std::chrono::duration<double>(now - last_update).count();
-        double alpha = 1.0 - std::exp(-dt * inv_tau);
-        if (!initialized) {
-            avg = sample;
-            initialized = true;
-        } else {
-            avg = (1.0 - alpha) * avg + alpha * sample;
-        }
-        last_update = now;
-        if (std::chrono::duration<double>(now - last_log).count() > interval) {
-            logging::debug("avg time spent on {}: {}", name, avg);
+        float sample
+            = std::chrono::duration<float, std::micro>(now - start).count();
+        signal.update(sample, dt);
+        if (std::chrono::duration<float>(now - last_log).count() > interval) {
+            logging::debug("avg time on {}: {:.2f} us", name, signal.value);
             last_log = now;
         }
     }
@@ -41,8 +40,29 @@ struct Profiler {
 
 struct ScopedProfiler {
     Profiler& profiler;
+    float dt;
 
-    ScopedProfiler(Profiler& p) : profiler(p) { profiler.begin(); }
+    ScopedProfiler(Profiler& p, float dt) : profiler(p), dt(dt) { profiler.begin(); }
 
-    ~ScopedProfiler() { profiler.end(); }
+    ~ScopedProfiler() { profiler.end(dt); }
+};
+
+struct SignalMonitor {
+    const char* msg;
+    float low;
+    float high;
+    Signal signal{};
+    bool active = false;
+
+    inline void update(float sample, float dt) {
+        signal.update(sample, dt);
+        float v = signal.value;
+        if (!active && v > high) {
+            active = true;
+            logging::warn("{}", msg);
+        }
+        if (active && v < low) {
+            active = false;
+        }
+    }
 };
