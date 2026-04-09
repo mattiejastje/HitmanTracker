@@ -13,14 +13,14 @@ namespace hitman_absolution::structs {
 
 struct String {
     int32_t length;
-    char text[40];
+    std::string text;
 };
 
 using TString = Struct<
     String,
     Fields<
         Field<Int32, &String::length>,
-        Field<Ref<Primitive<char[40]>>, &String::text>>>;
+        Field<Ref<ZString<0x40>>, &String::text>>>;
 
 struct StatsScoringData {
     String title;

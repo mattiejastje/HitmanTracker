@@ -22,7 +22,7 @@ local f32 = d.Primitive("f")
 
 local String = d.Struct("String", {
   d.Field(i32, "length"),
-  d.Field(d.Ref(d.Primitive("c64")), "text"),
+  d.Field(d.Ref(d.ZString(0x40)), "text"),
 })
 
 local LevelData = d.Struct("LevelData", {
