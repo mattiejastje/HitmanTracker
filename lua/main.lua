@@ -1,9 +1,11 @@
 local ctypes = require("mempeep.ctypes")
+local hbm = require("hbm")
 local hma = require("hma")
 
-local out = io.open("hitman_absolution/structs.hpp", "w")
-if out then
-  out:write([[#pragma once
+do
+  local out = io.open("hitman_absolution/structs.hpp", "w")
+  if out then
+    out:write([[#pragma once
 
 #include <array>
 #include <cstdint>
@@ -17,15 +19,44 @@ using namespace mempeep;
 namespace hitman_absolution::structs {
 
 ]])
-  ctypes.native_struct_cdecls(hma.Game, "", out)
-    out:write([[
+    ctypes.native_struct_cdecls(hma.Game, "", out)
+      out:write([[
 }
 ]])
-  out:close()
+    out:close()
+  end
+
+  local out2 = io.open("hitman_absolution/structs.txt", "w")
+  if out2 then
+    ctypes.remote_struct_cdecls(hma.Game, 4, out2)
+    out2:close()
+  end
 end
 
-local out2 = io.open("hitman_absolution/structs.txt", "w")
-if out2 then
-   ctypes.remote_struct_cdecls(hma.Game, 4, out2)
-   out2:close()
+do
+  local out = io.open("hitman_blood_money/structs.hpp", "w")
+  if out then
+    out:write([[#pragma once
+
+#include <array>
+#include <cstdint>
+#include <mempeep/descriptors.hpp>
+
+using namespace mempeep;
+
+namespace hitman_blood_money::structs {
+
+]])
+    ctypes.native_struct_cdecls(hbm.Game, "", out)
+      out:write([[
+}
+]])
+    out:close()
+  end
+
+  local out2 = io.open("hitman_blood_money/structs.txt", "w")
+  if out2 then
+    ctypes.remote_struct_cdecls(hbm.Game, 4, out2)
+    out2:close()
+  end
 end
