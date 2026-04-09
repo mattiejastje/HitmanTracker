@@ -67,7 +67,7 @@ const std::vector<StatsArray> silent_assassin_combinations_map_1
        {0, 0, 0, 1, 2, 0, 0, 0},
        {0, 0, 0, 1, 0, 6, 0, 0}};
 
-void hitman_contracts::update_slow(
+bool hitman_contracts::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
@@ -87,7 +87,7 @@ void hitman_contracts::update_slow(
         map_pointer_number++;
         if (map_pointer_number > 10) map_pointer_number = 0;
         logging::trace("map pointer number: {}", map_pointer_number);
-        return;
+        return true;
     }
     logging::trace("Scene {}", scene.value());
     auto iter = scenes.find(scene.value());
@@ -128,9 +128,10 @@ void hitman_contracts::update_slow(
             logging::warn("Unable to read game stats");
         }
     }
+    return true;
 }
 
-void hitman_contracts::update_fast(
+bool hitman_contracts::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
@@ -138,8 +139,10 @@ void hitman_contracts::update_fast(
     float dt
 ) {
     if (stats.map > 0) {
-        stats.time
-            = read<float>(handle, base_ptrs[0] + 0x39457C, {0x24}, INT32_MAX)
-                  .value_or(stats.time);
+        auto time
+            = read<float>(handle, base_ptrs[0] + 0x39457C, {0x24}, INT32_MAX);
+        if (time) stats.time = time.value();
+        return time.has_value();
     }
+    return true;
 }

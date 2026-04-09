@@ -39,13 +39,15 @@ struct GameInfo {
     GameHook hook;
 };
 
-static void stats_nothing(
+static bool stats_nothing(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
     Stats& stats,
     float dt
-) {}
+) {
+    return true;
+}
 
 static HookPtr hook_nothing(
     std::shared_ptr<void> handle, const BasePtrs& base_ptrs

@@ -55,7 +55,7 @@ const std::vector<StatsArray> silent_assassin_combinations
        {2, 0, 2, 1, 0, 0, 0, 0}, {2, 0, 1, 1, 0, 1, 0, 0},
        {3, 0, 0, 1, 0, 0, 0, 0}};
 
-void hitman2_silent_assassin::update_slow(
+bool hitman2_silent_assassin::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
@@ -95,9 +95,10 @@ void hitman2_silent_assassin::update_slow(
             silent_assassin_combinations, game_stats, stats
         );
     }
+    return true;
 }
 
-void hitman2_silent_assassin::update_fast(
+bool hitman2_silent_assassin::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
@@ -105,13 +106,14 @@ void hitman2_silent_assassin::update_fast(
     float dt
 ) {
     if (stats.map > 0) {
-        stats.time = read<int32_t>(
-                         handle,
-                         base_ptrs[0] + 0x2A6C58,
-                         {0x118, 0xB38, 0x8, 0x1084, 0x24},
-                         INT32_MAX
-                     )
-                         .value_or(stats.time)
-                     * 0.0166666666666666f;  // 1 / 60.0f
+        auto time = read<int32_t>(
+            handle,
+            base_ptrs[0] + 0x2A6C58,
+            {0x118, 0xB38, 0x8, 0x1084, 0x24},
+            INT32_MAX
+        );
+        if (time) stats.time = time.value() * 0.0166666666666666f;  // 1 / 60.0f
+        return time.has_value();
     }
+    return true;
 }

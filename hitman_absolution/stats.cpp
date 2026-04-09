@@ -10,11 +10,7 @@
 #include "../hitman_common/stats.hpp"
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
-#include "../profiler.hpp"
 #include "structs.hpp"
-
-Signal monitor_slow{"slow update failure rate", "%", 0.5f};
-Signal monitor_fast{"fast update failure rate", "%", 0.5f};
 
 enum class Rating { unrated, veteran, specialist, shadow, silent_assassin };
 
@@ -246,7 +242,7 @@ static int32_t get_current_checkpoint_index(
 // global to avoid allocating large object on stack
 static hitman_absolution::structs::Game game{};
 
-void hitman_absolution::update_slow(
+bool hitman_absolution::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
@@ -258,34 +254,31 @@ void hitman_absolution::update_slow(
     // TODO check performance against OkTracer
     auto tracer
         = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::VALUES};
-    bool ok = false;
-    {
-        ok = mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game);
+    if (!mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game)) {
+        return false;
     }
-    monitor_slow.update(static_cast<float>(!ok), dt);
-    if (!ok) return;
     stats.difficulty = game.difficulty;
     // engine may set level to -1 if not in a mission
     // sadly it's not a reliable way to detect if we are in a mission
     if (game.level == -1) {
         stats.map = 0;
-        return;
+        return true;
     }
     if (!game.checkpoints_manager.checkpoints) {
         // in main menu and haven't loaded level yet
         logging::trace("Checkpoints pointer is null");
-        return;
+        return true;
     }
     auto checkpoints = *game.checkpoints_manager.checkpoints;
     auto checkpoint_index = get_current_checkpoint_index(checkpoints);
     if (checkpoint_index < 0) {
         stats.map = 0;
-        return;
+        return true;
     }
     logging::trace("Level {} at checkpoint {}", game.level, checkpoint_index);
     if (game.level >= scenes.size()) {
         logging::error("No map registered for level {}", game.level);
-        return;
+        return false;
     }
     auto& map_infos = scenes.at(game.level);
     if (checkpoint_index >= map_infos.size()) {
@@ -294,7 +287,7 @@ void hitman_absolution::update_slow(
             game.level,
             checkpoint_index
         );
-        return;
+        return false;
     }
     auto& map_info = map_infos.at(checkpoint_index);
     logging::trace("Map {}", map_info.map);
@@ -316,11 +309,12 @@ void hitman_absolution::update_slow(
                    : get_simple_rating_value(status),
                status};
     }
+    return true;
 }
 
 constexpr float time_scale = 1.0f / (1024 * 1024);
 
-void hitman_absolution::update_fast(
+bool hitman_absolution::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
@@ -330,6 +324,7 @@ void hitman_absolution::update_fast(
     if (stats.map > 0) {
         auto game_time = read<int64_t>(handle, base_ptrs[0] + 0xE24730 + 0x18);
         if (game_time) stats.time = game_time.value() * time_scale;
-        monitor_fast.update(static_cast<float>(!game_time.has_value()), dt);
+        return game_time.has_value();
     }
+    return true;
 }

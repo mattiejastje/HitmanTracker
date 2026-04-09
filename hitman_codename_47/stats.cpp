@@ -46,7 +46,7 @@ const std::unordered_map<std::string, int> scenes = {
     {R"(C5_Sanitarium\C5_2)", 13},
 };
 
-void hitman_codename_47::update_slow(
+bool hitman_codename_47::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
@@ -54,7 +54,7 @@ void hitman_codename_47::update_slow(
     float dt
 ) {
     auto scene = read_string(handle, label_ptrs.at(150), {0}, INT32_MAX, 64);
-    if (!scene) return;  // when game starts, scene will be null
+    if (!scene) return true;  // when game starts, scene will be null
     logging::trace("Scene {}", scene.value());
     auto iter = scenes.find(scene.value());
     if (iter != scenes.end()) {
@@ -72,9 +72,10 @@ void hitman_codename_47::update_slow(
     if (stats.map > 0) {
         // TODO
     }
+    return true;
 }
 
-void hitman_codename_47::update_fast(
+bool hitman_codename_47::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
@@ -83,10 +84,8 @@ void hitman_codename_47::update_fast(
 ) {
     if (stats.map > 0) {
         auto time = read<int32_t>(handle, label_ptrs.at(250));
-        if (time) {
-            stats.time = time.value() / 30.0f;
-        } else {
-            logging::error("Unable to read time");
-        }
+        if (time) stats.time = time.value() / 30.0f;
+        return time.has_value();
     }
+    return true;
 }

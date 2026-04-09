@@ -6,7 +6,7 @@
 
 namespace hitman2_silent_assassin {
 
-void update_slow(
+bool update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
@@ -14,7 +14,7 @@ void update_slow(
     float dt
 );
 
-void update_fast(
+bool update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,

@@ -251,7 +251,7 @@ static Status get_rating_status(const Stats& stats) {
                : Status::GREEN;
 };
 
-void hitman_blood_money::update_slow(
+bool hitman_blood_money::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
@@ -268,7 +268,7 @@ void hitman_blood_money::update_slow(
     auto scene = read_string(handle, label_ptrs.at(150), 64);
     if (!scene) {
         logging::error("Unable to read scene");
-        return;
+        return false;
     }
     logging::trace("Scene {}", scene.value());
     auto iter = scenes.find(scene.value());
@@ -329,9 +329,10 @@ void hitman_blood_money::update_slow(
         auto status = get_rating_status(stats);
         stats.rating = {get_simple_rating_value(status), status};
     }
+    return true;
 }
 
-void hitman_blood_money::update_fast(
+bool hitman_blood_money::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
@@ -340,10 +341,8 @@ void hitman_blood_money::update_fast(
 ) {
     if (stats.map > 0) {
         auto time = get_time(handle, base_ptrs, stats.map_stage);
-        if (time) {
-            stats.time = time.value() * 0.001f;
-        } else {
-            logging::error("Unable to read time");
-        }
+        if (time) stats.time = time.value() * 0.001f;
+        return time.has_value();
     }
+    return true;
 }

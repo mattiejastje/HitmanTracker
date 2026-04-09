@@ -30,6 +30,8 @@ static UINT g_ChangeDpi = 0;
 static std::optional<Game> game{};
 static Stats stats{0};
 static Signal frametime_signal{"frame time", "seconds"};
+static Signal error_slow{"slow update failure rate", "%", 0.5f};
+static Signal error_fast{"fast update failure rate", "%", 0.5f};
 static Profiler profiler_slow{{"slow update time", "seconds"}};
 static Profiler profiler_fast{{"fast update time", "seconds"}};
 
@@ -81,13 +83,14 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     last_now = now;
                     if (game) {
                         auto scoped_slow = ScopedProfiler{profiler_slow, dt};
-                        game->methods.update_slow(
+                        auto ok = game->methods.update_slow(
                             game->handle.get(),
                             game->base_ptrs,
                             game->hook->label_ptrs,
                             stats,
                             dt
                         );
+                        error_slow.update(static_cast<float>(!ok), dt);
                     };
                     return 0;
             }
@@ -116,13 +119,14 @@ static void Frame(UI* ui, const settings::Gui settings) {
         )) {
         if (game) {
             auto scoped_fast = ScopedProfiler{profiler_fast, dt};
-            game->methods.update_fast(
+            bool ok = game->methods.update_fast(
                 game->handle.get(),
                 game->base_ptrs,
                 game->hook->label_ptrs,
                 stats,
                 dt
             );
+            error_fast.update(static_cast<float>(!ok), dt);
             game->methods.gui(settings, ui->fonts, stats);
         } else {
             text(ui->fonts.title, settings.title.color, "Game not running");
