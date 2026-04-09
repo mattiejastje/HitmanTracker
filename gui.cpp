@@ -29,7 +29,7 @@ static RECT g_ChangeRect = {};
 static UINT g_ChangeDpi = 0;
 static std::optional<Game> game{};
 static Stats stats{0};
-static Signal fps_signal{};
+static Signal frametime_signal{"frame time", "seconds"};
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
@@ -95,6 +95,10 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 static void Frame(UI* ui, const settings::Gui settings) {
     logging::trace("New frame...");
     static auto last_now = std::chrono::steady_clock::now();
+    auto now = std::chrono::steady_clock::now();
+    float dt = std::chrono::duration<float>(now - last_now).count();
+    last_now = now;
+    frametime_signal.update(dt, dt);
     ImGui_ImplDX9_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
@@ -108,9 +112,6 @@ static void Frame(UI* ui, const settings::Gui settings) {
                 | ImGuiWindowFlags_NoMove
         )) {
         if (game) {
-            auto now = std::chrono::steady_clock::now();
-            float dt = std::chrono::duration<float>(now - last_now).count();
-            last_now = now;
             game->methods.update_fast(
                 game->handle.get(),
                 game->base_ptrs,
@@ -119,8 +120,6 @@ static void Frame(UI* ui, const settings::Gui settings) {
                 dt
             );
             game->methods.gui(settings, ui->fonts, stats);
-            fps_signal.update(1.0f / dt, dt);
-            logging::trace("Tracker fps = {:.2f}", fps_signal.value);
         } else {
             text(ui->fonts.title, settings.title.color, "Game not running");
         }
