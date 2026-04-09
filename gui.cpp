@@ -30,6 +30,8 @@ static UINT g_ChangeDpi = 0;
 static std::optional<Game> game{};
 static Stats stats{0};
 static Signal frametime_signal{"frame time", "seconds"};
+static Profiler profiler_slow{{"slow update time", "seconds"}};
+static Profiler profiler_fast{{"fast update time", "seconds"}};
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
@@ -78,6 +80,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         = std::chrono::duration<float>(now - last_now).count();
                     last_now = now;
                     if (game) {
+                        auto scoped_slow = ScopedProfiler{profiler_slow, dt};
                         game->methods.update_slow(
                             game->handle.get(),
                             game->base_ptrs,
@@ -112,6 +115,7 @@ static void Frame(UI* ui, const settings::Gui settings) {
                 | ImGuiWindowFlags_NoMove
         )) {
         if (game) {
+            auto scoped_fast = ScopedProfiler{profiler_fast, dt};
             game->methods.update_fast(
                 game->handle.get(),
                 game->base_ptrs,

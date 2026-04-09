@@ -13,9 +13,6 @@
 #include "../profiler.hpp"
 #include "structs.hpp"
 
-Profiler profiler_slow{{"slow update time", "seconds"}};
-Profiler profiler_fast{{"fast update time", "seconds"}};
-Profiler profiler_read{{"memory read time", "seconds"}};
 Signal monitor_slow{"slow update failure rate", "%", 0.5f};
 Signal monitor_fast{"fast update failure rate", "%", 0.5f};
 
@@ -256,7 +253,6 @@ void hitman_absolution::update_slow(
     Stats& stats,
     float dt
 ) {
-    auto scoped_slow = ScopedProfiler{profiler_slow, dt};
     MemoryReader<uint32_t> reader{handle};
     // auto tracer = mempeep::OkTracer{};
     // TODO check performance against OkTracer
@@ -264,7 +260,6 @@ void hitman_absolution::update_slow(
         = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::VALUES};
     bool ok = false;
     {
-        auto scoped_read = ScopedProfiler{profiler_read, dt};
         ok = mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game);
     }
     monitor_slow.update(static_cast<float>(!ok), dt);
@@ -333,7 +328,6 @@ void hitman_absolution::update_fast(
     float dt
 ) {
     if (stats.map > 0) {
-        auto scoped_fast = ScopedProfiler{profiler_fast, dt};
         auto game_time = read<int64_t>(handle, base_ptrs[0] + 0xE24730 + 0x18);
         if (game_time) stats.time = game_time.value() * time_scale;
         monitor_fast.update(static_cast<float>(!game_time.has_value()), dt);
