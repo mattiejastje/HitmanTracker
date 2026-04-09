@@ -18,6 +18,7 @@
 #include "imgui_utils.hpp"
 #include "logging.hpp"
 #include "mem/handle.hpp"
+#include "profiler.hpp"
 
 // Data
 constexpr auto TIMER_FIND_GAME = 1;
@@ -28,6 +29,7 @@ static RECT g_ChangeRect = {};
 static UINT g_ChangeDpi = 0;
 static std::optional<Game> game{};
 static Stats stats{0};
+static Signal fps_signal{};
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
@@ -117,6 +119,8 @@ static void Frame(UI* ui, const settings::Gui settings) {
                 dt
             );
             game->methods.gui(settings, ui->fonts, stats);
+            fps_signal.update(1.0f / dt, dt);
+            logging::trace("Tracker fps = {:.2f}", fps_signal.value);
         } else {
             text(ui->fonts.title, settings.title.color, "Game not running");
         }
