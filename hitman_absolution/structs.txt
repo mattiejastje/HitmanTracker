@@ -1,6 +1,6 @@
 struct String {
   int32_t length;  // offset 0x0
-  std::array<char, 0x40>* text;  // offset 0x4
+  char* text;  // offset 0x4
 };
 
 struct StatsScoringData {
