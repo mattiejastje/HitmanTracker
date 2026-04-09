@@ -14,25 +14,19 @@ local NUM_PLAYSTYLES = 26
 local MAX_PLAYSTYLE_CONDITIONS = 10
 local NUM_STATS_VALUES = 100
 
-local i8 = d.Primitive("i1")
-local i16 = d.Primitive("i2")
-local i32 = d.Primitive("i4")
-local i64 = d.Primitive("i8")
-local f32 = d.Primitive("f")
-
 local String = d.Struct("String", {
-  d.Field(i32, "length"),
+  d.Field(d.Int32, "length"),
   d.Field(d.ZString(0x40), "text"),
 })
 
 local LevelData = d.Struct("LevelData", {
   d.Skip(0x08),
-  d.Field(i32, "level"),
+  d.Field(d.Int32, "level"),
 })
 
 local CheckpointData = d.Struct("CheckpointData", {
   d.Skip(0x38),
-  d.Field(i32, "best_raw_score"),
+  d.Field(d.Int32, "best_raw_score"),
 })
 
 local CheckpointNode = d.Struct("CheckpointNode", {
@@ -61,21 +55,21 @@ local GameData = d.Struct("GameData", {
 local LevelManager = d.Struct("LevelManager", {
   d.Skip(0x04),
   d.Field(String, "scene"),
-  d.Field(i32, "game_mode"),
+  d.Field(d.Int32, "game_mode"),
   d.Skip(0x10),
-  d.Field(i32, "checkpoint_index"), -- cached, not always up to date
+  d.Field(d.Int32, "checkpoint_index"), -- cached, not always up to date
 })
 
 local Checkpoint = d.Struct("Checkpoint", {
-  d.Field(i32, "key"), -- could be pointer
-  d.Field(i32, "_unknown"), -- could be pointer
+  d.Field(d.Int32, "key"), -- could be pointer
+  d.Field(d.Int32, "_unknown"), -- could be pointer
 })
 
 local Checkpoints = d.Struct("Checkpoints", {
   d.Skip(0x0C),
   d.Field(d.Vector(Checkpoint, NUM_CHECKPOINTS_PER_LEVEL), "checkpoint"),
   d.Skip(0x3C),
-  d.Field(i32, "current_key"),
+  d.Field(d.Int32, "current_key"),
 })
 
 local CheckpointsManager = d.Struct("CheckpointsManager", {
@@ -85,32 +79,32 @@ local CheckpointsManager = d.Struct("CheckpointsManager", {
 
 local TimeManager = d.Struct("TimeManager", {
   d.Skip(0x08),
-  d.Field(i64, "ticks_per_second"),
-  d.Field(i64, "last_time_ticks"),
-  d.Field(i64, "game_time"), -- divide by (1024 * 1024) to get seconds
-  d.Field(i64, "game_time_previous"),
-  d.Field(i64, "game_time_delta"),
-  d.Field(i64, "real_time"),
-  d.Field(i64, "real_time_previous"),
-  d.Field(i64, "real_time_delta"),
-  d.Field(f32, "game_time_multiplier"),
-  d.Field(f32, "debug_time_multiplier"),
-  d.Field(i64, "frame_wait"),
-  d.Field(i64, "frame_step"),
-  d.Field(i64, "frame_remain"),
-  d.Field(i32, "paused"),
-  d.Field(i32, "frame_count"),
+  d.Field(d.Int64, "ticks_per_second"),
+  d.Field(d.Int64, "last_time_ticks"),
+  d.Field(d.Int64, "game_time"), -- divide by (1024 * 1024) to get seconds
+  d.Field(d.Int64, "game_time_previous"),
+  d.Field(d.Int64, "game_time_delta"),
+  d.Field(d.Int64, "real_time"),
+  d.Field(d.Int64, "real_time_previous"),
+  d.Field(d.Int64, "real_time_delta"),
+  d.Field(d.Float, "game_time_multiplier"),
+  d.Field(d.Float, "debug_time_multiplier"),
+  d.Field(d.Int64, "frame_wait"),
+  d.Field(d.Int64, "frame_step"),
+  d.Field(d.Int64, "frame_remain"),
+  d.Field(d.Int32, "paused"),
+  d.Field(d.Int32, "frame_count"),
 })
 
 local StatsScoringData = d.Struct("StatsScoringData", {
   d.Skip(0x08),
   d.Field(String, "title"),
   d.Skip(0x18),
-  d.Field(f32, "_unused"), -- always zero
+  d.Field(d.Float, "_unused"), -- always zero
   d.Skip(0x08),
-  d.Field(i32, "index"), -- last index into StatsManager.values
+  d.Field(d.Int32, "index"), -- last index into StatsManager.values
   d.Skip(0x04),
-  d.Field(i32, "multiplier"), -- see SCORE_MULTIPLIER below
+  d.Field(d.Int32, "multiplier"), -- see SCORE_MULTIPLIER below
 })
 
 local StatsScoring = d.Struct("StatsScoring", {
@@ -123,8 +117,8 @@ local PlaystyleConditionData = d.Struct("PlaystyleConditionData", {
   d.Skip(0x08),
   d.Field(String, "title"),
   d.Skip(0x24),
-  d.Field(i32, "index"),
-  d.Field(i32, "threshold"),
+  d.Field(d.Int32, "index"),
+  d.Field(d.Int32, "threshold"),
 })
 
 -- same layout as StatsScoring?
@@ -141,13 +135,13 @@ local StatsPlaystyleData = d.Struct("StatsPlaystyleData", {
   d.Skip(0x04),
   d.Field(String, "title"),
   d.Skip(0x0C),
-  d.Field(i8, "is_unlockable"), -- if listed under "unlocks"
+  d.Field(d.Int8, "is_unlockable"), -- if listed under "unlocks"
   d.Skip(0x03),
-  d.Field(i32, "priority"), -- higher values = higher ranking
-  d.Field(i32, "percentage_min"),
-  d.Field(i32, "percentage_max"),
+  d.Field(d.Int32, "priority"), -- higher values = higher ranking
+  d.Field(d.Int32, "percentage_min"),
+  d.Field(d.Int32, "percentage_max"),
   d.Skip(0x0C),
-  d.Field(i8, "is_achieved"), -- for current mission
+  d.Field(d.Int8, "is_achieved"), -- for current mission
   d.Skip(0x03),
 })
 
@@ -171,16 +165,16 @@ local StatsManager = d.Struct("StatsManager", {
   d.Skip(0x08),
   d.Field(d.Ref(d.PrimitiveArray("i1", { 100 })), "achieved_playstyles"), -- across all gaming sessions
   d.Skip(0x2C),
-  d.Field(i32, "last_achieved_playstyle"), -- across all gaming sessions
+  d.Field(d.Int32, "last_achieved_playstyle"), -- across all gaming sessions
   d.Skip(0x18),
-  d.Field(i32, "score"),
+  d.Field(d.Int32, "score"),
   d.Skip(0x18),
   d.Field(d.NullableRef(StatsDifficulties), "difficulties"), -- 1.0, 1.25, 1.5, 2.0, 2.5; see DIFFICULTY_SCALE below
 })
 
 local ChallengeData = d.Struct("ChallengeData", {
   d.Skip(0x98),
-  d.Field(i8, "completed"),
+  d.Field(d.Int8, "completed"),
 })
 
 local ChallengeNode = d.Struct("ChallengeNode", {
@@ -196,7 +190,7 @@ local ChallengeManager = d.Struct("ChallengeManager", {
 
 M.Game = d.Struct("Game", {
   d.Seek(0xD58C60 + 0x10 + 0x94),
-  d.Field(d.Bounded(i32, 0, NUM_DIFFICULTIES - 1), "difficulty"),
+  d.Field(d.Bounded(d.Int32, 0, NUM_DIFFICULTIES - 1), "difficulty"),
   d.Seek(0xD61710),
   d.Field(StatsManager, "stats_manager"),
   d.Seek(0xD617C0),
@@ -207,7 +201,7 @@ M.Game = d.Struct("Game", {
   d.Field(LevelManager, "level_manager"),
   d.Seek(0xE21394),
   -- level == -1 used by game when no level selected
-  d.Field(d.Bounded(i32, -1, NUM_LEVELS - 1), "level"), -- part of level manager?
+  d.Field(d.Bounded(d.Int32, -1, NUM_LEVELS - 1), "level"), -- part of level manager?
   d.Seek(0xE21580),
   d.Field(CheckpointsManager, "checkpoints_manager"),
   d.Seek(0xE24730),
