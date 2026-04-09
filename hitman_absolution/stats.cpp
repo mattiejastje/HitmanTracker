@@ -251,7 +251,8 @@ void hitman_absolution::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats
+    Stats& stats,
+    float dt
 ) {
     auto scoped_slow = ScopedProfiler{profiler_slow};
     MemoryReader<uint32_t> reader{handle};
@@ -328,7 +329,8 @@ void hitman_absolution::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats
+    Stats& stats,
+    float dt
 ) {
     auto scoped_fast = ScopedProfiler{profiler_fast};
     if (stats.map > 0) {

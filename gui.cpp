@@ -38,7 +38,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
 static LRESULT WINAPI
 WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam)) return true;
-
+    static auto last_now = std::chrono::steady_clock::now();
     switch (msg) {
         case WM_SIZE:
             if (wParam == SIZE_MINIMIZED) return 0;
@@ -71,12 +71,17 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     };
                     return 0;
                 case TIMER_UPDATE_STATS:
+                    auto now = std::chrono::steady_clock::now();
+                    float dt
+                        = std::chrono::duration<float>(now - last_now).count();
+                    last_now = now;
                     if (game) {
                         game->methods.update_slow(
                             game->handle.get(),
                             game->base_ptrs,
                             game->hook->label_ptrs,
-                            stats
+                            stats,
+                            dt
                         );
                     };
                     return 0;
@@ -87,6 +92,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 static void Frame(UI* ui, const settings::Gui settings) {
     logging::trace("New frame...");
+    static auto last_now = std::chrono::steady_clock::now();
     ImGui_ImplDX9_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
@@ -100,11 +106,15 @@ static void Frame(UI* ui, const settings::Gui settings) {
                 | ImGuiWindowFlags_NoMove
         )) {
         if (game) {
+            auto now = std::chrono::steady_clock::now();
+            float dt = std::chrono::duration<float>(now - last_now).count();
+            last_now = now;
             game->methods.update_fast(
                 game->handle.get(),
                 game->base_ptrs,
                 game->hook->label_ptrs,
-                stats
+                stats,
+                dt
             );
             game->methods.gui(settings, ui->fonts, stats);
         } else {

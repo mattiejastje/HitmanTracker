@@ -43,7 +43,8 @@ static void stats_nothing(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats
+    Stats& stats,
+    float dt
 ) {}
 
 static HookPtr hook_nothing(

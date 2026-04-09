@@ -255,7 +255,8 @@ void hitman_blood_money::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats
+    Stats& stats,
+    float dt
 ) {
     auto difficulty
         = read<int32_t>(handle, base_ptrs[0] + 0x41F83C, {0x6664}, INT32_MAX);
@@ -334,7 +335,8 @@ void hitman_blood_money::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats
+    Stats& stats,
+    float dt
 ) {
     if (stats.map > 0) {
         auto time = get_time(handle, base_ptrs, stats.map_stage);

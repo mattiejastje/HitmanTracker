@@ -50,7 +50,8 @@ void hitman_codename_47::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats
+    Stats& stats,
+    float dt
 ) {
     auto scene = read_string(handle, label_ptrs.at(150), {0}, INT32_MAX, 64);
     if (!scene) return;  // when game starts, scene will be null
@@ -77,7 +78,8 @@ void hitman_codename_47::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats
+    Stats& stats,
+    float dt
 ) {
     if (stats.map > 0) {
         auto time = read<int32_t>(handle, label_ptrs.at(250));
