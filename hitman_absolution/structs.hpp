@@ -115,14 +115,9 @@ using TStatsPlaystyle = Struct<
     Fields<Skip<0x4>, Field<Ref<TStatsPlaystyleData>, &StatsPlaystyle::data>>>;
 
 struct StatsDifficulties {
+    uint8_t _pad0[0x8];
     std::array<float, 0x5> scales;
 };
-
-using TStatsDifficulties = Struct<
-    StatsDifficulties,
-    Fields<
-        Skip<0x8>,
-        Field<Primitive<std::array<float, 0x5>>, &StatsDifficulties::scales>>>;
 
 struct StatsManager {
     std::vector<StatsScoring> scorings;
@@ -155,7 +150,9 @@ using TStatsManager = Struct<
         Skip<0x18>,
         Field<Int32, &StatsManager::score>,
         Skip<0x18>,
-        Field<NullableRef<TStatsDifficulties>, &StatsManager::difficulties>>>;
+        Field<
+            NullableRef<Primitive<StatsDifficulties>>,
+            &StatsManager::difficulties>>>;
 
 struct ChallengeData {
     int8_t completed;
@@ -163,7 +160,7 @@ struct ChallengeData {
 
 using TChallengeData = Struct<
     ChallengeData,
-    Fields<Skip<0x98>, Field<Int8, &ChallengeData::completed>>>;
+    Fields<Seek<0x98>, Field<Int8, &ChallengeData::completed>>>;
 
 struct ChallengeNode {
     uintptr_t next_node;
@@ -190,19 +187,14 @@ using TChallengeManager = Struct<
             &ChallengeManager::challenges>>>;
 
 struct LevelData {
+    uint8_t _pad0[0x8];
     int32_t level;
 };
 
-using TLevelData
-    = Struct<LevelData, Fields<Skip<0x8>, Field<Int32, &LevelData::level>>>;
-
 struct CheckpointData {
+    uint8_t _pad0[0x38];
     int32_t best_raw_score;
 };
-
-using TCheckpointData = Struct<
-    CheckpointData,
-    Fields<Skip<0x38>, Field<Int32, &CheckpointData::best_raw_score>>>;
 
 struct CheckpointNode {
     std::optional<CheckpointData> data;
@@ -212,7 +204,7 @@ using TCheckpointNode = Struct<
     CheckpointNode,
     Fields<
         Skip<0x4>,
-        Field<NullableRef<TCheckpointData>, &CheckpointNode::data>>>;
+        Field<NullableRef<Primitive<CheckpointData>>, &CheckpointNode::data>>>;
 
 struct CheckpointInfo {
     std::vector<CheckpointNode> nodes;
@@ -233,7 +225,7 @@ using TGameDataLevelInfo = Struct<
     GameDataLevelInfo,
     Fields<
         Skip<0x4>,
-        Field<Ref<TLevelData>, &GameDataLevelInfo::level_data>,
+        Field<Ref<Primitive<LevelData>>, &GameDataLevelInfo::level_data>,
         Skip<0x4>,
         Field<
             NullableRef<TCheckpointInfo>,
@@ -270,12 +262,6 @@ struct Checkpoint {
     int32_t _unknown;
 };
 
-using TCheckpoint = Struct<
-    Checkpoint,
-    Fields<
-        Field<Int32, &Checkpoint::key>,
-        Field<Int32, &Checkpoint::_unknown>>>;
-
 struct Checkpoints {
     std::vector<Checkpoint> checkpoint;
     int32_t current_key;
@@ -285,7 +271,7 @@ using TCheckpoints = Struct<
     Checkpoints,
     Fields<
         Skip<0xc>,
-        Field<Vector<TCheckpoint, 0xd>, &Checkpoints::checkpoint>,
+        Field<Vector<Primitive<Checkpoint>, 0xd>, &Checkpoints::checkpoint>,
         Skip<0x3c>,
         Field<Int32, &Checkpoints::current_key>>>;
 
@@ -300,6 +286,7 @@ using TCheckpointsManager = Struct<
         Field<NullableRef<TCheckpoints>, &CheckpointsManager::checkpoints>>>;
 
 struct TimeManager {
+    uint8_t _pad0[0x8];
     int64_t ticks_per_second;
     int64_t last_time_ticks;
     int64_t game_time;
@@ -316,26 +303,6 @@ struct TimeManager {
     int32_t paused;
     int32_t frame_count;
 };
-
-using TTimeManager = Struct<
-    TimeManager,
-    Fields<
-        Skip<0x8>,
-        Field<Int64, &TimeManager::ticks_per_second>,
-        Field<Int64, &TimeManager::last_time_ticks>,
-        Field<Int64, &TimeManager::game_time>,
-        Field<Int64, &TimeManager::game_time_previous>,
-        Field<Int64, &TimeManager::game_time_delta>,
-        Field<Int64, &TimeManager::real_time>,
-        Field<Int64, &TimeManager::real_time_previous>,
-        Field<Int64, &TimeManager::real_time_delta>,
-        Field<Float, &TimeManager::game_time_multiplier>,
-        Field<Float, &TimeManager::debug_time_multiplier>,
-        Field<Int64, &TimeManager::frame_wait>,
-        Field<Int64, &TimeManager::frame_step>,
-        Field<Int64, &TimeManager::frame_remain>,
-        Field<Int32, &TimeManager::paused>,
-        Field<Int32, &TimeManager::frame_count>>>;
 
 struct Game {
     int32_t difficulty;
@@ -366,6 +333,6 @@ using TGame = Struct<
         Seek<0xe21580>,
         Field<TCheckpointsManager, &Game::checkpoints_manager>,
         Seek<0xe24730>,
-        Field<TTimeManager, &Game::time_manager>>>;
+        Field<Primitive<TimeManager>, &Game::time_manager>>>;
 
 }  // namespace hitman_absolution::structs

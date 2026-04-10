@@ -20,19 +20,13 @@ struct Suits {
     int32_t starting_suit;
 };
 
-using TSuits = Struct<
-    Suits,
-    Fields<
-        Field<Int32, &Suits::current_suit>,
-        Field<Int32, &Suits::starting_suit>>>;
-
 struct SuitContainer {
     Suits suits;
 };
 
 using TSuitContainer = Struct<
     SuitContainer,
-    Fields<Seek<0xfd0>, Field<TSuits, &SuitContainer::suits>>>;
+    Fields<Seek<0xfd0>, Field<Primitive<Suits>, &SuitContainer::suits>>>;
 
 struct Settings {
     std::optional<SuitContainer> suit_container;
