@@ -21,7 +21,7 @@ local Settings = d.Struct("Settings", {
   d.Seek(0x0A40),
   d.Field(d.NullableRef(SuitContainer), "suit_container"),  -- non-null during mission
   d.Seek(0x6664),
-  d.Field(d.Int32, "difficulty")
+  d.Field(d.Bounded(d.Int32, 0, 3), "difficulty")
 })
 
 M.Game = d.Struct("Game", {

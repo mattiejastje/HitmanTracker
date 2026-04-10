@@ -39,7 +39,7 @@ using TSettings = Struct<
         Seek<0xa40>,
         Field<NullableRef<TSuitContainer>, &Settings::suit_container>,
         Seek<0x6664>,
-        Field<Int32, &Settings::difficulty>>>;
+        Field<Bounded<Int32, 0, 3>, &Settings::difficulty>>>;
 
 struct Game {
     TimeManager time_manager;
