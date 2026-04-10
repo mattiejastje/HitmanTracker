@@ -30,8 +30,8 @@ static UINT g_ChangeDpi = 0;
 static std::optional<Game> game{};
 static Stats stats{0};
 static Signal frametime_signal{"frame time", "seconds"};
-static Signal error_slow{"slow update failure rate", "%", 0.5f};
-static Signal error_fast{"fast update failure rate", "%", 0.5f};
+static Signal error_slow{"slow update failure rate", "%", 50.0f};
+static Signal error_fast{"fast update failure rate", "%", 50.0f};
 static Profiler profiler_slow{{"slow update time", "seconds"}};
 static Profiler profiler_fast{{"fast update time", "seconds"}};
 
@@ -90,7 +90,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                             stats,
                             dt
                         );
-                        error_slow.update(static_cast<float>(!ok), dt);
+                        error_slow.update(100.0f * static_cast<float>(!ok), dt);
                     };
                     return 0;
             }
@@ -126,7 +126,7 @@ static void Frame(UI* ui, const settings::Gui settings) {
                 stats,
                 dt
             );
-            error_fast.update(static_cast<float>(!ok), dt);
+            error_fast.update(100.0f * static_cast<float>(!ok), dt);
             game->methods.gui(settings, ui->fonts, stats);
         } else {
             text(ui->fonts.title, settings.title.color, "Game not running");
