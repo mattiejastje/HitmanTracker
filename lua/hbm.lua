@@ -14,7 +14,7 @@ local Suits = d.Struct("Suits", {
 
 local SuitContainer = d.Struct("SuitContainer", {
   d.Seek(0x0FD0),
-  d.Field(d.Ref(Suits), "suits")
+  d.Field(Suits, "suits")
 })
 
 local Settings = d.Struct("Settings", {
