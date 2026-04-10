@@ -38,13 +38,7 @@ struct Stats {
     StatsValue<int32_t> target_bodies_fnd;  // bm
     StatsValue<int32_t> uncon_bodies_fnd;   // bm
     StatsValue<int32_t> witnesses;          // bm
-    StatsValue<int32_t> on_camera;          // bm, hma: "evidence left"
+    StatsValue<int32_t> on_camera;          // bm
     StatsValue<int32_t> cust_weapons_left;  // bm
     StatsValue<int32_t> suit_left;          // bm
-    StatsValue<int32_t> objectives_left;    // hma
-    StatsValue<int32_t> pacifications;      // hma
-    StatsValue<int32_t> bodies_hidden;      // hma
-    StatsValue<int32_t> silent_kills;       // hma
-    StatsValue<int32_t> signature_kills;    // hma
-    StatsValue<int32_t> sa_bonus;           // hma
 };
