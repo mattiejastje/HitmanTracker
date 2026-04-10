@@ -19,7 +19,7 @@ local SuitContainer = d.Struct("SuitContainer", {
 
 local Settings = d.Struct("Settings", {
   d.Seek(0x0A40),
-  d.Field(d.Ref(SuitContainer), "suit_container"),
+  d.Field(d.NullableRef(SuitContainer), "suit_container"),  -- non-null during mission
   d.Seek(0x6664),
   d.Field(d.Int32, "difficulty")
 })
@@ -28,7 +28,7 @@ M.Game = d.Struct("Game", {
   d.Seek(0x41F820),
   d.Field(d.Ref(TimeManager), "time_manager"),
   d.Seek(0x41F83C),
-  d.Field(d.Ref(Settings), "settings"),
+  d.Field(d.NullableRef(Settings), "settings"),  -- null when game starts
   d.Seek(0x5B2538),
   d.Field(d.PrimitiveArray("i4", { 66 }), "stats"),
 })
