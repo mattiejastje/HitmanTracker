@@ -1,12 +1,15 @@
 #include "stats.hpp"
 
 #include <cstdint>
+#include <mempeep/read.hpp>
+#include <mempeep/tracers/log_tracer.hpp>
 #include <string>
 #include <unordered_map>
 
 #include "../hitman_common/stats.hpp"
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
+#include "structs.hpp"
 
 /*
 
@@ -123,112 +126,54 @@ const std::unordered_map<std::string, Scene> scenes = {
 };
 
 // https://github.com/OrfeasZ/Statman/blob/master/StatModules/HM3/Src/HM3/Structs/HM3Stats.h
-struct GameStats {
-    int32_t unknown00;                     // 0x0000
-    int32_t rating1;                       // 0x0004
-    int32_t rating0;                       // 0x0008
-    int32_t special_rating;                // 0x000C
-    int32_t rating1_total;                 // 0x0010
-    int32_t rating0_total;                 // 0x0014
-    int32_t current_level;                 // 0x0018
-    int32_t shots_fired;                   // 0x001C
-    int32_t shots_hit;                     // 0x0020
-    int32_t shots_missed;                  // 0x0024
-    int32_t headshots;                     // 0x0028
-    int32_t clean_kills;                   // 0x002C
-    int32_t target_clean_kills;            // 0x0030
-    int32_t accident_kills;                // 0x0034
-    int32_t alarms;                        // 0x0038
-    int32_t witnesses;                     // 0x003C
-    int32_t enemies_killed;                // 0x0040
-    int32_t unknown01;                     // 0x0044
-    int32_t enemies_wounded;               // 0x0048
-    int32_t enemies_pushed_to_death;       // 0x004C
-    int32_t police_killed;                 // 0x0050
-    int32_t police_wounded;                // 0x0054
-    int32_t innocents_killed;              // 0x0058
-    int32_t innocents_wounded;             // 0x005C
-    int32_t unknown02;                     // 0x0060
-    int32_t unknown03;                     // 0x0064
-    int32_t targets_kniped;                // 0x0068
-    int32_t targets_killed;                // 0x006C
-    int32_t unknown04;                     // 0x0070
-    int32_t fiberwire_kills;               // 0x0074
-    int32_t close_combat_kills;            // 0x0078
-    int32_t preferred_weapon;              // 0x007C
-    int32_t unknown05;                     // 0x0080
-    int32_t noisy_shots;                   // 0x0084
-    int32_t num_saves;                     // 0x0088
-    int32_t bodies_hidden;                 // 0x008C
-    int32_t disguises_used;                // 0x0090
-    int32_t impersonations;                // 0x0094
-    int32_t agency_pickups;                // 0x0098
-    int32_t time;                          // 0x009C
-    int32_t money;                         // 0x00A0
-    int32_t suit_left_on_level;            // 0x00A4
-    int32_t target1_killed_with;           // 0x00A8
-    int32_t target2_killed_with;           // 0x00AC
-    int32_t target3_killed_with;           // 0x00B0
-    int32_t target4_killed_with;           // 0x00B4
-    int32_t target5_killed_with;           // 0x00B8
-    int32_t target6_killed_with;           // 0x00BC
-    int32_t main_target_number;            // 0x00C0
-    int32_t targets_poisoned;              // 0x00C4
-    int32_t frisk_failed;                  // 0x00C8
-    int32_t ghost_failed;                  // 0x00CC
-    int32_t bodies_found;                  // 0x00D0
-    int32_t target_bodies_found;           // 0x00D4
-    int32_t unconscious_bodies_found;      // 0x00D8
-    int32_t cover_blown;                   // 0x00DC
-    int32_t unknown07;                     // 0x00E0
-    int32_t notoriety;                     // 0x00E4
-    int32_t total_notoriety;               // 0x00E8
-    int32_t camera_caught;                 // 0x00EC
-    int32_t unknown08;                     // 0x00F0
-    int32_t custom_weapons_left_on_level;  // 0x00F4
-    int32_t custom_sniper_silenced;        // 0x00F8
-    int32_t custom_hardballer_silenced;    // 0x00FC
-    int32_t custom_sg_silenced;            // 0x0100
-    int32_t custom_mg_silenced;            // 0x0104
-    int32_t custom_smg_silenced;           // 0x0108
-};
-
-struct SuitPtrs {
-    int32_t current_suit;
-    int32_t starting_suit;
-};
+constexpr std::size_t WITNESSES = 15;
+constexpr std::size_t ENEMIES_KILLED = 16;
+constexpr std::size_t ENEMIES_WOUNDED = 18;
+constexpr std::size_t POLICE_KILLED = 20;
+constexpr std::size_t POLICE_WOUNDED = 21;
+constexpr std::size_t INNOCENTS_KILLED = 22;
+constexpr std::size_t INNOCENTS_WOUNDED = 23;
+constexpr std::size_t TIME = 39;
+constexpr std::size_t SUIT_LEFT_ON_LEVEL = 41;
+constexpr std::size_t FRISK_FAILED = 50;
+constexpr std::size_t BODIES_FOUND = 52;
+constexpr std::size_t TARGET_BODIES_FOUND = 53;
+constexpr std::size_t UNCONSCIOUS_BODIES_FOUND = 54;
+constexpr std::size_t COVER_BLOWN = 55;
+constexpr std::size_t CAMERA_CAUGHT = 59;
+constexpr std::size_t CUSTOM_WEAPONS_LEFT_ON_LEVEL = 61;
 
 static std::optional<int32_t> get_time(
     void* handle, const BasePtrs& base_ptrs, MapStage map_stage
 ) {
     if (map_stage == MapStage::main)
+        // game.time_manager.time
         return read<int32_t>(
             handle, base_ptrs[0] + 0x41F820, {0x48}, INT32_MAX
         );
     if (map_stage == MapStage::post)
-        return read<int32_t>(handle, base_ptrs[0] + 0x5B2538 + 0x009C);
+        // game.stats[TIME]
+        return read<int32_t>(handle, base_ptrs[0] + 0x5B2538 + 4 * TIME);
     // map_stage == MapStage::pre
     return 0;
 }
 
-static void set_suit_left_on_level(
-    void* handle,
-    const BasePtrs& base_ptrs,
-    MapStage map_stage,
-    GameStats& game_stats
+static bool get_suit_left_on_level(
+    MapStage map_stage, const hitman_blood_money::structs::Game& game
 ) {
-    if (map_stage == MapStage::main) {
-        auto suit_ptrs = read<SuitPtrs>(
-            handle, base_ptrs[0] + 0x41F83C, {0x0A40, 0x0FD0}, INT32_MAX
-        );
-        if (suit_ptrs) {
-            game_stats.suit_left_on_level = suit_ptrs.value().current_suit
-                                            != suit_ptrs.value().starting_suit;
+    if (map_stage == MapStage::pre) {
+        return 0;
+    } else if (map_stage == MapStage::main) {
+        if (game.settings && game.settings->suit_container) {
+            auto& suits = game.settings->suit_container->suits;
+            return suits.current_suit != suits.starting_suit;
         } else {
-            logging::error("Unable to read suit pointers");
+            return 0;  // not yet loaded
         }
+    } else {
+        // post-mission: stats are up to date
+        return game.stats[SUIT_LEFT_ON_LEVEL];
     }
-    // nothing to do in pre/post stage
 }
 
 static Status get_rating_status(const Stats& stats) {
@@ -251,6 +196,9 @@ static Status get_rating_status(const Stats& stats) {
                : Status::GREEN;
 };
 
+// global to avoid allocating large object on stack
+static hitman_blood_money::structs::Game game{};
+
 bool hitman_blood_money::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
@@ -258,13 +206,13 @@ bool hitman_blood_money::update_slow(
     Stats& stats,
     float dt
 ) {
-    auto difficulty
-        = read<int32_t>(handle, base_ptrs[0] + 0x41F83C, {0x6664}, INT32_MAX);
-    if (difficulty) {
-        stats.difficulty = difficulty.value();
-    } else {
-        logging::error("Unable to read difficulty");
-    }
+    MemoryReader<uint32_t> reader{handle};
+    auto tracer
+        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::VALUES};
+    if (!mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game))
+        return false;
+    if (!game.settings) return true;  // game starting
+    stats.difficulty = game.settings->difficulty;
     auto scene = read_string(handle, label_ptrs.at(150), 64);
     if (!scene) {
         logging::error("Unable to read scene");
@@ -288,44 +236,31 @@ bool hitman_blood_money::update_slow(
         }
     }
     if (stats.map > 0) {
-        // force all values to zero in pre-stage
-        GameStats game_stats = {0};
-        // read pointers/values when timer starts (only in main/post stages)
-        if (stats.time > 0.1f) {
-            if (!read_bytes(
-                    handle,
-                    base_ptrs[0] + 0x5B2538,
-                    &game_stats,
-                    sizeof(game_stats)
-                )) {
-                logging::error("Unable to read game stats");
-            }
-            // fix values that are not tracked in real-time
-            set_suit_left_on_level(
-                handle, base_ptrs, stats.map_stage, game_stats
-            );
-        }
-        stats.innocents_killed = stats_value(game_stats.innocents_killed);
-        stats.innocents_wounded = stats_value(game_stats.innocents_wounded);
-        stats.enemies_killed = stats_value(game_stats.enemies_killed);
-        stats.enemies_wounded = stats_value(game_stats.enemies_wounded);
-        stats.police_killed = stats_value(game_stats.police_killed);
-        stats.police_wounded = stats_value(game_stats.police_wounded);
-        stats.frisk_failed = stats_value(game_stats.frisk_failed);
-        stats.cover_blown = stats_value(game_stats.cover_blown);
-        stats.bodies_fnd = stats_value(game_stats.bodies_found);
-        stats.target_bodies_fnd
-            = stats_value(game_stats.target_bodies_found, stats.difficulty > 1);
-        stats.uncon_bodies_fnd
-            = stats_value(game_stats.unconscious_bodies_found);
-        stats.witnesses = stats_value(game_stats.witnesses);
-        stats.on_camera
-            = stats_value(game_stats.camera_caught ? 1 : 0);  // 2 -> 1
-        stats.cust_weapons_left = stats_value(
-            game_stats.custom_weapons_left_on_level, stats.difficulty > 2
+        // force values to zero at mission start
+        if (stats.time < 0.1f) game.stats = {0};
+        stats.innocents_killed = stats_value(game.stats[INNOCENTS_KILLED]);
+        stats.innocents_wounded = stats_value(game.stats[INNOCENTS_WOUNDED]);
+        stats.enemies_killed = stats_value(game.stats[ENEMIES_KILLED]);
+        stats.enemies_wounded = stats_value(game.stats[ENEMIES_WOUNDED]);
+        stats.police_killed = stats_value(game.stats[POLICE_KILLED]);
+        stats.police_wounded = stats_value(game.stats[POLICE_WOUNDED]);
+        stats.frisk_failed = stats_value(game.stats[FRISK_FAILED]);
+        stats.cover_blown = stats_value(game.stats[COVER_BLOWN]);
+        stats.bodies_fnd = stats_value(game.stats[BODIES_FOUND]);
+        stats.target_bodies_fnd = stats_value(
+            game.stats[TARGET_BODIES_FOUND], stats.difficulty > 1
         );
-        stats.suit_left
-            = stats_value(game_stats.suit_left_on_level, stats.difficulty > 2);
+        stats.uncon_bodies_fnd
+            = stats_value(game.stats[UNCONSCIOUS_BODIES_FOUND]);
+        stats.witnesses = stats_value(game.stats[WITNESSES]);
+        stats.on_camera
+            = stats_value(game.stats[CAMERA_CAUGHT] ? 1 : 0);  // 2 -> 1
+        stats.cust_weapons_left = stats_value(
+            game.stats[CUSTOM_WEAPONS_LEFT_ON_LEVEL], stats.difficulty > 2
+        );
+        stats.suit_left = stats_value(
+            get_suit_left_on_level(stats.map_stage, game), stats.difficulty > 2
+        );
         auto status = get_rating_status(stats);
         stats.rating = {get_simple_rating_value(status), status};
     }
