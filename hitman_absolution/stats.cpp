@@ -353,40 +353,54 @@ bool hitman_absolution::update_slow(
         );
         if (score_shadow && score_shadow.value() != 0) {
             int32_t percent = (100 * score) / score_shadow.value();
-            auto score_status = percent <= 99 ? Status::YELLOW : Status ::GREEN;
+            auto score_status = percent < 100 ? Status::YELLOW : Status ::GREEN;
             stats.score = {score, score_status};
             stats.score_shadow = score_shadow.value();
             stats.score_rating
-                = {percent <= 49   ? "Agent"
-                   : percent <= 79 ? "Veteran"
-                   : percent <= 89 ? "Specialist"
-                   : percent <= 99 ? "Professional"
+                = {percent < 50    ? "Agent"
+                   : percent < 80  ? "Veteran"
+                   : percent < 90  ? "Specialist"
+                   : percent < 100 ? "Professional"
                                    : "Shadow",
                    score_status};
             stats.score_objective_complete
                 = {STATS_MULTIPLIERS[OBJECTIVE_COMPLETE]
-                   * game_stats[OBJECTIVE_COMPLETE]};
+                       * game_stats[OBJECTIVE_COMPLETE],
+                   game_stats[OBJECTIVE_COMPLETE] < map_info.num_objectives
+                       ? Status::YELLOW
+                       : Status::GREEN};
             stats.score_target_kill
                 = {STATS_MULTIPLIERS[TARGET_KILL] * game_stats[TARGET_KILL]};
             stats.score_spotted
-                = {STATS_MULTIPLIERS[SPOTTED] * game_stats[SPOTTED]};
+                = {STATS_MULTIPLIERS[SPOTTED] * game_stats[SPOTTED],
+                   game_stats[SPOTTED] ? Status::RED : Status::GREEN};
             stats.score_evidence_removed
-                = {STATS_MULTIPLIERS[EVIDENCE_REMOVED] * game_stats[EVIDENCE_REMOVED]};
+                = {STATS_MULTIPLIERS[EVIDENCE_REMOVED]
+                       * game_stats[EVIDENCE_REMOVED],
+                   game_stats[EVIDENCE_REMOVED] < map_info.num_evidence
+                       ? Status::YELLOW
+                       : Status::GREEN};
             stats.score_silent_assassin_bonus
-                = {STATS_MULTIPLIERS[SILENT_ASSASSIN_BONUS] * game_stats[SILENT_ASSASSIN_BONUS]};
+                = {STATS_MULTIPLIERS[SILENT_ASSASSIN_BONUS]
+                   * game_stats[SILENT_ASSASSIN_BONUS]};
             stats.score_signature_kill
-                = {STATS_MULTIPLIERS[SIGNATURE_KILL] * game_stats[SIGNATURE_KILL]};
+                = {STATS_MULTIPLIERS[SIGNATURE_KILL]
+                   * game_stats[SIGNATURE_KILL]};
             stats.score_silent_kill
                 = {STATS_MULTIPLIERS[SILENT_KILL] * game_stats[SILENT_KILL]};
-            stats.score_headshot = {STATS_MULTIPLIERS[HEADSHOT] * game_stats[HEADSHOT]};
+            stats.score_headshot
+                = {STATS_MULTIPLIERS[HEADSHOT] * game_stats[HEADSHOT]};
             stats.score_body_hidden
                 = {STATS_MULTIPLIERS[BODY_HIDDEN] * game_stats[BODY_HIDDEN]};
             stats.score_civilian_casualty
                 = {STATS_MULTIPLIERS[CIVILIAN_CASUALTY]
-                   * game_stats[CIVILIAN_CASUALTY]};
+                       * game_stats[CIVILIAN_CASUALTY],
+                   game_stats[CIVILIAN_CASUALTY] ? Status::RED : Status::GREEN};
             stats.score_non_target_casualty
                 = {STATS_MULTIPLIERS[NON_TARGET_CASUALTY]
-                   * game_stats[NON_TARGET_CASUALTY]};
+                       * game_stats[NON_TARGET_CASUALTY],
+                   game_stats[NON_TARGET_CASUALTY] ? Status::RED
+                                                   : Status::GREEN};
             stats.score_pacification
                 = {STATS_MULTIPLIERS[PACIFICATION] * game_stats[PACIFICATION]};
         }
