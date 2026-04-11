@@ -118,16 +118,17 @@ void hitman_absolution::gui(
     );
     if (stats.map > 0 && stats.rating.value != "Unrated") {
         ImGui::Spacing();
-        auto rating_font
-            = stats.score_rating.status == Status::RED     ? fonts.rating_bad
-              : stats.score_rating.status == Status::GREEN ? fonts.rating_good
-                                                           : fonts.rating_maybe;
-        auto rating_color = stats.score_rating.status == Status::RED
-                                ? settings.rating_bad.color
-                            : stats.score_rating.status == Status::GREEN
-                                ? settings.rating_good.color
-                                : settings.rating_maybe.color;
-        auto rating_text = stats.score_rating.value;
+        auto is_max = stats.score_total >= stats.score_for_max_rating;
+        auto rating_status = is_max ? Status::GREEN : Status::YELLOW;
+        auto rating_font = is_max ? fonts.rating_good : fonts.rating_maybe;
+        auto rating_color
+            = is_max ? settings.rating_good.color : settings.rating_maybe.color;
+        auto rating_text = std::format(
+            "{} [{}/{}]",
+            stats.score_rating,
+            stats.score_total,
+            stats.score_for_max_rating
+        );
         text(rating_font, rating_color, rating_text.c_str());
         ImGui::Spacing();
         ImGui::BeginTable(
@@ -149,9 +150,7 @@ void hitman_absolution::gui(
             {"Body Hidden", stats.score_body_hidden},
             {"Civilian Casualty", stats.score_civilian_casualty},
             {"Non-Target Casualty", stats.score_non_target_casualty},
-            {"Pacification", stats.score_pacification},
-            {"Total Score", stats.score},
-            {"Shadow Score", {stats.score_shadow, Status::GREEN}},
+            {"Pacification", stats.score_pacification}
         };
         for (auto& row : table_rows) {
             table_row(

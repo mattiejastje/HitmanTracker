@@ -12,88 +12,94 @@
 #include "../mem/read_write.hpp"
 #include "structs.hpp"
 
-enum class Rating { unrated, veteran, specialist, shadow, silent_assassin };
+constexpr int AGENT = 0;
+constexpr int VETERAN = 50;
+constexpr int SPECIALIST = 80;
+constexpr int PROFESSIONAL = 90;
+constexpr int SHADOW = 100;
 
 struct MapInfo {
     int map;
     int num_evidence;
     int num_objectives;
-    Rating max_rating;
+    // 0 = agent, 50 = veteran, 80 = specialist, 90 = professional, 100 = shadow
+    int max_rating;
+    int num_targets;
 };
 
 // level, checkpoint -> map info
 const std::vector<std::vector<MapInfo>> scenes = {
     // level 0
     {
-        {1},                        // 0 garden
-        {2},                        // 1 greenhouse
-        {3, 1},                     // 2 cliffside
-        {4, 1, 2, Rating::shadow},  // 3 mansion ground
-        {5},                        // 4 mansion 2nd
-        {},                         // 5 level summary screen
+        {1},                // 0 garden
+        {2},                // 1 greenhouse
+        {3, 1},             // 2 cliffside
+        {4, 1, 2, SHADOW},  // 3 mansion ground
+        {5},                // 4 mansion 2nd
+        {},                 // 5 level summary screen
     },
     // level 1
     {
-        {6, 1, 2, Rating::silent_assassin},  // 0 king of chinatown
-        {},                                  // 1 level summary screen
+        {6, 1, 2, SHADOW, 1},  // 0 king of chinatown
+        {},                    // 1 level summary screen
     },
     // level 2
     {
-        {7, 1, 1, Rating::shadow},  // 0 terminus hotel
-        {},                         // 1 elevator going up (cutscene)
-        {8, 1, 2, Rating::shadow},  // 2 upper floors
-        {9},                        // 3 room 899
-        {},                         // 4 level summary screen
+        {7, 1, 1, SHADOW},  // 0 terminus hotel
+        {},                 // 1 elevator going up (cutscene)
+        {8, 1, 2, SHADOW},  // 2 upper floors
+        {9},                // 3 room 899
+        {},                 // 4 level summary screen
     },
     // level 3
     {
-        {10, 0, 1, Rating::specialist},  // 0 burning hotel
-        {11, 1, 1, Rating::shadow},      // 1 library
-        {12},                            // 2 pigeon coop
-        {13},                            // 3 rooftops
-        {14, 1, 1, Rating::shadow},      // 4 shangri-la
-        {},                              // 5 elevator going down (cutscene)
-        {15, 1, 3, Rating::shadow},      // 6 train station
-        {},                              // 7 level summary screen
+        {10, 0, 1, SPECIALIST},  // 0 burning hotel
+        {11, 1, 1, SHADOW},      // 1 library
+        {12},                    // 2 pigeon coop
+        {13},                    // 3 rooftops
+        {14, 1, 1, SHADOW},      // 4 shangri-la
+        {},                      // 5 elevator going down (cutscene)
+        {15, 1, 3, SHADOW},      // 6 train station
+        {},                      // 7 level summary screen
     },
     // level 4
     {
-        {16, 1, 1, Rating::shadow},           // 0 courtyard
-        {17, 1, 3, Rating::silent_assassin},  // 1 vixen club
-        {18, 0, 1, Rating::specialist},       // 2 dressing rooms
-        {19, 1, 1, Rating::shadow},           // 3 derelict building
-        {20, 1, 1, Rating::shadow},           // 4 convenience store
-        {21, 1},                              // 5 loading area
-        {22, 1, 4, Rating::silent_assassin},  // 6 chinese new year
-        {},                                   // 7 lock pick (cutscene)
-        {},                                   // 8 level summary screen
+        {16, 1, 1, SHADOW},      // 0 courtyard
+        {17, 1, 3, SHADOW, 1},   // 1 vixen club
+        {18, 0, 1, SPECIALIST},  // 2 dressing rooms
+        {19, 1, 1, SHADOW},      // 3 derelict building
+        {20, 1, 1, SHADOW},      // 4 convenience store
+        {21, 1},                 // 5 loading area
+        {22, 1, 4, SHADOW, 3},   // 6 chinese new year
+        {},                      // 7 lock pick (cutscene)
+        {},                      // 8 level summary screen
     },
     // level 5
     {},
     // level 6
     {
-        {23},                                 // 0 victoria's ward
-        {24, 1, 5, Rating::shadow},           // 1 orphanage halls
-        {},                                   // 2 lenny shoots nun (cutscene)
-        {25, 1, 2, Rating::silent_assassin},  // 3 central heating
-        {},                                   // 4 level summary screen
+        {23},                   // 0 victoria's ward
+        {24, 1, 5, SHADOW},     // 1 orphanage halls
+        {},                     // 2 lenny shoots nun (cutscene)
+        {25, 1, 2, SHADOW, 1},  // 3 central heating
+        {},                     // 4 level summary screen
     },
     // level 7
     {
-        {26, 1, 1, Rating::shadow},  // 0 great balls of fire
-        {},                          // 1 level summary screen
+        {26, 1, 1, SHADOW},  // 0 great balls of fire
+        {},                  // 1 level summary screen
     },
     // level 8
     {
-        {27, 1, 2, Rating::veteran},  // 0 gunshop
-        {},                           // 1 level summary screen
+        {27, 1, 2, VETERAN},  // 0 gunshop
+        {},                   // 1 level summary screen
     },
     // level 9
     {
-        {28, 1, 4, Rating::silent_assassin},  // 0 streets of hope
-        {29, 1, 3, Rating::silent_assassin},  // 1 barber shop
-        {},                                   // 2 lenny kidnap (cutscene)
-        {},                                   // 3 level summary screen
+        {28, 1, 4, SHADOW, 3},  // 0 streets of hope
+        {29, 1, 3, SHADOW, 2},  // 1 barber shop
+        {},                     // 2 lenny kidnap (cutscene)
+        {},                     // 3 level summary screen
     },
     // level 10
     {
@@ -102,33 +108,33 @@ const std::vector<std::vector<MapInfo>> scenes = {
     },
     // level 11
     {
-        {},                          // 0 dog & oil fields (cutscene)
-        {31, 1, 3, Rating::shadow},  // 1 dead end
-        {32, 1, 1, Rating::shadow},  // 2 old mill
-        {33, 1, 1, Rating::shadow},  // 3 descent
-        {34, 1, 3, Rating::shadow},  // 4 factory compound
-        {},                          // 5 level summary screen
+        {},                  // 0 dog & oil fields (cutscene)
+        {31, 1, 3, SHADOW},  // 1 dead end
+        {32, 1, 1, SHADOW},  // 2 old mill
+        {33, 1, 1, SHADOW},  // 3 descent
+        {34, 1, 3, SHADOW},  // 4 factory compound
+        {},                  // 5 level summary screen
     },
     // level 12
     {
-        {35, 1, 5, Rating::silent_assassin},  // 0 test facility
-        {36, 1, 2, Rating::shadow},           // 1 decontamination
-        {37, 1, 3, Rating::silent_assassin},  // 2 r&d
-        {},                                   // 3 level summary screen
+        {35, 1, 5, SHADOW, 1},  // 0 test facility
+        {36, 1, 2, SHADOW},     // 1 decontamination
+        {37, 1, 3, SHADOW, 2},  // 2 r&d
+        {},                     // 3 level summary screen
     },
     // level 13
     {
-        {38, 1, 1, Rating::shadow},           // 0 patriot's hangar
-        {39, 1, 2, Rating::silent_assassin},  // 1 arena
-        {},                                   // 2 level summary screen
+        {38, 1, 1, SHADOW},     // 0 patriot's hangar
+        {39, 1, 2, SHADOW, 1},  // 1 arena
+        {},                     // 2 level summary screen
     },
     // level 14
     {
-        {40, 1, 3, Rating::silent_assassin},  // 0 parking
-        {41, 1, 3, Rating::silent_assassin},  // 1 reception
-        {42, 1, 4, Rating::silent_assassin},  // 2 cornfield
-        {},                                   // 3 cutscene
-        {},                                   // 4 level summary screen
+        {40, 1, 3, SHADOW, 2},  // 0 parking
+        {41, 1, 3, SHADOW, 2},  // 1 reception
+        {42, 1, 4, SHADOW, 3},  // 2 cornfield
+        {},                     // 3 cutscene
+        {},                     // 4 level summary screen
     },
     // level 15
     {},
@@ -136,21 +142,21 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {},
     // level 17
     {
-        {43, 1, 1, Rating::shadow},  // 0 courthouse
-        {44, 1},                     // 1 holding cells
-        {45, 1, 2, Rating::shadow},  // 2 prison
-        {},                          // 3 electrocution cutscene
-        {},                          // 4 level summary screen
+        {43, 1, 1, SHADOW},  // 0 courthouse
+        {44, 1},             // 1 holding cells
+        {45, 1, 2, SHADOW},  // 2 prison
+        {},                  // 3 electrocution cutscene
+        {},                  // 4 level summary screen
     },
     // level 18
     {
-        {46, 1, 2, Rating::shadow},  // 0 county jail
-        {47, 1, 1, Rating::shadow},  // 1 outgunned
-        {48, 1, 1, Rating::shadow},  // 2 burn
-        {49, 1, 1, Rating::shadow},  // 3 hope fair
-        {50},                        // 4 outskirts
-        {51},                        // 5 church
-        {},                          // 6 level summary screen
+        {46, 1, 2, SHADOW},  // 0 county jail
+        {47, 1, 1, SHADOW},  // 1 outgunned
+        {48, 1, 1, SHADOW},  // 2 burn
+        {49, 1, 1, SHADOW},  // 3 hope fair
+        {50},                // 4 outskirts
+        {51},                // 5 church
+        {},                  // 6 level summary screen
     },
     // level 19
     {},
@@ -163,29 +169,28 @@ const std::vector<std::vector<MapInfo>> scenes = {
     },
     // level 22
     {
-        {53, 1, 2, Rating::shadow},           // 0 blackwater park
-        {},                                   // 1 sushi guy cutscene
-        {54, 1, 3, Rating::silent_assassin},  // 2 the penthouse
-        {},                                   // 3 level summary screen
+        {53, 1, 2, SHADOW},     // 0 blackwater park
+        {},                     // 1 sushi guy cutscene
+        {54, 1, 3, SHADOW, 1},  // 2 the penthouse
+        {},                     // 3 level summary screen
     },
     // level 23
     {},
     // level 24
     {
-        {55, 1, 1, Rating::silent_assassin},  // 0 blackwater roof
-        {},                                   // 1 level summary screen
+        {55, 1, 1, SHADOW, 1},  // 0 blackwater roof
+        {},                     // 1 level summary screen
     },
     // level 25
     {
-        {56, 1, 1, Rating::shadow},           // 0 cemetary entrance
-        {57, 1, 3, Rating::silent_assassin},  // 1 burnwood family tomb
-        {58, 1, 5, Rating::silent_assassin},  // 2 crematorium
-        {},                                   // 3 level summary screen
+        {56, 1, 1, SHADOW},     // 0 cemetary entrance
+        {57, 1, 3, SHADOW, 1},  // 1 burnwood family tomb
+        {58, 1, 5, SHADOW, 3},  // 2 crematorium
+        {},                     // 3 level summary screen
     },
 };
 
-static Status get_rating_status(Rating max_rating, const Stats& stats) {
-    if (max_rating == Rating::unrated) return Status::GREEN;
+static Status get_rating_status(int max_rating, const Stats& stats) {
     return (stats.alerts.value != 0 || stats.innocents_killed.value != 0
             || stats.enemies_killed.value != 0)
                ? Status::RED
@@ -343,26 +348,26 @@ bool hitman_absolution::update_slow(
         stats.alerts = stats_value(game_stats[SPOTTED]);
         auto status = get_rating_status(map_info.max_rating, stats);
         stats.rating
-            = {map_info.max_rating == Rating::unrated
-                   ? "Unrated"
-                   : get_simple_rating_value(status),
+            = {map_info.max_rating == AGENT ? "Unrated"
+                                            : get_simple_rating_value(status),
                status};
         auto score = get_raw_score(game_stats);
         auto score_shadow = get_best_raw_score(
             game.game_data.level_infos, game.level, checkpoint_index
         );
         if (score_shadow && score_shadow.value() != 0) {
-            int32_t percent = (100 * score) / score_shadow.value();
-            auto score_status = percent < 100 ? Status::YELLOW : Status ::GREEN;
-            stats.score = {score, score_status};
-            stats.score_shadow = score_shadow.value();
-            stats.score_rating
-                = {percent < 50    ? "Agent"
-                   : percent < 80  ? "Veteran"
-                   : percent < 90  ? "Specialist"
-                   : percent < 100 ? "Professional"
-                                   : "Shadow",
-                   score_status};
+            stats.score_for_max_rating
+                = (map_info.max_rating * score_shadow.value()) / 100;
+            int32_t percent = std::max(0, (100 * score) / score_shadow.value());
+            auto score_status = percent >= map_info.max_rating ? Status::GREEN
+                                                               : Status::YELLOW;
+            stats.score_total = score;
+            stats.score_rating = percent < VETERAN        ? "Agent"
+                                 : percent < SPECIALIST   ? "Veteran"
+                                 : percent < PROFESSIONAL ? "Specialist"
+                                 : percent < SHADOW       ? "Professional"
+                                                          : "Shadow",
+            score_status;
             stats.score_objective_complete
                 = {STATS_MULTIPLIERS[OBJECTIVE_COMPLETE]
                        * game_stats[OBJECTIVE_COMPLETE],
@@ -370,7 +375,10 @@ bool hitman_absolution::update_slow(
                        ? Status::YELLOW
                        : Status::GREEN};
             stats.score_target_kill
-                = {STATS_MULTIPLIERS[TARGET_KILL] * game_stats[TARGET_KILL]};
+                = {STATS_MULTIPLIERS[TARGET_KILL] * game_stats[TARGET_KILL],
+                   game_stats[TARGET_KILL] < map_info.num_targets
+                       ? Status::YELLOW
+                       : Status::GREEN};
             stats.score_spotted
                 = {STATS_MULTIPLIERS[SPOTTED] * game_stats[SPOTTED],
                    game_stats[SPOTTED] ? Status::RED : Status::GREEN};
@@ -382,7 +390,11 @@ bool hitman_absolution::update_slow(
                        : Status::GREEN};
             stats.score_silent_assassin_bonus
                 = {STATS_MULTIPLIERS[SILENT_ASSASSIN_BONUS]
-                   * game_stats[SILENT_ASSASSIN_BONUS]};
+                       * game_stats[SILENT_ASSASSIN_BONUS],
+                   map_info.num_targets == 0
+                           || STATS_MULTIPLIERS[SILENT_ASSASSIN_BONUS] != 0
+                       ? Status::GREEN
+                       : status};
             stats.score_signature_kill
                 = {STATS_MULTIPLIERS[SIGNATURE_KILL]
                    * game_stats[SIGNATURE_KILL]};
