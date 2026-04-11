@@ -415,13 +415,11 @@ bool hitman_absolution::update_slow(
                                                           : Status::GREEN};
         } else {
             if (game_stats[SIGNATURE_KILL] != 0)
-                logging::warn("no targets on map but signature kills not zero");
+                logging::warn("no targets but signature kills not zero");
             if (game_stats[TARGET_KILL] != 0)
-                logging::warn("no targets on map but target kills not zero");
+                logging::warn("no targets but target kills not zero");
             if (game_stats[SILENT_ASSASSIN_BONUS] != 0)
-                logging::warn(
-                    "no targets on map but silent assassin bonus not zero"
-                );
+                logging::warn("no targets but silent assassin bonus not zero");
             stats.score_signature_kill = {0};
             stats.score_target_kill = {0};
             stats.score_silent_assassin_bonus = {0};
