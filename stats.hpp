@@ -24,12 +24,12 @@ struct Stats {
     StatsValue<std::string> rating;
     StatsValue<int32_t> shots_fired;
     StatsValue<int32_t> headshots;
-    StatsValue<int32_t> enemies_killed;  // hma: "non-targets" minus "civilians"
+    StatsValue<int32_t> enemies_killed;
     StatsValue<int32_t> enemies_wounded;
-    StatsValue<int32_t> innocents_killed;  // hma: "civilians"
+    StatsValue<int32_t> innocents_killed;
     StatsValue<int32_t> innocents_wounded;
     StatsValue<int32_t> close_encounters;   // h2sa, hc
-    StatsValue<int32_t> alerts;             // h2sa, hc, hma: "spotted"
+    StatsValue<int32_t> alerts;             // h2sa, hc
     StatsValue<int32_t> police_killed;      // bm
     StatsValue<int32_t> police_wounded;     // bm
     StatsValue<int32_t> frisk_failed;       // bm
@@ -41,9 +41,9 @@ struct Stats {
     StatsValue<int32_t> on_camera;          // bm
     StatsValue<int32_t> cust_weapons_left;  // bm
     StatsValue<int32_t> suit_left;          // bm
-    int32_t score_for_max_rating;  // hma: score needed for max rating
-    int32_t score_total;           // hma: actual score
-    std::string score_rating;      // hma: actual rating
+    int32_t score_for_max_rating;           // hma: score needed for max rating
+    int32_t score_total;                    // hma: actual score
+    std::string score_rating;               // hma: actual rating
     StatsValue<int32_t> score_objective_complete;     // hma
     StatsValue<int32_t> score_target_kill;            // hma
     StatsValue<int32_t> score_spotted;                // hma
