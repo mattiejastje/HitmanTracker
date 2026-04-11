@@ -308,7 +308,7 @@ bool hitman_absolution::update_slow(
         logging::trace("Checkpoints pointer is null");
         return true;
     }
-    auto checkpoints = *game.checkpoints_manager.checkpoints;
+    auto& checkpoints = *game.checkpoints_manager.checkpoints;
     auto checkpoint_index = get_current_checkpoint_index(checkpoints);
     if (checkpoint_index < 0) {
         stats.map = 0;
