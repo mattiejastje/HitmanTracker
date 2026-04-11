@@ -239,6 +239,46 @@ static int32_t get_current_checkpoint_index(
     return -1;
 }
 
+int32_t get_raw_score(const std::array<int16_t, 0x64>& values) {
+    int32_t score = 0;
+    for (std::size_t index = 1; index < 13; index++) {
+        score += values[index] * STATS_MULTIPLIERS[index];
+    }
+    return score;
+};
+
+const hitman_absolution::structs::GameDataLevelInfo* get_level_info(
+    const std::vector<hitman_absolution::structs::GameDataLevelInfo>&
+        level_infos,
+    int32_t level
+) {
+    for (const auto& level_info : level_infos)
+        if (level_info.level_data.level == level) return &level_info;
+    return nullptr;
+}
+
+// TODO hardcode instead of calculate so we don't need to read the data
+std::optional<int32_t> get_best_raw_score(
+    const std::vector<hitman_absolution::structs::GameDataLevelInfo>&
+        level_infos,
+    int32_t level,
+    int32_t checkpoint_index
+) {
+    auto level_info = get_level_info(level_infos, level);
+    if (level_info) {
+        auto& checkpoint_info = level_info->checkpoint_info;
+        if (checkpoint_info) {
+            auto& nodes = checkpoint_info->nodes;
+            if (0 <= checkpoint_index && checkpoint_index < nodes.size()) {
+                auto& node = checkpoint_info->nodes[checkpoint_index];
+                auto& data = node.data;
+                if (data) return data->best_raw_score;
+            }
+        }
+    }
+    return {};
+}
+
 // global to avoid allocating large object on stack
 static hitman_absolution::structs::Game game{};
 
@@ -307,6 +347,49 @@ bool hitman_absolution::update_slow(
                    ? "Unrated"
                    : get_simple_rating_value(status),
                status};
+        auto score = get_raw_score(game_stats);
+        auto score_shadow = get_best_raw_score(
+            game.game_data.level_infos, game.level, checkpoint_index
+        );
+        if (score_shadow && score_shadow.value() != 0) {
+            int32_t percent = (100 * score) / score_shadow.value();
+            auto score_status = percent <= 99 ? Status::YELLOW : Status ::GREEN;
+            stats.score = {score, score_status};
+            stats.score_shadow = score_shadow.value();
+            stats.score_rating
+                = {percent <= 49   ? "Agent"
+                   : percent <= 79 ? "Veteran"
+                   : percent <= 89 ? "Specialist"
+                   : percent <= 99 ? "Professional"
+                                   : "Shadow",
+                   score_status};
+            stats.score_objective_complete
+                = {STATS_MULTIPLIERS[OBJECTIVE_COMPLETE]
+                   * game_stats[OBJECTIVE_COMPLETE]};
+            stats.score_target_kill
+                = {STATS_MULTIPLIERS[TARGET_KILL] * game_stats[TARGET_KILL]};
+            stats.score_spotted
+                = {STATS_MULTIPLIERS[SPOTTED] * game_stats[SPOTTED]};
+            stats.score_evidence_removed
+                = {STATS_MULTIPLIERS[EVIDENCE_REMOVED] * game_stats[EVIDENCE_REMOVED]};
+            stats.score_silent_assassin_bonus
+                = {STATS_MULTIPLIERS[SILENT_ASSASSIN_BONUS] * game_stats[SILENT_ASSASSIN_BONUS]};
+            stats.score_signature_kill
+                = {STATS_MULTIPLIERS[SIGNATURE_KILL] * game_stats[SIGNATURE_KILL]};
+            stats.score_silent_kill
+                = {STATS_MULTIPLIERS[SILENT_KILL] * game_stats[SILENT_KILL]};
+            stats.score_headshot = {STATS_MULTIPLIERS[HEADSHOT] * game_stats[HEADSHOT]};
+            stats.score_body_hidden
+                = {STATS_MULTIPLIERS[BODY_HIDDEN] * game_stats[BODY_HIDDEN]};
+            stats.score_civilian_casualty
+                = {STATS_MULTIPLIERS[CIVILIAN_CASUALTY]
+                   * game_stats[CIVILIAN_CASUALTY]};
+            stats.score_non_target_casualty
+                = {STATS_MULTIPLIERS[NON_TARGET_CASUALTY]
+                   * game_stats[NON_TARGET_CASUALTY]};
+            stats.score_pacification
+                = {STATS_MULTIPLIERS[PACIFICATION] * game_stats[PACIFICATION]};
+        }
     }
     return true;
 }

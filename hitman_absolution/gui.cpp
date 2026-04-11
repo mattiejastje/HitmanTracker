@@ -1,6 +1,9 @@
 #include "gui.hpp"
 
+#include <imgui.h>
+
 #include "../hitman_common/gui.hpp"
+#include "../imgui_utils.hpp"
 
 const std::vector<std::string> map_names = {
     // A Personal Contract
@@ -113,4 +116,53 @@ void hitman_absolution::gui(
             */
         } : std::vector<hitman_common::TableRow>{}
     );
+    if (stats.map > 0 && stats.rating.value != "Unrated") {
+        ImGui::Spacing();
+        auto rating_font
+            = stats.score_rating.status == Status::RED     ? fonts.rating_bad
+              : stats.score_rating.status == Status::GREEN ? fonts.rating_good
+                                                           : fonts.rating_maybe;
+        auto rating_color = stats.score_rating.status == Status::RED
+                                ? settings.rating_bad.color
+                            : stats.score_rating.status == Status::GREEN
+                                ? settings.rating_good.color
+                                : settings.rating_maybe.color;
+        auto rating_text = stats.score_rating.value;
+        text(rating_font, rating_color, rating_text.c_str());
+        ImGui::Spacing();
+        ImGui::BeginTable(
+            "Statistics",
+            2,
+            ImGuiTableFlags_SizingFixedFit
+                | ImGuiTableFlags_NoKeepColumnsVisible
+                | ImGuiTableFlags_NoHostExtendX
+        );
+        const std::vector<hitman_common::TableRow> table_rows = {
+            {"Objective Complete", stats.score_objective_complete},
+            {"Target Kill", stats.score_target_kill},
+            {"Spotted", stats.score_spotted},
+            {"Evidence Removed", stats.score_evidence_removed},
+            {"Silent Assassin Bonus", stats.score_silent_assassin_bonus},
+            {"Signature Kill", stats.score_signature_kill},
+            {"Silent Kill", stats.score_silent_kill},
+            {"Headshot", stats.score_headshot},
+            {"Body Hidden", stats.score_body_hidden},
+            {"Civilian Casualty", stats.score_civilian_casualty},
+            {"Non-Target Casualty", stats.score_non_target_casualty},
+            {"Pacification", stats.score_pacification},
+            {"Total Score", stats.score},
+            {"Shadow Score", {stats.score_shadow, Status::GREEN}},
+        };
+        for (auto& row : table_rows) {
+            table_row(
+                fonts,
+                settings,
+                row.stats_value.status,
+                row.name.c_str(),
+                "%d",
+                row.stats_value.value
+            );
+        }
+        ImGui::EndTable();
+    }
 }
