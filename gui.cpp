@@ -87,8 +87,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                             game->handle.get(),
                             game->base_ptrs,
                             game->hook->label_ptrs,
-                            stats,
-                            dt
+                            stats
                         );
                         error_slow.update(100.0f * static_cast<float>(!ok), dt);
                     };
@@ -123,8 +122,7 @@ static void Frame(UI* ui, const settings::Gui settings) {
                 game->handle.get(),
                 game->base_ptrs,
                 game->hook->label_ptrs,
-                stats,
-                dt
+                stats
             );
             error_fast.update(100.0f * static_cast<float>(!ok), dt);
             game->methods.gui(settings, ui->fonts, stats);

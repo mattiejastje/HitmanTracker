@@ -43,8 +43,7 @@ static bool stats_nothing(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats,
-    float dt
+    Stats& stats
 ) {
     return true;
 }

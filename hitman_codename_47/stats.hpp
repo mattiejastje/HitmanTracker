@@ -10,16 +10,14 @@ bool update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats,
-    float dt
+    Stats& stats
 );
 
 bool update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats,
-    float dt
+    Stats& stats
 );
 
 }  // namespace hitman_codename_47

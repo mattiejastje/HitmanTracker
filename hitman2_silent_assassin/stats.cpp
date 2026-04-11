@@ -59,8 +59,7 @@ bool hitman2_silent_assassin::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats,
-    float dt
+    Stats& stats
 ) {
     auto scene = read_string(
         handle, base_ptrs[0] + 0x2A6C5C, {0x98, 0xBBB}, INT32_MAX, 64
@@ -102,8 +101,7 @@ bool hitman2_silent_assassin::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats,
-    float dt
+    Stats& stats
 ) {
     if (stats.map > 0) {
         auto time = read<int32_t>(

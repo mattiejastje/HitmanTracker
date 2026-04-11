@@ -71,8 +71,7 @@ bool hitman_contracts::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats,
-    float dt
+    Stats& stats
 ) {
     static int map_pointer_number = 0;
     auto scene = read_string(
@@ -135,8 +134,7 @@ bool hitman_contracts::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats,
-    float dt
+    Stats& stats
 ) {
     if (stats.map > 0) {
         auto time

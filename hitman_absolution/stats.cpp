@@ -282,8 +282,7 @@ bool hitman_absolution::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats,
-    float dt
+    Stats& stats
 ) {
     MemoryReader<uint32_t> reader{handle};
     auto tracer
@@ -434,8 +433,7 @@ bool hitman_absolution::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats,
-    float dt
+    Stats& stats
 ) {
     if (stats.map > 0) {
         auto game_time = read<int64_t>(handle, base_ptrs[0] + 0xE24730 + 0x18);

@@ -203,8 +203,7 @@ bool hitman_blood_money::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats,
-    float dt
+    Stats& stats
 ) {
     MemoryReader<uint32_t> reader{handle};
     auto tracer
@@ -271,8 +270,7 @@ bool hitman_blood_money::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
-    Stats& stats,
-    float dt
+    Stats& stats
 ) {
     if (stats.map > 0) {
         auto time = get_time(handle, base_ptrs, stats.map_stage);
