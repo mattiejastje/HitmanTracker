@@ -4,8 +4,6 @@
 #include <iostream>  // std::cout
 #include <mempeep/read.hpp>
 #include <mempeep/tracers/log_tracer.hpp>
-#include <mempeep/tracers/ok_tracer.hpp>
-#include <unordered_map>
 
 #include "../hitman_common/stats.hpp"
 #include "../logging.hpp"
@@ -288,8 +286,6 @@ bool hitman_absolution::update_slow(
     float dt
 ) {
     MemoryReader<uint32_t> reader{handle};
-    // auto tracer = mempeep::OkTracer{};
-    // TODO check performance against OkTracer
     auto tracer
         = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::VALUES};
     if (!mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game))
