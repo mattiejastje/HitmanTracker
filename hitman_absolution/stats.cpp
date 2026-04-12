@@ -348,8 +348,6 @@ bool hitman_absolution::update_slow(
         stats.score_for_max_rating
             = (map_info.max_rating * score_shadow.value()) / 100;
         int32_t percent = std::max(0, (100 * score) / score_shadow.value());
-        auto score_status
-            = percent >= map_info.max_rating ? Status::GREEN : Status::YELLOW;
         stats.score_total = score;
         stats.score_rating = percent < VETERAN        ? "Agent"
                              : percent < SPECIALIST   ? "Veteran"
