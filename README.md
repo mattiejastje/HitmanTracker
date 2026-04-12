@@ -68,7 +68,7 @@ In the game, ratings are determined in two distinct steps:
   * 90% - 99%: Professional
   * 100%: Shadow
 
-  **Issue: Some checkpoints have a too high "shadow score".**
+  **Issue: some checkpoints have a too high "shadow score".**
   This can make Shadow (100%) impossible to achieve.
 
 To fix these issues,
