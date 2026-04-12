@@ -34,31 +34,31 @@ Fully supported.
 
 ### Hitman: Absolution
 
-Almost fully supported.
+Fully supported.
 
 The tracker reworks the original scoring logic from the game to make ratings more transparent.
+In the game, ratings are determined in two distinct steps:
 
-In the base game, ratings are determined in two distinct steps:
-
-- Condition-based playstyles.
+- Condition-based rating.
   The game first checks for specific playstyles based on how you played.
-  Examples include "Silent Assassin", "Jinx", and many more.
+  Examples include "Silent Assassin", "Piano Man", "Jinx", and so on.
   The requirements for "Silent Assassin" are:
 
   * No non-target kills.
   * Never spotted.
   * All targets eliminated.
 
-  **Issue: missions without targets are never awarded "Silent Assassin".**
+  **Issue: checkpoints without targets are never awarded "Silent Assassin".**
   This is because the game never records that you have eliminated all targets.
 
-- Score-based playstyles (fallback).
-  If no condition-based playstyle is awarded, the game assigns a rating based on score.
+- Score-based rating.
+  If no condition-based rating can be awarded,
+  the game falls back to a rating based on score.
   This is calculated by:
 
   * Taking your raw score (before difficulty/challenge modifiers).
   * Dividing it by an internal "shadow score" for that checkpoint.
-  * Converting it to an integer percentage between 0 and 100.
+  * Converting it to a percentage between 0 and 100 (rounded down).
 
   A rating is then awarded as follows:
 
@@ -72,8 +72,7 @@ In the base game, ratings are determined in two distinct steps:
   This can make Shadow (100%) impossible to achieve.
 
 To fix these issues,
-the tracker displays both rating systems independently,
-as follows:
+the tracker displays both rating systems independently as follows:
 
 - Silent Assassin rating is awarded if:
 
@@ -81,27 +80,29 @@ as follows:
   * Never spotted.
 
   Target presence no longer affects eligibility.
+  This is an intentional deviation from the original rule
+  so that "Silent Assassin" can be tracked also in checkpoints without targets.
 
 - Score-based rating is awarded as follows:
 
-  * Calculate Agent, ..., Shadow tiers regardless of Silent Assassin,
-    using the same percentage thresholds as the original system.
+  * Calculate score-based rating regardless of Silent Assassin.
+  * Use the same percentage thresholds as the original system.
   * Show the score required for the highest achievable rating
     (e.g. 80% of the "shadow score" if Specialist is the highest achievable rating).
   * Scores for evidence removed, objectives completed, target kill, and signature kill,
     are color-coded: they show green only when they are at their maximum possible value
     so can easily tell if you are still missing objectives, evidence, or targets.
 
-This system:
-* Makes Silent Assassin achievable in all appropriate scenarios.
+This better reflects player performance
+while remaining faithful to the rating system of the original game:
+
+* Makes Silent Assassin achievable for all rated checkpoints.
 * Decouples skill-based rating from score-based rating.
 * Provides full transparency on scoring thresholds.
 
-This results in a system that better reflects player performance while remaining faithful to the structure of the original game.
-
 Known issues:
 
-* If a checkpoint is unrated,
+* If a checkpoint is unrated (i.e. when no score board is shown in the game),
   at the moment the tracker is unable to track the statistics,
   and awards an "Unrated" rating.
   The technical reason for this is that the tracker uses the score board,
