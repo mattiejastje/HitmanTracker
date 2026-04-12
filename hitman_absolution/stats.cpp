@@ -283,7 +283,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
         {
             .map = 33,
             .num_evidence = 1,
-            .num_objectives = 1,
+            .num_objectives = 2,
             .max_rating = SHADOW,
         },
         // 4 factory compound
