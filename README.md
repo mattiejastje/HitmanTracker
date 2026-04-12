@@ -49,19 +49,18 @@ In the base game, ratings are determined in two distinct steps:
   * Never spotted.
   * All targets eliminated.
 
-  Issue: missions without targets are never awarded "Silent Assassin"
-  because the game never records that you have eliminated all targets.
+  **Issue: missions without targets are never awarded "Silent Assassin".**
+  This is because the game never records that you have eliminated all targets.
 
 - Score-based playstyles (fallback).
-  If no condition-based playstyle is awarded, the game assigns a rating based on score:
-  Agent, Veteran, Specialist, Professional, or Shadow.
+  If no condition-based playstyle is awarded, the game assigns a rating based on score.
   This is calculated by:
 
-  * Taking your raw score (before modifiers).
-  * Comparing it to an internal "shadow score" for that checkpoint.
-  * Converting it to a percentage.
+  * Taking your raw score (before difficulty/challenge modifiers).
+  * Dividing it by an internal "shadow score" for that checkpoint.
+  * Converting it to an integer percentage between 0 and 100.
 
-  The thresholds are:
+  A rating is then awarded as follows:
 
   * 0% - 49%: Agent
   * 50% - 79%: Veteran
@@ -69,25 +68,29 @@ In the base game, ratings are determined in two distinct steps:
   * 90% - 99%: Professional
   * 100%: Shadow
 
-  Issue: Some checkpoints have a too high "shadow score".
+  **Issue: Some checkpoints have a too high "shadow score".**
   This can make Shadow (100%) impossible to achieve.
 
-This tracker simplifies and improves the system:
+To fix these issues,
+the tracker displays both rating systems independently,
+as follows:
 
-- Silent Assassin is always evaluated independently.
-  Awarded if:
+- Silent Assassin rating is awarded if:
 
   * No non-target kills.
   * Never spotted.
 
   Target presence no longer affects eligibility.
 
-- Score-based ratings are always applied.
+- Score-based rating is awarded as follows:
 
-  * Agent, ..., Shadow tiers are calculated regardless of Silent Assassin.
-  * Uses the same percentage thresholds as the original system.
-  * Shows the score required for the highest achievable rating
+  * Calculate Agent, ..., Shadow tiers regardless of Silent Assassin,
+    using the same percentage thresholds as the original system.
+  * Show the score required for the highest achievable rating
     (e.g. 80% of the "shadow score" if Specialist is the highest achievable rating).
+  * Scores for evidence removed, objectives completed, target kill, and signature kill,
+    are color-coded: they show green only when they are at their maximum possible value
+    so can easily tell if you are still missing objectives, evidence, or targets.
 
 This system:
 * Makes Silent Assassin achievable in all appropriate scenarios.
