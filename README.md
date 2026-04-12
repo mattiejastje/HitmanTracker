@@ -44,9 +44,11 @@ In the base game, ratings are determined in two distinct steps:
   The game first checks for specific playstyles based on how you played.
   Examples include "Silent Assassin", "Jinx", and many more.
   The requirements for "Silent Assassin" are:
+
   * No non-target kills.
   * Never spotted.
   * All targets eliminated.
+
   Issue: missions without targets are never awarded "Silent Assassin"
   because the game never records that you have eliminated all targets.
 
@@ -54,15 +56,19 @@ In the base game, ratings are determined in two distinct steps:
   If no condition-based playstyle is awarded, the game assigns a rating based on score:
   Agent, Veteran, Specialist, Professional, or Shadow.
   This is calculated by:
+
   * Taking your raw score (before modifiers).
   * Comparing it to an internal "shadow score" for that checkpoint.
   * Converting it to a percentage
+
   The thresholds are:
+
   * 0% - 49%: Agent
   * 50% - 79%: Veteran
   * 80% - 89%: Specialist
   * 90% - 99%: Professional
   * 100%: Shadow
+
   Issue: Some checkpoints have a too high "shadow score".
   This can make Shadow (100%) impossible to achieve.
 
@@ -70,10 +76,14 @@ This tracker simplifies and improves the system:
 
 - Silent Assassin is always evaluated independently.
   Awarded if:
+
   * No non-target kills.
   * Never spotted.
+
   Target presence no longer affects eligibility.
+
 - Score-based ratings are always applied.
+
   * Agent, ..., Shadow tiers are calculated regardless of Silent Assassin.
   * Uses the same percentage thresholds as the original system.
   * Shows the score required for the highest achievable rating
