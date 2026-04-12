@@ -207,7 +207,7 @@ bool hitman_blood_money::update_slow(
 ) {
     MemoryReader<uint32_t> reader{handle};
     auto tracer
-        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::VALUES};
+        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
     if (!mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game))
         return false;
     if (!game.settings) return true;  // game starting
