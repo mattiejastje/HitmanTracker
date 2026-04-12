@@ -34,28 +34,65 @@ Fully supported.
 
 ### Hitman: Absolution
 
-Partial support.
+Almost fully supported.
 
-A very simple silent assassin rating is implemented
-to mimick how the rating system works in the other games,
-whilst retaining some consistency with the scoring system in Absolution:
+The tracker reworks the original scoring logic from the game to make ratings more transparent.
+
+In the base game, ratings are determined in two distinct steps:
+
+- Condition-based playstyles.
+  The game first checks for specific playstyles based on how you played.
+  Examples include "Silent Assassin", "Jinx", and many more.
+  The requirements for "Silent Assassin" are:
+  * No non-target kills.
+  * Never spotted.
+  * All targets eliminated.
+  Issue: missions without targets are never awarded "Silent Assassin"
+  because the game never records that you have eliminated all targets.
+
+- Score-based playstyles (fallback).
+  If no condition-based playstyle is awarded, the game assigns a rating based on score:
+  Agent, Veteran, Specialist, Professional, or Shadow.
+  This is calculated by:
+  * Taking your raw score (before modifiers).
+  * Comparing it to an internal "shadow score" for that checkpoint.
+  * Converting it to a percentage
+  The thresholds are:
+  * 0% - 49%: Agent
+  * 50% - 79%: Veteran
+  * 80% - 89%: Specialist
+  * 90% - 99%: Professional
+  * 100%: Shadow
+  Issue: Some checkpoints have a too high "shadow score".
+  This can make Shadow (100%) impossible to achieve.
+
+This tracker simplifies and improves the system:
+
+- Silent Assassin is always evaluated independently.
+  Awarded if:
+  * No non-target kills.
+  * Never spotted.
+  Target presence no longer affects eligibility.
+- Score-based ratings are always applied.
+  * Agent, ..., Shadow tiers are calculated regardless of Silent Assassin.
+  * Uses the same percentage thresholds as the original system.
+  * Shows the score required for the highest achievable rating
+    (e.g. 80% of the "shadow score" if Specialist if the highest achievable rating).
+
+This system:
+* Makes Silent Assassin achievable in all appropriate scenarios.
+* Decouples skill-based rating from score-based rating.
+* Provides full transparency on scoring thresholds.
+
+This results in a system that better reflects player performance while remaining faithful to the structure of the original game.
+
+Known issues:
 
 * If a checkpoint is unrated,
   at the moment the tracker is unable to track the statistics,
   and awards an "Unrated" rating.
-  The technical reason for this is that the tracker verifies score board,
-  but the engine keeps no score board for unrated checkpoints.
-
-* If a checkpoint is rated, the tracker awards a "Silent Assassin" rating
-  in these circumstances:
-
-    - Not spotted.
-    - No civilians killed.
-    - No non-targets killed if the map has dedicated targets (i.e. if the map
-      has no dedicated targets, every non-civilian is considered a target).
-
-For convenience, the tracker shows whether evidence is left,
-but this currently does not affect the rating awarded by the tracker.
+  The technical reason for this is that the tracker uses the score board,
+  but the engine keeps no score board in memory for unrated checkpoints.
 
 ## Related projects
 
