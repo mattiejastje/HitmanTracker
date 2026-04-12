@@ -728,7 +728,8 @@ bool hitman_absolution::update_slow(
         }
         // TODO remove this line after extensive testing
         // TODO then we no longer need to use get_best_raw_score
-        if (score_shadow != map_info.shadow_score) {
+        if (map_info.max_rating != AGENT
+            && score_shadow != map_info.shadow_score) {
             logging::critical("BUG: fix shadow score for this checkpoint");
         }
         stats.score_for_max_rating
