@@ -59,7 +59,7 @@ In the base game, ratings are determined in two distinct steps:
 
   * Taking your raw score (before modifiers).
   * Comparing it to an internal "shadow score" for that checkpoint.
-  * Converting it to a percentage
+  * Converting it to a percentage.
 
   The thresholds are:
 
