@@ -30,23 +30,23 @@ const std::vector<std::vector<MapInfo>> scenes = {
     // level 0
     {
         // 0 garden
-        {1},
+        {.map = 1},
         // 1 greenhouse
-        {2},
+        {.map = 2},
         // 2 cliffside
         {
-            3,
-            1,
+            .map = 3,
+            .num_evidence = 1,
         },
         // 3 mansion ground
         {
-            4,
-            1,
-            2,
-            SHADOW,
+            .map = 4,
+            .num_evidence = 1,
+            .num_objectives = 2,
+            .max_rating = SHADOW,
         },
         // 4 mansion 2nd
-        {5},
+        {.map = 5},
         // 5 level summary screen
         {},
     },
@@ -54,11 +54,11 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 king of chinatown
         {
-            6,
-            1,
-            3,
-            SHADOW,
-            1,
+            .map = 6,
+            .num_evidence = 1,
+            .num_objectives = 3,
+            .max_rating = SHADOW,
+            .num_targets = 1,
         },
         // 1 level summary screen
         {},
@@ -67,22 +67,22 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 terminus hotel
         {
-            7,
-            1,
-            1,
-            SHADOW,
+            .map = 7,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
         },
         // 1 elevator going up (cutscene)
         {},
         // 2 upper floors
         {
-            8,
-            1,
-            2,
-            SHADOW,
+            .map = 8,
+            .num_evidence = 1,
+            .num_objectives = 2,
+            .max_rating = SHADOW,
         },
         // 3 room 899
-        {9},
+        {.map = 9},
         // 4 level summary screen
         {},
     },
@@ -90,37 +90,37 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 burning hotel
         {
-            10,
-            0,
-            1,
-            SPECIALIST,
+            .map = 10,
+            .num_evidence = 0,
+            .num_objectives = 1,
+            .max_rating = SPECIALIST,
         },
         // 1 library
         {
-            11,
-            1,
-            1,
-            SHADOW,
+            .map = 11,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
         },
         // 2 pigeon coop
-        {12},
+        {.map = 12},
         // 3 rooftops
-        {13},
+        {.map = 13},
         // 4 shangri-la
         {
-            14,
-            1,
-            1,
-            SHADOW,
+            .map = 14,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
         },
         // 5 elevator going down (cutscene)
         {},
         // 6 train station
         {
-            15,
-            1,
-            3,
-            SHADOW,
+            .map = 15,
+            .num_evidence = 1,
+            .num_objectives = 3,
+            .max_rating = SHADOW,
         },
         // 7 level summary screen
         {},
@@ -129,49 +129,52 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 courtyard
         {
-            16,
-            1,
-            1,
-            SHADOW,
+            .map = 16,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
         },
         // 1 vixen club
         {
-            17,
-            1,
-            3,
-            SHADOW,
-            1,
+            .map = 17,
+            .num_evidence = 1,
+            .num_objectives = 3,
+            .max_rating = SHADOW,
+            .num_targets = 1,
         },
         // 2 dressing rooms
         {
-            18,
-            0,
-            1,
-            SPECIALIST,
+            .map = 18,
+            .num_evidence = 0,
+            .num_objectives = 1,
+            .max_rating = SPECIALIST,
         },
         // 3 derelict building
         {
-            19,
-            1,
-            1,
-            SHADOW,
+            .map = 19,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
         },
         // 4 convenience store
         {
-            20,
-            1,
-            1,
-            SHADOW,
+            .map = 20,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
         },
         // 5 loading area
-        {21, 1},
+        {
+            .map = 21,
+            .num_evidence = 1,
+        },
         // 6 chinese new year
         {
-            22,
-            1,
-            4,
-            SHADOW,
-            3,
+            .map = 22,
+            .num_evidence = 1,
+            .num_objectives = 4,
+            .max_rating = SHADOW,
+            .num_targets = 3,
         },
         // 7 lock pick (cutscene)
         {},
@@ -183,23 +186,23 @@ const std::vector<std::vector<MapInfo>> scenes = {
     // level 6
     {
         // 0 victoria's ward
-        {23},
+        {.map = 23},
         // 1 orphanage halls
         {
-            24,
-            1,
-            5,
-            SHADOW,
+            .map = 24,
+            .num_evidence = 1,
+            .num_objectives = 5,
+            .max_rating = SHADOW,
         },
         // 2 lenny shoots nun (cutscene)
         {},
         // 3 central heating
         {
-            25,
-            1,
-            2,
-            SHADOW,
-            1,
+            .map = 25,
+            .num_evidence = 1,
+            .num_objectives = 2,
+            .max_rating = SHADOW,
+            .num_targets = 1,
         },
         // 4 level summary screen
         {},
@@ -208,10 +211,10 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 great balls of fire
         {
-            26,
-            1,
-            1,
-            SHADOW,
+            .map = 26,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
         },
         // 1 level summary screen
         {},
@@ -220,10 +223,10 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 gunshop
         {
-            27,
-            1,
-            2,
-            VETERAN,
+            .map = 27,
+            .num_evidence = 1,
+            .num_objectives = 2,
+            .max_rating = VETERAN,
         },
         // 1 level summary screen
         {},
@@ -232,19 +235,19 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 streets of hope
         {
-            28,
-            1,
-            4,
-            SHADOW,
-            3,
+            .map = 28,
+            .num_evidence = 1,
+            .num_objectives = 4,
+            .max_rating = SHADOW,
+            .num_targets = 3,
         },
         // 1 barber shop
         {
-            29,
-            1,
-            3,
-            SHADOW,
-            2,
+            .map = 29,
+            .num_evidence = 1,
+            .num_objectives = 3,
+            .max_rating = SHADOW,
+            .num_targets = 2,
         },
         // 2 lenny kidnap (cutscene)
         {},
@@ -254,7 +257,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
     // level 10
     {
         // 0 the desert
-        {30},
+        {.map = 30},
         // 1 level summary screen
         {},
     },
@@ -264,31 +267,31 @@ const std::vector<std::vector<MapInfo>> scenes = {
         {},
         // 1 dead end
         {
-            31,
-            1,
-            3,
-            SHADOW,
+            .map = 31,
+            .num_evidence = 1,
+            .num_objectives = 3,
+            .max_rating = SHADOW,
         },
         // 2 old mill
         {
-            32,
-            1,
-            1,
-            SHADOW,
+            .map = 32,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
         },
         // 3 descent
         {
-            33,
-            1,
-            1,
-            SHADOW,
+            .map = 33,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
         },
         // 4 factory compound
         {
-            34,
-            1,
-            3,
-            SHADOW,
+            .map = 34,
+            .num_evidence = 1,
+            .num_objectives = 3,
+            .max_rating = SHADOW,
         },
         // 5 level summary screen
         {},
@@ -297,26 +300,26 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 test facility
         {
-            35,
-            1,
-            5,
-            SHADOW,
-            1,
+            .map = 35,
+            .num_evidence = 1,
+            .num_objectives = 5,
+            .max_rating = SHADOW,
+            .num_targets = 1,
         },
         // 1 decontamination
         {
-            36,
-            1,
-            2,
-            SHADOW,
+            .map = 36,
+            .num_evidence = 1,
+            .num_objectives = 2,
+            .max_rating = SHADOW,
         },
         // 2 r&d
         {
-            37,
-            1,
-            3,
-            SHADOW,
-            2,
+            .map = 37,
+            .num_evidence = 1,
+            .num_objectives = 3,
+            .max_rating = SHADOW,
+            .num_targets = 2,
         },
         // 3 level summary screen
         {},
@@ -325,18 +328,18 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 patriot's hangar
         {
-            38,
-            1,
-            1,
-            SHADOW,
+            .map = 38,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
         },
         // 1 arena
         {
-            39,
-            1,
-            2,
-            SHADOW,
-            1,
+            .map = 39,
+            .num_evidence = 1,
+            .num_objectives = 2,
+            .max_rating = SHADOW,
+            .num_targets = 1,
         },
         // 2 level summary screen
         {},
@@ -345,27 +348,27 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 parking
         {
-            40,
-            1,
-            3,
-            SHADOW,
-            2,
+            .map = 40,
+            .num_evidence = 1,
+            .num_objectives = 3,
+            .max_rating = SHADOW,
+            .num_targets = 2,
         },
         // 1 reception
         {
-            41,
-            1,
-            3,
-            SHADOW,
-            2,
+            .map = 41,
+            .num_evidence = 1,
+            .num_objectives = 3,
+            .max_rating = SHADOW,
+            .num_targets = 2,
         },
         // 2 cornfield
         {
-            42,
-            1,
-            4,
-            SHADOW,
-            3,
+            .map = 42,
+            .num_evidence = 1,
+            .num_objectives = 4,
+            .max_rating = SHADOW,
+            .num_targets = 3,
         },
         // 3 cutscene
         {},
@@ -380,19 +383,22 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 courthouse
         {
-            43,
-            1,
-            1,
-            SHADOW,
+            .map = 43,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
         },
         // 1 holding cells
-        {44, 1},
+        {
+            .map = 44,
+            .num_evidence = 1,
+        },
         // 2 prison
         {
-            45,
-            1,
-            2,
-            SHADOW,
+            .map = 45,
+            .num_evidence = 1,
+            .num_objectives = 2,
+            .max_rating = SHADOW,
         },
         // 3 electrocution cutscene
         {},
@@ -403,36 +409,36 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 county jail
         {
-            46,
-            1,
-            2,
-            SHADOW,
+            .map = 46,
+            .num_evidence = 1,
+            .num_objectives = 2,
+            .max_rating = SHADOW,
         },
         // 1 outgunned
         {
-            47,
-            1,
-            1,
-            SHADOW,
+            .map = 47,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
         },
         // 2 burn
         {
-            48,
-            1,
-            1,
-            SHADOW,
+            .map = 48,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
         },
         // 3 hope fair
         {
-            49,
-            1,
-            1,
-            SHADOW,
+            .map = 49,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
         },
         // 4 outskirts
-        {50},
+        {.map = 50},
         // 5 church
-        {51},
+        {.map = 51},
         // 6 level summary screen
         {},
     },
@@ -444,9 +450,9 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 tailor shop
         {
-            52,
-            1,
-            1,
+            .map = 52,
+            .num_evidence = 1,
+            .num_objectives = 1,
         },
         // 1 level summary screen
         {},
@@ -455,20 +461,20 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 blackwater park
         {
-            53,
-            1,
-            2,
-            SHADOW,
+            .map = 53,
+            .num_evidence = 1,
+            .num_objectives = 2,
+            .max_rating = SHADOW,
         },
         // 1 sushi guy cutscene
         {},
         // 2 the penthouse
         {
-            54,
-            1,
-            3,
-            SHADOW,
-            1,
+            .map = 54,
+            .num_evidence = 1,
+            .num_objectives = 3,
+            .max_rating = SHADOW,
+            .num_targets = 1,
         },
         // 3 level summary screen
         {},
@@ -479,32 +485,39 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {
         // 0 blackwater roof
         {
-            55,
-            1,
-            1,
-            SHADOW,
-            1,
+            .map = 55,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
+            .num_targets = 1,
         },
         // 1 level summary screen
         {},
     },
     // level 25
     {
+        // 0 cemetary entrance
+        {
+            .map = 56,
+            .num_evidence = 1,
+            .num_objectives = 1,
+            .max_rating = SHADOW,
+        },
         // 1 burnwood family tomb
         {
-            57,
-            1,
-            3,
-            SHADOW,
-            1,
+            .map = 57,
+            .num_evidence = 1,
+            .num_objectives = 3,
+            .max_rating = SHADOW,
+            .num_targets = 1,
         },
         // 2 crematorium
         {
-            58,
-            1,
-            5,
-            SHADOW,
-            3,
+            .map = 58,
+            .num_evidence = 1,
+            .num_objectives = 5,
+            .max_rating = SHADOW,
+            .num_targets = 3,
         },
         // 3 level summary screen
         {},
