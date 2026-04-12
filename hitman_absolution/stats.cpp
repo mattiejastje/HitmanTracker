@@ -29,110 +29,173 @@ struct MapInfo {
 const std::vector<std::vector<MapInfo>> scenes = {
     // level 0
     {
-        {1},                // 0 garden
-        {2},                // 1 greenhouse
-        {3, 1},             // 2 cliffside
-        {4, 1, 2, SHADOW},  // 3 mansion ground
-        {5},                // 4 mansion 2nd
-        {},                 // 5 level summary screen
+        // 0 garden
+        {1},
+        // 1 greenhouse
+        {2},
+        // 2 cliffside
+        {3, 1},
+        // 3 mansion ground
+        {4, 1, 2, SHADOW},
+        // 4 mansion 2nd
+        {5},
+        // 5 level summary screen
+        {},
     },
     // level 1
     {
-        {6, 1, 3, SHADOW, 1},  // 0 king of chinatown
-        {},                    // 1 level summary screen
+        // 0 king of chinatown
+        {6, 1, 3, SHADOW, 1},
+        // 1 level summary screen
+        {},
     },
     // level 2
     {
-        {7, 1, 1, SHADOW},  // 0 terminus hotel
-        {},                 // 1 elevator going up (cutscene)
-        {8, 1, 2, SHADOW},  // 2 upper floors
-        {9},                // 3 room 899
-        {},                 // 4 level summary screen
+        // 0 terminus hotel
+        {7, 1, 1, SHADOW},
+        // 1 elevator going up (cutscene)
+        {},
+        // 2 upper floors
+        {8, 1, 2, SHADOW},
+        // 3 room 899
+        {9},
+        // 4 level summary screen
+        {},
     },
     // level 3
     {
-        {10, 0, 1, SPECIALIST},  // 0 burning hotel
-        {11, 1, 1, SHADOW},      // 1 library
-        {12},                    // 2 pigeon coop
-        {13},                    // 3 rooftops
-        {14, 1, 1, SHADOW},      // 4 shangri-la
-        {},                      // 5 elevator going down (cutscene)
-        {15, 1, 3, SHADOW},      // 6 train station
-        {},                      // 7 level summary screen
+        // 0 burning hotel
+        {10, 0, 1, SPECIALIST},
+        // 1 library
+        {11, 1, 1, SHADOW},
+        // 2 pigeon coop
+        {12},
+        // 3 rooftops
+        {13},
+        // 4 shangri-la
+        {14, 1, 1, SHADOW},
+        // 5 elevator going down (cutscene)
+        {},
+        // 6 train station
+        {15, 1, 3, SHADOW},
+        // 7 level summary screen
+        {},
     },
     // level 4
     {
-        {16, 1, 1, SHADOW},      // 0 courtyard
-        {17, 1, 3, SHADOW, 1},   // 1 vixen club
-        {18, 0, 1, SPECIALIST},  // 2 dressing rooms
-        {19, 1, 1, SHADOW},      // 3 derelict building
-        {20, 1, 1, SHADOW},      // 4 convenience store
-        {21, 1},                 // 5 loading area
-        {22, 1, 4, SHADOW, 3},   // 6 chinese new year
-        {},                      // 7 lock pick (cutscene)
-        {},                      // 8 level summary screen
+        // 0 courtyard
+        {16, 1, 1, SHADOW},
+        // 1 vixen club
+        {17, 1, 3, SHADOW, 1},
+        // 2 dressing rooms
+        {18, 0, 1, SPECIALIST},
+        // 3 derelict building
+        {19, 1, 1, SHADOW},
+        // 4 convenience store
+        {20, 1, 1, SHADOW},
+        // 5 loading area
+        {21, 1},
+        // 6 chinese new year
+        {22, 1, 4, SHADOW, 3},
+        // 7 lock pick (cutscene)
+        {},
+        // 8 level summary screen
+        {},
     },
     // level 5
     {},
     // level 6
     {
-        {23},                   // 0 victoria's ward
-        {24, 1, 5, SHADOW},     // 1 orphanage halls
-        {},                     // 2 lenny shoots nun (cutscene)
-        {25, 1, 2, SHADOW, 1},  // 3 central heating
-        {},                     // 4 level summary screen
+        // 0 victoria's ward
+        {23},
+        // 1 orphanage halls
+        {24, 1, 5, SHADOW},
+        // 2 lenny shoots nun (cutscene)
+        {},
+        // 3 central heating
+        {25, 1, 2, SHADOW, 1},
+        // 4 level summary screen
+        {},
     },
     // level 7
     {
-        {26, 1, 1, SHADOW},  // 0 great balls of fire
-        {},                  // 1 level summary screen
+        // 0 great balls of fire
+        {26, 1, 1, SHADOW},
+        // 1 level summary screen
+        {},
     },
     // level 8
     {
-        {27, 1, 2, VETERAN},  // 0 gunshop
-        {},                   // 1 level summary screen
+        // 0 gunshop
+        {27, 1, 2, VETERAN},
+        // 1 level summary screen
+        {},
     },
     // level 9
     {
-        {28, 1, 4, SHADOW, 3},  // 0 streets of hope
-        {29, 1, 3, SHADOW, 2},  // 1 barber shop
-        {},                     // 2 lenny kidnap (cutscene)
-        {},                     // 3 level summary screen
+        // 0 streets of hope
+        {28, 1, 4, SHADOW, 3},
+        // 1 barber shop
+        {29, 1, 3, SHADOW, 2},
+        // 2 lenny kidnap (cutscene)
+        {},
+        // 3 level summary screen
+        {},
     },
     // level 10
     {
-        {30},  // 0 the desert
-        {},    // 1 level summary screen
+        // 0 the desert
+        {30},
+        // 1 level summary screen
+        {},
     },
     // level 11
     {
-        {},                  // 0 dog & oil fields (cutscene)
-        {31, 1, 3, SHADOW},  // 1 dead end
-        {32, 1, 1, SHADOW},  // 2 old mill
-        {33, 1, 1, SHADOW},  // 3 descent
-        {34, 1, 3, SHADOW},  // 4 factory compound
-        {},                  // 5 level summary screen
+        // 0 dog & oil fields (cutscene)
+        {},
+        // 1 dead end
+        {31, 1, 3, SHADOW},
+        // 2 old mill
+        {32, 1, 1, SHADOW},
+        // 3 descent
+        {33, 1, 1, SHADOW},
+        // 4 factory compound
+        {34, 1, 3, SHADOW},
+        // 5 level summary screen
+        {},
     },
     // level 12
     {
-        {35, 1, 5, SHADOW, 1},  // 0 test facility
-        {36, 1, 2, SHADOW},     // 1 decontamination
-        {37, 1, 3, SHADOW, 2},  // 2 r&d
-        {},                     // 3 level summary screen
+        // 0 test facility
+        {35, 1, 5, SHADOW, 1},
+        // 1 decontamination
+        {36, 1, 2, SHADOW},
+        // 2 r&d
+        {37, 1, 3, SHADOW, 2},
+        // 3 level summary screen
+        {},
     },
     // level 13
     {
-        {38, 1, 1, SHADOW},     // 0 patriot's hangar
-        {39, 1, 2, SHADOW, 1},  // 1 arena
-        {},                     // 2 level summary screen
+        // 0 patriot's hangar
+        {38, 1, 1, SHADOW},
+        // 1 arena
+        {39, 1, 2, SHADOW, 1},
+        // 2 level summary screen
+        {},
     },
     // level 14
     {
-        {40, 1, 3, SHADOW, 2},  // 0 parking
-        {41, 1, 3, SHADOW, 2},  // 1 reception
-        {42, 1, 4, SHADOW, 3},  // 2 cornfield
-        {},                     // 3 cutscene
-        {},                     // 4 level summary screen
+        // 0 parking
+        {40, 1, 3, SHADOW, 2},
+        // 1 reception
+        {41, 1, 3, SHADOW, 2},
+        // 2 cornfield
+        {42, 1, 4, SHADOW, 3},
+        // 3 cutscene
+        {},
+        // 4 level summary screen
+        {},
     },
     // level 15
     {},
@@ -140,21 +203,33 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {},
     // level 17
     {
-        {43, 1, 1, SHADOW},  // 0 courthouse
-        {44, 1},             // 1 holding cells
-        {45, 1, 2, SHADOW},  // 2 prison
-        {},                  // 3 electrocution cutscene
-        {},                  // 4 level summary screen
+        // 0 courthouse
+        {43, 1, 1, SHADOW},
+        // 1 holding cells
+        {44, 1},
+        // 2 prison
+        {45, 1, 2, SHADOW},
+        // 3 electrocution cutscene
+        {},
+        // 4 level summary screen
+        {},
     },
     // level 18
     {
-        {46, 1, 2, SHADOW},  // 0 county jail
-        {47, 1, 1, SHADOW},  // 1 outgunned
-        {48, 1, 1, SHADOW},  // 2 burn
-        {49, 1, 1, SHADOW},  // 3 hope fair
-        {50},                // 4 outskirts
-        {51},                // 5 church
-        {},                  // 6 level summary screen
+        // 0 county jail
+        {46, 1, 2, SHADOW},
+        // 1 outgunned
+        {47, 1, 1, SHADOW},
+        // 2 burn
+        {48, 1, 1, SHADOW},
+        // 3 hope fair
+        {49, 1, 1, SHADOW},
+        // 4 outskirts
+        {50},
+        // 5 church
+        {51},
+        // 6 level summary screen
+        {},
     },
     // level 19
     {},
@@ -162,29 +237,39 @@ const std::vector<std::vector<MapInfo>> scenes = {
     {},
     // level 21
     {
-        {52, 1, 1},  // 0 tailor shop
-        {},          // 1 level summary screen
+        // 0 tailor shop
+        {52, 1, 1},
+        // 1 level summary screen
+        {},
     },
     // level 22
     {
-        {53, 1, 2, SHADOW},     // 0 blackwater park
-        {},                     // 1 sushi guy cutscene
-        {54, 1, 3, SHADOW, 1},  // 2 the penthouse
-        {},                     // 3 level summary screen
+        // 0 blackwater park
+        {53, 1, 2, SHADOW},
+        // 1 sushi guy cutscene
+        {},
+        // 2 the penthouse
+        {54, 1, 3, SHADOW, 1},
+        // 3 level summary screen
+        {},
     },
     // level 23
     {},
     // level 24
     {
-        {55, 1, 1, SHADOW, 1},  // 0 blackwater roof
-        {},                     // 1 level summary screen
+        // 0 blackwater roof
+        {55, 1, 1, SHADOW, 1},
+        // 1 level summary screen
+        {},
     },
     // level 25
     {
-        {56, 1, 1, SHADOW},     // 0 cemetary entrance
-        {57, 1, 3, SHADOW, 1},  // 1 burnwood family tomb
-        {58, 1, 5, SHADOW, 3},  // 2 crematorium
-        {},                     // 3 level summary screen
+        // 1 burnwood family tomb
+        {57, 1, 3, SHADOW, 1},
+        // 2 crematorium
+        {58, 1, 5, SHADOW, 3},
+        // 3 level summary screen
+        {},
     },
 };
 
