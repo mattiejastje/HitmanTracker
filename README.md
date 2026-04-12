@@ -87,7 +87,7 @@ This tracker simplifies and improves the system:
   * Agent, ..., Shadow tiers are calculated regardless of Silent Assassin.
   * Uses the same percentage thresholds as the original system.
   * Shows the score required for the highest achievable rating
-    (e.g. 80% of the "shadow score" if Specialist if the highest achievable rating).
+    (e.g. 80% of the "shadow score" if Specialist is the highest achievable rating).
 
 This system:
 * Makes Silent Assassin achievable in all appropriate scenarios.
