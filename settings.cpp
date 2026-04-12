@@ -71,7 +71,25 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
         *app, "rating-maybe", "maybe rating", settings.gui.rating_maybe
     );
     add_text_style_options(
-        *app, "rating-bad", "bad rating", settings.gui.rating_maybe
+        *app, "rating-bad", "bad rating", settings.gui.rating_bad
+    );
+    add_text_style_options(
+        *app,
+        "extra-rating-good",
+        "good extra rating",
+        settings.gui.extra_rating_good
+    );
+    add_text_style_options(
+        *app,
+        "extra-rating-maybe",
+        "maybe extra rating",
+        settings.gui.extra_rating_maybe
+    );
+    add_text_style_options(
+        *app,
+        "extra-rating-bad",
+        "bad extra rating",
+        settings.gui.extra_rating_bad
     );
     add_text_style_options(*app, "label", "labels", settings.gui.label);
     add_text_style_options(*app, "value", "values", settings.gui.value);

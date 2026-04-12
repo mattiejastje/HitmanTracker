@@ -17,6 +17,9 @@ struct Fonts {
     ImFont* rating_bad;
     ImFont* rating_good;
     ImFont* rating_maybe;
+    ImFont* extra_rating_bad;
+    ImFont* extra_rating_good;
+    ImFont* extra_rating_maybe;
     ImFont* label;
     ImFont* value;
 };

@@ -108,9 +108,9 @@ void hitman_absolution::gui(
         ImGui::Spacing();
         auto is_max = stats.score_total >= stats.score_for_max_rating;
         auto rating_status = is_max ? Status::GREEN : Status::YELLOW;
-        auto rating_font = is_max ? fonts.rating_good : fonts.rating_maybe;
+        auto rating_font = is_max ? fonts.extra_rating_good : fonts.extra_rating_maybe;
         auto rating_color
-            = is_max ? settings.rating_good.color : settings.rating_maybe.color;
+            = is_max ? settings.extra_rating_good.color : settings.extra_rating_maybe.color;
         auto rating_text = std::format(
             "{} [{}/{}]",
             stats.score_rating,
