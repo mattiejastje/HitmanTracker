@@ -23,7 +23,7 @@ struct MapInfo {
     // 0 = agent, 50 = veteran, 80 = specialist, 90 = professional, 100 = shadow
     int max_rating;
     // 40000 is default value for unrated maps
-    int shadow_score = 40000;
+    int shadow_raw_score_threshold = 40000;
     int num_targets;
 };
 
@@ -46,7 +46,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 2,
             .max_rating = SHADOW,
-            .shadow_score = 11000,
+            .shadow_raw_score_threshold = 11000,
         },
         // 4 mansion 2nd
         {.map = 5},
@@ -61,7 +61,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 3,
             .max_rating = SHADOW,
-            .shadow_score = 31000,
+            .shadow_raw_score_threshold = 31000,
             .num_targets = 1,
         },
         // 1 level summary screen
@@ -75,7 +75,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 1 elevator going up (cutscene)
         {},
@@ -85,7 +85,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 2,
             .max_rating = SHADOW,
-            .shadow_score = 11000,
+            .shadow_raw_score_threshold = 11000,
         },
         // 3 room 899
         {.map = 9},
@@ -100,7 +100,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 0,
             .num_objectives = 1,
             .max_rating = SPECIALIST,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 1 library
         {
@@ -108,7 +108,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 2 pigeon coop
         {.map = 12},
@@ -120,7 +120,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 5 elevator going down (cutscene)
         {},
@@ -130,7 +130,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 3,
             .max_rating = SHADOW,
-            .shadow_score = 16000,
+            .shadow_raw_score_threshold = 16000,
         },
         // 7 level summary screen
         {},
@@ -143,7 +143,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 1 vixen club
         {
@@ -151,7 +151,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 3,
             .max_rating = SHADOW,
-            .shadow_score = 31000,
+            .shadow_raw_score_threshold = 31000,
             .num_targets = 1,
         },
         // 2 dressing rooms
@@ -160,7 +160,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 0,
             .num_objectives = 1,
             .max_rating = SPECIALIST,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 3 derelict building
         {
@@ -168,7 +168,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 4 convenience store
         {
@@ -176,7 +176,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 5 loading area
         {
@@ -189,7 +189,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 4,
             .max_rating = SHADOW,
-            .shadow_score = 21000,
+            .shadow_raw_score_threshold = 21000,
             .num_targets = 3,
         },
         // 7 lock pick (cutscene)
@@ -209,7 +209,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 5,
             .max_rating = SHADOW,
-            .shadow_score = 26000,
+            .shadow_raw_score_threshold = 26000,
         },
         // 2 lenny shoots nun (cutscene)
         {},
@@ -219,7 +219,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 2,
             .max_rating = SHADOW,
-            .shadow_score = 26000,
+            .shadow_raw_score_threshold = 26000,
             .num_targets = 1,
         },
         // 4 level summary screen
@@ -233,7 +233,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 1 level summary screen
         {},
@@ -246,7 +246,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 2,
             .max_rating = VETERAN,
-            .shadow_score = 16000,
+            .shadow_raw_score_threshold = 16000,
         },
         // 1 level summary screen
         {},
@@ -259,7 +259,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 4,
             .max_rating = SHADOW,
-            .shadow_score = 66000,
+            .shadow_raw_score_threshold = 66000,
             .num_targets = 3,
         },
         // 1 barber shop
@@ -268,7 +268,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 3,
             .max_rating = SHADOW,
-            .shadow_score = 51000,
+            .shadow_raw_score_threshold = 51000,
             .num_targets = 2,
         },
         // 2 lenny kidnap (cutscene)
@@ -293,7 +293,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 3,
             .max_rating = SHADOW,
-            .shadow_score = 16000,
+            .shadow_raw_score_threshold = 16000,
         },
         // 2 old mill
         {
@@ -301,7 +301,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 3 descent
         {
@@ -309,7 +309,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 2,
             .max_rating = SHADOW,
-            .shadow_score = 11000,
+            .shadow_raw_score_threshold = 11000,
         },
         // 4 factory compound
         {
@@ -317,7 +317,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 3,
             .max_rating = SHADOW,
-            .shadow_score = 16000,
+            .shadow_raw_score_threshold = 16000,
         },
         // 5 level summary screen
         {},
@@ -330,7 +330,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 5,
             .max_rating = SHADOW,
-            .shadow_score = 41000,
+            .shadow_raw_score_threshold = 41000,
             .num_targets = 1,
         },
         // 1 decontamination
@@ -339,7 +339,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 2,
             .max_rating = SHADOW,
-            .shadow_score = 11000,
+            .shadow_raw_score_threshold = 11000,
         },
         // 2 r&d
         {
@@ -347,7 +347,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 3,
             .max_rating = SHADOW,
-            .shadow_score = 31000,
+            .shadow_raw_score_threshold = 31000,
             .num_targets = 2,
         },
         // 3 level summary screen
@@ -361,7 +361,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 1 arena
         {
@@ -369,7 +369,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 2,
             .max_rating = SHADOW,
-            .shadow_score = 26000,
+            .shadow_raw_score_threshold = 26000,
             .num_targets = 1,
         },
         // 2 level summary screen
@@ -383,7 +383,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 3,
             .max_rating = SHADOW,
-            .shadow_score = 31000,
+            .shadow_raw_score_threshold = 31000,
             .num_targets = 2,
         },
         // 1 reception
@@ -392,7 +392,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 3,
             .max_rating = SHADOW,
-            .shadow_score = 31000,
+            .shadow_raw_score_threshold = 31000,
             .num_targets = 2,
         },
         // 2 cornfield
@@ -401,7 +401,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 4,
             .max_rating = SHADOW,
-            .shadow_score = 66000,
+            .shadow_raw_score_threshold = 66000,
             .num_targets = 3,
         },
         // 3 cutscene
@@ -421,7 +421,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 1 holding cells
         {
@@ -434,7 +434,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 2,
             .max_rating = SHADOW,
-            .shadow_score = 11000,
+            .shadow_raw_score_threshold = 11000,
         },
         // 3 electrocution cutscene
         {},
@@ -449,7 +449,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 2,
             .max_rating = SHADOW,
-            .shadow_score = 11000,
+            .shadow_raw_score_threshold = 11000,
         },
         // 1 outgunned
         {
@@ -457,7 +457,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 2 burn
         {
@@ -465,7 +465,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 3 hope fair
         {
@@ -473,7 +473,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 4 outskirts
         {.map = 50},
@@ -505,7 +505,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 2,
             .max_rating = SHADOW,
-            .shadow_score = 11000,
+            .shadow_raw_score_threshold = 11000,
         },
         // 1 sushi guy cutscene
         {},
@@ -515,7 +515,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 3,
             .max_rating = SHADOW,
-            .shadow_score = 31000,
+            .shadow_raw_score_threshold = 31000,
             .num_targets = 1,
         },
         // 3 level summary screen
@@ -531,7 +531,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 21000,
+            .shadow_raw_score_threshold = 21000,
             .num_targets = 1,
         },
         // 1 level summary screen
@@ -545,7 +545,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 1,
             .max_rating = SHADOW,
-            .shadow_score = 6000,
+            .shadow_raw_score_threshold = 6000,
         },
         // 1 burnwood family tomb
         {
@@ -553,7 +553,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 3,
             .max_rating = SHADOW,
-            .shadow_score = 31000,
+            .shadow_raw_score_threshold = 31000,
             .num_targets = 1,
         },
         // 2 crematorium
@@ -562,7 +562,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
             .num_evidence = 1,
             .num_objectives = 5,
             .max_rating = SHADOW,
-            .shadow_score = 76000,
+            .shadow_raw_score_threshold = 76000,
             .num_targets = 3,
         },
         // 3 level summary screen
@@ -635,7 +635,7 @@ const hitman_absolution::structs::GameDataLevelInfo* get_level_info(
     return nullptr;
 }
 
-static std::optional<int32_t> get_best_raw_score(
+static std::optional<int32_t> get_shadow_raw_score_threshold(
     const std::vector<hitman_absolution::structs::GameDataLevelInfo>&
         level_infos,
     int32_t level,
@@ -649,7 +649,7 @@ static std::optional<int32_t> get_best_raw_score(
             if (0 <= checkpoint_index && checkpoint_index < nodes.size()) {
                 auto& node = checkpoint_info->nodes[checkpoint_index];
                 auto& data = node.data;
-                if (data) return data->best_raw_score;
+                if (data) return data->shadow_raw_score_threshold;
             }
         }
     }
@@ -726,26 +726,29 @@ bool hitman_absolution::update_slow(
                status};
         auto score = get_raw_score(game_stats);
 #ifndef NDEBUG
-        auto maybe_shadow_score = get_best_raw_score(
+        auto maybe_shadow_raw_score_threshold = get_shadow_raw_score_threshold(
             game.game_data.level_infos, game.level, checkpoint_index
         );
-        if (!maybe_shadow_score) {
+        if (!maybe_shadow_raw_score_threshold) {
             logging::error("Unable to read shadow score");
             return false;
         }
-        if (maybe_shadow_score.value() != map_info.shadow_score) {
+        if (maybe_shadow_raw_score_threshold.value()
+            != map_info.shadow_raw_score_threshold) {
             logging::error(
                 "wrong shadow score for level {} checkpoint {}: {} -> {}",
                 game.level,
                 checkpoint_index,
-                map_info.shadow_score,
-                maybe_shadow_score.value()
+                map_info.shadow_raw_score_threshold,
+                maybe_shadow_raw_score_threshold.value()
             );
         }
 #endif
-        auto shadow_score = map_info.shadow_score;
-        stats.score_for_max_rating = (map_info.max_rating * shadow_score) / 100;
-        int32_t percent = std::max(0, (100 * score) / shadow_score);
+        auto shadow_raw_score_threshold = map_info.shadow_raw_score_threshold;
+        stats.score_for_max_rating
+            = (map_info.max_rating * shadow_raw_score_threshold) / 100;
+        int32_t percent
+            = std::max(0, (100 * score) / shadow_raw_score_threshold);
         stats.score_total = score;
         stats.score_rating = percent < VETERAN        ? "Agent"
                              : percent < SPECIALIST   ? "Veteran"

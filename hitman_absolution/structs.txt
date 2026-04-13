@@ -76,7 +76,7 @@ struct StatsManager {
   int8_t _pad4[0x2c];
   int32_t last_achieved_playstyle;  // offset 0x64
   int8_t _pad5[0x18];
-  int32_t score;  // offset 0x80
+  int32_t scaled_score;  // offset 0x80
   int8_t _pad6[0x18];
   StatsDifficulties* difficulties;  // offset 0x9c
 };
@@ -104,7 +104,7 @@ struct LevelData {
 
 struct CheckpointData {
   int8_t _pad0[0x38];
-  int32_t best_raw_score;  // offset 0x38
+  int32_t shadow_raw_score_threshold;  // offset 0x38
 };
 
 struct CheckpointNode {

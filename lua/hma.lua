@@ -25,7 +25,8 @@ local LevelData = d.Struct("LevelData", {
 
 local CheckpointData = d.Struct("CheckpointData", {
   d.Skip(0x38),
-  d.Field(d.Int32, "best_raw_score"),
+  -- score required for shadow rating
+  d.Field(d.Int32, "shadow_raw_score_threshold"),
 })
 
 local CheckpointNode = d.Struct("CheckpointNode", {
@@ -166,7 +167,8 @@ local StatsManager = d.Struct("StatsManager", {
   d.Skip(0x2C),
   d.Field(d.Int32, "last_achieved_playstyle"), -- across all gaming sessions
   d.Skip(0x18),
-  d.Field(d.Int32, "score"),
+  -- scaled_score = raw_score * scale from difficulty/challenges
+  d.Field(d.Int32, "scaled_score"),
   d.Skip(0x18),
   d.Field(d.NullableRef(StatsDifficulties), "difficulties"), -- 1.0, 1.25, 1.5, 2.0, 2.5; see DIFFICULTY_SCALE below
 })
@@ -279,7 +281,7 @@ end
 --- Calculate final score.
 -- Uses floating point arithmetic.
 -- difficulty_scale is stats_manager.difficulties.scales[difficulty+1]
-local function get_score(raw_score, difficulty_scale, num_challenges_completed)
+local function get_scaled_score(raw_score, difficulty_scale, num_challenges_completed)
   return math.floor(raw_score * (difficulty_scale + 0.05 * num_challenges_completed) + 0.5)
 end
 
@@ -287,7 +289,7 @@ local DIFFICULTY_SCALE = { 100, 125, 150, 200, 250 }
 
 --- Calculate final score.
 -- This implementation uses hardcoded scales and exact integer arithmetic.
-local function get_score_2(raw_score, difficulty, num_challenges_completed)
+local function get_scaled_score_2(raw_score, difficulty, num_challenges_completed)
   return (raw_score * (DIFFICULTY_SCALE[difficulty + 1] + 5 * num_challenges_completed) + 50) // 100
 end
 
@@ -339,10 +341,10 @@ local function get_level_info(level_infos, level)
 end
 
 --- Raw score needed for best score based playstyle (i.e. "Shadow").
-local function get_best_raw_score(level_infos, level, checkpoint_index)
+local function get_shadow_raw_score_threshold(level_infos, level, checkpoint_index)
   local level_info = get_level_info(level_infos, level)
   if level_info ~= nil then
-    return level_info.checkpoint_info.nodes[checkpoint_index + 1].data.best_raw_score
+    return level_info.checkpoint_info.nodes[checkpoint_index + 1].data.shadow_raw_score_threshold
   else
     return nil
   end
@@ -356,8 +358,8 @@ end
 --- Return currently achieved score based playstyle.
 -- Score based playstyles are agent (0), veteran (1), specialist (2), professional (3), and shadow (4).
 -- @return The index of the playstyle, or nil if no playstyle is achieved yet.
-local function get_playstyle_index_by_score(raw_score, best_raw_score, playstyles)
-  local percentage = math.max(0, math.min(100, (100 * raw_score) // best_raw_score))
+local function get_playstyle_index_by_score(raw_score, shadow_raw_score_threshold, playstyles)
+  local percentage = math.max(0, math.min(100, (100 * raw_score) // shadow_raw_score_threshold))
   for i, playstyle in ipairs(playstyles) do
     if is_playstyle_percentage_achieved(percentage, playstyle.data) then
       return i - 1 -- lua index starts at 1
@@ -367,8 +369,8 @@ local function get_playstyle_index_by_score(raw_score, best_raw_score, playstyle
 end
 
 -- use hardcoded bounds
-local function get_playstyle_index_by_score_2(raw_score, best_raw_score)
-  local percentage = (100 * raw_score) // best_raw_score
+local function get_playstyle_index_by_score_2(raw_score, shadow_raw_score_threshold)
+  local percentage = (100 * raw_score) // shadow_raw_score_threshold
   local bounds = { 49, 79, 89, 99 }
   for i, bound in ipairs(bounds) do
     if percentage <= bound then
@@ -383,12 +385,12 @@ M.get_num_challenges_completed = get_num_challenges_completed
 M.get_multipliers = get_multipliers
 M.get_raw_score = get_raw_score
 M.get_raw_score_2 = get_raw_score_2
-M.get_score = get_score
-M.get_score_2 = get_score_2
+M.get_scaled_score = get_scaled_score
+M.get_scaled_score_2 = get_scaled_score_2
 M.is_playstyle_condition_achieved = is_playstyle_condition_achieved
 M.get_playstyle_index_by_condition = get_playstyle_index_by_condition
 M.get_level_info = get_level_info
-M.get_best_raw_score = get_best_raw_score
+M.get_shadow_raw_score_threshold = get_shadow_raw_score_threshold
 M.is_playstyle_percentage_achieved = is_playstyle_percentage_achieved
 M.get_playstyle_index_by_score = get_playstyle_index_by_score
 M.get_playstyle_index_by_score_2 = get_playstyle_index_by_score_2

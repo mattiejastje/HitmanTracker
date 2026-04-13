@@ -125,7 +125,7 @@ struct StatsManager {
     std::array<std::array<std::array<int16_t, 0x64>, 0xd>, 0x1a> values;
     std::array<int8_t, 0x64> achieved_playstyles;
     int32_t last_achieved_playstyle;
-    int32_t score;
+    int32_t scaled_score;
     std::optional<StatsDifficulties> difficulties;
 };
 
@@ -148,7 +148,7 @@ using TStatsManager = Struct<
         Skip<0x2c>,
         Field<Int32, &StatsManager::last_achieved_playstyle>,
         Skip<0x18>,
-        Field<Int32, &StatsManager::score>,
+        Field<Int32, &StatsManager::scaled_score>,
         Skip<0x18>,
         Field<
             NullableRef<Primitive<StatsDifficulties>>,
@@ -193,7 +193,7 @@ struct LevelData {
 
 struct CheckpointData {
     uint8_t _pad0[0x38];
-    int32_t best_raw_score;
+    int32_t shadow_raw_score_threshold;
 };
 
 struct CheckpointNode {
