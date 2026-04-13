@@ -22,7 +22,8 @@ struct MapInfo {
     int num_objectives;
     // 0 = agent, 50 = veteran, 80 = specialist, 90 = professional, 100 = shadow
     int max_rating;
-    int shadow_score;
+    // 40000 is default value for unrated maps
+    int shadow_score = 40000;
     int num_targets;
 };
 
@@ -634,8 +635,7 @@ const hitman_absolution::structs::GameDataLevelInfo* get_level_info(
     return nullptr;
 }
 
-// TODO hardcode instead of calculate so we don't need to read the data
-std::optional<int32_t> get_best_raw_score(
+static std::optional<int32_t> get_best_raw_score(
     const std::vector<hitman_absolution::structs::GameDataLevelInfo>&
         level_infos,
     int32_t level,
@@ -666,8 +666,14 @@ bool hitman_absolution::update_slow(
     Stats& stats
 ) {
     MemoryReader<uint32_t> reader{handle};
-    auto tracer
-        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
+    auto tracer = mempeep::LogTracer{
+        MempeepOnLogEntry{},
+#ifndef NDEBUG
+        mempeep::LogLevel::VALUES,
+#else
+        mempeep::LogLevel::ERRORS,
+#endif
+    };
     if (!mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game))
         return false;
     stats.difficulty = game.difficulty;
@@ -719,28 +725,27 @@ bool hitman_absolution::update_slow(
                                             : get_simple_rating_value(status),
                status};
         auto score = get_raw_score(game_stats);
-        auto score_shadow = get_best_raw_score(
+#ifndef NDEBUG
+        auto maybe_shadow_score = get_best_raw_score(
             game.game_data.level_infos, game.level, checkpoint_index
         );
-        if (!score_shadow || score_shadow.value() == 0) {
+        if (!maybe_shadow_score) {
             logging::error("Unable to read shadow score");
             return false;
         }
-        // TODO remove this line after extensive testing
-        // TODO then we no longer need to use get_best_raw_score
-        if (map_info.max_rating != AGENT
-            && score_shadow.value() != map_info.shadow_score) {
-            logging::critical(
-                "BUG shadow score for level {} checkpoint {}: {} -> {}",
+        if (maybe_shadow_score.value() != map_info.shadow_score) {
+            logging::error(
+                "wrong shadow score for level {} checkpoint {}: {} -> {}",
                 game.level,
                 checkpoint_index,
                 map_info.shadow_score,
-                score_shadow.value()
+                maybe_shadow_score.value()
             );
         }
-        stats.score_for_max_rating
-            = (map_info.max_rating * score_shadow.value()) / 100;
-        int32_t percent = std::max(0, (100 * score) / score_shadow.value());
+#endif
+        auto shadow_score = map_info.shadow_score;
+        stats.score_for_max_rating = (map_info.max_rating * shadow_score) / 100;
+        int32_t percent = std::max(0, (100 * score) / shadow_score);
         stats.score_total = score;
         stats.score_rating = percent < VETERAN        ? "Agent"
                              : percent < SPECIALIST   ? "Veteran"
