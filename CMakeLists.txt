@@ -41,6 +41,7 @@ add_executable (HitmanTracker
 	"hitman_blood_money/hook.cpp"
 	"hitman_blood_money/stats.cpp"
 	"hitman_absolution/gui.cpp"
+	"signal.cpp"
 	"stats.cpp"
 )
 set_property(TARGET HitmanTracker PROPERTY CXX_STANDARD 20)
