@@ -22,7 +22,7 @@ struct Signal {
         now += dt;
         if (now > interval) {
             if (high && (value > *high)) {
-                logging::warn("{} = {:g} {} (too high)", name, value, unit);
+                logging::error("{} = {:g} {} (too high)", name, value, unit);
             } else {
                 logging::debug("{} = {:g} {}", name, value, unit);
             }

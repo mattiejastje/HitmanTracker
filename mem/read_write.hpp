@@ -109,7 +109,7 @@ struct MempeepOnLogEntry {
     template <typename T>
     void operator()(const mempeep::LogEntry<T> &entry) const {
         if constexpr (std::same_as<T, mempeep::Error>) {
-            logging::error("{}", entry);
+            logging::warn("{}", entry);
         } else {
             logging::trace("{}", entry);
         }
