@@ -19,7 +19,7 @@ using namespace mempeep;
 namespace hitman_absolution::structs {
 
 ]])
-    ctypes.native_struct_cdecls(hma.Game, "", out)
+    ctypes.native_struct_cdecls({ hma.Game }, "", out)
       out:write([[
 }
 ]])
@@ -28,7 +28,7 @@ namespace hitman_absolution::structs {
 
   local out2 = io.open("hitman_absolution/structs.txt", "w")
   if out2 then
-    ctypes.remote_struct_cdecls(hma.Game, 4, out2)
+    ctypes.remote_struct_cdecls({ hma.Game }, 4, out2)
     out2:close()
   end
 end
@@ -47,7 +47,7 @@ using namespace mempeep;
 namespace hitman_blood_money::structs {
 
 ]])
-    ctypes.native_struct_cdecls(hbm.Game, "", out)
+    ctypes.native_struct_cdecls({ hbm.Game }, "", out)
       out:write([[
 }
 ]])
@@ -56,7 +56,7 @@ namespace hitman_blood_money::structs {
 
   local out2 = io.open("hitman_blood_money/structs.txt", "w")
   if out2 then
-    ctypes.remote_struct_cdecls(hbm.Game, 4, out2)
+    ctypes.remote_struct_cdecls({ hbm.Game }, 4, out2)
     out2:close()
   end
 end
