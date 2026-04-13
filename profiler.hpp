@@ -13,7 +13,7 @@ struct Signal {
     std::optional<float> high = std::nullopt;
     float value = 0.0f;
     float inv_tau = 1.0f;
-    float interval = 10.0f;
+    float interval = 1.0f;
     float now = 0.0f;
 
     inline void update(float sample, float dt) {
