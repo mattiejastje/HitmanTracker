@@ -666,14 +666,8 @@ bool hitman_absolution::update_slow(
     Stats& stats
 ) {
     MemoryReader<uint32_t> reader{handle};
-    auto tracer = mempeep::LogTracer{
-        MempeepOnLogEntry{},
-#ifndef NDEBUG
-        mempeep::LogLevel::VALUES,
-#else
-        mempeep::LogLevel::ERRORS,
-#endif
-    };
+    auto tracer
+        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::VALUES};
     if (!mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game))
         return false;
     stats.difficulty = game.difficulty;
