@@ -209,7 +209,7 @@ M.Game = d.Struct("Game", {
   d.Field(TimeManager, "time_manager"),
 })
 
-local function get_current_checkpoint_index(checkpoints)
+M.get_current_checkpoint_index = function(checkpoints)
   if checkpoints.current_key == 0 then
     return -1 -- no checkpoint loaded
   end
@@ -221,7 +221,7 @@ local function get_current_checkpoint_index(checkpoints)
   error("Unable to find checkpoint key")
 end
 
-local function get_num_challenges_completed(challenges)
+M.get_num_challenges_completed = function(challenges)
   local count = 0
   for _, node in ipairs(challenges) do
     local data = node.data -- occasionally can be nil
@@ -251,7 +251,7 @@ local MULTIPLIERS = {
 }
 
 -- result uses lua indexing
-local function get_multipliers(scorings)
+M.get_multipliers = function(scorings)
   local multipliers = {}
   for _, scoring in ipairs(scorings) do
     local data = scoring.data
@@ -264,7 +264,7 @@ end
 
 -- here values is stats_manager.values[level+1][checkpoint+1]
 -- should be array containing 100 entries
-local function get_raw_score(values, multipliers)
+M.get_raw_score = function(values, multipliers)
   local sum = 0
   for i, multiplier in pairs(multipliers) do
     sum = sum + values[i] * multiplier
@@ -274,14 +274,14 @@ end
 
 --- Calculate raw score (before scaling by difficulty/challenges).
 -- Uses hardcoded multipliers.
-local function get_raw_score_2(values)
-  return get_raw_score(values, MULTIPLIERS)
+M.get_raw_score_2 = function(values)
+  return M.get_raw_score(values, MULTIPLIERS)
 end
 
 --- Calculate final score.
 -- Uses floating point arithmetic.
 -- difficulty_scale is stats_manager.difficulties.scales[difficulty+1]
-local function get_scaled_score(raw_score, difficulty_scale, num_challenges_completed)
+M.get_scaled_score = function(raw_score, difficulty_scale, num_challenges_completed)
   return math.floor(raw_score * (difficulty_scale + 0.05 * num_challenges_completed) + 0.5)
 end
 
@@ -289,12 +289,12 @@ local DIFFICULTY_SCALE = { 100, 125, 150, 200, 250 }
 
 --- Calculate final score.
 -- This implementation uses hardcoded scales and exact integer arithmetic.
-local function get_scaled_score_2(raw_score, difficulty, num_challenges_completed)
+M.get_scaled_score_2 = function(raw_score, difficulty, num_challenges_completed)
   return (raw_score * (DIFFICULTY_SCALE[difficulty + 1] + 5 * num_challenges_completed) + 50) // 100
 end
 
 --- Check if conditions are achieved according to playstyle.
-local function is_playstyle_condition_achieved(values, playstyle_data)
+M.is_playstyle_condition_achieved = function(values, playstyle_data)
   if next(playstyle_data.condition_min) == nil and next(playstyle_data.condition_max) == nil then
     return false -- not a condition-based playstyle
   end
@@ -316,14 +316,14 @@ end
 --- Return currently achieved condition based playstyle.
 -- Condition based playstyles are numbered 5 to 25. Silent assassin is 24.
 -- @return The index of the playstyle, or nil if no playstyle is achieved yet.
-local function get_playstyle_index_by_condition(values, playstyles)
+M.get_playstyle_index_by_condition = function(values, playstyles)
   -- match highest priority playstyles first
   table.sort(playstyles, function(a, b)
     return a.data.priority > b.data.priority
   end)
   for i, playstyle in pairs(playstyles) do
     local data = playstyle.data
-    if is_playstyle_condition_achieved(values, data) then
+    if M.is_playstyle_condition_achieved(values, data) then
       return i - 1
     end
   end
@@ -331,7 +331,7 @@ local function get_playstyle_index_by_condition(values, playstyles)
 end
 
 --- Find level info for given level.
-local function get_level_info(level_infos, level)
+M.get_level_info = function(level_infos, level)
   for _, level_info in ipairs(level_infos) do
     if level_info.level_data.level == level then
       return level_info
@@ -340,9 +340,9 @@ local function get_level_info(level_infos, level)
   return nil -- not found
 end
 
---- Raw score needed for best score based playstyle (i.e. "Shadow").
-local function get_shadow_raw_score_threshold(level_infos, level, checkpoint_index)
-  local level_info = get_level_info(level_infos, level)
+--- Raw score threshold for "Shadow" rating.
+M.get_shadow_raw_score_threshold = function(level_infos, level, checkpoint_index)
+  local level_info = M.get_level_info(level_infos, level)
   if level_info ~= nil then
     return level_info.checkpoint_info.nodes[checkpoint_index + 1].data.shadow_raw_score_threshold
   else
@@ -351,17 +351,17 @@ local function get_shadow_raw_score_threshold(level_infos, level, checkpoint_ind
 end
 
 --- Check if percentage is achieved according to playstyle.
-local function is_playstyle_percentage_achieved(percentage, playstyle_data)
+M.is_playstyle_percentage_achieved = function(percentage, playstyle_data)
   return (playstyle_data.percentage_min <= percentage and percentage <= playstyle_data.percentage_max)
 end
 
 --- Return currently achieved score based playstyle.
 -- Score based playstyles are agent (0), veteran (1), specialist (2), professional (3), and shadow (4).
 -- @return The index of the playstyle, or nil if no playstyle is achieved yet.
-local function get_playstyle_index_by_score(raw_score, shadow_raw_score_threshold, playstyles)
+M.get_playstyle_index_by_score = function(raw_score, shadow_raw_score_threshold, playstyles)
   local percentage = math.max(0, math.min(100, (100 * raw_score) // shadow_raw_score_threshold))
   for i, playstyle in ipairs(playstyles) do
-    if is_playstyle_percentage_achieved(percentage, playstyle.data) then
+    if M.is_playstyle_percentage_achieved(percentage, playstyle.data) then
       return i - 1 -- lua index starts at 1
     end
   end
@@ -369,7 +369,7 @@ local function get_playstyle_index_by_score(raw_score, shadow_raw_score_threshol
 end
 
 -- use hardcoded bounds
-local function get_playstyle_index_by_score_2(raw_score, shadow_raw_score_threshold)
+M.get_playstyle_index_by_score_2 = function(raw_score, shadow_raw_score_threshold)
   local percentage = (100 * raw_score) // shadow_raw_score_threshold
   local bounds = { 49, 79, 89, 99 }
   for i, bound in ipairs(bounds) do
@@ -379,20 +379,5 @@ local function get_playstyle_index_by_score_2(raw_score, shadow_raw_score_thresh
   end
   return 4
 end
-
-M.get_current_checkpoint_index = get_current_checkpoint_index
-M.get_num_challenges_completed = get_num_challenges_completed
-M.get_multipliers = get_multipliers
-M.get_raw_score = get_raw_score
-M.get_raw_score_2 = get_raw_score_2
-M.get_scaled_score = get_scaled_score
-M.get_scaled_score_2 = get_scaled_score_2
-M.is_playstyle_condition_achieved = is_playstyle_condition_achieved
-M.get_playstyle_index_by_condition = get_playstyle_index_by_condition
-M.get_level_info = get_level_info
-M.get_shadow_raw_score_threshold = get_shadow_raw_score_threshold
-M.is_playstyle_percentage_achieved = is_playstyle_percentage_achieved
-M.get_playstyle_index_by_score = get_playstyle_index_by_score
-M.get_playstyle_index_by_score_2 = get_playstyle_index_by_score_2
 
 return M
