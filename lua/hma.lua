@@ -173,6 +173,39 @@ local StatsManager = d.Struct("StatsManager", {
   d.Field(d.NullableRef(StatsDifficulties), "difficulties"), -- 1.0, 1.25, 1.5, 2.0, 2.5; see DIFFICULTY_SCALE below
 })
 
+NUM_EVENT_TYPES = 1337  -- unsure... seen with index at least 660 (0x294)
+
+local EventManager = d.Struct("EventManager", {
+    d.Seek(0x14),
+    -- unsure about size, seen with indices 0 and 1
+    d.Field(d.Ref(d.Array(d.Int32, 2)), "event_count_1"),
+    d.Seek(0x20),
+    -- event count per event type?
+    -- index 270 = pistol kill
+    -- index 580 = fibre wire kill
+    -- index 660 = pistol elimination / neck snap kill
+    d.Field(d.Ref(d.Array(d.Int32, NUM_EVENT_TYPES)), "event_count_2"),
+    d.Seek(0x2C),
+    -- unsure about size; seen up to index 4
+    d.Field(d.Ref(d.Array(d.Int32, 5)), "event_count_3"),
+    d.Seek(0x38),
+    -- kill count per npc type?
+    -- could be the following...
+    -- index 0 = ??? (unused?)
+    -- index 1 = civilian
+    -- index 2 = guard
+    -- index 3 = target
+    d.Field(d.Ref(d.Array(d.Int32, 4)), "event_count_4"),
+    d.Seek(0xFC),
+    d.Field(d.Int32, "num_unk0_kills"),  -- related to EventManager+0x164
+    d.Seek(0x158),
+    d.Field(d.Vector(d.Int32, 0x1000), "listeners"),
+    d.Seek(0x364),
+    d.Field(d.Int8, "is_total_count_enabled"),
+    d.Skip(0x3),
+    d.Field(d.Int32, "total_count"),
+})
+
 local ChallengeData = d.Struct("ChallengeData", {
   d.Seek(0x98),
   d.Field(d.Int8, "completed"),
@@ -189,13 +222,36 @@ local ChallengeManager = d.Struct("ChallengeManager", {
   d.Field(d.CircularList(ChallengeNode, "next_node", MAX_CHALLENGES), "challenges"),
 })
 
-M.Game = d.Struct("Game", {
-  d.Seek(0xD58C60 + 0x10 + 0x94),
+local GlobalData = d.Struct("GlobalData", {
+  d.Seek(0x94),
   d.Field(d.Bounded(d.Int32, 0, NUM_DIFFICULTIES - 1), "difficulty"),
+  d.Seek(0x15C),
+  d.Field(d.Int32, "unknown_count_1"),  -- possibly related to kills
+  d.Seek(0x164),
+  d.Field(d.Int32, "num_unk0_kills"),  -- kills for some unknown condition
+  d.Field(d.Int32, "num_unk1_kills"),  -- kills for some unknown condition
+  d.Field(d.Int32, "num_580_kills"),  -- kills for action type 0x244 = 580
+  d.Seek(0x174),
+  d.Field(d.Int32, "num_unk2_kills"),  -- kills for some unknown condition
+  d.Seek(0x184),
+  d.Field(d.Int32, "num_unk3_kills"),  -- kills for some unknown condition
+  d.Field(d.Int32, "unknown_count_2"),  -- possibly related to kills
+  d.Seek(0x1A4),
+  d.Field(d.Int32, "num_civilian_kills"),
+  d.Field(d.Int32, "num_guard_kills"),
+})
+
+M.Game = d.Struct("Game", {
+  d.Seek(0xD58C60 + 0x10),
+  d.Field(GlobalData, "global_data"),
+  d.Seek(0xD61620),
+  d.Field(d.RawAddr(), "property_manager"),  -- possibly a property system
   d.Seek(0xD61710),
   d.Field(StatsManager, "stats_manager"),
   d.Seek(0xD617C0),
   d.Field(ChallengeManager, "challenge_manager"),
+  d.Seek(0xE20E40),
+  d.Field(EventManager, "event_manager"),
   d.Seek(0xE212E0),
   d.Field(GameData, "game_data"),
   d.Seek(0xE21310),
