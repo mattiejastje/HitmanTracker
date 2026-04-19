@@ -12,37 +12,40 @@ using namespace mempeep;
 namespace hitman_absolution::structs {
 
 struct GlobalData {
+    uint8_t _pad0[0x94];
     int32_t difficulty;
-    int32_t unknown_count_1;
-    int32_t num_unk0_kills;
-    int32_t num_unk1_kills;
-    int32_t num_580_kills;
-    int32_t num_unk2_kills;
-    int32_t num_unk3_kills;
-    int32_t unknown_count_2;
-    int32_t num_civilian_kills;
-    int32_t num_guard_kills;
+    uint8_t _pad1[0xa4];
+    int32_t bodies_hidden;
+    int32_t disguises_picked_up;
+    int32_t containers_entered;
+    int32_t fuse_boxes_disabled;
+    int32_t successful_blend_ins;
+    int32_t caught_dragging_body;
+    int32_t caught_trespassing;
+    int32_t disguises_blown;
+    int32_t knockouts_by_hand;
+    int32_t knockouts_by_improvised_weapons;
+    int32_t npcs_killed;
+    int32_t headshots;
+    int32_t fiber_wires;
+    int32_t deadly_throws;
+    int32_t kills_with_improvised_weapons;
+    int32_t pull_off_ledges;
+    int32_t push_over_railings;
+    int32_t point_shooting_kills;
+    int32_t kill_shots_from_cover;
+    int32_t action_kills_triggered;
+    int32_t kill_shots_pistol;
+    int32_t kill_shots_sniper;
+    int32_t kill_shots_smg;
+    int32_t kill_shots_shotgun;
+    int32_t kill_shots_assault_rifle;
+    int32_t kill_shots_revolver;
+    int32_t civilians_killed;
+    int32_t cops_killed;
+    int32_t pigs_blown_up;
+    int32_t pigeons_killed;
 };
-
-using TGlobalData = Struct<
-    GlobalData,
-    Fields<
-        Seek<0x94>,
-        Field<Bounded<Int32, 0, 4>, &GlobalData::difficulty>,
-        Seek<0x15c>,
-        Field<Int32, &GlobalData::unknown_count_1>,
-        Seek<0x164>,
-        Field<Int32, &GlobalData::num_unk0_kills>,
-        Field<Int32, &GlobalData::num_unk1_kills>,
-        Field<Int32, &GlobalData::num_580_kills>,
-        Seek<0x174>,
-        Field<Int32, &GlobalData::num_unk2_kills>,
-        Seek<0x184>,
-        Field<Int32, &GlobalData::num_unk3_kills>,
-        Field<Int32, &GlobalData::unknown_count_2>,
-        Seek<0x1a4>,
-        Field<Int32, &GlobalData::num_civilian_kills>,
-        Field<Int32, &GlobalData::num_guard_kills>>>;
 
 struct String {
     int32_t length;
@@ -393,7 +396,7 @@ using TGame = Struct<
     Game,
     Fields<
         Seek<0xd58c70>,
-        Field<TGlobalData, &Game::global_data>,
+        Field<Primitive<GlobalData>, &Game::global_data>,
         Seek<0xd61620>,
         Field<RawAddr<uintptr_t>, &Game::property_manager>,
         Seek<0xd61710>,

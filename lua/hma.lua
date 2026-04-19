@@ -182,7 +182,7 @@ local EventManager = d.Struct("EventManager", {
     d.Seek(0x20),
     -- event count per event type?
     -- index 270 = pistol kill
-    -- index 580 = fibre wire kill
+    -- index 580 = fiber wire kill
     -- index 660 = pistol elimination / neck snap kill
     d.Field(d.Ref(d.Array(d.Int32, NUM_EVENT_TYPES)), "event_count_2"),
     d.Seek(0x2C),
@@ -223,22 +223,51 @@ local ChallengeManager = d.Struct("ChallengeManager", {
 })
 
 local GlobalData = d.Struct("GlobalData", {
-  d.Seek(0x94),
+  d.Skip(0x94),
   d.Field(d.Bounded(d.Int32, 0, NUM_DIFFICULTIES - 1), "difficulty"),
-  d.Seek(0x15C),
-  d.Field(d.Int32, "unknown_count_1"),  -- possibly related to kills
-  d.Seek(0x164),
-  d.Field(d.Int32, "num_unk0_kills"),  -- kills for some unknown condition
-  d.Field(d.Int32, "num_unk1_kills"),  -- kills for some unknown condition
-  d.Field(d.Int32, "num_580_kills"),  -- kills for action type 0x244 = 580
-  d.Seek(0x174),
-  d.Field(d.Int32, "num_unk2_kills"),  -- kills for some unknown condition
-  d.Seek(0x184),
-  d.Field(d.Int32, "num_unk3_kills"),  -- kills for some unknown condition
-  d.Field(d.Int32, "unknown_count_2"),  -- possibly related to kills
-  d.Seek(0x1A4),
-  d.Field(d.Int32, "num_civilian_kills"),
-  d.Field(d.Int32, "num_guard_kills"),
+  d.Skip(0xA4),
+  -- unlocks -> statistics -> stealth
+  -- 0x13C
+  d.Field(d.Int32, "bodies_hidden"),
+  -- 0x140
+  d.Field(d.Int32, "disguises_picked_up"),
+  d.Field(d.Int32, "containers_entered"),
+  d.Field(d.Int32, "fuse_boxes_disabled"),
+  d.Field(d.Int32, "successful_blend_ins"),
+  -- 0x150
+  d.Field(d.Int32, "caught_dragging_body"),
+  d.Field(d.Int32, "caught_trespassing"),
+  d.Field(d.Int32, "disguises_blown"),
+  d.Field(d.Int32, "knockouts_by_hand"),
+  -- 0x160
+  d.Field(d.Int32, "knockouts_by_improvised_weapons"),
+  -- unlocks -> statistics -> kills
+  -- 0x164
+  d.Field(d.Int32, "npcs_killed"),
+  d.Field(d.Int32, "headshots"),
+  d.Field(d.Int32, "fiber_wires"),
+  -- 0x170
+  d.Field(d.Int32, "deadly_throws"),
+  d.Field(d.Int32, "kills_with_improvised_weapons"),
+  d.Field(d.Int32, "pull_off_ledges"),
+  d.Field(d.Int32, "push_over_railings"),
+  -- 0x180
+  d.Field(d.Int32, "point_shooting_kills"),
+  d.Field(d.Int32, "kill_shots_from_cover"),
+  d.Field(d.Int32, "action_kills_triggered"),
+  d.Field(d.Int32, "kill_shots_pistol"),
+  -- 0x190
+  d.Field(d.Int32, "kill_shots_sniper"),
+  d.Field(d.Int32, "kill_shots_smg"),
+  d.Field(d.Int32, "kill_shots_shotgun"),
+  d.Field(d.Int32, "kill_shots_assault_rifle"),
+  -- 0x1A0
+  d.Field(d.Int32, "kill_shots_revolver"),
+  d.Field(d.Int32, "civilians_killed"),
+  d.Field(d.Int32, "cops_killed"),  -- cop = any guard
+  d.Field(d.Int32, "pigs_blown_up"),
+  -- 0x1B0
+  d.Field(d.Int32, "pigeons_killed"),
 })
 
 M.Game = d.Struct("Game", {

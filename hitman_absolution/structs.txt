@@ -1,20 +1,37 @@
 struct GlobalData {
   int8_t _pad0[0x94];
   int32_t difficulty;  // offset 0x94
-  int8_t _pad1[0xc4];
-  int32_t unknown_count_1;  // offset 0x15c
-  int8_t _pad2[0x4];
-  int32_t num_unk0_kills;  // offset 0x164
-  int32_t num_unk1_kills;  // offset 0x168
-  int32_t num_580_kills;  // offset 0x16c
-  int8_t _pad3[0x4];
-  int32_t num_unk2_kills;  // offset 0x174
-  int8_t _pad4[0xc];
-  int32_t num_unk3_kills;  // offset 0x184
-  int32_t unknown_count_2;  // offset 0x188
-  int8_t _pad5[0x18];
-  int32_t num_civilian_kills;  // offset 0x1a4
-  int32_t num_guard_kills;  // offset 0x1a8
+  int8_t _pad1[0xa4];
+  int32_t bodies_hidden;  // offset 0x13c
+  int32_t disguises_picked_up;  // offset 0x140
+  int32_t containers_entered;  // offset 0x144
+  int32_t fuse_boxes_disabled;  // offset 0x148
+  int32_t successful_blend_ins;  // offset 0x14c
+  int32_t caught_dragging_body;  // offset 0x150
+  int32_t caught_trespassing;  // offset 0x154
+  int32_t disguises_blown;  // offset 0x158
+  int32_t knockouts_by_hand;  // offset 0x15c
+  int32_t knockouts_by_improvised_weapons;  // offset 0x160
+  int32_t npcs_killed;  // offset 0x164
+  int32_t headshots;  // offset 0x168
+  int32_t fiber_wires;  // offset 0x16c
+  int32_t deadly_throws;  // offset 0x170
+  int32_t kills_with_improvised_weapons;  // offset 0x174
+  int32_t pull_off_ledges;  // offset 0x178
+  int32_t push_over_railings;  // offset 0x17c
+  int32_t point_shooting_kills;  // offset 0x180
+  int32_t kill_shots_from_cover;  // offset 0x184
+  int32_t action_kills_triggered;  // offset 0x188
+  int32_t kill_shots_pistol;  // offset 0x18c
+  int32_t kill_shots_sniper;  // offset 0x190
+  int32_t kill_shots_smg;  // offset 0x194
+  int32_t kill_shots_shotgun;  // offset 0x198
+  int32_t kill_shots_assault_rifle;  // offset 0x19c
+  int32_t kill_shots_revolver;  // offset 0x1a0
+  int32_t civilians_killed;  // offset 0x1a4
+  int32_t cops_killed;  // offset 0x1a8
+  int32_t pigs_blown_up;  // offset 0x1ac
+  int32_t pigeons_killed;  // offset 0x1b0
 };
 
 struct String {
@@ -219,7 +236,7 @@ struct TimeManager {
 struct Game {
   int8_t _pad0[0xd58c70];
   GlobalData global_data;  // offset 0xd58c70
-  int8_t _pad1[0x8804];
+  int8_t _pad1[0x87fc];
   void* property_manager;  // offset 0xd61620
   int8_t _pad2[0xec];
   StatsManager stats_manager;  // offset 0xd61710
