@@ -228,6 +228,8 @@ struct EventManager {
     std::array<int32_t, 0x5> events_per_unknown;
     std::array<int32_t, 0x4> kills_per_npc_type;
     int32_t npcs_killed;
+    int8_t trespass;
+    int64_t trespass_time;
     std::vector<int32_t> listeners;
     int8_t is_total_count_enabled;
     int32_t total_count;
@@ -254,7 +256,10 @@ using TEventManager = Struct<
             &EventManager::kills_per_npc_type>,
         Seek<0xfc>,
         Field<Int32, &EventManager::npcs_killed>,
-        Seek<0x158>,
+        Seek<0x148>,
+        Field<Int8, &EventManager::trespass>,
+        Skip<0x7>,
+        Field<Int64, &EventManager::trespass_time>,
         Field<Vector<Int32, 0x1000>, &EventManager::listeners>,
         Seek<0x364>,
         Field<Int8, &EventManager::is_total_count_enabled>,

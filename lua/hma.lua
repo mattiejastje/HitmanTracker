@@ -53,10 +53,14 @@ local GameData = d.Struct("GameData", {
 })
 
 local LevelManager = d.Struct("LevelManager", {
+  -- 0xE21310
   d.Skip(0x04),
-  d.Field(String, "scene"),
+  -- 0xE21314
+  d.Field(String, "scene"),  -- "assembly:/Scenes/.../*.entity"
+  -- 0xE2131C
   d.Field(d.Int32, "game_mode"),
   d.Skip(0x10),
+  -- 0xE21330
   d.Field(d.Int32, "checkpoint_index"), -- cached, not always up to date
 })
 
@@ -79,9 +83,13 @@ local CheckpointsManager = d.Struct("CheckpointsManager", {
 
 local TimeManager = d.Struct("TimeManager", {
   d.Skip(0x08),
+  -- 0xE24738
   d.Field(d.Int64, "ticks_per_second"),
+  -- 0xE24740
   d.Field(d.Int64, "last_time_ticks"),
+  -- 0xE24748
   d.Field(d.Int64, "game_time"), -- divide by (1024 * 1024) to get seconds
+  -- 0xE24750
   d.Field(d.Int64, "game_time_previous"),
   d.Field(d.Int64, "game_time_delta"),
   d.Field(d.Int64, "real_time"),
@@ -199,7 +207,13 @@ local EventManager = d.Struct("EventManager", {
     d.Field(d.Ref(d.Array(d.Int32, 4)), "kills_per_npc_type"),
     d.Seek(0xFC),
     d.Field(d.Int32, "npcs_killed"),  -- includes targets too
-    d.Seek(0x158),
+    d.Seek(0x148),
+    -- trespass = when exclamation mark shows
+    -- happens also when holding a gun as civilian, etc.
+    d.Field(d.Int8, "trespass"),
+    d.Skip(0x7),
+    -- time trespass state activated
+    d.Field(d.Int64, "trespass_time"),
     d.Field(d.Vector(d.Int32, 0x1000), "listeners"),
     d.Seek(0x364),
     d.Field(d.Int8, "is_total_count_enabled"),
@@ -237,6 +251,7 @@ local GlobalData = d.Struct("GlobalData", {
   d.Field(d.Int32, "successful_blend_ins"),
   -- 0x150
   d.Field(d.Int32, "caught_dragging_body"),
+  -- caught_trespassing is bugged, counts trespassing even if not caught!
   d.Field(d.Int32, "caught_trespassing"),
   d.Field(d.Int32, "disguises_blown"),
   d.Field(d.Int32, "knockouts_by_hand"),

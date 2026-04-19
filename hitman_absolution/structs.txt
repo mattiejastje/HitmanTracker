@@ -144,12 +144,15 @@ struct EventManager {
   std::array<int32_t, 0x4>* kills_per_npc_type;  // offset 0x38
   int8_t _pad4[0xc0];
   int32_t npcs_killed;  // offset 0xfc
-  int8_t _pad5[0x58];
+  int8_t _pad5[0x48];
+  int8_t trespass;  // offset 0x148
+  int8_t _pad6[0x7];
+  int64_t trespass_time;  // offset 0x150
   int32_t* listeners_begin;  // offset 0x158
   int32_t* listeners_end;    // offset 0x15c
-  int8_t _pad6[0x204];
+  int8_t _pad7[0x204];
   int8_t is_total_count_enabled;  // offset 0x364
-  int8_t _pad7[0x3];
+  int8_t _pad8[0x3];
   int32_t total_count;  // offset 0x368
 };
 

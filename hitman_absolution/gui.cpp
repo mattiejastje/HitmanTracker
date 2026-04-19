@@ -102,15 +102,19 @@ void hitman_absolution::gui(
         std::vector<hitman_common::TableRow>{
             {"Non-Target Casualty", stats.score_non_target_casualty},
             {"Spotted", stats.score_spotted},
-        } : std::vector<hitman_common::TableRow>{}
+        } : std::vector<hitman_common::TableRow>{
+            {"Non-Target Casualty", stats.score_non_target_casualty},
+            // spotted not yet supported
+            }
     );
     if (stats.map > 0 && stats.rating.value != "Unrated") {
         ImGui::Spacing();
         auto is_max = stats.score_total >= stats.score_for_max_rating;
         auto rating_status = is_max ? Status::GREEN : Status::YELLOW;
-        auto rating_font = is_max ? fonts.extra_rating_good : fonts.extra_rating_maybe;
-        auto rating_color
-            = is_max ? settings.extra_rating_good.color : settings.extra_rating_maybe.color;
+        auto rating_font
+            = is_max ? fonts.extra_rating_good : fonts.extra_rating_maybe;
+        auto rating_color = is_max ? settings.extra_rating_good.color
+                                   : settings.extra_rating_maybe.color;
         auto rating_text = std::format(
             "{} [{}/{}]",
             stats.score_rating,
@@ -135,7 +139,8 @@ void hitman_absolution::gui(
             {"Evidence Removed", stats.score_evidence_removed},
             {"Objective Complete", stats.score_objective_complete},
         };
-        // status on silent asssassin bonus is not set on maps with no targets
+        // status on silent asssassin bonus is not set on maps with no
+        // targets
         if (stats.score_silent_assassin_bonus.status) {
             table_rows.emplace_back(
                 "Signature Kill", stats.score_signature_kill
