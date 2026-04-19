@@ -781,12 +781,18 @@ bool hitman_absolution::update_slow(
             = {STATS_MULTIPLIERS[SILENT_KILL] * game_stats[SILENT_KILL],
                game_stats[SILENT_KILL] ? Status::GREEN : Status::YELLOW};
         // major positive scores
-        stats.score_evidence_removed = {
-            STATS_MULTIPLIERS[EVIDENCE_REMOVED] * game_stats[EVIDENCE_REMOVED],
-            game_stats[EVIDENCE_REMOVED] < map_info.num_evidence
-                ? Status::YELLOW
-                : Status::GREEN
-        };
+        if (map_info.num_evidence > 0) {
+            stats.score_evidence_removed
+                = {STATS_MULTIPLIERS[EVIDENCE_REMOVED]
+                       * game_stats[EVIDENCE_REMOVED],
+                   game_stats[EVIDENCE_REMOVED] < map_info.num_evidence
+                       ? Status::YELLOW
+                       : Status::GREEN};
+        } else {
+            if (game_stats[EVIDENCE_REMOVED] != 0)
+                logging::warn("no evidence but evidence removed not zero");
+            stats.score_evidence_removed = {0};
+        }
         stats.score_objective_complete
             = {STATS_MULTIPLIERS[OBJECTIVE_COMPLETE]
                    * game_stats[OBJECTIVE_COMPLETE],

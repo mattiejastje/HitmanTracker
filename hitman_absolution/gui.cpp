@@ -136,9 +136,14 @@ void hitman_absolution::gui(
             {"Body Hidden", stats.score_body_hidden},
             {"Headshot", stats.score_headshot},
             {"Silent Kill", stats.score_silent_kill},
-            {"Evidence Removed", stats.score_evidence_removed},
             {"Objective Complete", stats.score_objective_complete},
         };
+        // status on evidence removed not set on maps with no evidence
+        if (stats.score_evidence_removed.status) {
+            table_rows.emplace_back(
+                "Evidence Removed", stats.score_evidence_removed
+            );
+        }
         // status on silent asssassin bonus is not set on maps with no
         // targets
         if (stats.score_silent_assassin_bonus.status) {
