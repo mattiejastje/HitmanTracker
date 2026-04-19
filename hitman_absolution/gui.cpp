@@ -102,10 +102,7 @@ void hitman_absolution::gui(
         std::vector<hitman_common::TableRow>{
             {"Non-Target Casualty", stats.score_non_target_casualty},
             {"Spotted", stats.score_spotted},
-        } : std::vector<hitman_common::TableRow>{
-            {"Non-Target Casualty", stats.score_non_target_casualty},
-            // spotted not yet supported
-            }
+        } : std::vector<hitman_common::TableRow>{}
     );
     if (stats.map > 0 && stats.rating.value != "Unrated") {
         ImGui::Spacing();

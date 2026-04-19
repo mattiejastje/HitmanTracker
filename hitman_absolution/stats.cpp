@@ -709,13 +709,15 @@ bool hitman_absolution::update_slow(
     if (stats.map > 0) {
         auto& stats_manager = game.stats_manager;
         auto& game_stats = stats_manager.values[game.level][checkpoint_index];
+        // disabled for now: no way (yet?) to get "SPOTTED" & "EVIDENCE_REMOVED"
+        /*
         if (map_info.max_rating == AGENT) {
-            // map is unrated... stats are always 0 for unrated maps
-            // fix stats here
+            // stats are always 0 for unrated maps so try and fix stats here
             // can use npcs_killed value since unrated maps never have targets
             game_stats[NON_TARGET_CASUALTY] = game.event_manager.npcs_killed;
-            // TODO find a way to also get "SPOTTED" and "EVIDENCE_REMOVED"
+            // TODO find a way to also get "SPOTTED", "EVIDENCE_REMOVED", ...
         }
+        */
         auto status
             = game_stats[NON_TARGET_CASUALTY] != 0 || game_stats[SPOTTED] != 0
                   ? Status::RED
