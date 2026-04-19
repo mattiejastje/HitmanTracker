@@ -237,6 +237,8 @@ local ChallengeManager = d.Struct("ChallengeManager", {
   d.Field(d.CircularList(ChallengeNode, "next_node", MAX_CHALLENGES), "challenges"),
 })
 
+local ActorManager = d.Struct("ActorManager", {})
+
 local GlobalData = d.Struct("GlobalData", {
   d.Skip(0x94),
   d.Field(d.Bounded(d.Int32, 0, NUM_DIFFICULTIES - 1), "difficulty"),
@@ -295,6 +297,8 @@ M.Game = d.Struct("Game", {
   d.Field(StatsManager, "stats_manager"),
   d.Seek(0xD617C0),
   d.Field(ChallengeManager, "challenge_manager"),
+  d.Seek(0xDFDE70),
+  d.Field(ActorManager, "actor_manager"),
   d.Seek(0xE20E40),
   d.Field(EventManager, "event_manager"),
   d.Seek(0xE212E0),

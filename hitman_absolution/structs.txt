@@ -133,6 +133,9 @@ struct ChallengeManager {
   ChallengeNode* challenges;  // offset 0x8
 };
 
+struct ActorManager {
+};
+
 struct EventManager {
   int8_t _pad0[0x14];
   std::array<int32_t, 0x2>* events_per_kill_type_class;  // offset 0x14
@@ -245,17 +248,19 @@ struct Game {
   StatsManager stats_manager;  // offset 0xd61710
   int8_t _pad3[0x10];
   ChallengeManager challenge_manager;  // offset 0xd617c0
-  int8_t _pad4[0xbf674];
+  int8_t _pad4[0x9c6a4];
+  ActorManager actor_manager;  // offset 0xdfde70
+  int8_t _pad5[0x22fd0];
   EventManager event_manager;  // offset 0xe20e40
-  int8_t _pad5[0x134];
+  int8_t _pad6[0x134];
   GameData game_data;  // offset 0xe212e0
-  int8_t _pad6[0x8];
+  int8_t _pad7[0x8];
   LevelManager level_manager;  // offset 0xe21310
-  int8_t _pad7[0x60];
+  int8_t _pad8[0x60];
   int32_t level;  // offset 0xe21394
-  int8_t _pad8[0x1e8];
+  int8_t _pad9[0x1e8];
   CheckpointsManager checkpoints_manager;  // offset 0xe21580
-  int8_t _pad9[0x3184];
+  int8_t _pad10[0x3184];
   TimeManager time_manager;  // offset 0xe24730
 };
 

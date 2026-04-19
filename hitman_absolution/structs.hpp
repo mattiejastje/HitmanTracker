@@ -222,6 +222,8 @@ using TChallengeManager = Struct<
             CircularList<TChallengeNode, &ChallengeNode::next_node, 0x12c>,
             &ChallengeManager::challenges>>>;
 
+struct ActorManager {};
+
 struct EventManager {
     std::array<int32_t, 0x2> events_per_kill_type_class;
     std::array<int32_t, 0x539> events_per_event_type;
@@ -389,6 +391,7 @@ struct Game {
     uintptr_t property_manager;
     StatsManager stats_manager;
     ChallengeManager challenge_manager;
+    ActorManager actor_manager;
     EventManager event_manager;
     GameData game_data;
     LevelManager level_manager;
@@ -408,6 +411,8 @@ using TGame = Struct<
         Field<TStatsManager, &Game::stats_manager>,
         Seek<0xd617c0>,
         Field<TChallengeManager, &Game::challenge_manager>,
+        Seek<0xdfde70>,
+        Field<Primitive<ActorManager>, &Game::actor_manager>,
         Seek<0xe20e40>,
         Field<TEventManager, &Game::event_manager>,
         Seek<0xe212e0>,
