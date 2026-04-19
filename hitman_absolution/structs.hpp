@@ -11,6 +11,39 @@ using namespace mempeep;
 
 namespace hitman_absolution::structs {
 
+struct GlobalData {
+    int32_t difficulty;
+    int32_t unknown_count_1;
+    int32_t num_unk0_kills;
+    int32_t num_unk1_kills;
+    int32_t num_580_kills;
+    int32_t num_unk2_kills;
+    int32_t num_unk3_kills;
+    int32_t unknown_count_2;
+    int32_t num_civilian_kills;
+    int32_t num_guard_kills;
+};
+
+using TGlobalData = Struct<
+    GlobalData,
+    Fields<
+        Seek<0x94>,
+        Field<Bounded<Int32, 0, 4>, &GlobalData::difficulty>,
+        Seek<0x15c>,
+        Field<Int32, &GlobalData::unknown_count_1>,
+        Seek<0x164>,
+        Field<Int32, &GlobalData::num_unk0_kills>,
+        Field<Int32, &GlobalData::num_unk1_kills>,
+        Field<Int32, &GlobalData::num_580_kills>,
+        Seek<0x174>,
+        Field<Int32, &GlobalData::num_unk2_kills>,
+        Seek<0x184>,
+        Field<Int32, &GlobalData::num_unk3_kills>,
+        Field<Int32, &GlobalData::unknown_count_2>,
+        Seek<0x1a4>,
+        Field<Int32, &GlobalData::num_civilian_kills>,
+        Field<Int32, &GlobalData::num_guard_kills>>>;
+
 struct String {
     int32_t length;
     std::string text;
@@ -186,6 +219,45 @@ using TChallengeManager = Struct<
             CircularList<TChallengeNode, &ChallengeNode::next_node, 0x12c>,
             &ChallengeManager::challenges>>>;
 
+struct EventManager {
+    std::array<int32_t, 0x2> event_count_1;
+    std::array<int32_t, 0x539> event_count_2;
+    std::array<int32_t, 0x5> event_count_3;
+    std::array<int32_t, 0x4> event_count_4;
+    int32_t num_unk0_kills;
+    std::vector<int32_t> listeners;
+    int8_t is_total_count_enabled;
+    int32_t total_count;
+};
+
+using TEventManager = Struct<
+    EventManager,
+    Fields<
+        Seek<0x14>,
+        Field<
+            Ref<Primitive<std::array<int32_t, 0x2>>>,
+            &EventManager::event_count_1>,
+        Seek<0x20>,
+        Field<
+            Ref<Primitive<std::array<int32_t, 0x539>>>,
+            &EventManager::event_count_2>,
+        Seek<0x2c>,
+        Field<
+            Ref<Primitive<std::array<int32_t, 0x5>>>,
+            &EventManager::event_count_3>,
+        Seek<0x38>,
+        Field<
+            Ref<Primitive<std::array<int32_t, 0x4>>>,
+            &EventManager::event_count_4>,
+        Seek<0xfc>,
+        Field<Int32, &EventManager::num_unk0_kills>,
+        Seek<0x158>,
+        Field<Vector<Int32, 0x1000>, &EventManager::listeners>,
+        Seek<0x364>,
+        Field<Int8, &EventManager::is_total_count_enabled>,
+        Skip<0x3>,
+        Field<Int32, &EventManager::total_count>>>;
+
 struct LevelData {
     uint8_t _pad0[0x8];
     int32_t level;
@@ -305,9 +377,11 @@ struct TimeManager {
 };
 
 struct Game {
-    int32_t difficulty;
+    GlobalData global_data;
+    uintptr_t property_manager;
     StatsManager stats_manager;
     ChallengeManager challenge_manager;
+    EventManager event_manager;
     GameData game_data;
     LevelManager level_manager;
     int32_t level;
@@ -318,12 +392,16 @@ struct Game {
 using TGame = Struct<
     Game,
     Fields<
-        Seek<0xd58d04>,
-        Field<Bounded<Int32, 0, 4>, &Game::difficulty>,
+        Seek<0xd58c70>,
+        Field<TGlobalData, &Game::global_data>,
+        Seek<0xd61620>,
+        Field<RawAddr<uintptr_t>, &Game::property_manager>,
         Seek<0xd61710>,
         Field<TStatsManager, &Game::stats_manager>,
         Seek<0xd617c0>,
         Field<TChallengeManager, &Game::challenge_manager>,
+        Seek<0xe20e40>,
+        Field<TEventManager, &Game::event_manager>,
         Seek<0xe212e0>,
         Field<TGameData, &Game::game_data>,
         Seek<0xe21310>,

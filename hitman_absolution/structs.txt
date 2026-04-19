@@ -1,3 +1,22 @@
+struct GlobalData {
+  int8_t _pad0[0x94];
+  int32_t difficulty;  // offset 0x94
+  int8_t _pad1[0xc4];
+  int32_t unknown_count_1;  // offset 0x15c
+  int8_t _pad2[0x4];
+  int32_t num_unk0_kills;  // offset 0x164
+  int32_t num_unk1_kills;  // offset 0x168
+  int32_t num_580_kills;  // offset 0x16c
+  int8_t _pad3[0x4];
+  int32_t num_unk2_kills;  // offset 0x174
+  int8_t _pad4[0xc];
+  int32_t num_unk3_kills;  // offset 0x184
+  int32_t unknown_count_2;  // offset 0x188
+  int8_t _pad5[0x18];
+  int32_t num_civilian_kills;  // offset 0x1a4
+  int32_t num_guard_kills;  // offset 0x1a8
+};
+
 struct String {
   int32_t length;  // offset 0x0
   char* text;  // offset 0x4
@@ -97,6 +116,26 @@ struct ChallengeManager {
   ChallengeNode* challenges;  // offset 0x8
 };
 
+struct EventManager {
+  int8_t _pad0[0x14];
+  std::array<int32_t, 0x2>* event_count_1;  // offset 0x14
+  int8_t _pad1[0x8];
+  std::array<int32_t, 0x539>* event_count_2;  // offset 0x20
+  int8_t _pad2[0x8];
+  std::array<int32_t, 0x5>* event_count_3;  // offset 0x2c
+  int8_t _pad3[0x8];
+  std::array<int32_t, 0x4>* event_count_4;  // offset 0x38
+  int8_t _pad4[0xc0];
+  int32_t num_unk0_kills;  // offset 0xfc
+  int8_t _pad5[0x58];
+  int32_t* listeners_begin;  // offset 0x158
+  int32_t* listeners_end;    // offset 0x15c
+  int8_t _pad6[0x204];
+  int8_t is_total_count_enabled;  // offset 0x364
+  int8_t _pad7[0x3];
+  int32_t total_count;  // offset 0x368
+};
+
 struct LevelData {
   int8_t _pad0[0x8];
   int32_t level;  // offset 0x8
@@ -178,21 +217,25 @@ struct TimeManager {
 };
 
 struct Game {
-  int8_t _pad0[0xd58d04];
-  int32_t difficulty;  // offset 0xd58d04
-  int8_t _pad1[0x8a08];
+  int8_t _pad0[0xd58c70];
+  GlobalData global_data;  // offset 0xd58c70
+  int8_t _pad1[0x8804];
+  void* property_manager;  // offset 0xd61620
+  int8_t _pad2[0xec];
   StatsManager stats_manager;  // offset 0xd61710
-  int8_t _pad2[0x10];
+  int8_t _pad3[0x10];
   ChallengeManager challenge_manager;  // offset 0xd617c0
-  int8_t _pad3[0xbfb14];
+  int8_t _pad4[0xbf674];
+  EventManager event_manager;  // offset 0xe20e40
+  int8_t _pad5[0x134];
   GameData game_data;  // offset 0xe212e0
-  int8_t _pad4[0x8];
+  int8_t _pad6[0x8];
   LevelManager level_manager;  // offset 0xe21310
-  int8_t _pad5[0x60];
+  int8_t _pad7[0x60];
   int32_t level;  // offset 0xe21394
-  int8_t _pad6[0x1e8];
+  int8_t _pad8[0x1e8];
   CheckpointsManager checkpoints_manager;  // offset 0xe21580
-  int8_t _pad7[0x3184];
+  int8_t _pad9[0x3184];
   TimeManager time_manager;  // offset 0xe24730
 };
 
