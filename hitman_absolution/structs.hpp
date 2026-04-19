@@ -223,11 +223,11 @@ using TChallengeManager = Struct<
             &ChallengeManager::challenges>>>;
 
 struct EventManager {
-    std::array<int32_t, 0x2> event_count_1;
-    std::array<int32_t, 0x539> event_count_2;
-    std::array<int32_t, 0x5> event_count_3;
-    std::array<int32_t, 0x4> event_count_4;
-    int32_t num_unk0_kills;
+    std::array<int32_t, 0x2> events_per_kill_type_class;
+    std::array<int32_t, 0x539> events_per_event_type;
+    std::array<int32_t, 0x5> events_per_unknown;
+    std::array<int32_t, 0x4> kills_per_npc_type;
+    int32_t npcs_killed;
     std::vector<int32_t> listeners;
     int8_t is_total_count_enabled;
     int32_t total_count;
@@ -239,21 +239,21 @@ using TEventManager = Struct<
         Seek<0x14>,
         Field<
             Ref<Primitive<std::array<int32_t, 0x2>>>,
-            &EventManager::event_count_1>,
+            &EventManager::events_per_kill_type_class>,
         Seek<0x20>,
         Field<
             Ref<Primitive<std::array<int32_t, 0x539>>>,
-            &EventManager::event_count_2>,
+            &EventManager::events_per_event_type>,
         Seek<0x2c>,
         Field<
             Ref<Primitive<std::array<int32_t, 0x5>>>,
-            &EventManager::event_count_3>,
+            &EventManager::events_per_unknown>,
         Seek<0x38>,
         Field<
             Ref<Primitive<std::array<int32_t, 0x4>>>,
-            &EventManager::event_count_4>,
+            &EventManager::kills_per_npc_type>,
         Seek<0xfc>,
-        Field<Int32, &EventManager::num_unk0_kills>,
+        Field<Int32, &EventManager::npcs_killed>,
         Seek<0x158>,
         Field<Vector<Int32, 0x1000>, &EventManager::listeners>,
         Seek<0x364>,

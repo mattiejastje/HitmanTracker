@@ -135,15 +135,15 @@ struct ChallengeManager {
 
 struct EventManager {
   int8_t _pad0[0x14];
-  std::array<int32_t, 0x2>* event_count_1;  // offset 0x14
+  std::array<int32_t, 0x2>* events_per_kill_type_class;  // offset 0x14
   int8_t _pad1[0x8];
-  std::array<int32_t, 0x539>* event_count_2;  // offset 0x20
+  std::array<int32_t, 0x539>* events_per_event_type;  // offset 0x20
   int8_t _pad2[0x8];
-  std::array<int32_t, 0x5>* event_count_3;  // offset 0x2c
+  std::array<int32_t, 0x5>* events_per_unknown;  // offset 0x2c
   int8_t _pad3[0x8];
-  std::array<int32_t, 0x4>* event_count_4;  // offset 0x38
+  std::array<int32_t, 0x4>* kills_per_npc_type;  // offset 0x38
   int8_t _pad4[0xc0];
-  int32_t num_unk0_kills;  // offset 0xfc
+  int32_t npcs_killed;  // offset 0xfc
   int8_t _pad5[0x58];
   int32_t* listeners_begin;  // offset 0x158
   int32_t* listeners_end;    // offset 0x15c

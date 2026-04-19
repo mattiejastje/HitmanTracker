@@ -176,28 +176,29 @@ local StatsManager = d.Struct("StatsManager", {
 NUM_EVENT_TYPES = 1337  -- unsure... seen with index at least 660 (0x294)
 
 local EventManager = d.Struct("EventManager", {
+    -- index 0 = regular kill
+    -- index 1 = headshot kill (includes thrown weapon at head)
     d.Seek(0x14),
-    -- unsure about size, seen with indices 0 and 1
-    d.Field(d.Ref(d.Array(d.Int32, 2)), "event_count_1"),
-    d.Seek(0x20),
-    -- event count per event type?
+    d.Field(d.Ref(d.Array(d.Int32, 2)), "events_per_kill_type_class"),
+    -- event count per event type; examples include
+    -- index 20 = axe kill (thrown or melee)
     -- index 270 = pistol kill
     -- index 580 = fiber wire kill
-    -- index 660 = pistol elimination / neck snap kill
-    d.Field(d.Ref(d.Array(d.Int32, NUM_EVENT_TYPES)), "event_count_2"),
+    -- index 660 = pistol elimination / neck snap kill / poison kill ...
+    d.Seek(0x20),
+    d.Field(d.Ref(d.Array(d.Int32, NUM_EVENT_TYPES)), "events_per_event_type"),
+    -- unknown event counter, seen up to index 4
     d.Seek(0x2C),
-    -- unsure about size; seen up to index 4
-    d.Field(d.Ref(d.Array(d.Int32, 5)), "event_count_3"),
+    d.Field(d.Ref(d.Array(d.Int32, 5)), "events_per_unknown"),
     d.Seek(0x38),
-    -- kill count per npc type?
-    -- could be the following...
-    -- index 0 = ??? (unused?)
+    -- kill count per npc type
+    -- index 0 = unused?
     -- index 1 = civilian
     -- index 2 = guard
     -- index 3 = target
-    d.Field(d.Ref(d.Array(d.Int32, 4)), "event_count_4"),
+    d.Field(d.Ref(d.Array(d.Int32, 4)), "kills_per_npc_type"),
     d.Seek(0xFC),
-    d.Field(d.Int32, "num_unk0_kills"),  -- related to EventManager+0x164
+    d.Field(d.Int32, "npcs_killed"),  -- includes targets too
     d.Seek(0x158),
     d.Field(d.Vector(d.Int32, 0x1000), "listeners"),
     d.Seek(0x364),
