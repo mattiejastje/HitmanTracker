@@ -36,15 +36,6 @@ struct Gui {
     TextStyle rating_maybe{
         "fonts/DejaVuSansCondensed-Bold.ttf", 1.1f, Color{0.85f, 0.85f, 0.0f}
     };
-    TextStyle extra_rating_bad{
-        "fonts/DejaVuSansCondensed-Bold.ttf", 1.0f, Color{1.0f, 0.0f, 0.0f}
-    };
-    TextStyle extra_rating_good{
-        "fonts/DejaVuSansCondensed-Bold.ttf", 1.0f, Color{0.0f, 1.0f, 0.0f}
-    };
-    TextStyle extra_rating_maybe{
-        "fonts/DejaVuSansCondensed-Bold.ttf", 1.0f, Color{0.85f, 0.85f, 0.0f}
-    };
     TextStyle label{
         "fonts/DejaVuSansCondensed.ttf", 0.9f, Color{0.9f, 0.9f, 0.9f}
     };
