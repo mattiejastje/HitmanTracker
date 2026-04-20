@@ -138,24 +138,31 @@ struct ActorManager {
 
 struct EventManager {
   int8_t _pad0[0x14];
-  std::array<int32_t, 0x2>* events_per_kill_type_class;  // offset 0x14
-  int8_t _pad1[0x8];
-  std::array<int32_t, 0x539>* events_per_event_type;  // offset 0x20
-  int8_t _pad2[0x8];
-  std::array<int32_t, 0x5>* events_per_unknown;  // offset 0x2c
-  int8_t _pad3[0x8];
-  std::array<int32_t, 0x4>* kills_per_npc_type;  // offset 0x38
-  int8_t _pad4[0xc0];
+  int32_t* events_per_kill_type_class_begin;  // offset 0x14
+  int32_t* events_per_kill_type_class_end;    // offset 0x18
+  int8_t _pad1[0x4];
+  int32_t* events_per_event_type_begin;  // offset 0x20
+  int32_t* events_per_event_type_end;    // offset 0x24
+  int8_t _pad2[0x4];
+  int32_t* events_per_unknown_begin;  // offset 0x2c
+  int32_t* events_per_unknown_end;    // offset 0x30
+  int8_t _pad3[0x4];
+  int32_t* kills_per_npc_type_begin;  // offset 0x38
+  int32_t* kills_per_npc_type_end;    // offset 0x3c
+  int8_t _pad4[0x1c];
+  int32_t* events_per_event_type_2_begin;  // offset 0x5c
+  int32_t* events_per_event_type_2_end;    // offset 0x60
+  int8_t _pad5[0x98];
   int32_t npcs_killed;  // offset 0xfc
-  int8_t _pad5[0x48];
+  int8_t _pad6[0x48];
   int8_t trespass;  // offset 0x148
-  int8_t _pad6[0x7];
+  int8_t _pad7[0x7];
   int64_t trespass_time;  // offset 0x150
   int32_t* listeners_begin;  // offset 0x158
   int32_t* listeners_end;    // offset 0x15c
-  int8_t _pad7[0x204];
+  int8_t _pad8[0x204];
   int8_t is_total_count_enabled;  // offset 0x364
-  int8_t _pad8[0x3];
+  int8_t _pad9[0x3];
   int32_t total_count;  // offset 0x368
 };
 

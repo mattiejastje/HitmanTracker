@@ -225,10 +225,11 @@ using TChallengeManager = Struct<
 struct ActorManager {};
 
 struct EventManager {
-    std::array<int32_t, 0x2> events_per_kill_type_class;
-    std::array<int32_t, 0x539> events_per_event_type;
-    std::array<int32_t, 0x5> events_per_unknown;
-    std::array<int32_t, 0x4> kills_per_npc_type;
+    std::vector<int32_t> events_per_kill_type_class;
+    std::vector<int32_t> events_per_event_type;
+    std::vector<int32_t> events_per_unknown;
+    std::vector<int32_t> kills_per_npc_type;
+    std::vector<int32_t> events_per_event_type_2;
     int32_t npcs_killed;
     int8_t trespass;
     int64_t trespass_time;
@@ -241,21 +242,15 @@ using TEventManager = Struct<
     EventManager,
     Fields<
         Seek<0x14>,
-        Field<
-            Ref<Primitive<std::array<int32_t, 0x2>>>,
-            &EventManager::events_per_kill_type_class>,
+        Field<Vector<Int32, 0x5>, &EventManager::events_per_kill_type_class>,
         Seek<0x20>,
-        Field<
-            Ref<Primitive<std::array<int32_t, 0x539>>>,
-            &EventManager::events_per_event_type>,
+        Field<Vector<Int32, 0x539>, &EventManager::events_per_event_type>,
         Seek<0x2c>,
-        Field<
-            Ref<Primitive<std::array<int32_t, 0x5>>>,
-            &EventManager::events_per_unknown>,
+        Field<Vector<Int32, 0xb>, &EventManager::events_per_unknown>,
         Seek<0x38>,
-        Field<
-            Ref<Primitive<std::array<int32_t, 0x4>>>,
-            &EventManager::kills_per_npc_type>,
+        Field<Vector<Int32, 0x4>, &EventManager::kills_per_npc_type>,
+        Seek<0x5c>,
+        Field<Vector<Int32, 0x33>, &EventManager::events_per_event_type_2>,
         Seek<0xfc>,
         Field<Int32, &EventManager::npcs_killed>,
         Seek<0x148>,

@@ -427,7 +427,8 @@ const std::vector<std::vector<MapInfo>> scenes = {
         {
             .map = 44,
             .num_evidence = 1,
-            .shadow_raw_score_threshold = 20000,  // not 40000 for unknown reasons
+            // not 40000 for unknown reasons
+            .shadow_raw_score_threshold = 20000,
         },
         // 2 prison
         {
@@ -710,23 +711,36 @@ bool hitman_absolution::update_slow(
     if (stats.map > 0) {
         auto& stats_manager = game.stats_manager;
         auto& game_stats = stats_manager.values[game.level][checkpoint_index];
-        // disabled for now: no way (yet?) to get "SPOTTED" & "EVIDENCE_REMOVED"
-        /*
         if (map_info.max_rating == AGENT) {
             // stats are always 0 for unrated maps so try and fix stats here
-            // can use npcs_killed value since unrated maps never have targets
-            game_stats[NON_TARGET_CASUALTY] = game.event_manager.npcs_killed;
-            // TODO find a way to also get "SPOTTED", "EVIDENCE_REMOVED", ...
+            // npc type 1 = civ, 2 = guard/cop, 3 = target
+            game_stats[NON_TARGET_CASUALTY]
+                = game.event_manager.kills_per_npc_type[1]
+                  + game.event_manager.kills_per_npc_type[2];
+            // event_type_2 0x23 = spotted
+            game_stats[SPOTTED]
+                = game.event_manager.events_per_event_type_2[0x23];
+        } else {
+#ifndef NDEBUG
+            if (game.event_manager.events_per_event_type_2[0x23]
+                != game_stats[SPOTTED]) {
+                // can happen very occasionally as these are not updated
+                // exactly at the same time by the game, but prolonged mismatch
+                // would be error; so at least give warning
+                logging::warn("spotted status mismatch");
+            }
+            if (game_stats[NON_TARGET_CASUALTY]
+                != game.event_manager.kills_per_npc_type[1]
+                       + game.event_manager.kills_per_npc_type[2]) {
+                logging::warn("non-target casualty mismatch");
+            }
+#endif
         }
-        */
         auto status
             = game_stats[NON_TARGET_CASUALTY] != 0 || game_stats[SPOTTED] != 0
                   ? Status::RED
                   : Status::GREEN;
-        stats.rating
-            = {map_info.max_rating == AGENT ? "Unrated"
-                                            : get_simple_rating_value(status),
-               status};
+        stats.rating = {get_simple_rating_value(status), status};
         auto score = get_raw_score(game_stats);
 #ifndef NDEBUG
         auto maybe_shadow_raw_score_threshold = get_shadow_raw_score_threshold(
@@ -753,11 +767,12 @@ bool hitman_absolution::update_slow(
         int32_t percent
             = std::max(0, (100 * score) / shadow_raw_score_threshold);
         stats.score_total = score;
-        stats.score_rating = percent < VETERAN        ? "Agent"
-                             : percent < SPECIALIST   ? "Veteran"
-                             : percent < PROFESSIONAL ? "Specialist"
-                             : percent < SHADOW       ? "Professional"
-                                                      : "Shadow";
+        stats.score_rating = map_info.max_rating == AGENT ? "Unrated"
+                             : percent < VETERAN          ? "Agent"
+                             : percent < SPECIALIST       ? "Veteran"
+                             : percent < PROFESSIONAL     ? "Specialist"
+                             : percent < SHADOW           ? "Professional"
+                                                          : "Shadow";
         // major negative scores
         stats.score_civilian_casualty
             = {STATS_MULTIPLIERS[CIVILIAN_CASUALTY]
