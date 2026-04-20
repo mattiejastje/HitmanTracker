@@ -427,6 +427,7 @@ const std::vector<std::vector<MapInfo>> scenes = {
         {
             .map = 44,
             .num_evidence = 1,
+            .shadow_raw_score_threshold = 20000,  // not 40000 for unknown reasons
         },
         // 2 prison
         {
