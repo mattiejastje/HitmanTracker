@@ -74,16 +74,17 @@ In the game, ratings are determined in two distinct steps:
 To fix these issues,
 the tracker displays both rating systems independently as follows:
 
-- Silent Assassin rating is awarded if:
+- Silent Assassin rating is awarded for all maps if:
 
   * No non-target kills.
   * Never spotted.
 
   Target presence no longer affects eligibility.
   This is an intentional deviation from the original rule
-  so that "Silent Assassin" can be tracked also in checkpoints without targets.
+  so that "Silent Assassin" can be tracked also for checkpoints without targets
+  and for unrated checkpoints.
 
-- Score-based rating is awarded as follows:
+- Score-based rating is awarded as follows, for rated maps:
 
   * Calculate score-based rating regardless of Silent Assassin.
   * Use the same percentage thresholds as the original system.
@@ -96,17 +97,9 @@ the tracker displays both rating systems independently as follows:
 This better reflects player performance
 while remaining faithful to the rating system of the original game:
 
-* Makes Silent Assassin achievable for all rated checkpoints.
-* Decouples skill-based rating from score-based rating.
+* Makes Silent Assassin achievable for all checkpoints.
+* Decouples skill-based rating from score-based rating for rated checkpoints.
 * Provides full transparency on scoring thresholds.
-
-Known issues:
-
-* If a checkpoint is unrated (i.e. when no score board is shown in the game),
-  at the moment the tracker is unable to track the statistics,
-  and awards an "Unrated" rating.
-  The technical reason for this is that the tracker uses the score board,
-  but the engine keeps no score board in memory for unrated checkpoints.
 
 ## Related projects
 
