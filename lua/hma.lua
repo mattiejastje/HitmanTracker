@@ -181,30 +181,31 @@ local StatsManager = d.Struct("StatsManager", {
   d.Field(d.NullableRef(StatsDifficulties), "difficulties"), -- 1.0, 1.25, 1.5, 2.0, 2.5; see DIFFICULTY_SCALE below
 })
 
-NUM_EVENT_TYPES = 1337  -- unsure... seen with index at least 660 (0x294)
-
 local EventManager = d.Struct("EventManager", {
+    d.Seek(0x14),
     -- index 0 = regular kill
     -- index 1 = headshot kill (includes thrown weapon at head)
-    d.Seek(0x14),
-    d.Field(d.Ref(d.Array(d.Int32, 2)), "events_per_kill_type_class"),
+    d.Field(d.Vector(d.Int32, 5), "events_per_kill_type_class"),
+    d.Seek(0x20),
     -- event count per event type; examples include
     -- index 20 = axe kill (thrown or melee)
     -- index 270 = pistol kill
     -- index 580 = fiber wire kill
     -- index 660 = pistol elimination / neck snap kill / poison kill ...
-    d.Seek(0x20),
-    d.Field(d.Ref(d.Array(d.Int32, NUM_EVENT_TYPES)), "events_per_event_type"),
-    -- unknown event counter, seen up to index 4
+    d.Field(d.Vector(d.Int32, 1337), "events_per_event_type"),
     d.Seek(0x2C),
-    d.Field(d.Ref(d.Array(d.Int32, 5)), "events_per_unknown"),
+    -- unknown event counter
+    d.Field(d.Vector(d.Int32, 11), "events_per_unknown"),
     d.Seek(0x38),
     -- kill count per npc type
     -- index 0 = unused?
     -- index 1 = civilian
     -- index 2 = guard
     -- index 3 = target
-    d.Field(d.Ref(d.Array(d.Int32, 4)), "kills_per_npc_type"),
+    d.Field(d.Vector(d.Int32, 4), "kills_per_npc_type"),
+    d.Seek(0x5C),
+    -- index 0x23 = spotted
+    d.Field(d.Vector(d.Int32, 51), "events_per_event_type_2"),
     d.Seek(0xFC),
     d.Field(d.Int32, "npcs_killed"),  -- includes targets too
     d.Seek(0x148),
