@@ -16,6 +16,7 @@
 #include "hitman2_silent_assassin/hook.hpp"
 #include "hitman2_silent_assassin/stats.hpp"
 #include "hitman_2016/gui.hpp"
+#include "hitman_absolution/hook.hpp"
 #include "hitman_absolution/gui.hpp"
 #include "hitman_absolution/stats.hpp"
 #include "hitman_blood_money/gui.hpp"
@@ -110,7 +111,7 @@ static std::vector<GameInfo> get_game_info(const char* exe_file) {
                 hitman_absolution::update_fast
             },
             {{"hma.exe"}},
-            hook_nothing,
+            hitman_absolution::hook,
         }};
     }
     return {};

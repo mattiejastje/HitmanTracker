@@ -28,6 +28,7 @@ add_executable (HitmanTracker
 	"hitman2_silent_assassin/stats.cpp"
 	"hitman_2016/gui.cpp"
 	"hitman_absolution/gui.cpp"
+    "hitman_absolution/hook.cpp"
 	"hitman_absolution/stats.cpp"
 	"hitman_common/gui.cpp"
 	"hitman_common/stats.cpp"
@@ -40,7 +41,6 @@ add_executable (HitmanTracker
 	"hitman_blood_money/gui.cpp"
 	"hitman_blood_money/hook.cpp"
 	"hitman_blood_money/stats.cpp"
-	"hitman_absolution/gui.cpp"
 	"signal.cpp"
 	"stats.cpp"
 )

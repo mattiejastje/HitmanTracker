@@ -706,6 +706,10 @@ bool hitman_absolution::update_slow(
     }
     auto& map_info = map_infos.at(checkpoint_index);
     logging::trace("Map {}", map_info.map);
+    if (stats.map != map_info.map) {
+        // map changed: reset "spotted"
+        write<int32_t>(handle, label_ptrs.at(150), 0);
+    }
     stats.map = map_info.map;
     stats.map_stage = MapStage::main;  // always render stats
     if (stats.map > 0) {
@@ -713,28 +717,20 @@ bool hitman_absolution::update_slow(
         auto& game_stats = stats_manager.values[game.level][checkpoint_index];
         if (map_info.max_rating == AGENT) {
             // stats are always 0 for unrated maps so try and fix stats here
-            // npc type 1 = civ, 2 = guard/cop, 3 = target
-            game_stats[NON_TARGET_CASUALTY]
-                = game.event_manager.kills_per_npc_type[1]
-                  + game.event_manager.kills_per_npc_type[2];
+            // event_manager.kills_per_npc_type?
+            // npc type 1 = civ, 2 = guard/cop, 3 = target: easy to count
+            // but it does not reset between checkpoints
+            // event_manager.npcs_killed?
+            // resets between checkpoints
+            // but includes targets
+            // however unrated maps never have targets! so we can use that
+            game_stats[NON_TARGET_CASUALTY] = game.event_manager.npcs_killed;
             // event_type_2 0x23 = spotted
-            game_stats[SPOTTED]
-                = game.event_manager.events_per_event_type_2[0x23];
-        } else {
-#ifndef NDEBUG
-            if (game.event_manager.events_per_event_type_2[0x23]
-                != game_stats[SPOTTED]) {
-                // can happen very occasionally as these are not updated
-                // exactly at the same time by the game, but prolonged mismatch
-                // would be error; so at least give warning
-                logging::warn("spotted status mismatch");
-            }
-            if (game_stats[NON_TARGET_CASUALTY]
-                != game.event_manager.kills_per_npc_type[1]
-                       + game.event_manager.kills_per_npc_type[2]) {
-                logging::warn("non-target casualty mismatch");
-            }
-#endif
+            // event_manager.events_per_event_type_2[0x23] gets stuck once set...
+            // so we use a code hook
+            auto spotted = read<int32_t>(handle, label_ptrs.at(150));
+            if (!spotted) logging::warn("Unable to read spotted value");
+            game_stats[SPOTTED] = spotted.value_or(0);
         }
         auto status
             = game_stats[NON_TARGET_CASUALTY] != 0 || game_stats[SPOTTED] != 0
