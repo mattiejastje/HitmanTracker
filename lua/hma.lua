@@ -235,7 +235,7 @@ local ChallengeNode = d.Struct("ChallengeNode", {
 
 local ChallengeManager = d.Struct("ChallengeManager", {
   d.Skip(0x08),
-  d.Field(d.CircularList(ChallengeNode, "next_node", MAX_CHALLENGES), "challenges"),
+  d.Field(d.List(ChallengeNode, "next_node", d.list_kind.CIRCULAR, MAX_CHALLENGES), "challenges"),
 })
 
 local ActorManager = d.Struct("ActorManager", {})

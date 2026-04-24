@@ -219,7 +219,11 @@ using TChallengeManager = Struct<
     Fields<
         Skip<0x8>,
         Field<
-            CircularList<TChallengeNode, &ChallengeNode::next_node, 0x12c>,
+            List<
+                TChallengeNode,
+                &ChallengeNode::next_node,
+                ListKind::CIRCULAR,
+                0x12c>,
             &ChallengeManager::challenges>>>;
 
 struct ActorManager {};
