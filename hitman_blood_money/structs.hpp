@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <mempeep/descriptors.hpp>
+#include <optional>
 
 using namespace mempeep;
 
