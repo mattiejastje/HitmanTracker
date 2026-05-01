@@ -3,88 +3,27 @@ local hbm = require("hbm")
 local hma = require("hma")
 local hc47 = require("hc47")
 
-do
-  local out = io.open("hitman_absolution/structs.hpp", "w")
-  if out then
-    out:write([[#pragma once
+--- Write native C++ struct declarations to a .hpp file and remote layout to a .txt file.
+-- @param dir output directory (no trailing slash)
+-- @param descs root descriptor passed to ctypes functions
+-- @param namespace C++ namespace name wrapping the declarations
+local function write_structs(dir, descs, namespace)
+  local hpp, hpp_err = io.open(dir .. "/structs.hpp", "w")
+  assert(hpp, "failed to open " .. dir .. "/structs.hpp: " .. tostring(hpp_err))
+  hpp:write("#pragma once\n\n")
+  ctypes.write_native_includes(descs, hpp)
+  hpp:write("\nusing namespace mempeep;\n\n")
+  hpp:write("namespace " .. namespace .. " {\n\n")
+  ctypes.native_struct_cdecls(descs, "", hpp)
+  hpp:write("}  // namespace " .. namespace .. "\n")
+  hpp:close()
 
-#include <array>
-#include <cstdint>
-#include <mempeep/descriptors.hpp>
-#include <optional>
-#include <string>
-#include <vector>
-
-using namespace mempeep;
-
-namespace hitman_absolution::structs {
-
-]])
-    ctypes.native_struct_cdecls({ hma.Game }, "", out)
-      out:write([[
-}
-]])
-    out:close()
-  end
-
-  local out2 = io.open("hitman_absolution/structs.txt", "w")
-  if out2 then
-    ctypes.remote_struct_cdecls({ hma.Game }, 4, out2)
-    out2:close()
-  end
+  local txt, txt_err = io.open(dir .. "/structs.txt", "w")
+  assert(txt, "failed to open " .. dir .. "/structs.txt: " .. tostring(txt_err))
+  ctypes.remote_struct_cdecls(descs, 4, txt)
+  txt:close()
 end
 
-do
-  local out = io.open("hitman_blood_money/structs.hpp", "w")
-  if out then
-    out:write([[#pragma once
-
-#include <array>
-#include <cstdint>
-#include <mempeep/descriptors.hpp>
-
-using namespace mempeep;
-
-namespace hitman_blood_money::structs {
-
-]])
-    ctypes.native_struct_cdecls({ hbm.Game }, "", out)
-      out:write([[
-}
-]])
-    out:close()
-  end
-
-  local out2 = io.open("hitman_blood_money/structs.txt", "w")
-  if out2 then
-    ctypes.remote_struct_cdecls({ hbm.Game }, 4, out2)
-    out2:close()
-  end
-end
-
-do
-  local out = io.open("hitman_codename_47/structs.hpp", "w")
-  if out then
-    out:write([[#pragma once
-
-#include <cstdint>
-#include <mempeep/descriptors.hpp>
-
-using namespace mempeep;
-
-namespace hitman_codename_47::structs {
-
-]])
-    ctypes.native_struct_cdecls({ hc47.HitmanDlc }, "", out)
-      out:write([[
-}
-]])
-    out:close()
-  end
-
-  local out2 = io.open("hitman_codename_47/structs.txt", "w")
-  if out2 then
-    ctypes.remote_struct_cdecls({ hc47.HitmanDlc }, 4, out2)
-    out2:close()
-  end
-end
+write_structs("hitman_absolution", { hma.Game }, "hitman_absolution::structs")
+write_structs("hitman_blood_money", { hbm.Game }, "hitman_blood_money::structs")
+write_structs("hitman_codename_47", { hc47.HitmanDlc }, "hitman_codename_47::structs")
