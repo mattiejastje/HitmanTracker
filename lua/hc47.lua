@@ -42,10 +42,10 @@ local Engine = d.Struct("Engine", {
 
 M.HitmanDlc = d.Struct("HitmanDlc", {
     d.Seek(0x1F0008),
-    d.Field(d.RawAddr(), "unknown"),  -- memory manager?
+    d.Field(d.RawAddr(), "unk_1f0008"),  -- memory manager?
     d.Field(d.Ref(Engine), "engine"),
     d.Seek(0x1F03C4),
-    d.Field(d.Float, "unk_zero"),  -- seems always zero
+    d.Field(d.Float, "unk_zero_1f03c4"),  -- seems always zero
 })
 
 return M
