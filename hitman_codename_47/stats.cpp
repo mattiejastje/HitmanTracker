@@ -81,8 +81,10 @@ bool hitman_codename_47::update_fast(
     Stats& stats
 ) {
     if (stats.map > 0) {
-        auto time = read<int32_t>(handle, label_ptrs.at(250));
-        if (time) stats.time = time.value() / 30.0f;
+        auto time = read<double>(
+            handle, base_ptrs[1] + 0x1F000C, {0, 0x37B5}, INT32_MAX
+        );
+        if (time) stats.time = time.value();
         return time.has_value();
     }
     return true;
