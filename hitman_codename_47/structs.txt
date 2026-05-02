@@ -1,0 +1,72 @@
+struct SceneContainerVTable {
+  void* unk_func_3c;  // offset 0x3c
+  void* unk_func_48;  // offset 0x48
+};
+
+struct SmallString {
+  char* text;  // offset 0x0
+};
+
+struct SceneNode {
+  int8_t unk_flag_1;  // offset -0x108
+  int8_t unk_flag_2;  // offset -0x107
+  SmallString* scene_name;  // offset -0x106
+  void* prev_node;  // offset 0x0
+  void* next_node;  // offset 0x4
+};
+
+struct SceneContainer {
+  SceneContainerVTable* vtable;  // offset 0x0
+  uint32_t flags;  // offset 0xc
+  int32_t link_offset;  // offset 0x18
+  SceneNode* scenes;  // offset 0x1c
+  void* scenes_tail;  // offset 0x20
+};
+
+struct SceneManager {
+  int8_t unk_flag_7d;  // offset 0x7d
+  SceneContainer* scene_container;  // offset 0x7e
+};
+
+struct UnkNodeVTable {
+  void* unk_func_98;  // offset 0x98
+  void* unk_func_9C;  // offset 0x9c
+};
+
+struct UnkNode {
+  UnkNodeVTable* vtable;  // offset 0x0
+  int32_t unk2;  // offset 0x4
+  void* next_node;  // offset 0x8
+};
+
+struct EngineData {
+  SceneManager* scene_manager;  // offset 0x59
+  char* mounted_archive;  // offset 0x2e1
+  double cpu_cycles_per_second;  // offset 0xa61
+  float unk_a71;  // offset 0xa71
+  float unk_a75;  // offset 0xa75
+  double game_time;  // offset 0x37b5
+  double real_time;  // offset 0x37bd
+  double game_time_copy;  // offset 0x37c5
+  double game_time_previous;  // offset 0x37cd
+  UnkNode* unk_nodes;  // offset 0x37e5
+  int8_t unk_flag_38f0;  // offset 0x38f0
+  int8_t timestep_mode;  // offset 0x38f1
+  float game_speed_scale;  // offset 0x398e
+  int8_t unk_flag_3bca;  // offset 0x3bca
+  int64_t cpu_cycles;  // offset 0x3bcb
+  double frame_time_smoothed;  // offset 0x3bd3
+  void* unk_3bdb;  // offset 0x3bdb
+};
+
+struct Engine {
+  EngineData* EngineData;  // offset 0x0
+};
+
+struct HitmanDlc {
+  void* unk_1f0008;  // offset 0x1f0008
+  Engine* engine;  // offset 0x1f000c
+  void* unk_1f0010;  // offset 0x1f0010
+  float unk_zero_1f03c4;  // offset 0x1f03c4
+};
+
