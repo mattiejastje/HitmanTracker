@@ -11,6 +11,7 @@ struct SceneNode {
   int8_t unk_flag_1;  // offset -0x108
   int8_t unk_flag_2;  // offset -0x107
   SmallString* scene_name;  // offset -0x106
+  double scene_creation_time;  // offset -0x32
   void* prev_node;  // offset 0x0
   void* next_node;  // offset 0x4
 };
@@ -68,5 +69,10 @@ struct HitmanDlc {
   Engine* engine;  // offset 0x1f000c
   void* unk_1f0010;  // offset 0x1f0010
   float unk_zero_1f03c4;  // offset 0x1f03c4
+  float unk_float_245e1c;  // offset 0x245e1c
+  int32_t unk_counter_1;  // offset 0x245e28
+  double unk_game_time_1;  // offset 0x245e30
+  int32_t unk_counter_2;  // offset 0x245e38
+  double unk_game_time_2;  // offset 0x245e40
 };
 

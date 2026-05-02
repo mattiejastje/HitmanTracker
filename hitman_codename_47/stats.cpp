@@ -9,8 +9,8 @@
 
 // OptionsScreen gets loaded during missions, assign negative value to ignore
 const std::unordered_map<std::string, int> scenes = {
-    {R"(OptionsScreen)", -1},             // options
-    {R"(OptionsScreen.zip)", -1},         // options
+    {R"(OptionsScreen)", 0},              // options
+    {R"(OptionsScreen.zip)", 0},          // options
     {R"(Intro.zip)", 0},                  // menu
     {R"(CutScenes/Intro/Intro.zip)", 0},  // menu
     {R"(Intro)", 0},                      // menu (after beating game)
@@ -52,24 +52,33 @@ bool hitman_codename_47::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
-    auto scene = read_string(handle, label_ptrs.at(150), {0}, INT32_MAX, 64);
-    if (!scene) return true;  // when game starts, scene will be null
+    auto scene_head = read<int32_t>(
+        handle, base_ptrs[1] + 0x1F000C, {0, 0x59, 0x7E, 0x1C}, INT32_MAX
+    );
+    auto scene_tail = read<int32_t>(
+        handle, base_ptrs[1] + 0x1F000C, {0, 0x59, 0x7E, 0x20}, INT32_MAX
+    );
+    if (!scene_head || !scene_tail) return false;
+    // tail = root scene (i.e. mission, main menu, options from main menu, ...)
+    // head = child scene (i.e. laptop, options from mission, ...)
+    auto scene = read_string(
+        handle,
+        base_ptrs[1] + 0x1F000C,
+        {0, 0x59, 0x7E, 0x20, -0x106, 0x0, 0x0},
+        INT32_MAX,
+        64
+    );
+    if (!scene) return false;
     logging::trace("Scene {}", scene.value());
     auto iter = scenes.find(scene.value());
     if (iter != scenes.end()) {
-        // ignore negative value from OptionsScreen
-        if (iter->second >= 0) {
-            stats.map = iter->second;
-            stats.map_stage = MapStage::main;
-            logging::trace("Map {}", stats.map);
-        }
+        stats.map = iter->second;
+        stats.map_stage = MapStage::main;
+        logging::trace("Map {}", stats.map);
     } else {
         if (!scene.value().empty()) {
             logging::error("No map registered for scene {}", scene.value());
         }
-    }
-    if (stats.map > 0) {
-        // TODO
     }
     return true;
 }
@@ -81,11 +90,31 @@ bool hitman_codename_47::update_fast(
     Stats& stats
 ) {
     if (stats.map > 0) {
-        auto time = read<double>(
-            handle, base_ptrs[1] + 0x1F000C, {0, 0x37B5}, INT32_MAX
+        auto scene_head = read<int32_t>(
+            handle, base_ptrs[1] + 0x1F000C, {0, 0x59, 0x7E, 0x1C}, INT32_MAX
         );
-        if (time) stats.time = time.value();
-        return time.has_value();
+        auto scene_tail = read<int32_t>(
+            handle, base_ptrs[1] + 0x1F000C, {0, 0x59, 0x7E, 0x20}, INT32_MAX
+        );
+        if (!scene_head || !scene_tail) return false;
+        std::optional<double> time = {};
+        if (scene_head == scene_tail) {
+            // main mission: use global game time
+            time = read<double>(
+                handle, base_ptrs[1] + 0x1F000C, {0, 0x37B5}, INT32_MAX
+            );
+        } else {
+            // paused in the options menu: use time options menu was created
+            time = read<double>(
+                handle,
+                base_ptrs[1] + 0x1F000C,
+                {0, 0x59, 0x7E, 0x1C, -0x108 + 0xD6},
+                INT32_MAX
+            );
+        }
+        if (!time) return false;
+        stats.time = time.value();
+        return true;
     }
     return true;
 }

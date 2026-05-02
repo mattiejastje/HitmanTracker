@@ -8,10 +8,13 @@ local SmallString = d.Struct("SmallString", {
 })
 
 local SceneNode = d.Struct("SceneNode", {
-    d.Seek(-0x108),
+    d.Seek(-0x10C),  -- (2 - link_offset) * 4 and link_offset is 0x45
+    d.Skip(0x4),
     d.Field(d.Int8, "unk_flag_1"),
     d.Field(d.Int8, "unk_flag_2"),
     d.Field(d.Ref(SmallString), "scene_name"),
+    d.Seek(-0x10C + 0xDA),
+    d.Field(d.Double, "scene_creation_time"),
     d.Seek(0),
     d.Field(d.RawAddr(), "prev_node"), -- toward newer/head
     d.Field(d.RawAddr(), "next_node"); -- toward older nodes
@@ -31,7 +34,7 @@ local SceneContainer = d.Struct("SceneContainer", {
     d.Skip(0x8),
     d.Field(d.Int32, "link_offset"),  -- always 0x45? actual offset is (2 - link_offset) * 4
     d.Field(d.List(SceneNode, "next_node", d.list_kind.NULL_TERMINATED, 0x100), "scenes"),  -- from newest scene to oldest
-    d.Field(d.RawAddr(), "scenes_tail"),  -- pointer to oldest scene on stack (current mission)
+    d.Field(d.RawAddr(), "scenes_tail"),  -- pointer root scene on stack (current mission)
 })
 
 local SceneManager = d.Struct("SceneManager", {
@@ -92,6 +95,15 @@ M.HitmanDlc = d.Struct("HitmanDlc", {
     d.Field(d.RawAddr(), "unk_1f0010"),  -- ?
     d.Seek(0x1F03C4),
     d.Field(d.Float, "unk_zero_1f03c4"),  -- seems always zero
+    d.Seek(0x245E1C),
+    d.Field(d.Float, "unk_float_245e1c"),
+    d.Skip(0x8),
+    d.Field(d.Int32, "unk_counter_1"),  -- wraps around 8
+    d.Skip(0x4),
+    d.Field(d.Double, "unk_game_time_1"),  -- sometimes tracks game_time, sometimes not
+    d.Field(d.Int32, "unk_counter_2"),  -- wraps around 8
+    d.Skip(0x4),
+    d.Field(d.Double, "unk_game_time_2"),  -- sometimes tracks game_time, sometimes not
 })
 
 return M
