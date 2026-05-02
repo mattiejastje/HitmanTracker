@@ -1,7 +1,5 @@
 struct GlobalData {
-  int8_t _pad0[0x94];
   int32_t difficulty;  // offset 0x94
-  int8_t _pad1[0xa4];
   int32_t bodies_hidden;  // offset 0x13c
   int32_t disguises_picked_up;  // offset 0x140
   int32_t containers_entered;  // offset 0x144
@@ -40,96 +38,69 @@ struct String {
 };
 
 struct StatsScoringData {
-  int8_t _pad0[0x8];
   String title;  // offset 0x8
-  int8_t _pad1[0x18];
   float _unused;  // offset 0x28
-  int8_t _pad2[0x8];
   int32_t index;  // offset 0x34
-  int8_t _pad3[0x4];
   int32_t multiplier;  // offset 0x3c
 };
 
 struct StatsScoring {
-  int8_t _pad0[0x4];
   StatsScoringData* data;  // offset 0x4
 };
 
 struct PlaystyleConditionData {
-  int8_t _pad0[0x8];
   String title;  // offset 0x8
-  int8_t _pad1[0x24];
   int32_t index;  // offset 0x34
   int32_t threshold;  // offset 0x38
 };
 
 struct PlaystyleCondition {
-  int8_t _pad0[0x4];
   PlaystyleConditionData* data;  // offset 0x4
 };
 
 struct StatsPlaystyleData {
-  int8_t _pad0[0x8];
   PlaystyleCondition* condition_min_begin;  // offset 0x8
   PlaystyleCondition* condition_min_end;    // offset 0xc
-  int8_t _pad1[0x4];
   PlaystyleCondition* condition_max_begin;  // offset 0x14
   PlaystyleCondition* condition_max_end;    // offset 0x18
-  int8_t _pad2[0x4];
   String title;  // offset 0x20
-  int8_t _pad3[0xc];
   int8_t is_unlockable;  // offset 0x34
-  int8_t _pad4[0x3];
   int32_t priority;  // offset 0x38
   int32_t percentage_min;  // offset 0x3c
   int32_t percentage_max;  // offset 0x40
-  int8_t _pad5[0xc];
   int8_t is_achieved;  // offset 0x50
-  int8_t _pad6[0x3];
 };
 
 struct StatsPlaystyle {
-  int8_t _pad0[0x4];
   StatsPlaystyleData* data;  // offset 0x4
 };
 
 struct StatsDifficulties {
-  int8_t _pad0[0x8];
   std::array<float, 0x5> scales;  // offset 0x8
 };
 
 struct StatsManager {
-  int8_t _pad0[0x4];
   StatsScoring* scorings_begin;  // offset 0x4
   StatsScoring* scorings_end;    // offset 0x8
-  int8_t _pad1[0x4];
   StatsPlaystyle* playstyles_begin;  // offset 0x10
   StatsPlaystyle* playstyles_end;    // offset 0x14
-  int8_t _pad2[0x10];
   std::array<std::array<std::array<int16_t, 0x64>, 0xd>, 0x1a>* values;  // offset 0x28
-  int8_t _pad3[0x8];
   std::array<int8_t, 0x64>* achieved_playstyles;  // offset 0x34
-  int8_t _pad4[0x2c];
   int32_t last_achieved_playstyle;  // offset 0x64
-  int8_t _pad5[0x18];
   int32_t scaled_score;  // offset 0x80
-  int8_t _pad6[0x18];
   StatsDifficulties* difficulties;  // offset 0x9c
 };
 
 struct ChallengeData {
-  int8_t _pad0[0x98];
   int8_t completed;  // offset 0x98
 };
 
 struct ChallengeNode {
   void* next_node;  // offset 0x0
-  int8_t _pad0[0x8];
   ChallengeData* data;  // offset 0xc
 };
 
 struct ChallengeManager {
-  int8_t _pad0[0x8];
   ChallengeNode* challenges;  // offset 0x8
 };
 
@@ -137,75 +108,55 @@ struct ActorManager {
 };
 
 struct EventManager {
-  int8_t _pad0[0x14];
   int32_t* events_per_kill_type_class_begin;  // offset 0x14
   int32_t* events_per_kill_type_class_end;    // offset 0x18
-  int8_t _pad1[0x4];
   int32_t* events_per_event_type_begin;  // offset 0x20
   int32_t* events_per_event_type_end;    // offset 0x24
-  int8_t _pad2[0x4];
   int32_t* events_per_unknown_begin;  // offset 0x2c
   int32_t* events_per_unknown_end;    // offset 0x30
-  int8_t _pad3[0x4];
   int32_t* kills_per_npc_type_begin;  // offset 0x38
   int32_t* kills_per_npc_type_end;    // offset 0x3c
-  int8_t _pad4[0x1c];
   int32_t* events_per_event_type_2_begin;  // offset 0x5c
   int32_t* events_per_event_type_2_end;    // offset 0x60
-  int8_t _pad5[0x98];
   int32_t npcs_killed;  // offset 0xfc
-  int8_t _pad6[0x48];
   int8_t trespass;  // offset 0x148
-  int8_t _pad7[0x7];
   int64_t trespass_time;  // offset 0x150
   int32_t* listeners_begin;  // offset 0x158
   int32_t* listeners_end;    // offset 0x15c
-  int8_t _pad8[0x204];
   int8_t is_total_count_enabled;  // offset 0x364
-  int8_t _pad9[0x3];
   int32_t total_count;  // offset 0x368
 };
 
 struct LevelData {
-  int8_t _pad0[0x8];
   int32_t level;  // offset 0x8
 };
 
 struct CheckpointData {
-  int8_t _pad0[0x38];
   int32_t shadow_raw_score_threshold;  // offset 0x38
 };
 
 struct CheckpointNode {
-  int8_t _pad0[0x4];
   CheckpointData* data;  // offset 0x4
 };
 
 struct CheckpointInfo {
-  int8_t _pad0[0x10];
   CheckpointNode* nodes_begin;  // offset 0x10
   CheckpointNode* nodes_end;    // offset 0x14
 };
 
 struct GameDataLevelInfo {
-  int8_t _pad0[0x4];
   LevelData* level_data;  // offset 0x4
-  int8_t _pad1[0x4];
   CheckpointInfo* checkpoint_info;  // offset 0xc
-  int8_t _pad2[0xa0];
 };
 
 struct GameData {
-  int8_t _pad0[0x20];
   GameDataLevelInfo* level_infos_begin;  // offset 0x20
   GameDataLevelInfo* level_infos_end;    // offset 0x24
 };
 
 struct LevelManager {
-  int8_t _pad0[0x4];
   String scene;  // offset 0x4
   int32_t game_mode;  // offset 0xc
-  int8_t _pad1[0x10];
   int32_t checkpoint_index;  // offset 0x20
 };
 
@@ -215,20 +166,16 @@ struct Checkpoint {
 };
 
 struct Checkpoints {
-  int8_t _pad0[0xc];
   Checkpoint* checkpoint_begin;  // offset 0xc
   Checkpoint* checkpoint_end;    // offset 0x10
-  int8_t _pad1[0x3c];
   int32_t current_key;  // offset 0x50
 };
 
 struct CheckpointsManager {
-  int8_t _pad0[0x28];
   Checkpoints* checkpoints;  // offset 0x28
 };
 
 struct TimeManager {
-  int8_t _pad0[0x8];
   int64_t ticks_per_second;  // offset 0x8
   int64_t last_time_ticks;  // offset 0x10
   int64_t game_time;  // offset 0x18
@@ -247,27 +194,16 @@ struct TimeManager {
 };
 
 struct Game {
-  int8_t _pad0[0xd58c70];
   GlobalData global_data;  // offset 0xd58c70
-  int8_t _pad1[0x87fc];
   void* property_manager;  // offset 0xd61620
-  int8_t _pad2[0xec];
   StatsManager stats_manager;  // offset 0xd61710
-  int8_t _pad3[0x10];
   ChallengeManager challenge_manager;  // offset 0xd617c0
-  int8_t _pad4[0x9c6a4];
   ActorManager actor_manager;  // offset 0xdfde70
-  int8_t _pad5[0x22fd0];
   EventManager event_manager;  // offset 0xe20e40
-  int8_t _pad6[0x134];
   GameData game_data;  // offset 0xe212e0
-  int8_t _pad7[0x8];
   LevelManager level_manager;  // offset 0xe21310
-  int8_t _pad8[0x60];
   int32_t level;  // offset 0xe21394
-  int8_t _pad9[0x1e8];
   CheckpointsManager checkpoints_manager;  // offset 0xe21580
-  int8_t _pad10[0x3184];
   TimeManager time_manager;  // offset 0xe24730
 };
 

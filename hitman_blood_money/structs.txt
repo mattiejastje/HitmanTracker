@@ -1,5 +1,4 @@
 struct TimeManager {
-  int8_t _pad0[0x48];
   int32_t time;  // offset 0x48
 };
 
@@ -9,23 +8,17 @@ struct Suits {
 };
 
 struct SuitContainer {
-  int8_t _pad0[0xfd0];
   Suits suits;  // offset 0xfd0
 };
 
 struct Settings {
-  int8_t _pad0[0xa40];
   SuitContainer* suit_container;  // offset 0xa40
-  int8_t _pad1[0x5c20];
   int32_t difficulty;  // offset 0x6664
 };
 
 struct Game {
-  int8_t _pad0[0x41f820];
   TimeManager* time_manager;  // offset 0x41f820
-  int8_t _pad1[0x18];
   Settings* settings;  // offset 0x41f83c
-  int8_t _pad2[0x192cf8];
   std::array<int32_t, 0x42> stats;  // offset 0x5b2538
 };
 
