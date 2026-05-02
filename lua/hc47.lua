@@ -85,12 +85,21 @@ local EngineData = d.Struct("EngineData", {
 })
 
 local Engine = d.Struct("Engine", {
-    d.Field(d.Ref(EngineData), "EngineData"),
+    d.Field(d.Ref(EngineData), "engine_data"),
+})
+
+local Unk1f0008Data = d.Struct("Unk1f0008Data", {
+    d.Seek(0x0D),
+    d.Field(d.Array(d.RawAddr(), 1), "unk_table"),  -- actually much larger, at least 0x1C00
+})
+
+local Unk1f0008 = d.Struct("Unk1f0008", {
+    d.Field(d.Ref(Unk1f0008Data), "unk_1f0008_data"),
 })
 
 M.HitmanDlc = d.Struct("HitmanDlc", {
     d.Seek(0x1F0008),
-    d.Field(d.RawAddr(), "unk_1f0008"),  -- memory manager?
+    d.Field(d.Ref(Unk1f0008), "unk_1f0008"),  -- memory manager?
     d.Field(d.Ref(Engine), "engine"),
     d.Field(d.RawAddr(), "unk_1f0010"),  -- ?
     d.Seek(0x1F03C4),
