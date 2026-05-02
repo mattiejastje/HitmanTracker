@@ -55,6 +55,11 @@ local UnkNode = d.Struct("UnkNode", {
     d.Field(d.RawAddr(), "next_node"),
 })
 
+local PropertyManager = d.Struct("PropertyManager", {
+    d.Seek(0x0D),
+    d.Field(d.RawAddr(), "unk_data"),
+})
+
 local EngineData = d.Struct("EngineData", {
     d.Seek(0x59),
     d.Field(d.Ref(SceneManager), "scene_manager"),  -- scene manager?
@@ -75,6 +80,8 @@ local EngineData = d.Struct("EngineData", {
     d.Seek(0x38F0),
     d.Field(d.Int8, "unk_flag_38f0"),
     d.Field(d.Int8, "timestep_mode"),  -- 1 fixed time (each frame 0.03 seconds), 0 real time
+    d.Seek(0x3905),
+    d.Field(d.Ref(PropertyManager), "property_manager"),
     d.Seek(0x398E),
     d.Field(d.Float, "game_speed_scale"),  -- time scale factor (normally 1.0)
     d.Seek(0x3BCA),

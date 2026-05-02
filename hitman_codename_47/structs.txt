@@ -48,6 +48,10 @@ struct UnkNode {
   void* next_node;  // offset 0x8
 };
 
+struct PropertyManager {
+  void* unk_data;  // offset 0xd
+};
+
 struct EngineData {
   SceneManager* scene_manager;  // offset 0x59
   char* mounted_archive;  // offset 0x2e1
@@ -61,6 +65,7 @@ struct EngineData {
   UnkNode* unk_nodes;  // offset 0x37e5
   int8_t unk_flag_38f0;  // offset 0x38f0
   int8_t timestep_mode;  // offset 0x38f1
+  PropertyManager* property_manager;  // offset 0x3905
   float game_speed_scale;  // offset 0x398e
   int8_t unk_flag_3bca;  // offset 0x3bca
   int64_t cpu_cycles;  // offset 0x3bcb
