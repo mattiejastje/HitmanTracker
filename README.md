@@ -13,11 +13,6 @@ However, there is basic support to track map name and internal game timer.
 
 Known issues:
 
-* The internal game timer is linked to the frame rate and is inaccurate.
-  In particular, when playing at very high frame rates, the clock will run too fast
-  (you will also experience game bugs if you do this).
-  Play at 60 frames per second for best experience.
-
 * Difficulty is not tracked.
 
 ### Hitman 2: Silent Assassin
