@@ -52,6 +52,9 @@ bool hitman_codename_47::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
+    auto difficulty = read<int32_t>(handle, label_ptrs.at(150));
+    if (!difficulty) return false;
+    stats.difficulty = difficulty.value();
     auto scene_head = read<int32_t>(
         handle, base_ptrs[1] + 0x1F000C, {0, 0x59, 0x7E, 0x1C}, INT32_MAX
     );

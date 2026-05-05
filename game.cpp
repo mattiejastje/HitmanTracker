@@ -23,6 +23,7 @@
 #include "hitman_blood_money/hook.hpp"
 #include "hitman_blood_money/stats.hpp"
 #include "hitman_codename_47/gui.hpp"
+#include "hitman_codename_47/hook.hpp"
 #include "hitman_codename_47/stats.hpp"
 #include "hitman_contracts/gui.hpp"
 #include "hitman_contracts/hook.hpp"
@@ -64,7 +65,7 @@ static std::vector<GameInfo> get_game_info(const char* exe_file) {
                     hitman_codename_47::update_fast,
                 },
                 {{"hitman.exe", "hitmandlc.dlc", "enginedata.dll"}},
-                hook_nothing,
+                hitman_codename_47::hook,
             },
             GameInfo{
                 GameMethods{hitman_2016::gui, stats_nothing, stats_nothing},
