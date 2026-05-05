@@ -28,8 +28,9 @@ Fully supported.
 
 Fully supported.
 
-The tracker reworks the original scoring logic from the game to make ratings more transparent.
-In the game, ratings are determined in two distinct steps:
+To make rating system more transparent,
+the tracker displays ratings differently from how the game shows it.
+In the game, the final rating is determined in two distinct steps:
 
 - Condition-based rating.
   The game first checks for specific playstyles based on how you played.
