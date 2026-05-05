@@ -97,8 +97,8 @@ local Engine = d.Struct("Engine", {
 
 local ObjectsManagerData = d.Struct("ObjectsManagerData", {
     d.Seek(0x09),
-    d.Field(d.Ref(d.Array(d.Int32, 0x3FFFF)), "versions"),  -- version of each object
-    d.Field(d.Ref(d.Array(d.RawAddr(), 0x3FFFF)), "objects"),  -- objects themselves
+    d.Field(d.Ref(d.Array(d.Int32, 0x40000)), "versions"),  -- version of each object
+    d.Field(d.Ref(d.Array(d.RawAddr(), 0x40000)), "objects"),  -- objects themselves
 })
 
 local ObjectsManager = d.Struct("ObjectsManager", {
