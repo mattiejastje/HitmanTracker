@@ -9,11 +9,8 @@ For now, only the steam versions are supported.
 ### Hitman: Codename 47
 
 This game has no rating system, so no stats are tracked.
-However, there is basic support to track map name and internal game timer.
-
-Known issues:
-
-* Difficulty is not tracked.
+However, there is basic support to track map name, internal game timer,
+and difficulty.
 
 ### Hitman 2: Silent Assassin
 
