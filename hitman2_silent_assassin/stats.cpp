@@ -93,6 +93,8 @@ bool hitman2_silent_assassin::update_slow(
         process_common_game_stats(
             silent_assassin_combinations, game_stats, stats
         );
+    } else {
+        stats.rating = {"Unrated", Status::GREEN};
     }
     return true;
 }

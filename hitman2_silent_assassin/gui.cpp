@@ -47,7 +47,8 @@ void hitman2_silent_assassin::gui(
         : stats.difficulty == 3 ? "Professional"
                                 : "",
         map_names,
-        {
+        stats.map >= 2 ?
+        std::vector<hitman_common::TableRow>{
             {"Close Encounters", stats.close_encounters},
             {"Alerts", stats.alerts},
             {"Shots Fired", stats.shots_fired},
@@ -56,6 +57,6 @@ void hitman2_silent_assassin::gui(
             {"Enemies Wounded", stats.enemies_wounded},
             {"Innocents Killed", stats.innocents_killed},
             {"Innocents Wounded", stats.innocents_wounded},
-        }
+        } : std::vector<hitman_common::TableRow>{}
     );
 }
