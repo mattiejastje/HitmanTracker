@@ -1,9 +1,10 @@
-struct Unk1f0008Data {
-  std::array<void*, 0x1> unk_table;  // offset 0xd
+struct ObjectsManagerData {
+  std::array<int32_t, 0x3ffff>* versions;  // offset 0x9
+  std::array<void*, 0x3ffff>* objects;  // offset 0xd
 };
 
-struct Unk1f0008 {
-  Unk1f0008Data* unk_1f0008_data;  // offset 0x0
+struct ObjectsManager {
+  ObjectsManagerData* data;  // offset 0x0
 };
 
 struct SceneContainerVTable {
@@ -78,7 +79,7 @@ struct Engine {
 };
 
 struct HitmanDlc {
-  Unk1f0008* unk_1f0008;  // offset 0x1f0008
+  ObjectsManager* objects_manager;  // offset 0x1f0008
   Engine* engine;  // offset 0x1f000c
   void* unk_1f0010;  // offset 0x1f0010
   float unk_zero_1f03c4;  // offset 0x1f03c4
