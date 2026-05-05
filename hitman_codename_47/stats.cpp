@@ -14,11 +14,13 @@ const std::unordered_map<std::string, int> scenes = {
     {R"(Intro.zip)", 0},                  // menu
     {R"(CutScenes/Intro/Intro.zip)", 0},  // menu
     {R"(Intro)", 0},                      // menu (after beating game)
+    {R"(C0_Training\C0_1_Pre)", 1},
     {R"(C0_Training\C0_1)", 1},
     {R"(C1_HongKong\C1_1_Pre)", 2},
     {R"(C1_HongKong\C1_1)", 2},
     {R"(CutScenes/C1_HongKong/C1_1_HitmanArrive.zip)", 2},
     {R"(C1_Hongkong\C1_1_Laptop)", 2},
+    {R"(C1_HongKong\C1_2_Pre)", 3},
     {R"(C1_HongKong\C1_2)", 3},
     {R"(C1_Hongkong\C1_2_Laptop)", 3},
     {R"(C1_HongKong\C1_3)", 4},
@@ -26,6 +28,7 @@ const std::unordered_map<std::string, int> scenes = {
     {R"(C1_HongKong\C1_4)", 5},
     {R"(C1_Hongkong\C1_4_Laptop)", 5},
     {R"(CutScenes/FlashBacks/FlashBack1_4)", 5},
+    {R"(C4_ColombianRainforest\C4_1_Pre)", 6},
     {R"(C4_ColombianRainforest\C4_1)", 6},
     {R"(C4_ColombianRainForest\C4_1_Laptop)", 6},
     {R"(C4_ColombianRainforest\C4_2)", 7},
