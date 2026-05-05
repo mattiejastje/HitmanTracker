@@ -98,7 +98,7 @@ void hitman_absolution::gui(
         : stats.difficulty == 3 ? "Expert"
                                 : "Purist",
         map_names,
-        std::vector<hitman_common::TableRow>{
+        {
             {"Non-Target Casualty", stats.score_non_target_casualty},
             {"Spotted", stats.score_spotted},
         }
