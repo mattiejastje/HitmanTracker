@@ -4,19 +4,19 @@
 
 const std::vector<std::string> map_names = {
     "Hideout",                      // 1
-    "#0 Death of a Showman",        // 2
-    "#1 A Vintage Year",            // 3
-    "#2 Curtains Down",             // 4
-    "#3 Flatline",                  // 5
-    "#4 A New Life",                // 6
-    "#5 Murder of the Crows",       // 7
-    "#6 You Better Watch Out",      // 8
-    "#7 Death on the Mississippi",  // 9
-    "#8 Till Death Do Us Part",     // 10
-    "#9 A House of Cards",          // 11
-    "#10 A Dance with The Devil",   // 12
-    "#11 Amendment XXV",            // 13
-    "#12 Requiem",                  // 14
+    "#1 Death of a Showman",        // 2
+    "#2 A Vintage Year",            // 3
+    "#3 Curtains Down",             // 4
+    "#4 Flatline",                  // 5
+    "#5 A New Life",                // 6
+    "#6 Murder of the Crows",       // 7
+    "#7 You Better Watch Out",      // 8
+    "#8 Death on the Mississippi",  // 9
+    "#9 Till Death Do Us Part",     // 10
+    "#10 A House of Cards",         // 11
+    "#11 A Dance with The Devil",   // 12
+    "#12 Amendment XXV",            // 13
+    "#13 Requiem",                  // 14
 };
 
 void hitman_blood_money::gui(
