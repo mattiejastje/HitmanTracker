@@ -7,7 +7,6 @@
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
 
-// OptionsScreen gets loaded during missions, assign negative value to ignore
 const std::unordered_map<std::string, int> scenes = {
     {R"(OptionsScreen)", 0},              // options
     {R"(OptionsScreen.zip)", 0},          // options
