@@ -1,5 +1,6 @@
 #include "stats.hpp"
 
+#include <algorithm>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -8,33 +9,37 @@
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
 
-const std::vector<std::pair<intptr_t, std::vector<intptr_t>>> map_pointers
-    = {{0x00393D58, {0x234, 0xBDE}},
-       {0x00394598, {0x10, 0x194, 0xC0E}},
-       {0x00394598, {0x214, 0xC0E}},
-       {0x00394578, {0x1EC0, 0x49FA}},
-       {0x00394578, {0x1E00, 0xBC, 0x49FA}},
-       {0x00394578, {0x1D80, 0x7C, 0xBC, 0x49FA}},
-       {0x00394578, {0x1D00, 0x7C, 0x7C, 0xBC, 0x49FA}},
-       {0x0039457C, {0x1E40, 0x49FA}},
-       {0x0039457C, {0x1D80, 0xBC, 0x49FA}},
-       {0x0039457C, {0x1D00, 0x7C, 0xBC, 0x49FA}},
-       {0x0039457C, {0x1C80, 0x7C, 0x7C, 0xBC, 0x49FA}}};
-
 // unordered_map for fast lookup
 const std::unordered_map<std::string, int> scenes = {
-    {"C01-1_MA", 1},
-    {"C01-2_MA", 2},
-    {"C02-1_MA", 3},
-    {"C03-1_MA", 4},
-    {"C06-1_MA", 5},
-    {"C06-2_MA", 6},
-    {"C07-1_MA", 7},
-    {"C08-1_MA", 8},
-    {"C08-2_MA", 9},
-    {"C08-3_MA", 10},
-    {"C08-4_MA", 11},
-    {"C09-1_MA", 12},
+    {R"(scenes\mainmenu.gms)", 0},             // main menu
+    {R"(scenes\alllevels\levelmenu.gms)", 0},  // level menu
+    {R"(scenes\inventorymenu.gms)", 0},        // inventory menu
+    {R"(scenes\c00-1\c00-1_load.gms)", 0},     // training load
+    {R"(scenes\c00-1\c00-1_main.gms)", 0},     // training main
+    {R"(scenes\c01-1\c01-1_load.gms)", 1},
+    {R"(scenes\c01-1\c01-1_main.gms)", 1},
+    {R"(scenes\c01-2\c01-2_load.gms)", 2},
+    {R"(scenes\c01-2\c01-2_main.gms)", 2},
+    {R"(scenes\c02-1\c02-1_load.gms)", 3},
+    {R"(scenes\c02-1\c02-1_main.gms)", 3},
+    {R"(scenes\c03-1\c03-1_load.gms)", 4},
+    {R"(scenes\c03-1\c03-1_main.gms)", 4},
+    {R"(scenes\c06-1\c06-1_load.gms)", 5},
+    {R"(scenes\c06-1\c06-1_main.gms)", 5},
+    {R"(scenes\c06-2\c06-2_load.gms)", 6},
+    {R"(scenes\c06-2\c06-2_main.gms)", 6},
+    {R"(scenes\c07-1\c07-1_load.gms)", 7},
+    {R"(scenes\c07-1\c07-1_main.gms)", 7},
+    {R"(scenes\c08-1\c08-1_load.gms)", 8},
+    {R"(scenes\c08-1\c08-1_main.gms)", 8},
+    {R"(scenes\c08-2\c08-2_load.gms)", 9},
+    {R"(scenes\c08-2\c08-2_main.gms)", 9},
+    {R"(scenes\c08-3\c08-3_load.gms)", 10},
+    {R"(scenes\c08-3\c08-3_main.gms)", 10},
+    {R"(scenes\c08-4\c08-4_load.gms)", 11},
+    {R"(scenes\c08-4\c08-4_main.gms)", 11},
+    {R"(scenes\c09-1\c09-1_load.gms)", 12},
+    {R"(scenes\c09-1\c09-1_main.gms)", 12},
 };
 
 // https://docs.google.com/spreadsheets/d/1i6dmzcBROqoJlsQjUGY8wxdqwxt2hXzjB9fPVggTf2k/edit?gid=1074822823#gid=1074822823
@@ -75,25 +80,26 @@ bool hitman_contracts::update_slow(
 ) {
     static int map_pointer_number = 0;
     auto scene = read_string(
-        handle,
-        base_ptrs[0] + map_pointers[map_pointer_number].first,
-        map_pointers[map_pointer_number].second,
-        INT32_MAX,
-        8
+        handle, base_ptrs[0] + 0x39457C, {0xA5, 0xBCD, 0x0}, INT32_MAX, 0x100
     );
     if (!scene) {
-        // try different pointer on next iteration
-        map_pointer_number++;
-        if (map_pointer_number > 10) map_pointer_number = 0;
-        logging::trace("map pointer number: {}", map_pointer_number);
-        return true;
+        logging::warn("Unable to read scene");
+        return false;
     }
     logging::trace("Scene {}", scene.value());
-    auto iter = scenes.find(scene.value());
+    std::string scene_lower{scene.value()};
+    std::transform(
+        scene_lower.begin(),
+        scene_lower.end(),
+        scene_lower.begin(),
+        [](char& c) { return std::tolower(c); }
+    );
+    auto iter = scenes.find(scene_lower);
     if (iter != scenes.end()) {
         stats.map = iter->second;
         logging::trace("Map {}", stats.map);
     } else {
+        logging::error("Unknown scene {}", scene.value());
         stats.map = 0;
     }
     stats.map_stage = MapStage::main;  // always render stats
