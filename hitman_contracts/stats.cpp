@@ -130,6 +130,8 @@ bool hitman_contracts::update_slow(
     return true;
 }
 
+constexpr float time_scale = 1.0f / 1024;
+
 bool hitman_contracts::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
@@ -138,8 +140,8 @@ bool hitman_contracts::update_fast(
 ) {
     if (stats.map > 0) {
         auto time
-            = read<float>(handle, base_ptrs[0] + 0x39457C, {0x24}, INT32_MAX);
-        if (time) stats.time = time.value();
+            = read<int32_t>(handle, base_ptrs[0] + 0x39457C, {0x38}, INT32_MAX);
+        if (time) stats.time = time.value() * time_scale;
         return time.has_value();
     }
     return true;
