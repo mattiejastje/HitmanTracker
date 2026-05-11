@@ -7,6 +7,14 @@ local SmallString = d.Struct("SmallString", {
     d.Skip(0x7C),  -- inline buffer for strings <= 0x7C chars
 })
 
+local TypeDescriptor = d.Struct("TypeDescriptor", {
+    d.Field(d.UInt32, "prefix"),
+    d.Field(d.Int32, "prefix_length"),
+    d.Field(d.Int32, "unk_08"),
+    d.Field(d.Int32, "size"),
+    d.Field(d.Int32, "unk_10"),
+})
+
 local EntityManager = d.Struct("EntityManager", {
     -- entity handle = (version << 18) | (index & 0x3FFFF)
     d.Seek(0x24),
@@ -68,6 +76,8 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Field(d.Float, "seconds_per_tick"),  -- 1/1024
     d.Seek(0x30E808),
     d.Field(d.Float, "ticks_per_second"),  -- 1024
+    d.Seek(0x37EEF8),
+    d.Field(d.Array(TypeDescriptor, 18), "type_descriptors"),
     d.Seek(0x394570),
     d.Field(d.Ref(EntityManager), "entity_manager"),
     d.Seek(0x39457C),
