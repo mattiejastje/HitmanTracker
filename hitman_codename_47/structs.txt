@@ -1,6 +1,6 @@
 struct ObjectsManagerData {
-  std::array<int32_t, 0x3ffff>* versions;  // offset 0x9
-  std::array<void*, 0x3ffff>* objects;  // offset 0xd
+  std::array<int32_t, 0x40000>* versions;  // offset 0x9
+  std::array<void*, 0x40000>* objects;  // offset 0xd
 };
 
 struct ObjectsManager {
@@ -70,7 +70,7 @@ struct EngineData {
   float game_speed_scale;  // offset 0x398e
   int8_t unk_flag_3bca;  // offset 0x3bca
   int64_t cpu_cycles;  // offset 0x3bcb
-  double frame_time_smoothed;  // offset 0x3bd3
+  double frame_time;  // offset 0x3bd3
   void* unk_3bdb;  // offset 0x3bdb
 };
 

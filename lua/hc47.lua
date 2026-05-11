@@ -87,7 +87,7 @@ local EngineData = d.Struct("EngineData", {
     d.Seek(0x3BCA),
     d.Field(d.Int8, "unk_flag_3bca"),
     d.Field(d.Int64, "cpu_cycles"),
-    d.Field(d.Double, "frame_time_smoothed"),  -- smoothed time spent on each frame
+    d.Field(d.Double, "frame_time"),  -- smoothed time spent on each frame
     d.Field(d.RawAddr(), "unk_3bdb"),  -- virtual function
 })
 
