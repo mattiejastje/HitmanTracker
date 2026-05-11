@@ -1,10 +1,10 @@
-struct ObjectsManagerData {
+struct EntityManagerData {
   std::array<int32_t, 0x40000>* versions;  // offset 0x9
-  std::array<void*, 0x40000>* objects;  // offset 0xd
+  std::array<void*, 0x40000>* entities;  // offset 0xd
 };
 
-struct ObjectsManager {
-  ObjectsManagerData* data;  // offset 0x0
+struct EntityManager {
+  EntityManagerData* data;  // offset 0x0
 };
 
 struct SceneContainerVTable {
@@ -79,7 +79,7 @@ struct Engine {
 };
 
 struct HitmanDlc {
-  ObjectsManager* objects_manager;  // offset 0x1f0008
+  EntityManager* entity_manager;  // offset 0x1f0008
   Engine* engine;  // offset 0x1f000c
   void* unk_1f0010;  // offset 0x1f0010
   float unk_zero_1f03c4;  // offset 0x1f03c4

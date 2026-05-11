@@ -95,19 +95,19 @@ local Engine = d.Struct("Engine", {
     d.Field(d.Ref(EngineData), "engine_data"),
 })
 
-local ObjectsManagerData = d.Struct("ObjectsManagerData", {
+local EntityManagerData = d.Struct("EntityManagerData", {
     d.Seek(0x09),
     d.Field(d.Ref(d.Array(d.Int32, 0x40000)), "versions"),  -- version of each object
-    d.Field(d.Ref(d.Array(d.RawAddr(), 0x40000)), "objects"),  -- objects themselves
+    d.Field(d.Ref(d.Array(d.RawAddr(), 0x40000)), "entities"),  -- entities themselves
 })
 
-local ObjectsManager = d.Struct("ObjectsManager", {
-    d.Field(d.Ref(ObjectsManagerData), "data"),
+local EntityManager = d.Struct("EntityManager", {
+    d.Field(d.Ref(EntityManagerData), "data"),
 })
 
 M.HitmanDlc = d.Struct("HitmanDlc", {
     d.Seek(0x1F0008),
-    d.Field(d.Ref(ObjectsManager), "objects_manager"),  -- stores things like the player
+    d.Field(d.Ref(EntityManager), "entity_manager"),  -- stores things like the player
     d.Field(d.Ref(Engine), "engine"),
     d.Field(d.RawAddr(), "unk_1f0010"),  -- ?
     d.Seek(0x1F03C4),
