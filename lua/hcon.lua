@@ -7,6 +7,12 @@ local SmallString = d.Struct("SmallString", {
     d.Skip(0x7C),  -- inline buffer for strings <= 0x7C chars
 })
 
+local EntityManager = d.Struct("EntityManager", {
+    d.Seek(0x24),
+    d.Field(d.Ref(d.Array(d.Int32, 0x40000)), "versions"),  -- version of each object
+    d.Field(d.Ref(d.Array(d.RawAddr(), 0x40000)), "entities"),  -- entities themselves
+})
+
 local SceneManager = d.Struct("SceneManager", {
     d.Seek(0xBCD),
     d.Field(SmallString, "scene_name"),
@@ -42,6 +48,8 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Field(d.Float, "seconds_per_tick"),  -- 1/1024
     d.Seek(0x30E808),
     d.Field(d.Float, "ticks_per_second"),  -- 1024
+    d.Seek(0x394570),
+    d.Field(d.Ref(EntityManager), "entity_manager"),
     d.Seek(0x39457C),
     d.Field(d.Ref(Engine), "engine"),
     d.Seek(0x3947C0),

@@ -1,3 +1,8 @@
+struct EntityManager {
+  std::array<int32_t, 0x40000>* versions;  // offset 0x24
+  std::array<void*, 0x40000>* entities;  // offset 0x28
+};
+
 struct SmallString {
   char* text;  // offset 0x0
 };
@@ -29,6 +34,7 @@ struct StatsManager {
 struct HitmanContracts {
   float seconds_per_tick;  // offset 0x30e484
   float ticks_per_second;  // offset 0x30e808
+  EntityManager* entity_manager;  // offset 0x394570
   Engine* engine;  // offset 0x39457c
   StatsManager* stats_manager;  // offset 0x3947c0
 };
