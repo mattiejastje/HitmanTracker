@@ -2,6 +2,7 @@ local ctypes = require("mempeep.ctypes")
 local hbm = require("hbm")
 local hma = require("hma")
 local hc47 = require("hc47")
+local hcon = require("hcon")
 
 --- Write native C++ struct declarations to a .hpp file and remote layout to a .txt file.
 -- @param dir output directory (no trailing slash)
@@ -27,3 +28,4 @@ end
 write_structs("hitman_absolution", { hma.Game }, "hitman_absolution::structs")
 write_structs("hitman_blood_money", { hbm.Game }, "hitman_blood_money::structs")
 write_structs("hitman_codename_47", { hc47.HitmanDlc }, "hitman_codename_47::structs")
+write_structs("hitman_contracts", { hcon.HitmanContracts }, "hitman_contracts::structs")
