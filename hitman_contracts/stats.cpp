@@ -9,37 +9,42 @@
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
 
+struct Scene {
+    int map{0};
+    MapStage map_stage{MapStage::pre};
+};
+
 // unordered_map for fast lookup
-const std::unordered_map<std::string, int> scenes = {
-    {R"(scenes\mainmenu.gms)", 0},             // main menu
-    {R"(scenes\alllevels\levelmenu.gms)", 0},  // level menu
-    {R"(scenes\inventorymenu.gms)", 0},        // inventory menu
-    {R"(scenes\c00-1\c00-1_load.gms)", 0},     // training load
-    {R"(scenes\c00-1\c00-1_main.gms)", 0},     // training main
-    {R"(scenes\c01-1\c01-1_load.gms)", 1},
-    {R"(scenes\c01-1\c01-1_main.gms)", 1},
-    {R"(scenes\c01-2\c01-2_load.gms)", 2},
-    {R"(scenes\c01-2\c01-2_main.gms)", 2},
-    {R"(scenes\c02-1\c02-1_load.gms)", 3},
-    {R"(scenes\c02-1\c02-1_main.gms)", 3},
-    {R"(scenes\c03-1\c03-1_load.gms)", 4},
-    {R"(scenes\c03-1\c03-1_main.gms)", 4},
-    {R"(scenes\c06-1\c06-1_load.gms)", 5},
-    {R"(scenes\c06-1\c06-1_main.gms)", 5},
-    {R"(scenes\c06-2\c06-2_load.gms)", 6},
-    {R"(scenes\c06-2\c06-2_main.gms)", 6},
-    {R"(scenes\c07-1\c07-1_load.gms)", 7},
-    {R"(scenes\c07-1\c07-1_main.gms)", 7},
-    {R"(scenes\c08-1\c08-1_load.gms)", 8},
-    {R"(scenes\c08-1\c08-1_main.gms)", 8},
-    {R"(scenes\c08-2\c08-2_load.gms)", 9},
-    {R"(scenes\c08-2\c08-2_main.gms)", 9},
-    {R"(scenes\c08-3\c08-3_load.gms)", 10},
-    {R"(scenes\c08-3\c08-3_main.gms)", 10},
-    {R"(scenes\c08-4\c08-4_load.gms)", 11},
-    {R"(scenes\c08-4\c08-4_main.gms)", 11},
-    {R"(scenes\c09-1\c09-1_load.gms)", 12},
-    {R"(scenes\c09-1\c09-1_main.gms)", 12},
+const std::unordered_map<std::string, Scene> scenes = {
+    {R"(scenes\mainmenu.gms)", {}},             // main menu
+    {R"(scenes\alllevels\levelmenu.gms)", {}},  // level menu
+    {R"(scenes\inventorymenu.gms)", {}},        // inventory menu
+    {R"(scenes\c00-1\c00-1_load.gms)", {}},     // training load
+    {R"(scenes\c00-1\c00-1_main.gms)", {}},     // training main
+    {R"(scenes\c01-1\c01-1_load.gms)", {1}},
+    {R"(scenes\c01-1\c01-1_main.gms)", {1, MapStage::main}},
+    {R"(scenes\c01-2\c01-2_load.gms)", {2}},
+    {R"(scenes\c01-2\c01-2_main.gms)", {2, MapStage::main}},
+    {R"(scenes\c02-1\c02-1_load.gms)", {3}},
+    {R"(scenes\c02-1\c02-1_main.gms)", {3, MapStage::main}},
+    {R"(scenes\c03-1\c03-1_load.gms)", {4}},
+    {R"(scenes\c03-1\c03-1_main.gms)", {4, MapStage::main}},
+    {R"(scenes\c06-1\c06-1_load.gms)", {5}},
+    {R"(scenes\c06-1\c06-1_main.gms)", {5, MapStage::main}},
+    {R"(scenes\c06-2\c06-2_load.gms)", {6}},
+    {R"(scenes\c06-2\c06-2_main.gms)", {6, MapStage::main}},
+    {R"(scenes\c07-1\c07-1_load.gms)", {7}},
+    {R"(scenes\c07-1\c07-1_main.gms)", {7, MapStage::main}},
+    {R"(scenes\c08-1\c08-1_load.gms)", {8}},
+    {R"(scenes\c08-1\c08-1_main.gms)", {8, MapStage::main}},
+    {R"(scenes\c08-2\c08-2_load.gms)", {9}},
+    {R"(scenes\c08-2\c08-2_main.gms)", {9, MapStage::main}},
+    {R"(scenes\c08-3\c08-3_load.gms)", {10}},
+    {R"(scenes\c08-3\c08-3_main.gms)", {10, MapStage::main}},
+    {R"(scenes\c08-4\c08-4_load.gms)", {11}},
+    {R"(scenes\c08-4\c08-4_main.gms)", {11, MapStage::main}},
+    {R"(scenes\c09-1\c09-1_load.gms)", {12}},
+    {R"(scenes\c09-1\c09-1_main.gms)", {12, MapStage::main}},
 };
 
 // https://docs.google.com/spreadsheets/d/1i6dmzcBROqoJlsQjUGY8wxdqwxt2hXzjB9fPVggTf2k/edit?gid=1074822823#gid=1074822823
@@ -102,7 +107,6 @@ bool hitman_contracts::update_slow(
         logging::error("Unknown scene {}", scene.value());
         stats.map = 0;
     }
-    stats.map_stage = MapStage::main;  // always render stats
     stats.difficulty = read<int32_t>(handle, label_ptrs.at(250)).value_or(0);
     if (stats.map >= 1) {
         auto shots_fired = read<int32_t>(
