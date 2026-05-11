@@ -8,20 +8,28 @@ local SmallString = d.Struct("SmallString", {
 })
 
 local EntityManager = d.Struct("EntityManager", {
+    -- entity handle = (version << 18) | (index & 0x3FFFF)
     d.Seek(0x24),
-    d.Field(d.Ref(d.Array(d.Int32, 0x40000)), "versions"),  -- version of each object
+    d.Field(d.Ref(d.Array(d.Int32, 0x40000)), "versions"),  -- (version << 18) of each object
     d.Field(d.Ref(d.Array(d.RawAddr(), 0x40000)), "entities"),  -- entities themselves
 })
 
 local SceneManager = d.Struct("SceneManager", {
+    d.Seek(0xBB0),
+    d.Field(d.Int8, "pause_flag_1"),
+    d.Field(d.Int8, "pause_flag_2"),
     d.Seek(0xBCD),
     d.Field(SmallString, "scene_name"),
+    d.Seek(0x6D39),
+    d.Field(d.Int32, "unk_6d39"),
 })
 
 local Engine = d.Struct("Engine", {
     d.Seek(0x24),
     d.Field(d.Float, "game_time"),  -- ticks / 1024, only updated 5 times per second
-    d.Seek(0x38),
+    d.Seek(0x30),
+    d.Field(d.Int32, "game_ticks_copy"),
+    d.Skip(0x4),
     d.Field(d.Int32, "game_ticks"),  -- in ticks, most accurate, root source of all game timings
     d.Field(d.Int32, "game_ticks_previous"),
     d.Field(d.Float, "frame_time"),  -- smoothed time spent on each frame (seconds)

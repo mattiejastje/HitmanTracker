@@ -8,11 +8,15 @@ struct SmallString {
 };
 
 struct SceneManager {
+  int8_t pause_flag_1;  // offset 0xbb0
+  int8_t pause_flag_2;  // offset 0xbb1
   SmallString scene_name;  // offset 0xbcd
+  int32_t unk_6d39;  // offset 0x6d39
 };
 
 struct Engine {
   float game_time;  // offset 0x24
+  int32_t game_ticks_copy;  // offset 0x30
   int32_t game_ticks;  // offset 0x38
   int32_t game_ticks_previous;  // offset 0x3c
   float frame_time;  // offset 0x40
