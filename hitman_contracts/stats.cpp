@@ -123,7 +123,7 @@ bool hitman_contracts::update_slow(
         CommonGameStats game_stats{0};
         if (read_bytes(
                 handle,
-                base_ptrs[0] + 0x3947C0,
+                base_ptrs[0] + 0x3947A8 + 0x18,
                 {0xB17},
                 INT32_MAX,
                 &game_stats,
