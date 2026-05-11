@@ -111,7 +111,7 @@ bool hitman_contracts::update_slow(
     stats.difficulty = read<int32_t>(handle, label_ptrs.at(250)).value_or(0);
     if (stats.map >= 1) {
         auto shots_fired = read<int32_t>(
-            handle, base_ptrs[0] + 0x3947B0, {0x13DB}, INT32_MAX
+            handle, base_ptrs[0] + 0x3947A8 + 0x8, {0x13DB}, INT32_MAX
         );
         if (shots_fired) {
             logging::trace("Shots fired {}", shots_fired.value());
