@@ -101,7 +101,8 @@ bool hitman_contracts::update_slow(
     );
     auto iter = scenes.find(scene_lower);
     if (iter != scenes.end()) {
-        stats.map = iter->second;
+        stats.map = iter->second.map;
+        stats.map_stage = iter->second.map_stage;
         logging::trace("Map {}", stats.map);
     } else {
         logging::error("Unknown scene {}", scene.value());
@@ -110,13 +111,14 @@ bool hitman_contracts::update_slow(
     stats.difficulty = read<int32_t>(handle, label_ptrs.at(250)).value_or(0);
     if (stats.map >= 1) {
         auto shots_fired = read<int32_t>(
-            handle, base_ptrs[0] + 0x3947B0, {0xBA0, 0x104, 0x82F}, INT32_MAX
+            handle, base_ptrs[0] + 0x3947B0, {0x13DB}, INT32_MAX
         );
         if (shots_fired) {
             logging::trace("Shots fired {}", shots_fired.value());
             stats.shots_fired.value = shots_fired.value();
         } else {
             logging::warn("Unable to read shots fired");
+            stats.shots_fired.value = 0;
         }
         CommonGameStats game_stats{0};
         if (read_bytes(
