@@ -71,13 +71,13 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Seek(0x39457C),
     d.Field(d.Ref(Engine), "engine"),
     d.Seek(0x3945A4),
-    d.Field(d.Ref(Player), "player"),  -- used as root source for player data by game
-    d.Seek(0x3947B0),
-    d.Field(d.RawAddr(), "player_data_copy_1"),  -- equal to the player.data pointer
+    d.Field(d.RawAddr(Player), "player_ptr"),  -- always points at +3947A8
+    d.Seek(0x3947A8),
+    d.Field(Player, "player"),
     d.Seek(0x3947C0),
     d.Field(d.NullableRef(StatsManager), "stats_manager"),
     d.Seek(0x395718),
-    d.Field(d.RawAddr(), "player_data_copy_2"),  -- equal to the player.data pointer but sometimes stale e.g. when in menu after mission
+    d.Field(d.RawAddr(), "player_data_copy"),  -- equal to the player.data pointer but sometimes stale e.g. when in menu after mission
 })
 
 return M

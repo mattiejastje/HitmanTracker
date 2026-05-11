@@ -48,9 +48,9 @@ struct HitmanContracts {
   float ticks_per_second;  // offset 0x30e808
   EntityManager* entity_manager;  // offset 0x394570
   Engine* engine;  // offset 0x39457c
-  Player* player;  // offset 0x3945a4
-  void* player_data_copy_1;  // offset 0x3947b0
+  void* player_ptr;  // offset 0x3945a4
+  Player player;  // offset 0x3947a8
   StatsManager* stats_manager;  // offset 0x3947c0
-  void* player_data_copy_2;  // offset 0x395718
+  void* player_data_copy;  // offset 0x395718
 };
 
