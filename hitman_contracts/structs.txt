@@ -29,11 +29,7 @@ struct PlayerData {
   int32_t shots_fired;  // offset 0x13db
 };
 
-struct Player {
-  PlayerData* data;  // offset 0x8
-};
-
-struct StatsManager {
+struct PlayerStats {
   int32_t headshots;  // offset 0xb17
   int32_t enemies_wounded;  // offset 0xb1b
   int32_t enemies_killed;  // offset 0xb1f
@@ -43,6 +39,11 @@ struct StatsManager {
   int32_t close_encounters;  // offset 0xb2f
 };
 
+struct Player {
+  PlayerData* data;  // offset 0x8
+  PlayerStats* stats;  // offset 0x18
+};
+
 struct HitmanContracts {
   float seconds_per_tick;  // offset 0x30e484
   float ticks_per_second;  // offset 0x30e808
@@ -50,7 +51,6 @@ struct HitmanContracts {
   Engine* engine;  // offset 0x39457c
   void* player_ptr;  // offset 0x3945a4
   Player player;  // offset 0x3947a8
-  StatsManager* stats_manager;  // offset 0x3947c0
   void* player_data_copy;  // offset 0x395718
 };
 

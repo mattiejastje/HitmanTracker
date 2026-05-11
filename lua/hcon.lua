@@ -45,12 +45,7 @@ local PlayerData = d.Struct("PlayerData", {
     d.Field(d.Int32, "shots_fired"),
 })
 
-local Player = d.Struct("Player", {
-    d.Skip(0x8),
-    d.Field(d.NullableRef(PlayerData), "data"),  -- null when in menu etc.
-})
-
-local StatsManager = d.Struct("StatsManager", {
+local PlayerStats = d.Struct("PlayerStats", {
     d.Seek(0xB17),
     d.Field(d.Int32, "headshots"),
     d.Field(d.Int32, "enemies_wounded"),
@@ -59,6 +54,13 @@ local StatsManager = d.Struct("StatsManager", {
     d.Field(d.Int32, "innocents_killed"),
     d.Field(d.Int32, "alerts"),
     d.Field(d.Int32, "close_encounters"),
+})
+
+local Player = d.Struct("Player", {
+    d.Skip(0x8),
+    d.Field(d.NullableRef(PlayerData), "data"),  -- null when in menu
+    d.Seek(0x18),
+    d.Field(d.NullableRef(PlayerStats), "stats"),  -- null when in menu
 })
 
 M.HitmanContracts = d.Struct("HitmanContracts", {
@@ -74,8 +76,6 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Field(d.RawAddr(Player), "player_ptr"),  -- always points at +3947A8
     d.Seek(0x3947A8),
     d.Field(Player, "player"),
-    d.Seek(0x3947C0),
-    d.Field(d.NullableRef(StatsManager), "stats_manager"),
     d.Seek(0x395718),
     d.Field(d.RawAddr(), "player_data_copy"),  -- equal to the player.data pointer but sometimes stale e.g. when in menu after mission
 })
