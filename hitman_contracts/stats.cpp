@@ -83,7 +83,6 @@ bool hitman_contracts::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
-    static int map_pointer_number = 0;
     auto scene = read_string(
         handle, base_ptrs[0] + 0x39457C, {0xA5, 0xBCD, 0x0}, INT32_MAX, 0x100
     );
