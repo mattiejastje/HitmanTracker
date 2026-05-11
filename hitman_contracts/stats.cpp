@@ -1,6 +1,8 @@
 #include "stats.hpp"
 
 #include <algorithm>
+#include <mempeep/read.hpp>
+#include <mempeep/tracers/log_tracer.hpp>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -8,6 +10,7 @@
 #include "../hitman_common/stats.hpp"
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
+#include "structs.hpp"
 
 struct Scene {
     int map{0};
@@ -17,6 +20,7 @@ struct Scene {
 // unordered_map for fast lookup
 const std::unordered_map<std::string, Scene> scenes = {
     {R"(scenes\mainmenu.gms)", {}},             // main menu
+    {R"(scenes\alllevels\logos.gms)", {}},
     {R"(scenes\alllevels\levelmenu.gms)", {}},  // level menu
     {R"(scenes\inventorymenu.gms)", {}},        // inventory menu
     {R"(scenes\c00-1\c00-1_load.gms)", {}},     // training load
@@ -77,21 +81,23 @@ const std::vector<StatsArray> silent_assassin_combinations_map_1
        {0, 0, 0, 1, 2, 0, 0, 0},
        {0, 0, 0, 1, 0, 6, 0, 0}};
 
+// global to avoid allocating large object on stack
+static hitman_contracts::structs::HitmanContracts game{};
+
 bool hitman_contracts::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
-    auto scene = read_string(
-        handle, base_ptrs[0] + 0x39457C, {0xA5, 0xBCD, 0x0}, INT32_MAX, 0x100
-    );
-    if (!scene) {
-        logging::warn("Unable to read scene");
+    MemoryReader<uint32_t> reader{handle};
+    auto tracer
+        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
+    if (!mempeep::read<structs::THitmanContracts>(base_ptrs[0], reader, tracer, game))
         return false;
-    }
-    logging::trace("Scene {}", scene.value());
-    std::string scene_lower{scene.value()};
+    const auto& scene = game.engine.scene_manager.scene_name.text;
+    logging::trace("Scene {}", scene);
+    std::string scene_lower{scene};
     std::transform(
         scene_lower.begin(),
         scene_lower.end(),
@@ -104,44 +110,39 @@ bool hitman_contracts::update_slow(
         stats.map_stage = iter->second.map_stage;
         logging::trace("Map {}", stats.map);
     } else {
-        logging::error("Unknown scene {}", scene.value());
+        logging::error("Unknown scene {}", scene);
         stats.map = 0;
     }
     stats.difficulty = read<int32_t>(handle, label_ptrs.at(250)).value_or(0);
     if (stats.map >= 1) {
-        auto shots_fired = read<int32_t>(
-            handle, base_ptrs[0] + 0x3947A8 + 0x8, {0x13DB}, INT32_MAX
-        );
-        if (shots_fired) {
-            logging::trace("Shots fired {}", shots_fired.value());
-            stats.shots_fired.value = shots_fired.value();
+        const auto& player_data = game.player.data;
+        if (player_data) {
+            stats.shots_fired.value = player_data->shots_fired;
         } else {
-            logging::warn("Unable to read shots fired");
             stats.shots_fired.value = 0;
         }
+        const auto& player_stats = game.player.stats;
         CommonGameStats game_stats{0};
-        if (read_bytes(
-                handle,
-                base_ptrs[0] + 0x3947A8 + 0x18,
-                {0xB17},
-                INT32_MAX,
-                &game_stats,
-                sizeof(game_stats)
-            )) {
+        if (player_stats) {
+            game_stats.headshots = player_stats->headshots;
+            game_stats.enemies_wounded = player_stats->enemies_wounded;
+            game_stats.enemies_killed = player_stats->enemies_killed;
+            game_stats.innocents_wounded = player_stats->innocents_wounded;
+            game_stats.innocents_killed = player_stats->innocents_killed;
+            game_stats.alerts = player_stats->alerts;
+            game_stats.close_encounters = player_stats->close_encounters;
             process_common_game_stats(
                 stats.map == 1 ? silent_assassin_combinations_map_1
                                : silent_assassin_combinations,
                 game_stats,
                 stats
             );
-        } else {
-            logging::warn("Unable to read game stats");
         }
     }
     return true;
 }
 
-constexpr float time_scale = 1.0f / 1024;
+constexpr float seconds_per_tick = 1.0f / 1024;
 
 bool hitman_contracts::update_fast(
     void* handle,
@@ -150,10 +151,10 @@ bool hitman_contracts::update_fast(
     Stats& stats
 ) {
     if (stats.map > 0) {
-        auto time
+        auto game_ticks
             = read<int32_t>(handle, base_ptrs[0] + 0x39457C, {0x38}, INT32_MAX);
-        if (time) stats.time = time.value() * time_scale;
-        return time.has_value();
+        if (game_ticks) stats.time = game_ticks.value() * seconds_per_tick;
+        return game_ticks.has_value();
     }
     return true;
 }
