@@ -26,6 +26,17 @@ local Engine = d.Struct("Engine", {
     d.Field(d.Float, "game_time_update_interval"),  -- 0.2, interval to update game_time_seconds
 })
 
+local StatsManager = d.Struct("StatsManager", {
+    d.Seek(0xB17),
+    d.Field(d.Int32, "headshots"),
+    d.Field(d.Int32, "enemies_wounded"),
+    d.Field(d.Int32, "enemies_killed"),
+    d.Field(d.Int32, "innocents_wounded"),
+    d.Field(d.Int32, "innocents_killed"),
+    d.Field(d.Int32, "alerts"),
+    d.Field(d.Int32, "close_encounters"),
+})
+
 M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Seek(0x30E484),
     d.Field(d.Float, "seconds_per_tick"),  -- 1/1024
@@ -33,6 +44,8 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Field(d.Float, "ticks_per_second"),  -- 1024
     d.Seek(0x39457C),
     d.Field(d.Ref(Engine), "engine"),
+    d.Seek(0x3947C0),
+    d.Field(d.NullableRef(StatsManager), "stats_manager"),
 })
 
 return M
