@@ -40,6 +40,16 @@ local Engine = d.Struct("Engine", {
     d.Field(d.Float, "game_time_update_interval"),  -- 0.2, interval to update game_time_seconds
 })
 
+local PlayerData = d.Struct("PlayerData", {
+    d.Seek(0x13DB),
+    d.Field(d.Int32, "shots_fired"),
+})
+
+local Player = d.Struct("Player", {
+    d.Skip(0x8),
+    d.Field(d.NullableRef(PlayerData), "data"),  -- null when in menu etc.
+})
+
 local StatsManager = d.Struct("StatsManager", {
     d.Seek(0xB17),
     d.Field(d.Int32, "headshots"),
@@ -60,8 +70,14 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Field(d.Ref(EntityManager), "entity_manager"),
     d.Seek(0x39457C),
     d.Field(d.Ref(Engine), "engine"),
+    d.Seek(0x3945A4),
+    d.Field(d.Ref(Player), "player"),  -- used as root source for player data by game
+    d.Seek(0x3947B0),
+    d.Field(d.RawAddr(), "player_data_copy_1"),  -- equal to the player.data pointer
     d.Seek(0x3947C0),
     d.Field(d.NullableRef(StatsManager), "stats_manager"),
+    d.Seek(0x395718),
+    d.Field(d.RawAddr(), "player_data_copy_2"),  -- equal to the player.data pointer but sometimes stale e.g. when in menu after mission
 })
 
 return M

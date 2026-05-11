@@ -25,6 +25,14 @@ struct Engine {
   float game_time_update_interval;  // offset 0x80d
 };
 
+struct PlayerData {
+  int32_t shots_fired;  // offset 0x13db
+};
+
+struct Player {
+  PlayerData* data;  // offset 0x8
+};
+
 struct StatsManager {
   int32_t headshots;  // offset 0xb17
   int32_t enemies_wounded;  // offset 0xb1b
@@ -40,6 +48,9 @@ struct HitmanContracts {
   float ticks_per_second;  // offset 0x30e808
   EntityManager* entity_manager;  // offset 0x394570
   Engine* engine;  // offset 0x39457c
+  Player* player;  // offset 0x3945a4
+  void* player_data_copy_1;  // offset 0x3947b0
   StatsManager* stats_manager;  // offset 0x3947c0
+  void* player_data_copy_2;  // offset 0x395718
 };
 
