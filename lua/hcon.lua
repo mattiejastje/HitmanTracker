@@ -15,14 +15,26 @@ local TypeDescriptor = d.Struct("TypeDescriptor", {
     d.Field(d.Int32, "unk_10"),
 })
 
-local EntityManager = d.Struct("EntityManager", {
+local EngineEntityManager = d.Struct("EngineEntityManager", {
     -- entity handle = (version << 18) | (index & 0x3FFFF)
     d.Seek(0x24),
     d.Field(d.Ref(d.Array(d.Int32, 0x40000)), "versions"),  -- (version << 18) of each object
     d.Field(d.Ref(d.Array(d.RawAddr(), 0x40000)), "entities"),  -- entities themselves
 })
 
+local SceneEntityManagerUnk08 = d.Struct("SceneEntityManagerUnk08", {
+    d.Seek(0x10),
+    d.Field(d.Int32, "mask"),
+})
+
+local SceneEntityManager = d.Struct("SceneEntityManager", {
+    d.Seek(0x8),
+    d.Field(d.Ref(SceneEntityManagerUnk08), "unk_08"),
+})
+
 local SceneManager = d.Struct("SceneManager", {
+    d.Skip(0x4),
+    d.Field(d.Ref(SceneEntityManager), "entity_manager"),
     d.Seek(0xBB0),
     d.Field(d.Int8, "pause_flag_1"),
     d.Field(d.Int8, "pause_flag_2"),
@@ -49,12 +61,15 @@ local Engine = d.Struct("Engine", {
 })
 
 local PlayerData = d.Struct("PlayerData", {
+    d.Seek(0xE59),
+    d.Field(d.Int8, "unk_flag_e59"),  -- gates kill registration?
     d.Seek(0x13DB),
     d.Field(d.Int32, "shots_fired"),
 })
 
 local PlayerStats = d.Struct("PlayerStats", {
-    d.Seek(0xB17),
+    d.Seek(0xB13),
+    d.Field(d.Float, "aggression"),  -- not used for rating
     d.Field(d.Int32, "headshots"),
     d.Field(d.Int32, "enemies_wounded"),
     d.Field(d.Int32, "enemies_killed"),
@@ -79,7 +94,7 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Seek(0x37EEF8),
     d.Field(d.Array(TypeDescriptor, 18), "type_descriptors"),
     d.Seek(0x394570),
-    d.Field(d.Ref(EntityManager), "entity_manager"),
+    d.Field(d.Ref(EngineEntityManager), "entity_manager"),
     d.Seek(0x39457C),
     d.Field(d.Ref(Engine), "engine"),
     d.Seek(0x3945A4),
@@ -88,6 +103,25 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Field(Player, "player"),
     d.Seek(0x395718),
     d.Field(d.RawAddr(), "player_data_copy"),  -- equal to the player.data pointer but sometimes stale e.g. when in menu after mission
+    d.Seek(0x39FFC4),
+    d.Field(d.Int32, "shots_fired"),
+    d.Field(d.Int32, "close_encounters"),  -- only during stats screen
+    d.Field(d.Int32, "headshots"),  -- only during stats screen
+    d.Field(d.Int32, "alerts"),  -- only during stats screen
+    d.Field(d.Int32, "enemies_killed"),  -- only during stats screen
+    d.Field(d.Int32, "enemies_wounded"),  -- only during stats screen
+    d.Field(d.Int32, "innocents_killed"),  -- only during stats screen
+    d.Field(d.Int32, "innocents_wounded"),  -- only during stats screen
+    d.Field(d.Int32, "stealth"),  -- only during stats screen
+    d.Field(d.Int32, "aggression"),  -- only during stats screen
+})
+
+-- trimmed version of HitmanContracts, removed fields not needed for cpp code
+M.HitmanContractsCpp = d.Struct("HitmanContracts", {
+    d.Seek(0x39457C),
+    d.Field(d.Ref(Engine), "engine"),
+    d.Seek(0x3947A8),
+    d.Field(Player, "player"),
 })
 
 return M

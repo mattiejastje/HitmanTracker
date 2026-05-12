@@ -6,9 +6,17 @@ struct TypeDescriptor {
   int32_t unk_10;  // offset 0x10
 };
 
-struct EntityManager {
+struct EngineEntityManager {
   std::array<int32_t, 0x40000>* versions;  // offset 0x24
   std::array<void*, 0x40000>* entities;  // offset 0x28
+};
+
+struct SceneEntityManagerUnk08 {
+  int32_t mask;  // offset 0x10
+};
+
+struct SceneEntityManager {
+  SceneEntityManagerUnk08* unk_08;  // offset 0x8
 };
 
 struct SmallString {
@@ -16,6 +24,7 @@ struct SmallString {
 };
 
 struct SceneManager {
+  SceneEntityManager* entity_manager;  // offset 0x4
   int8_t pause_flag_1;  // offset 0xbb0
   int8_t pause_flag_2;  // offset 0xbb1
   SmallString scene_name;  // offset 0xbcd
@@ -34,10 +43,12 @@ struct Engine {
 };
 
 struct PlayerData {
+  int8_t unk_flag_e59;  // offset 0xe59
   int32_t shots_fired;  // offset 0x13db
 };
 
 struct PlayerStats {
+  float aggression;  // offset 0xb13
   int32_t headshots;  // offset 0xb17
   int32_t enemies_wounded;  // offset 0xb1b
   int32_t enemies_killed;  // offset 0xb1f
@@ -56,10 +67,20 @@ struct HitmanContracts {
   float seconds_per_tick;  // offset 0x30e484
   float ticks_per_second;  // offset 0x30e808
   std::array<TypeDescriptor, 0x12> type_descriptors;  // offset 0x37eef8
-  EntityManager* entity_manager;  // offset 0x394570
+  EngineEntityManager* entity_manager;  // offset 0x394570
   Engine* engine;  // offset 0x39457c
   void* player_ptr;  // offset 0x3945a4
   Player player;  // offset 0x3947a8
   void* player_data_copy;  // offset 0x395718
+  int32_t shots_fired;  // offset 0x39ffc4
+  int32_t close_encounters;  // offset 0x39ffc8
+  int32_t headshots;  // offset 0x39ffcc
+  int32_t alerts;  // offset 0x39ffd0
+  int32_t enemies_killed;  // offset 0x39ffd4
+  int32_t enemies_wounded;  // offset 0x39ffd8
+  int32_t innocents_killed;  // offset 0x39ffdc
+  int32_t innocents_wounded;  // offset 0x39ffe0
+  int32_t stealth;  // offset 0x39ffe4
+  int32_t aggression;  // offset 0x39ffe8
 };
 
