@@ -128,4 +128,40 @@ M.HitmanContractsCpp = d.Struct("HitmanContracts", {
     d.Field(Player, "player"),
 })
 
+M.mission_scene_names = {
+    "SCENES\\C01-1\\C01-1_MAIN.gms",
+    "SCENES\\C01-2\\C01-2_MAIN.gms",
+    "SCENES\\C02-1\\C02-1_MAIN.gms",
+    "SCENES\\C03-1\\C03-1_MAIN.gms",
+    "SCENES\\C06-1\\C06-1_MAIN.gms",
+    "SCENES\\C06-2\\C06-2_MAIN.gms",
+    "SCENES\\C07-1\\C07-1_MAIN.gms",
+    "SCENES\\C08-1\\C08-1_MAIN.gms",
+    "SCENES\\C08-2\\C08-2_MAIN.gms",
+    "SCENES\\C08-3\\C08-3_MAIN.gms",
+    "SCENES\\C08-4\\C08-4_MAIN.gms",
+    "SCENES\\C09-1\\C09-1_MAIN.gms",
+}
+
+M.measure_aggression = function(player, scene_name)
+    local stats = player.stats
+    local data = player.data
+    local raw = (
+        3 * stats.innocents_wounded + 6 * stats.innocents_killed
+        + 3 * stats.enemies_killed + stats.enemies_wounded
+        + 2 * data.shots_fired
+        + stats.headshots + stats.close_encounters
+    )
+    local sigmoid = 1.0 / (1.0 + math.exp(-0.01 * raw)) - 0.5
+    local aggression = math.floor(sigmoid * 200)
+    if aggression <= 2 then
+        if stats.innocents_killed > 0 or stats.innocents_wounded > 0 then return 3 end
+        if scene_name == "SCENES\\C01-1\\C01-1_MAIN.gms" and stats.close_encounters > 0 then return 3 end
+    elseif stats.close_encounters == 0
+        and stats.enemies_killed == 0 and stats.enemies_wounded == 0
+        and stats.innocents_wounded == 0 and stats.innocents_killed == 0
+        and stats.headshots == 0 then return 2 end
+    return aggression
+end
+
 return M
