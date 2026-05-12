@@ -100,7 +100,7 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Seek(0x39457C),
     d.Field(d.Ref(Engine), "engine"),
     d.Seek(0x3945A4),
-    d.Field(d.RawAddr(Player), "player_ptr"),  -- always points at +3947A8
+    d.Field(d.RawAddr(), "player_ptr"),  -- always points at +3947A8
     d.Seek(0x3947A8),
     d.Field(Player, "player"),
     d.Seek(0x395718),
@@ -108,7 +108,7 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Seek(0x39FFBC),
     d.Field(d.Array(d.UInt8, 6), "current_mission_name"),  -- only during stats screen
     d.Seek(0x39FFC4),
-    d.Field(d.Int32, "shots_fired"),
+    d.Field(d.Int32, "shots_fired"),  -- only during stats screen
     d.Field(d.Int32, "close_encounters"),  -- only during stats screen
     d.Field(d.Int32, "headshots"),  -- only during stats screen
     d.Field(d.Int32, "alerts"),  -- only during stats screen
