@@ -36,7 +36,7 @@ using TSmallString = Struct<
     Fields<Field<ZString<0x100>, &SmallString::text>, Skip<0x7c>>>;
 
 struct SceneManager {
-    SceneEntityManager entity_manager;
+    std::optional<SceneEntityManager> entity_manager;
     int8_t pause_flag_1;
     int8_t pause_flag_2;
     SmallString scene_name;
@@ -47,7 +47,7 @@ using TSceneManager = Struct<
     SceneManager,
     Fields<
         Skip<0x4>,
-        Field<Ref<TSceneEntityManager>, &SceneManager::entity_manager>,
+        Field<NullableRef<TSceneEntityManager>, &SceneManager::entity_manager>,
         Seek<0xbb0>,
         Field<Int8, &SceneManager::pause_flag_1>,
         Field<Int8, &SceneManager::pause_flag_2>,

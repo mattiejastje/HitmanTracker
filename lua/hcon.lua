@@ -34,7 +34,7 @@ local SceneEntityManager = d.Struct("SceneEntityManager", {
 
 local SceneManager = d.Struct("SceneManager", {
     d.Skip(0x4),
-    d.Field(d.Ref(SceneEntityManager), "entity_manager"),
+    d.Field(d.NullableRef(SceneEntityManager), "entity_manager"),
     d.Seek(0xBB0),
     d.Field(d.Int8, "pause_flag_1"),
     d.Field(d.Int8, "pause_flag_2"),
