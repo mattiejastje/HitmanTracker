@@ -68,7 +68,7 @@ static int32_t measure_aggression(
                + 3 * stats.enemies_killed + stats.enemies_wounded
                + 2 * shots_fired + stats.headshots + stats.close_encounters;
     auto sigmoid = 1.0f / (1.0f + exp(-0.01f * raw)) - 0.5f;
-    auto aggression = static_cast<int32_t>(sigmoid * 200.0f);
+    auto aggression = static_cast<int32_t>(200 * sigmoid);
     if (aggression <= 2) {
         // force minimum of 3 if any civilians were hurt
         // (i.e. no silent assassin)
@@ -77,8 +77,8 @@ static int32_t measure_aggression(
         // (i.e. no silent assassin)
         if (map == 1 && stats.close_encounters > 0) return 3;
     } else if (stats.close_encounters == 0 && stats.enemies_killed == 0
-               && stats.enemies_wounded == 0 && stats.innocents_wounded == 0
-               && stats.innocents_killed == 0 && stats.headshots == 0)
+               && stats.enemies_wounded == 0 && stats.innocents_killed == 0
+               && stats.innocents_wounded == 0 && stats.headshots == 0)
         // special case: nothing happened besides distraction shots
         return 2;
     // no special case
@@ -87,8 +87,8 @@ static int32_t measure_aggression(
 
 static int32_t measure_stealth(const CommonGameStats& stats) {
     auto raw = stats.alerts + stats.close_encounters;
-    auto power = powf(0.9f, static_cast<float>(raw)) * 100.0f;
-    return static_cast<int32_t>(power);
+    auto stealth = 100 * powf(0.9f, static_cast<float>(raw));
+    return static_cast<int32_t>(stealth);
 }
 
 bool hitman_contracts::update_slow(

@@ -146,22 +146,32 @@ M.mission_scene_names = {
 M.measure_aggression = function(player, scene_name)
     local stats = player.stats
     local data = player.data
+    -- raw measure of aggression (non-negative)
     local raw = (
         3 * stats.innocents_wounded + 6 * stats.innocents_killed
         + 3 * stats.enemies_killed + stats.enemies_wounded
         + 2 * data.shots_fired
         + stats.headshots + stats.close_encounters
     )
+    -- convert to [0,1] scale using sigmoid function
     local sigmoid = 1.0 / (1.0 + math.exp(-0.01 * raw)) - 0.5
-    local aggression = math.floor(sigmoid * 200)
+    -- convert to [0,100] scale
+    local aggression = math.floor(200 * sigmoid)
     if aggression <= 2 then
         if stats.innocents_killed > 0 or stats.innocents_wounded > 0 then return 3 end
         if scene_name == "SCENES\\C01-1\\C01-1_MAIN.gms" and stats.close_encounters > 0 then return 3 end
     elseif stats.close_encounters == 0
         and stats.enemies_killed == 0 and stats.enemies_wounded == 0
-        and stats.innocents_wounded == 0 and stats.innocents_killed == 0
+        and stats.innocents_killed == 0 and stats.innocents_wounded == 0
         and stats.headshots == 0 then return 2 end
     return aggression
+end
+
+M.measure_stealth = function(player_stats)
+    -- raw measure of stealth (non-negative)
+    local raw = player_stats.alerts + player_stats.close_encounters
+    -- convert to [0,100] scale using power law
+    return math.floor(100 * (0.9 ^ raw))
 end
 
 return M
