@@ -15,7 +15,7 @@ local NUM_STATS_VALUES = 100
 
 local String = d.Struct("String", {
   d.Field(d.Int32, "length"),
-  d.Field(d.ZString(0x40), "text"),
+  d.Field(d.Ref(d.ZString(0x40)), "text"),
 })
 
 local LevelData = d.Struct("LevelData", {

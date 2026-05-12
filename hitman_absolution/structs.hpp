@@ -54,7 +54,9 @@ struct String {
 
 using TString = Struct<
     String,
-    Fields<Field<Int32, &String::length>, Field<ZString<0x40>, &String::text>>>;
+    Fields<
+        Field<Int32, &String::length>,
+        Field<Ref<ZString<0x40>>, &String::text>>>;
 
 struct StatsScoringData {
     String title;

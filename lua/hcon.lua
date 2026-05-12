@@ -3,7 +3,7 @@ M = {}
 local d = require("mempeep.descriptors")
 
 local SmallString = d.Struct("SmallString", {
-    d.Field(d.ZString(0x100), "text"),
+    d.Field(d.Ref(d.ZString(0x100)), "text"),
     d.Skip(0x7C),  -- inline buffer for strings <= 0x7C chars
 })
 
@@ -92,7 +92,7 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Seek(0x30E808),
     d.Field(d.Float, "ticks_per_second"),  -- 1024
     d.Seek(0x363F58),
-    d.Field(d.Array(d.UInt8, 6), "first_mission_name"),  -- "C01-1"
+    d.Field(d.ZString(0x6), "first_mission_name"),  -- "C01-1"
     d.Seek(0x37EEF8),
     d.Field(d.Array(TypeDescriptor, 18), "type_descriptors"),
     d.Seek(0x394570),
@@ -106,7 +106,7 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Seek(0x395718),
     d.Field(d.RawAddr(), "player_data_copy"),  -- equal to the player.data pointer but sometimes stale e.g. when in menu after mission
     d.Seek(0x39FFBC),
-    d.Field(d.Array(d.UInt8, 6), "current_mission_name"),  -- only during stats screen
+    d.Field(d.ZString(0x6), "current_mission_name"),  -- only during stats screen
     d.Seek(0x39FFC4),
     d.Field(d.Int32, "shots_fired"),  -- only during stats screen
     d.Field(d.Int32, "close_encounters"),  -- only during stats screen

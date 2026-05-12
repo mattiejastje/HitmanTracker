@@ -3,7 +3,7 @@ local M = {}
 local d = require("mempeep.descriptors")
 
 local SmallString = d.Struct("SmallString", {
-    d.Field(d.ZString(0x100), "text"),
+    d.Field(d.Ref(d.ZString(0x100)), "text"),
     d.Skip(0x7C),  -- inline buffer for strings <= 0x7C chars
 })
 
@@ -64,7 +64,7 @@ local EngineData = d.Struct("EngineData", {
     d.Seek(0x59),
     d.Field(d.Ref(SceneManager), "scene_manager"),  -- scene manager?
     d.Seek(0x2E1),
-    d.Field(d.ZString(0x40), "mounted_archive"),  -- always "Intro.zip"
+    d.Field(d.Ref(d.ZString(0x40)), "mounted_archive"),  -- always "Intro.zip"
     d.Seek(0xA61),
     d.Field(d.Double, "cpu_cycles_per_second"),
     d.Skip(0x8),

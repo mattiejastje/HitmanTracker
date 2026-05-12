@@ -33,7 +33,7 @@ struct SmallString {
 
 using TSmallString = Struct<
     SmallString,
-    Fields<Field<ZString<0x100>, &SmallString::text>, Skip<0x7c>>>;
+    Fields<Field<Ref<ZString<0x100>>, &SmallString::text>, Skip<0x7c>>>;
 
 struct SceneManager {
     std::optional<SceneEntityManager> entity_manager;
