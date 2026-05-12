@@ -30,6 +30,8 @@ struct Stats {
     StatsValue<int32_t> innocents_wounded;
     StatsValue<int32_t> close_encounters;   // h2sa, hc
     StatsValue<int32_t> alerts;             // h2sa, hc
+    StatsValue<int32_t> stealth;            // h2sa, hc
+    StatsValue<int32_t> aggression;         // h2sa, hc
     StatsValue<int32_t> police_killed;      // bm
     StatsValue<int32_t> police_wounded;     // bm
     StatsValue<int32_t> frisk_failed;       // bm

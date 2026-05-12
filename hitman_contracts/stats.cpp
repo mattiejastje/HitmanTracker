@@ -19,7 +19,7 @@ struct Scene {
 
 // unordered_map for fast lookup
 const std::unordered_map<std::string, Scene> scenes = {
-    {R"(scenes\mainmenu.gms)", {}},             // main menu
+    {R"(scenes\mainmenu.gms)", {}},  // main menu
     {R"(scenes\alllevels\logos.gms)", {}},
     {R"(scenes\alllevels\levelmenu.gms)", {}},  // level menu
     {R"(scenes\inventorymenu.gms)", {}},        // inventory menu
@@ -84,6 +84,36 @@ const std::vector<StatsArray> silent_assassin_combinations_map_1
 // global to avoid allocating large object on stack
 static hitman_contracts::structs::HitmanContracts game{};
 
+static int32_t measure_aggression(
+    const CommonGameStats& stats, int32_t shots_fired, int32_t map
+) {
+    auto raw = 3 * stats.innocents_wounded + 6 * stats.innocents_killed
+               + 3 * stats.enemies_killed + stats.enemies_wounded
+               + 2 * shots_fired + stats.headshots + stats.close_encounters;
+    auto sigmoid = 1.0f / (1.0f + exp(-0.01f * raw)) - 0.5f;
+    auto aggression = static_cast<int32_t>(sigmoid * 200.0f);
+    if (aggression <= 2) {
+        // force minimum of 3 if any civilians were hurt
+        // (i.e. no silent assassin)
+        if (stats.innocents_killed > 0 || stats.innocents_wounded > 0) return 3;
+        // force minimum of 3 if close encounters in mission C01-1
+        // (i.e. no silent assassin)
+        if (map == 1 && stats.close_encounters > 0) return 3;
+    } else if (stats.close_encounters == 0 && stats.enemies_killed == 0
+               && stats.enemies_wounded == 0 && stats.innocents_wounded == 0
+               && stats.innocents_killed == 0 && stats.headshots == 0)
+        // special case: nothing happened besides distraction shots
+        return 2;
+    // no special case
+    return aggression;
+}
+
+static int32_t measure_stealth(const CommonGameStats& stats) {
+    auto raw = stats.alerts + stats.close_encounters;
+    auto power = powf(0.9f, static_cast<float>(raw)) * 100.0f;
+    return static_cast<int32_t>(power);
+}
+
 bool hitman_contracts::update_slow(
     void* handle,
     const BasePtrs& base_ptrs,
@@ -93,7 +123,9 @@ bool hitman_contracts::update_slow(
     MemoryReader<uint32_t> reader{handle};
     auto tracer
         = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
-    if (!mempeep::read<structs::THitmanContracts>(base_ptrs[0], reader, tracer, game))
+    if (!mempeep::read<structs::THitmanContracts>(
+            base_ptrs[0], reader, tracer, game
+        ))
         return false;
     const auto& scene = game.engine.scene_manager.scene_name.text;
     logging::trace("Scene {}", scene);
@@ -137,6 +169,14 @@ bool hitman_contracts::update_slow(
                 game_stats,
                 stats
             );
+            auto stealth = measure_stealth(game_stats);
+            stats.stealth
+                = {stealth, stealth >= 85 ? Status::YELLOW : Status::RED};
+            auto aggression = measure_aggression(
+                game_stats, stats.shots_fired.value, stats.map
+            );
+            stats.aggression
+                = {aggression, aggression <= 2 ? Status::YELLOW : Status::RED};
         }
     }
     return true;

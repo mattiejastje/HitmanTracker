@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 #include "../hitman_common/gui.hpp"
+#include "../imgui_utils.hpp"
 
 const std::vector<std::string> map_names = {
     "#1 Asylum Aftermath",
@@ -43,4 +44,29 @@ void hitman_contracts::gui(
             {"Innocents Wounded", stats.innocents_wounded},
         }
     );
+    if (stats.map > 0) {
+        ImGui::Spacing();
+        ImGui::BeginTable(
+            "Statistics",
+            2,
+            ImGuiTableFlags_SizingFixedFit
+                | ImGuiTableFlags_NoKeepColumnsVisible
+                | ImGuiTableFlags_NoHostExtendX
+        );
+        std::vector<hitman_common::TableRow> table_rows = {
+            {"Stealth", stats.stealth},
+            {"Aggression", stats.aggression},
+        };
+        for (auto& row : table_rows) {
+            table_row(
+                fonts,
+                settings,
+                row.stats_value.status,
+                row.name.c_str(),
+                "%d",
+                row.stats_value.value
+            );
+        }
+        ImGui::EndTable();
+    }
 }
