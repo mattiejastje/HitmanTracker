@@ -143,35 +143,39 @@ M.mission_scene_names = {
     "SCENES\\C09-1\\C09-1_MAIN.gms",
 }
 
+--- Calculate aggression from player statistics and scene name.
+-- Can be at most 2 for silent assassin rating.
 M.measure_aggression = function(player, scene_name)
     local stats = player.stats
     local data = player.data
     -- raw measure of aggression (non-negative)
-    local raw = (
+    local value = (
         3 * stats.innocents_wounded + 6 * stats.innocents_killed
-        + 3 * stats.enemies_killed + stats.enemies_wounded
+        + stats.enemies_wounded + 3 * stats.enemies_killed
         + 2 * data.shots_fired
         + stats.headshots + stats.close_encounters
     )
-    -- convert to [0,1] scale using sigmoid function
-    local sigmoid = 1.0 / (1.0 + math.exp(-0.01 * raw)) - 0.5
     -- convert to [0,100] scale
-    local aggression = math.floor(200 * sigmoid)
+    -- 0.5 * value for small values, ramping off at 100
+    local aggression = math.floor(100 * math.tanh(0.005 * value))
+    -- cap min at 3 if innocents hurt or close encounter on 1st map
     if aggression <= 2 then
-        if stats.innocents_killed > 0 or stats.innocents_wounded > 0 then return 3 end
+        if stats.innocents_wounded > 0 or stats.innocents_killed > 0 then return 3 end
         if scene_name == "SCENES\\C01-1\\C01-1_MAIN.gms" and stats.close_encounters > 0 then return 3 end
-    elseif stats.close_encounters == 0
-        and stats.enemies_killed == 0 and stats.enemies_wounded == 0
-        and stats.innocents_killed == 0 and stats.innocents_wounded == 0
-        and stats.headshots == 0 then return 2 end
+    -- cap max at 2 in distraction shots only scenario
+    elseif stats.innocents_wounded == 0 and stats.innocents_killed == 0
+        and stats.enemies_wounded == 0 and stats.enemies_killed == 0
+        and stats.headshots == 0 and stats.close_encounters == 0 then return 2 end
     return aggression
 end
 
+--- Calculate stealth from player statistics.
+-- Must be above 85 for silent assassin rating.
 M.measure_stealth = function(player_stats)
     -- raw measure of stealth (non-negative)
-    local raw = player_stats.alerts + player_stats.close_encounters
+    local value = player_stats.alerts + player_stats.close_encounters
     -- convert to [0,100] scale using power law
-    return math.floor(100 * (0.9 ^ raw))
+    return math.floor(100 * (0.9 ^ value))
 end
 
 return M
