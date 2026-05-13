@@ -16,8 +16,8 @@
 #include "hitman2_silent_assassin/hook.hpp"
 #include "hitman2_silent_assassin/stats.hpp"
 #include "hitman_2016/gui.hpp"
-#include "hitman_absolution/hook.hpp"
 #include "hitman_absolution/gui.hpp"
+#include "hitman_absolution/hook.hpp"
 #include "hitman_absolution/stats.hpp"
 #include "hitman_blood_money/gui.hpp"
 #include "hitman_blood_money/hook.hpp"
@@ -36,6 +36,7 @@ using GameHook = std::function<HookPtr(std::shared_ptr<void>, const BasePtrs&)>;
 
 struct GameInfo {
     GameMethods methods;
+    // first module name is always exe name
     std::array<std::string, 5> module_names;
     GameHook hook;
 };
@@ -55,67 +56,58 @@ static HookPtr hook_nothing(
     return HookPtr{};
 }
 
-static std::vector<GameInfo> get_game_info(const char* exe_file) {
-    if (stricmp("hitman.exe", exe_file) == 0) {
-        return {
-            GameInfo{
-                GameMethods{
-                    hitman_codename_47::gui,
-                    hitman_codename_47::update_slow,
-                    hitman_codename_47::update_fast,
-                },
-                {{"hitman.exe", "hitmandlc.dlc", "enginedata.dll"}},
-                hitman_codename_47::hook,
-            },
-            GameInfo{
-                GameMethods{hitman_2016::gui, stats_nothing, stats_nothing},
-                {{"hitman.exe", "tobii.gameintegration.dll"}},
-                hook_nothing,
-            }
-        };
-    } else if (stricmp("hitman2.exe", exe_file) == 0) {
-        return {GameInfo{
-            GameMethods{
-                hitman2_silent_assassin::gui,
-                hitman2_silent_assassin::update_slow,
-                hitman2_silent_assassin::update_fast
-            },
-            {{"hitman2.exe"}},
-            hitman2_silent_assassin::hook,
-        }};
-    } else if (stricmp("hitmancontracts.exe", exe_file) == 0) {
-        return {GameInfo{
-            GameMethods{
-                hitman_contracts::gui,
-                hitman_contracts::update_slow,
-                hitman_contracts::update_fast
-            },
-            {{"hitmancontracts.exe"}},
-            hitman_contracts::hook,
-        }};
-    } else if (stricmp("hitmanbloodmoney.exe", exe_file) == 0) {
-        return {GameInfo{
-            GameMethods{
-                hitman_blood_money::gui,
-                hitman_blood_money::update_slow,
-                hitman_blood_money::update_fast,
-            },
-            {{"hitmanbloodmoney.exe"}},
-            hitman_blood_money::hook,
-        }};
-    } else if (stricmp("hma.exe", exe_file) == 0) {
-        return {GameInfo{
-            GameMethods{
-                hitman_absolution::gui,
-                hitman_absolution::update_slow,
-                hitman_absolution::update_fast
-            },
-            {{"hma.exe"}},
-            hitman_absolution::hook,
-        }};
-    }
-    return {};
-}
+static const std::vector<GameInfo> game_infos = {
+    GameInfo{
+        GameMethods{
+            hitman_codename_47::gui,
+            hitman_codename_47::update_slow,
+            hitman_codename_47::update_fast,
+        },
+        {{"hitman.exe", "hitmandlc.dlc", "enginedata.dll"}},
+        hitman_codename_47::hook,
+    },
+    GameInfo{
+        GameMethods{hitman_2016::gui, stats_nothing, stats_nothing},
+        {{"hitman.exe", "tobii.gameintegration.dll"}},
+        hook_nothing,
+    },
+    GameInfo{
+        GameMethods{
+            hitman2_silent_assassin::gui,
+            hitman2_silent_assassin::update_slow,
+            hitman2_silent_assassin::update_fast
+        },
+        {{"hitman2.exe"}},
+        hitman2_silent_assassin::hook,
+    },
+    GameInfo{
+        GameMethods{
+            hitman_contracts::gui,
+            hitman_contracts::update_slow,
+            hitman_contracts::update_fast
+        },
+        {{"hitmancontracts.exe"}},
+        hitman_contracts::hook,
+    },
+    GameInfo{
+        GameMethods{
+            hitman_blood_money::gui,
+            hitman_blood_money::update_slow,
+            hitman_blood_money::update_fast,
+        },
+        {{"hitmanbloodmoney.exe"}},
+        hitman_blood_money::hook,
+    },
+    GameInfo{
+        GameMethods{
+            hitman_absolution::gui,
+            hitman_absolution::update_slow,
+            hitman_absolution::update_fast
+        },
+        {{"hma.exe"}},
+        hitman_absolution::hook,
+    },
+};
 
 static std::unordered_map<std::string, intptr_t> get_all_base_ptrs(
     HANDLE process_handle, DWORD process_id
@@ -176,8 +168,8 @@ static std::optional<Game> get_game_for_process(
     const char* exe_file, DWORD process_id
 ) {
     logging::trace("Inspecting process {} with id {:#x}", exe_file, process_id);
-    auto infos = get_game_info(exe_file);
-    for (auto& info : infos) {
+    for (auto& info : game_infos) {
+        if (stricmp(info.module_names[0].c_str(), exe_file) != 0) continue;
         logging::info("Found game {}", exe_file);
         auto process_handle = open_process_handle(process_id);
         if (process_handle) {
