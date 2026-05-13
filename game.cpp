@@ -73,7 +73,7 @@ static const std::vector<GameInfo> game_infos = {
         {{
             {"hitman.exe", 0xD6739CF25081C0F5ULL},
             {"hitmandlc.dlc", 0xCC2D12E73040901FULL},
-            {"enginedata.dll", 0xA0C506C5C1D98559ULL},
+            {"enginedata.dll", 0xA0C506C5C1D9855ULL},
         }},
         hitman_codename_47::hook,
     },
@@ -165,12 +165,13 @@ static std::optional<std::array<Module, 5>> get_modules(
     const std::array<ModuleInfo, 5>& module_infos
 ) {
     std::array<Module, 5> modules{};
+    std::array<uint64_t, 5> module_hashes;
     for (int i = 0; i < 5; i++) {
         const auto& module_info = module_infos[i];
         if (module_info.name.empty()) continue;
         auto module = all_modules.find(module_info.name);
         if (module == all_modules.end()) {
-            logging::error("Cannot find module {}", module_info.name);
+            logging::debug("Cannot find module {}", module_info.name);
             return {};
         }
         const auto& exe_path = module->second.exe_path;
@@ -179,21 +180,30 @@ static std::optional<std::array<Module, 5>> get_modules(
             logging::error("Unable to calculate checksum of {}", exe_path);
             return {};
         }
-        if (*hash != module_info.hash) {
-            logging::warn(
-                "{} has checksum 0x{:X} but expected 0x{:X}",
-                exe_path,
-                *hash,
-                module_info.hash
-            );
-            return {};
-        }
+        module_hashes[i] = *hash;
         logging::debug(
             "Found required module {} at {:#x}",
             module_info.name,
             module->second.base_ptr
         );
         modules[i] = module->second;
+    }
+    // check hashes only once all modules processed
+    // this prevents spurious hash errors for games with same exe
+    for (int i = 0; i < 5; i++) {
+        const auto& module_info = module_infos[i];
+        if (module_info.name.empty()) continue;
+        auto hash = module_hashes[i];
+        if (hash != module_info.hash) {
+            logging::error(
+                "{} has checksum 0x{:X} but expected 0x{:X}",
+                module_info.name,
+                hash,
+                module_info.hash
+            );
+            logging::error("Perhaps not running steam version?");
+            return {};
+        }
     }
     return modules;
 }
