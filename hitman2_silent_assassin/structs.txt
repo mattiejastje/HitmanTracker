@@ -1,0 +1,33 @@
+struct EntityManager {
+  std::array<int32_t, 0x40000>* versions;  // offset 0x24
+  std::array<void*, 0x40000>* entities;  // offset 0x28
+};
+
+struct SmallString {
+  char* text;  // offset 0x0
+};
+
+struct SceneManager {
+  SmallString scene_name;  // offset 0xbb7
+};
+
+struct Engine {
+  SceneManager* scene_manager;  // offset 0x98
+};
+
+struct Game {
+  EntityManager* entity_manager;  // offset 0x2a6c50
+  Engine* engine;  // offset 0x2a6c5c
+};
+
+struct PlayerEntity {
+  SmallString unk_scene_name;  // offset 0x154
+  int32_t headshots;  // offset 0x208
+  int32_t enemies_wounded;  // offset 0x20c
+  int32_t enemies_killed;  // offset 0x210
+  int32_t innocents_wounded;  // offset 0x214
+  int32_t innocents_killed;  // offset 0x218
+  int32_t alerts;  // offset 0x21c
+  int32_t close_encounters;  // offset 0x220
+};
+
