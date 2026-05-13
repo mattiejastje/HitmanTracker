@@ -35,10 +35,15 @@
 
 using GameHook = std::function<HookPtr(std::shared_ptr<void>, const BasePtrs&)>;
 
+struct ModuleInfo {
+    std::string name;
+    uint64_t hash;
+};
+
 struct GameInfo {
     GameMethods methods;
     // first module name is always exe name
-    std::array<std::string, 5> module_names;
+    std::array<ModuleInfo, 5> module_infos;
     GameHook hook;
     uint64_t hash;
 };
@@ -65,15 +70,20 @@ static const std::vector<GameInfo> game_infos = {
             hitman_codename_47::update_slow,
             hitman_codename_47::update_fast,
         },
-        {{"hitman.exe", "hitmandlc.dlc", "enginedata.dll"}},
+        {{
+            {"hitman.exe", 0xD6739CF25081C0F5ULL},
+            {"hitmandlc.dlc", 0xCC2D12E73040901FULL},
+            {"enginedata.dll", 0xA0C506C5C1D98559ULL},
+        }},
         hitman_codename_47::hook,
-        0xD6739CF25081C0F5ULL,
     },
     GameInfo{
         GameMethods{hitman_2016::gui, stats_nothing, stats_nothing},
-        {{"hitman.exe", "tobii.gameintegration.dll"}},
+        {{
+            {"hitman.exe", 0x9019923E9B36C383ULL},
+            {"tobii.gameintegration.dll", 0xB36F82D72789C260ULL},
+        }},
         hook_nothing,
-        0x9019923E9B36C383ULL,
     },
     GameInfo{
         GameMethods{
@@ -81,9 +91,9 @@ static const std::vector<GameInfo> game_infos = {
             hitman2_silent_assassin::update_slow,
             hitman2_silent_assassin::update_fast
         },
-        {{"hitman2.exe"}},
+        {{{"hitman2.exe", 0xB68C2F1042BD339DULL}}},
         hitman2_silent_assassin::hook,
-        0xB68C2F1042BD339DULL,
+
     },
     GameInfo{
         GameMethods{
@@ -91,9 +101,8 @@ static const std::vector<GameInfo> game_infos = {
             hitman_contracts::update_slow,
             hitman_contracts::update_fast
         },
-        {{"hitmancontracts.exe"}},
+        {{{"hitmancontracts.exe", 0xA7AD9FC9AF91F8CBULL}}},
         hitman_contracts::hook,
-        0xA7AD9FC9AF91F8CBULL,
     },
     GameInfo{
         GameMethods{
@@ -101,9 +110,9 @@ static const std::vector<GameInfo> game_infos = {
             hitman_blood_money::update_slow,
             hitman_blood_money::update_fast,
         },
-        {{"hitmanbloodmoney.exe"}},
+        {{{"hitmanbloodmoney.exe", 0xD31C7C7A7C311D9BULL}}},
         hitman_blood_money::hook,
-        0xD31C7C7A7C311D9BULL,
+
     },
     GameInfo{
         GameMethods{
@@ -111,22 +120,21 @@ static const std::vector<GameInfo> game_infos = {
             hitman_absolution::update_slow,
             hitman_absolution::update_fast
         },
-        {{"hma.exe"}},
+        {{{"hma.exe", 0x3618C80C35CA45F1ULL}}},
         hitman_absolution::hook,
-        0x3618C80C35CA45F1ULL,
     },
 };
 
-struct ModuleInfo {
+struct Module {
     intptr_t base_ptr;
     std::string exe_path;
 };
 
-static std::unordered_map<std::string, ModuleInfo> get_all_modules(
+static std::unordered_map<std::string, Module> get_all_modules(
     HANDLE process_handle, DWORD process_id
 ) {
     logging::debug("Finding modules of process id {:#x}", process_id);
-    std::unordered_map<std::string, ModuleInfo> modules{};
+    std::unordered_map<std::string, Module> modules{};
     WaitForSingleObject(process_handle, 1000);  // wait until dlls are loaded
     auto snapshot_handle = open_snapshot_handle(
         TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, process_id
@@ -152,33 +160,46 @@ static std::unordered_map<std::string, ModuleInfo> get_all_modules(
     return modules;
 }
 
-using ModuleInfos = std::array<ModuleInfo, 5>;
-
-static std::optional<ModuleInfos> get_modules(
-    const std::unordered_map<std::string, ModuleInfo>& all_modules,
-    const std::array<std::string, 5>& module_names
+static std::optional<std::array<Module, 5>> get_modules(
+    const std::unordered_map<std::string, Module>& all_modules,
+    const std::array<ModuleInfo, 5>& module_infos
 ) {
-    ModuleInfos modules{};
+    std::array<Module, 5> modules{};
     for (int i = 0; i < 5; i++) {
-        if (!module_names[i].empty()) {
-            auto module = all_modules.find(module_names[i]);
+        const auto& module_info = module_infos[i];
+        if (!module_info.name.empty()) {
+            auto module = all_modules.find(module_info.name);
             if (module == all_modules.end()) {
-                logging::error("Cannot find module {}", module_names[i]);
+                logging::error("Cannot find module {}", module_info.name);
                 return {};
-            } else {
-                logging::debug(
-                    "Found required module {} at {:#x}",
-                    module_names[i],
-                    module->second.base_ptr
-                );
             }
+            const auto& exe_path = module->second.exe_path;
+            auto hash = fnv1a::fnv1a(exe_path);
+            if (!hash) {
+                logging::error("Unable to calculate checksum of {}", exe_path);
+                return {};
+            }
+            if (*hash != module_info.hash) {
+                logging::warn(
+                    "{} has checksum 0x{:X} but expected 0x{:X}",
+                    exe_path,
+                    *hash,
+                    module_info.hash
+                );
+                return {};
+            }
+            logging::debug(
+                "Found required module {} at {:#x}",
+                module_info.name,
+                module->second.base_ptr
+            );
             modules[i] = module->second;
         }
     }
     return modules;
 }
 
-static BasePtrs get_base_ptrs(const ModuleInfos& modules) {
+static BasePtrs get_base_ptrs(const std::array<Module, 5>& modules) {
     BasePtrs base_ptrs{};
     for (int i = 0; i < 5; i++) {
         base_ptrs[i] = modules[i].base_ptr;
@@ -191,41 +212,24 @@ static std::optional<Game> get_game_for_process(
 ) {
     logging::trace("Inspecting process {} with id {:#x}", exe_file, process_id);
     for (auto& info : game_infos) {
-        if (stricmp(info.module_names[0].c_str(), exe_file) != 0) continue;
-        logging::info("Found game {}", exe_file);
+        if (stricmp(info.module_infos[0].name.c_str(), exe_file) != 0) continue;
         auto process_handle = open_process_handle(process_id);
         if (process_handle) {
             auto modules = get_modules(
                 get_all_modules(process_handle.get(), process_id),
-                info.module_names
+                info.module_infos
             );
             if (modules) {
-                const auto& exe_path = (*modules)[0].exe_path;
-                auto hash = fnv1a::fnv1a(exe_path);
-                if (!hash) {
-                    logging::error(
-                        "Unable to calculate checksum of {}", exe_path
-                    );
-                }
-                else if (*hash != info.hash) {
-                    logging::error(
-                        "{} has checksum 0x{:X} but expected 0x{:X} (non-steam "
-                        "version?)",
-                        exe_path,
-                        *hash,
-                        info.hash
-                    );
-                } else {
-                    std::shared_ptr<void> handle = std::move(process_handle);
-                    auto base_ptrs = get_base_ptrs(*modules);
-                    auto hook_ptr = info.hook(handle, base_ptrs);
-                    return Game{
-                        handle,
-                        base_ptrs,
-                        info.methods,
-                        std::move(hook_ptr),
-                    };
-                }
+                std::shared_ptr<void> handle = std::move(process_handle);
+                auto base_ptrs = get_base_ptrs(*modules);
+                auto hook_ptr = info.hook(handle, base_ptrs);
+                logging::info("Found game {}", exe_file);
+                return Game{
+                    handle,
+                    base_ptrs,
+                    info.methods,
+                    std::move(hook_ptr),
+                };
             }
         }
     }
