@@ -15,6 +15,9 @@ uint64_t fnv1a::fnv1a(uint64_t hash, std::span<const std::byte> data) {
     return hash;
 }
 
+// avoid allocating on stack
+static std::array<std::byte, 0x10000> buffer{};
+
 std::optional<uint64_t> fnv1a::fnv1a(const std::filesystem::path& path) {
     static std::unordered_map<std::filesystem::path, uint64_t> cache;
     auto it = cache.find(path);
@@ -28,7 +31,6 @@ std::optional<uint64_t> fnv1a::fnv1a(const std::filesystem::path& path) {
     std::ifstream f(path, std::ios::binary);
     if (!f) return {};
     uint64_t hash = INITIAL_HASH;
-    std::array<std::byte, 4096> buffer{};
     while (f) {
         f.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
         std::streamsize count = f.gcount();
