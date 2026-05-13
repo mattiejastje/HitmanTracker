@@ -8,6 +8,8 @@ local SmallString = d.Struct("SmallString", {
 })
 
 M.PlayerEntity = d.Struct("PlayerEntity", {
+    d.Seek(0x154),
+    d.Field(SmallString, "unk_scene_name"),  -- "C0-2\C0-2__MAIN"
     d.Seek(0x208),
     d.Field(d.Int32, "headshots"),
     d.Field(d.Int32, "enemies_wounded"),
