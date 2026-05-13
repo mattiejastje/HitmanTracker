@@ -62,7 +62,7 @@ bool hitman2_silent_assassin::update_slow(
     Stats& stats
 ) {
     auto scene = read_string(
-        handle, base_ptrs[0] + 0x2A6C5C, {0x98, 0xBBB}, INT32_MAX, 64
+        handle, base_ptrs[0] + 0x2A6C5C, {0x98, 0xBB7, 0x0}, INT32_MAX, 64
     );
     if (scene) logging::trace("Scene {}", scene.value());
     auto iter = scene ? scenes.find(scene.value()) : scenes.end();
