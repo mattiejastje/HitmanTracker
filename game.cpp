@@ -135,7 +135,6 @@ static std::unordered_map<std::string, Module> get_all_modules(
 ) {
     logging::debug("Finding modules of process id {:#x}", process_id);
     std::unordered_map<std::string, Module> modules{};
-    WaitForSingleObject(process_handle, 1000);  // wait until dlls are loaded
     auto snapshot_handle = open_snapshot_handle(
         TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, process_id
     );
