@@ -28,7 +28,7 @@ const std::unordered_map<std::string, int> scenes = {
     {R"(SCENES\C09-1\C09-1_MAIN.gms)", 12},
 };
 
-// https://docs.google.com/spreadsheets/d/1i6dmzcBROqoJlsQjUGY8wxdqwxt2hXzjB9fPVggTf2k/edit?gid=1074822823#gid=1074822823
+// https://docs.google.com/spreadsheets/d/1JgNscwEak6pR5qMcUzjRlGh34IG4aZJ6id9V8rahL18/edit?gid=1089548412#gid=1089548412
 const std::vector<StatsArray> silent_assassin_combinations
     = {{999, 0, 999, 1, 0, 0, 0, 0},
        {2, 1, 1, 0, 0, 0, 0, 0},
