@@ -44,5 +44,6 @@ std::optional<uint64_t> fnv1a::fnv1a(const std::filesystem::path& path) {
         return {};
     }
     logging::debug("Checksum is 0x{:X}", hash);
+    cache[path] = hash;
     return hash;
 }
