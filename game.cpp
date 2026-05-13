@@ -73,7 +73,7 @@ static const std::vector<GameInfo> game_infos = {
         {{
             {"hitman.exe", 0xD6739CF25081C0F5ULL},
             {"hitmandlc.dlc", 0xCC2D12E73040901FULL},
-            {"enginedata.dll", 0xA0C506C5C1D9855ULL},
+            {"enginedata.dll", 0xA0C506C5C1D98559ULL},
         }},
         hitman_codename_47::hook,
     },
