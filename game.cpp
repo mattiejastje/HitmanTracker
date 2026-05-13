@@ -196,12 +196,12 @@ static std::optional<std::array<Module, 5>> get_modules(
         auto hash = module_hashes[i];
         if (hash != module_info.hash) {
             logging::error(
-                "{} has checksum 0x{:X} but expected 0x{:X}",
+                "{} has checksum 0x{:X} but expected 0x{:X}; "
+                "perhaps not running steam version?",
                 module_info.name,
                 hash,
                 module_info.hash
             );
-            logging::error("Perhaps not running steam version?");
             return {};
         }
     }
