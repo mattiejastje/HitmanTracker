@@ -214,24 +214,21 @@ static std::optional<Game> get_game_for_process(
     for (auto& info : game_infos) {
         if (stricmp(info.module_infos[0].name.c_str(), exe_file) != 0) continue;
         auto process_handle = open_process_handle(process_id);
-        if (process_handle) {
-            auto modules = get_modules(
-                get_all_modules(process_handle.get(), process_id),
-                info.module_infos
-            );
-            if (modules) {
-                std::shared_ptr<void> handle = std::move(process_handle);
-                auto base_ptrs = get_base_ptrs(*modules);
-                auto hook_ptr = info.hook(handle, base_ptrs);
-                logging::info("Found game {}", exe_file);
-                return Game{
-                    handle,
-                    base_ptrs,
-                    info.methods,
-                    std::move(hook_ptr),
-                };
-            }
-        }
+        if (!process_handle) continue;
+        auto modules = get_modules(
+            get_all_modules(process_handle.get(), process_id), info.module_infos
+        );
+        if (!modules) continue;
+        std::shared_ptr<void> handle = std::move(process_handle);
+        auto base_ptrs = get_base_ptrs(*modules);
+        auto hook_ptr = info.hook(handle, base_ptrs);
+        logging::info("Found game {}", exe_file);
+        return Game{
+            handle,
+            base_ptrs,
+            info.methods,
+            std::move(hook_ptr),
+        };
     }
     return {};
 }
