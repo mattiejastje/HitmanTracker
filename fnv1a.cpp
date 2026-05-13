@@ -3,6 +3,7 @@
 #include <array>
 #include <cstddef>
 #include <fstream>
+#include <unordered_map>
 
 #include "logging.hpp"
 
@@ -15,6 +16,14 @@ uint64_t fnv1a::fnv1a(uint64_t hash, std::span<const std::byte> data) {
 }
 
 std::optional<uint64_t> fnv1a::fnv1a(const std::filesystem::path& path) {
+    static std::unordered_map<std::filesystem::path, uint64_t> cache;
+    auto it = cache.find(path);
+    if (it != cache.end()) {
+        logging::debug(
+            "Using cached checksum  0x{:X} for {}", it->second, path.string()
+        );
+        return it->second;
+    }
     logging::debug("Calculating checksum of {}", path.string());
     std::ifstream f(path, std::ios::binary);
     if (!f) return {};
@@ -24,7 +33,7 @@ std::optional<uint64_t> fnv1a::fnv1a(const std::filesystem::path& path) {
         f.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
         std::streamsize count = f.gcount();
         if (count > 0) {
-            logging::trace("Processing {} bytes", (int)count);
+            logging::trace("Processing {} bytes for checksum", (int)count);
             hash = fnv1a(
                 hash, std::span(buffer.data(), static_cast<size_t>(count))
             );
