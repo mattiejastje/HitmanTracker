@@ -23,6 +23,7 @@ add_executable (HitmanTracker
 	"mem/alloc.cpp"
 	"mem/handle.cpp"
 	"mem/read_write.cpp"
+	"fnv1a.cpp"
 	"hitman2_silent_assassin/gui.cpp"
 	"hitman2_silent_assassin/hook.cpp"
 	"hitman2_silent_assassin/stats.cpp"

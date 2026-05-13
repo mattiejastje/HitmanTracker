@@ -12,6 +12,7 @@
 #include <unordered_map>
 
 #include "base_ptrs.hpp"
+#include "fnv1a.hpp"
 #include "hitman2_silent_assassin/gui.hpp"
 #include "hitman2_silent_assassin/hook.hpp"
 #include "hitman2_silent_assassin/stats.hpp"
@@ -39,6 +40,7 @@ struct GameInfo {
     // first module name is always exe name
     std::array<std::string, 5> module_names;
     GameHook hook;
+    uint64_t hash;
 };
 
 static bool stats_nothing(
@@ -65,11 +67,13 @@ static const std::vector<GameInfo> game_infos = {
         },
         {{"hitman.exe", "hitmandlc.dlc", "enginedata.dll"}},
         hitman_codename_47::hook,
+        0xD6739CF25081C0F5ULL,
     },
     GameInfo{
         GameMethods{hitman_2016::gui, stats_nothing, stats_nothing},
         {{"hitman.exe", "tobii.gameintegration.dll"}},
         hook_nothing,
+        0x9019923E9B36C383ULL,
     },
     GameInfo{
         GameMethods{
@@ -79,6 +83,7 @@ static const std::vector<GameInfo> game_infos = {
         },
         {{"hitman2.exe"}},
         hitman2_silent_assassin::hook,
+        0xB68C2F1042BD339DULL,
     },
     GameInfo{
         GameMethods{
@@ -88,6 +93,7 @@ static const std::vector<GameInfo> game_infos = {
         },
         {{"hitmancontracts.exe"}},
         hitman_contracts::hook,
+        0xA7AD9FC9AF91F8CBULL,
     },
     GameInfo{
         GameMethods{
@@ -97,6 +103,7 @@ static const std::vector<GameInfo> game_infos = {
         },
         {{"hitmanbloodmoney.exe"}},
         hitman_blood_money::hook,
+        0xD31C7C7A7C311D9BULL,
     },
     GameInfo{
         GameMethods{
@@ -106,15 +113,20 @@ static const std::vector<GameInfo> game_infos = {
         },
         {{"hma.exe"}},
         hitman_absolution::hook,
+        0x3618C80C35CA45F1ULL,
     },
 };
 
-static std::unordered_map<std::string, intptr_t> get_all_base_ptrs(
+struct ModuleInfo {
+    intptr_t base_ptr;
+    std::string exe_path;
+};
+
+static std::unordered_map<std::string, ModuleInfo> get_all_modules(
     HANDLE process_handle, DWORD process_id
 ) {
     logging::debug("Finding modules of process id {:#x}", process_id);
-    BasePtrs base_ptrs{};
-    std::unordered_map<std::string, intptr_t> all_base_ptrs{};
+    std::unordered_map<std::string, ModuleInfo> modules{};
     WaitForSingleObject(process_handle, 1000);  // wait until dlls are loaded
     auto snapshot_handle = open_snapshot_handle(
         TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, process_id
@@ -133,34 +145,44 @@ static std::unordered_map<std::string, intptr_t> get_all_base_ptrs(
                 auto base_ptr
                     = reinterpret_cast<intptr_t>(module_entry.modBaseAddr);
                 logging::trace("Found module {} at {:#x}", name, base_ptr);
-                all_base_ptrs[name] = base_ptr;
+                modules[name] = {base_ptr, module_entry.szExePath};
             } while (Module32Next(snapshot_handle.get(), &module_entry));
         }
     }
-    return all_base_ptrs;
+    return modules;
 }
 
-static std::optional<BasePtrs> get_base_ptrs(
-    const std::unordered_map<std::string, intptr_t>& all_base_ptrs,
+using ModuleInfos = std::array<ModuleInfo, 5>;
+
+static std::optional<ModuleInfos> get_modules(
+    const std::unordered_map<std::string, ModuleInfo>& all_modules,
     const std::array<std::string, 5>& module_names
 ) {
-    BasePtrs base_ptrs{};
+    ModuleInfos modules{};
     for (int i = 0; i < 5; i++) {
         if (!module_names[i].empty()) {
-            auto base_ptr = all_base_ptrs.find(module_names[i]);
-            if (base_ptr == all_base_ptrs.end()) {
+            auto module = all_modules.find(module_names[i]);
+            if (module == all_modules.end()) {
                 logging::error("Cannot find module {}", module_names[i]);
                 return {};
             } else {
                 logging::debug(
                     "Found required module {} at {:#x}",
                     module_names[i],
-                    base_ptr->second
+                    module->second.base_ptr
                 );
             }
-            base_ptrs[i] = base_ptr->second;
+            modules[i] = module->second;
         }
     }
+    return modules;
+}
+
+static BasePtrs get_base_ptrs(const ModuleInfos& modules) {
+    BasePtrs base_ptrs{};
+    for (int i = 0; i < 5; i++) {
+        base_ptrs[i] = modules[i].base_ptr;
+    };
     return base_ptrs;
 }
 
@@ -173,19 +195,37 @@ static std::optional<Game> get_game_for_process(
         logging::info("Found game {}", exe_file);
         auto process_handle = open_process_handle(process_id);
         if (process_handle) {
-            auto base_ptrs = get_base_ptrs(
-                get_all_base_ptrs(process_handle.get(), process_id),
+            auto modules = get_modules(
+                get_all_modules(process_handle.get(), process_id),
                 info.module_names
             );
-            if (base_ptrs) {
-                std::shared_ptr<void> handle = std::move(process_handle);
-                auto hook_ptr = info.hook(handle, base_ptrs.value());
-                return Game{
-                    handle,
-                    base_ptrs.value(),
-                    info.methods,
-                    std::move(hook_ptr),
-                };
+            if (modules) {
+                const auto& exe_path = (*modules)[0].exe_path;
+                auto hash = fnv1a::fnv1a(exe_path);
+                if (!hash) {
+                    logging::error(
+                        "Unable to calculate checksum of {}", exe_path
+                    );
+                }
+                else if (*hash != info.hash) {
+                    logging::error(
+                        "{} has checksum 0x{:X} but expected 0x{:X} (non-steam "
+                        "version?)",
+                        exe_path,
+                        *hash,
+                        info.hash
+                    );
+                } else {
+                    std::shared_ptr<void> handle = std::move(process_handle);
+                    auto base_ptrs = get_base_ptrs(*modules);
+                    auto hook_ptr = info.hook(handle, base_ptrs);
+                    return Game{
+                        handle,
+                        base_ptrs,
+                        info.methods,
+                        std::move(hook_ptr),
+                    };
+                }
             }
         }
     }
