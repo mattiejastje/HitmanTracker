@@ -167,34 +167,33 @@ static std::optional<std::array<Module, 5>> get_modules(
     std::array<Module, 5> modules{};
     for (int i = 0; i < 5; i++) {
         const auto& module_info = module_infos[i];
-        if (!module_info.name.empty()) {
-            auto module = all_modules.find(module_info.name);
-            if (module == all_modules.end()) {
-                logging::error("Cannot find module {}", module_info.name);
-                return {};
-            }
-            const auto& exe_path = module->second.exe_path;
-            auto hash = fnv1a::fnv1a(exe_path);
-            if (!hash) {
-                logging::error("Unable to calculate checksum of {}", exe_path);
-                return {};
-            }
-            if (*hash != module_info.hash) {
-                logging::warn(
-                    "{} has checksum 0x{:X} but expected 0x{:X}",
-                    exe_path,
-                    *hash,
-                    module_info.hash
-                );
-                return {};
-            }
-            logging::debug(
-                "Found required module {} at {:#x}",
-                module_info.name,
-                module->second.base_ptr
-            );
-            modules[i] = module->second;
+        if (module_info.name.empty()) continue;
+        auto module = all_modules.find(module_info.name);
+        if (module == all_modules.end()) {
+            logging::error("Cannot find module {}", module_info.name);
+            return {};
         }
+        const auto& exe_path = module->second.exe_path;
+        auto hash = fnv1a::fnv1a(exe_path);
+        if (!hash) {
+            logging::error("Unable to calculate checksum of {}", exe_path);
+            return {};
+        }
+        if (*hash != module_info.hash) {
+            logging::warn(
+                "{} has checksum 0x{:X} but expected 0x{:X}",
+                exe_path,
+                *hash,
+                module_info.hash
+            );
+            return {};
+        }
+        logging::debug(
+            "Found required module {} at {:#x}",
+            module_info.name,
+            module->second.base_ptr
+        );
+        modules[i] = module->second;
     }
     return modules;
 }
