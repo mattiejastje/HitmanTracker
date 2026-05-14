@@ -26,7 +26,7 @@ void hitman_blood_money::gui(
         settings,
         fonts,
         stats,
-        "Hitman: Blood Money",
+        GAME_NAME,
         stats.difficulty == 0   ? "Rookie"
         : stats.difficulty == 1 ? "Normal"
         : stats.difficulty == 2 ? "Expert"

@@ -39,6 +39,7 @@ struct ModuleInfo {
 };
 
 struct GameInfo {
+    std::string name;
     GameMethods methods;
     // first module name is always exe name
     std::array<ModuleInfo, 5> module_infos;
@@ -66,6 +67,7 @@ static bool hook_immediately_ready(void* handle, const BasePtrs& base_ptrs) {
 
 static const std::vector<GameInfo> game_infos = {
     GameInfo{
+        hitman_codename_47::GAME_NAME,
         GameMethods{
             hitman_codename_47::gui,
             hitman_codename_47::hook,
@@ -80,6 +82,7 @@ static const std::vector<GameInfo> game_infos = {
         }},
     },
     GameInfo{
+        hitman_2016::GAME_NAME,
         GameMethods{
             hitman_2016::gui,
             hook_nothing,
@@ -93,6 +96,7 @@ static const std::vector<GameInfo> game_infos = {
         }},
     },
     GameInfo{
+        hitman2_silent_assassin::GAME_NAME,
         GameMethods{
             hitman2_silent_assassin::gui,
             hitman2_silent_assassin::hook,
@@ -104,6 +108,7 @@ static const std::vector<GameInfo> game_infos = {
 
     },
     GameInfo{
+        hitman_contracts::GAME_NAME,
         GameMethods{
             hitman_contracts::gui,
             hitman_contracts::hook,
@@ -114,6 +119,7 @@ static const std::vector<GameInfo> game_infos = {
         {{{"hitmancontracts.exe", 0xA7AD9FC9AF91F8CBULL}}},
     },
     GameInfo{
+        hitman_blood_money::GAME_NAME,
         GameMethods{
             hitman_blood_money::gui,
             hitman_blood_money::hook,
@@ -124,6 +130,7 @@ static const std::vector<GameInfo> game_infos = {
         {{{"hitmanbloodmoney.exe", 0xD31C7C7A7C311D9BULL}}},
     },
     GameInfo{
+        hitman_absolution::GAME_NAME,
         GameMethods{
             hitman_absolution::gui,
             hitman_absolution::hook,
@@ -239,7 +246,7 @@ static std::optional<Game> get_game_for_process(
         if (!modules) continue;
         std::shared_ptr<void> handle = std::move(process_handle);
         auto base_ptrs = get_base_ptrs(*modules);
-        logging::info("Found game {}", exe_file);
+        logging::info("Found game {}", info.name);
         return Game{
             handle,
             base_ptrs,

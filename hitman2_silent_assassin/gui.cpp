@@ -41,7 +41,7 @@ void hitman2_silent_assassin::gui(
         settings,
         fonts,
         stats,
-        "Hitman 2: Silent Assassin",
+        GAME_NAME,
         stats.difficulty == 1   ? "Normal"
         : stats.difficulty == 2 ? "Expert"
         : stats.difficulty == 3 ? "Professional"

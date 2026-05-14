@@ -27,7 +27,7 @@ void hitman_contracts::gui(
         settings,
         fonts,
         stats,
-        "Hitman: Contracts",
+        GAME_NAME,
         stats.difficulty == 1   ? "Normal"
         : stats.difficulty == 2 ? "Expert"
         : stats.difficulty == 3 ? "Professional"

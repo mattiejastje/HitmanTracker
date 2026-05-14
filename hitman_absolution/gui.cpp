@@ -91,7 +91,7 @@ void hitman_absolution::gui(
         settings,
         fonts,
         stats,
-        "Hitman: Absolution",
+        GAME_NAME,
         stats.difficulty == 0   ? "Easy"
         : stats.difficulty == 1 ? "Normal"
         : stats.difficulty == 2 ? "Hard"

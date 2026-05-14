@@ -27,7 +27,7 @@ void hitman_codename_47::gui(
         settings,
         fonts,
         stats,
-        "Hitman: Codename 47",
+        GAME_NAME,
         stats.difficulty == 0   ? "Easy"
         : stats.difficulty == 1 ? "Normal"
         : stats.difficulty == 2 ? "Hard"
