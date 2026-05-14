@@ -44,7 +44,6 @@ struct GameInfo {
     GameMethods methods;
     // first module name is always exe name
     std::vector<ModuleInfo> module_infos;
-    uint64_t hash;
 };
 
 static bool stats_nothing(
