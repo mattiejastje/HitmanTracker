@@ -82,11 +82,25 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         = std::chrono::duration<float>(now - last_now).count();
                     last_now = now;
                     if (game) {
+                        if (!game->hook
+                            && game->methods.hook_ready(
+                                game->handle.get(), game->base_ptrs
+                            )) {
+                            logging::debug("Hook is ready to be installed");
+                            game->hook = game->methods.hook(
+                                game->handle, game->base_ptrs
+                            );
+                            if (!game->hook) {
+                                logging::error("Hook installation failed");
+                                // skip hooking, use stub...
+                                game->hook = HookPtr{new Hook{}};
+                            }
+                        }
                         auto scoped_slow = ScopedProfiler{profiler_slow, dt};
                         auto ok = game->methods.update_slow(
                             game->handle.get(),
                             game->base_ptrs,
-                            game->hook->label_ptrs,
+                            game->hook ? game->hook->label_ptrs : LabelPtrs{},
                             stats
                         );
                         error_slow.update(100.0f * static_cast<float>(!ok), dt);
@@ -121,7 +135,7 @@ static void Frame(UI* ui, const settings::Gui settings) {
             bool ok = game->methods.update_fast(
                 game->handle.get(),
                 game->base_ptrs,
-                game->hook->label_ptrs,
+                game->hook ? game->hook->label_ptrs : LabelPtrs{},
                 stats
             );
             error_fast.update(100.0f * static_cast<float>(!ok), dt);

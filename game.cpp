@@ -60,11 +60,16 @@ static HookPtr hook_nothing(
     return HookPtr{};
 }
 
+static bool hook_immediately_ready(void* handle, const BasePtrs& base_ptrs) {
+    return true;
+}
+
 static const std::vector<GameInfo> game_infos = {
     GameInfo{
         GameMethods{
             hitman_codename_47::gui,
             hitman_codename_47::hook,
+            hook_immediately_ready,
             hitman_codename_47::update_slow,
             hitman_codename_47::update_fast,
         },
@@ -76,7 +81,11 @@ static const std::vector<GameInfo> game_infos = {
     },
     GameInfo{
         GameMethods{
-            hitman_2016::gui, hook_nothing, stats_nothing, stats_nothing
+            hitman_2016::gui,
+            hook_nothing,
+            hook_immediately_ready,
+            stats_nothing,
+            stats_nothing,
         },
         {{
             {"hitman.exe", 0x9019923E9B36C383ULL},
@@ -87,6 +96,7 @@ static const std::vector<GameInfo> game_infos = {
         GameMethods{
             hitman2_silent_assassin::gui,
             hitman2_silent_assassin::hook,
+            hook_immediately_ready,
             hitman2_silent_assassin::update_slow,
             hitman2_silent_assassin::update_fast
         },
@@ -97,6 +107,7 @@ static const std::vector<GameInfo> game_infos = {
         GameMethods{
             hitman_contracts::gui,
             hitman_contracts::hook,
+            hook_immediately_ready,
             hitman_contracts::update_slow,
             hitman_contracts::update_fast
         },
@@ -106,6 +117,7 @@ static const std::vector<GameInfo> game_infos = {
         GameMethods{
             hitman_blood_money::gui,
             hitman_blood_money::hook,
+            hook_immediately_ready,
             hitman_blood_money::update_slow,
             hitman_blood_money::update_fast,
         },
@@ -115,6 +127,7 @@ static const std::vector<GameInfo> game_infos = {
         GameMethods{
             hitman_absolution::gui,
             hitman_absolution::hook,
+            hook_immediately_ready,
             hitman_absolution::update_slow,
             hitman_absolution::update_fast
         },
@@ -123,8 +136,8 @@ static const std::vector<GameInfo> game_infos = {
 };
 
 struct Module {
-    intptr_t base_ptr;
-    std::string exe_path;
+    intptr_t base_ptr{};
+    std::string exe_path{};
 };
 
 static std::unordered_map<std::string, Module> get_all_modules(
@@ -226,13 +239,12 @@ static std::optional<Game> get_game_for_process(
         if (!modules) continue;
         std::shared_ptr<void> handle = std::move(process_handle);
         auto base_ptrs = get_base_ptrs(*modules);
-        auto hook_ptr = info.methods.hook(handle, base_ptrs);
         logging::info("Found game {}", exe_file);
         return Game{
             handle,
             base_ptrs,
             info.methods,
-            std::move(hook_ptr),
+            nullptr,  // installed later
         };
     }
     return {};
