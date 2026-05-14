@@ -7,8 +7,21 @@ struct SmallString {
   char* text;  // offset 0x0
 };
 
+struct SharedComContainer {
+  void* vtable;  // offset 0x0
+  void* data_begin;  // offset 0x4
+  int32_t unk_08;  // offset 0x8
+  int32_t unk_0c;  // offset 0xc
+  int32_t offset_end;  // offset 0x10
+};
+
+struct SharedCom {
+  SharedComContainer container;  // offset 0x4008
+};
+
 struct SceneManager {
   SmallString scene_name;  // offset 0xbb7
+  SharedCom shared_com;  // offset 0x1c4b
 };
 
 struct Engine {
@@ -20,7 +33,7 @@ struct Game {
   Engine* engine;  // offset 0x2a6c5c
 };
 
-struct PlayerEntity {
+struct LevelControl {
   SmallString unk_scene_name;  // offset 0x154
   int32_t headshots;  // offset 0x208
   int32_t enemies_wounded;  // offset 0x20c

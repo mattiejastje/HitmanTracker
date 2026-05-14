@@ -7,7 +7,7 @@ local SmallString = d.Struct("SmallString", {
     d.Skip(0x7C),  -- inline buffer for strings <= 0x7C chars
 })
 
-M.PlayerEntity = d.Struct("PlayerEntity", {
+M.LevelControl = d.Struct("LevelControl", {
     d.Seek(0x154),
     d.Field(SmallString, "unk_scene_name"),  -- "C0-2\C0-2__MAIN"
     d.Seek(0x208),
@@ -27,9 +27,24 @@ local EntityManager = d.Struct("EntityManager", {
     d.Field(d.Ref(d.Array(d.RawAddr(), 0x40000)), "entities"),  -- entities themselves
 })
 
+local SharedComContainer = d.Struct("SharedComContainer", {
+    d.Field(d.RawAddr(), "vtable"),
+    d.Field(d.RawAddr(), "data_begin"),
+    d.Field(d.Int32, "unk_08"),
+    d.Field(d.Int32, "unk_0c"),
+    d.Field(d.Int32, "offset_end"),
+})
+
+local SharedCom = d.Struct("SharedCom", {
+    d.Seek(0x4008),
+    d.Field(SharedComContainer, "container"),
+})
+
 local SceneManager = d.Struct("SceneManager", {
     d.Seek(0xBB7),
     d.Field(SmallString, "scene_name"),
+    d.Seek(0x1C4B),
+    d.Field(SharedCom, "shared_com"),  -- holds scene properties
 })
 
 local Engine = d.Struct("Engine", {
@@ -70,7 +85,7 @@ M.mission_scene_names = {
 
 -- player entity index appears to be deterministic for each mission
 -- possibly quite fragile, would be nice if we did not need this...
-M.mission_player_entity_index = {
+M.level_control_entity_index = {
     -1,  -- unknown / not relevant
     0x20E, 0x2C9, 0x228, 0x4E, 0x2E2, 0x2EE, 0x2D2, 0x33A, 0x4DB, 0x2B4,
     0x3D4, 0x235, 0x27B, 0x100, 0x27B, 0x191, 0x2C2, 0x25B, 0x2C0, 0x2
@@ -87,8 +102,8 @@ M.get_mission_index = function(scene_name)
 end
 
 -- mission_index is number from 1 to 21 (1 for training, 2 for first real mission)
-M.get_player_entity_addr = function(entity_manager, mission_index)
-    entity_index = M.mission_player_entity_index[mission_index]
+M.get_level_control_entity_addr = function(entity_manager, mission_index)
+    entity_index = M.level_control_entity_index[mission_index]
     if entity_index == -1 then return nil end
     -- +1 due to lua indexing
     assert(entity_manager.versions[entity_index + 1] == 0x40000)
