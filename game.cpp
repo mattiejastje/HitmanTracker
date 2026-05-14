@@ -58,7 +58,8 @@ static bool stats_nothing(
 static HookPtr hook_nothing(
     std::shared_ptr<void> handle, const BasePtrs& base_ptrs
 ) {
-    return HookPtr{};
+    // non-null hook pointer means success so return stub
+    return HookPtr{new Hook{}};
 }
 
 static bool hook_immediately_ready(void* handle, const BasePtrs& base_ptrs) {
