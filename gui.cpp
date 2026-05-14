@@ -77,10 +77,6 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     };
                     return 0;
                 case TIMER_UPDATE_STATS:
-                    auto now = std::chrono::steady_clock::now();
-                    float dt
-                        = std::chrono::duration<float>(now - last_now).count();
-                    last_now = now;
                     if (game) {
                         if (!game->hook) {
                             if (game->methods.hook_ready(
@@ -101,6 +97,10 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                                 );
                             }
                         }
+                        auto now = std::chrono::steady_clock::now();
+                        float dt = std::chrono::duration<float>(now - last_now)
+                                       .count();
+                        last_now = now;
                         auto scoped_slow = ScopedProfiler{profiler_slow, dt};
                         auto ok = game->methods.update_slow(
                             game->handle.get(),
