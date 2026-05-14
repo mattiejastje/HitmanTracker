@@ -1,5 +1,14 @@
 #include "hook.hpp"
 
+#include "../mem/read_write.hpp"
+
+bool hitman_absolution::hook_ready(void* handle, const BasePtrs& base_ptrs) {
+    // initial play/options/register/quit dialog hangs if we try hook too early
+    // so only declare ready when the game's internal timer has started
+    auto game_time = read<int64_t>(handle, base_ptrs[0] + 0xE24730 + 0x18).value_or(0);
+    return game_time != 0;
+}
+
 HookPtr hitman_absolution::hook(
     std::shared_ptr<void> handle, const BasePtrs& base_ptrs
 ) {

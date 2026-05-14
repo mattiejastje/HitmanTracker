@@ -134,7 +134,7 @@ static const std::vector<GameInfo> game_infos = {
         GameMethods{
             hitman_absolution::gui,
             hitman_absolution::hook,
-            hook_immediately_ready,
+            hitman_absolution::hook_ready,
             hitman_absolution::update_slow,
             hitman_absolution::update_fast
         },
