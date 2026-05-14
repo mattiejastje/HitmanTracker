@@ -667,10 +667,11 @@ bool hitman_absolution::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
+    const auto& base_ptr = base_ptrs.at(0);
     MemoryReader<uint32_t> reader{handle};
     auto tracer
         = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::VALUES};
-    if (!mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game))
+    if (!mempeep::read<structs::TGame>(base_ptr, reader, tracer, game))
         return false;
     stats.difficulty = game.global_data.difficulty;
     // engine may set level to -1 if not in a mission
@@ -855,7 +856,8 @@ bool hitman_absolution::update_fast(
     Stats& stats
 ) {
     if (stats.map > 0) {
-        auto game_time = read<int64_t>(handle, base_ptrs[0] + 0xE24730 + 0x18);
+        const auto& base_ptr = base_ptrs.at(0);
+        auto game_time = read<int64_t>(handle, base_ptr + 0xE24730 + 0x18);
         if (game_time) stats.time = game_time.value() * time_scale;
         return game_time.has_value();
     }

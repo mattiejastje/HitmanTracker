@@ -5,19 +5,22 @@
 bool hitman_absolution::hook_ready(void* handle, const BasePtrs& base_ptrs) {
     // initial play/options/register/quit dialog hangs if we try hook too early
     // so only declare ready when the game's internal timer has started
-    auto game_time = read<int64_t>(handle, base_ptrs[0] + 0xE24730 + 0x18).value_or(0);
+    const auto& base_ptr = base_ptrs.at(0);
+    auto game_time
+        = read<int64_t>(handle, base_ptr + 0xE24730 + 0x18).value_or(0);
     return game_time != 0;
 }
 
 HookPtr hitman_absolution::hook(
     std::shared_ptr<void> handle, const BasePtrs& base_ptrs
 ) {
-    const auto game_stats_ptr = base_ptrs[0] + 0x5B2538;
+    const auto& base_ptr = base_ptrs.at(0);
+    const auto game_stats_ptr = base_ptr + 0x5B2538;
     return install_hook(
         handle,
         {
             Source{
-                base_ptrs[0] + 0x559B87,
+                base_ptr + 0x559B87,
                 // mov [ebp-28],00000002
                 {0xC7, 0x45, 0xD8, 2, 0, 0, 0},
                 // new source code (jumps to target code)

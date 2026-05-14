@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <unordered_map>
 
@@ -42,7 +43,7 @@ struct GameInfo {
     std::string name;
     GameMethods methods;
     // first module name is always exe name
-    std::array<ModuleInfo, 5> module_infos;
+    std::vector<ModuleInfo> module_infos;
     uint64_t hash;
 };
 
@@ -177,15 +178,13 @@ static std::unordered_map<std::string, Module> get_all_modules(
     return modules;
 }
 
-static std::optional<std::array<Module, 5>> get_modules(
+static std::optional<std::vector<Module>> get_modules(
     const std::unordered_map<std::string, Module>& all_modules,
-    const std::array<ModuleInfo, 5>& module_infos
+    const std::vector<ModuleInfo>& module_infos
 ) {
-    std::array<Module, 5> modules{};
-    std::array<uint64_t, 5> module_hashes;
-    for (int i = 0; i < 5; i++) {
-        const auto& module_info = module_infos[i];
-        if (module_info.name.empty()) continue;
+    std::vector<Module> modules{};
+    std::vector<uint64_t> hashes{};
+    for (const auto& module_info : module_infos) {
         auto module = all_modules.find(module_info.name);
         if (module == all_modules.end()) {
             logging::debug("Cannot find module {}", module_info.name);
@@ -193,24 +192,19 @@ static std::optional<std::array<Module, 5>> get_modules(
         }
         const auto& exe_path = module->second.exe_path;
         auto hash = fnv1a::fnv1a(exe_path);
-        if (!hash) {
-            logging::error("Unable to calculate checksum of {}", exe_path);
-            return {};
-        }
-        module_hashes[i] = *hash;
+        if (!hash) return {};
+        hashes.push_back(*hash);
+        modules.push_back(module->second);
         logging::debug(
             "Found required module {} at {:#x}",
             module_info.name,
             module->second.base_ptr
         );
-        modules[i] = module->second;
     }
     // check hashes only once all modules processed
     // this prevents spurious hash errors for games with same exe
-    for (int i = 0; i < 5; i++) {
-        const auto& module_info = module_infos[i];
-        if (module_info.name.empty()) continue;
-        auto hash = module_hashes[i];
+    for (const auto& [module_info, hash] :
+         std::views::zip(module_infos, hashes)) {
         if (hash != module_info.hash) {
             logging::error(
                 "{} has checksum {:#x} but expected {:#x}; "
@@ -225,10 +219,10 @@ static std::optional<std::array<Module, 5>> get_modules(
     return modules;
 }
 
-static BasePtrs get_base_ptrs(const std::array<Module, 5>& modules) {
+static BasePtrs get_base_ptrs(const std::vector<Module>& modules) {
     BasePtrs base_ptrs{};
-    for (int i = 0; i < 5; i++) {
-        base_ptrs[i] = modules[i].base_ptr;
+    for (const auto& module : modules) {
+        base_ptrs.push_back(module.base_ptr);
     };
     return base_ptrs;
 }
@@ -238,7 +232,7 @@ static std::optional<Game> get_game_for_process(
 ) {
     logging::trace("Inspecting process {} with id {:#x}", exe_file, process_id);
     for (auto& info : game_infos) {
-        if (stricmp(info.module_infos[0].name.c_str(), exe_file) != 0) continue;
+        if (stricmp(info.module_infos.at(0).name.c_str(), exe_file) != 0) continue;
         auto process_handle = open_process_handle(process_id);
         if (!process_handle) continue;
         auto modules = get_modules(

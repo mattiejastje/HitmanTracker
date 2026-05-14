@@ -95,11 +95,12 @@ bool hitman_contracts::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
+    const auto& base_ptr = base_ptrs.at(0);
     MemoryReader<uint32_t> reader{handle};
     auto tracer
         = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
     if (!mempeep::read<structs::THitmanContracts>(
-            base_ptrs[0], reader, tracer, game
+            base_ptr, reader, tracer, game
         ))
         return false;
     const auto& scene = game.engine.scene_manager.scene_name.text;
@@ -171,8 +172,9 @@ bool hitman_contracts::update_fast(
     Stats& stats
 ) {
     if (stats.map > 0) {
+        const auto& base_ptr = base_ptrs.at(0);
         auto game_ticks
-            = read<int32_t>(handle, base_ptrs[0] + 0x39457C, {0x38}, INT32_MAX);
+            = read<int32_t>(handle, base_ptr + 0x39457C, {0x38}, INT32_MAX);
         if (game_ticks) stats.time = game_ticks.value() * seconds_per_tick;
         return game_ticks.has_value();
     }

@@ -61,8 +61,9 @@ bool hitman2_silent_assassin::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
+    const auto& base_ptr = base_ptrs.at(0);
     auto scene = read_string(
-        handle, base_ptrs[0] + 0x2A6C5C, {0x98, 0xBB7, 0x0}, INT32_MAX, 64
+        handle, base_ptr + 0x2A6C5C, {0x98, 0xBB7, 0x0}, INT32_MAX, 64
     );
     if (scene) logging::trace("Scene {}", scene.value());
     auto iter = scene ? scenes.find(scene.value()) : scenes.end();
@@ -84,7 +85,7 @@ bool hitman2_silent_assassin::update_slow(
         // note: reading game_stats may fail if we are reloading
         read_bytes(
             handle,
-            base_ptrs[0] + 0x2A6C50,
+            base_ptr + 0x2A6C50,
             {0x28, second_offsets.at(stats.map - 2), 0x208},
             INT32_MAX,
             &game_stats,
@@ -106,9 +107,10 @@ bool hitman2_silent_assassin::update_fast(
     Stats& stats
 ) {
     if (stats.map > 0) {
+        const auto& base_ptr = base_ptrs.at(0);
         auto time = read<int32_t>(
             handle,
-            base_ptrs[0] + 0x2A6C58,
+            base_ptr + 0x2A6C58,
             {0x118, 0xB38, 0x8, 0x1084, 0x24},
             INT32_MAX
         );

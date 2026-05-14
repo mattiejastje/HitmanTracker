@@ -1,6 +1,6 @@
 #pragma once
 
-#include <array>
+#include <vector>
 #include <cstdint>
 
-using BasePtrs = std::array<intptr_t, 5>;  // up to 5 module base pointers
+using BasePtrs = std::vector<intptr_t>;

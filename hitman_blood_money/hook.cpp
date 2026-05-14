@@ -3,12 +3,13 @@
 HookPtr hitman_blood_money::hook(
     std::shared_ptr<void> handle, const BasePtrs& base_ptrs
 ) {
-    const auto game_stats_ptr = base_ptrs[0] + 0x5B2538;
+    const auto& base_ptr = base_ptrs.at(0);
+    const auto game_stats_ptr = base_ptr + 0x5B2538;
     return install_hook(
         handle,
         {
             Source{
-                base_ptrs[0] + 0x0668C0,
+                base_ptr + 0x0668C0,
                 // push esi
                 // mov esi,[esp+08]
                 // mov eax,esi
@@ -18,7 +19,7 @@ HookPtr hitman_blood_money::hook(
                 {Jump{Code{0xE9}, Label{110}}, Fill{3, 0x90}, Label{100}},
             },
             Source{
-                base_ptrs[0] + 0x2AF230,
+                base_ptr + 0x2AF230,
                 // mov eax,fs:[0]
                 {0x64, 0xA1, 0, 0, 0, 0},
                 {Jump{Code{0xE9}, Label{210}}, Code{0x90}, Label{200}},
@@ -88,7 +89,7 @@ HookPtr hitman_blood_money::hook(
             JumpShort{Code{0x74}, Label{230}},  // jz Label{230}
             Code{0x50},                         // push eax
             Jump{
-                Code{0xE8}, Ptr{base_ptrs[0] + 0xE5110}
+                Code{0xE8}, Ptr{base_ptr + 0xE5110}
             },                       // call HitmanBloodMoney.exe+E5110
             Code{0x83, 0xC4, 0x04},  // add esp,4
             Code{0x8B, 0x10},        // mov edx,[eax]
@@ -103,7 +104,7 @@ HookPtr hitman_blood_money::hook(
             Ptr{game_stats_ptr + 0x003C},  // ...
             Code{0x83, 0xC4, 0x08},        // add esp,8
             Code{0x8B, 0x05},  //  mov eax,[HitmanBloodMoney.exe + 41F83C]
-            Ptr{base_ptrs[0] + 0x41F83C},
+            Ptr{base_ptr + 0x41F83C},
             Code{0x8B, 0x8E, 0xC4, 0x02, 0, 0},  // mov ecx,[esi+2C4]
             Code{0x39, 0xD9},                    // cmp ecx,ebx
             Code{0x8D, 0xA8, 0x58, 0x0A, 0, 0},  // lea ebp,[eax+A58]
@@ -111,11 +112,11 @@ HookPtr hitman_blood_money::hook(
             JumpShort{Code{0x74}, Label{240}},   // je Label{240}
             Code{0x55},                          // push ebp
             Jump{
-                Code{0xE8}, Ptr{base_ptrs[0] + 0x256A10}
+                Code{0xE8}, Ptr{base_ptr + 0x256A10}
             },  // call HitmanBloodMoney.exe+256A10
             Code{0x8B, 0x8E, 0xC4, 0x02, 0, 0},  // mov ecx,[esi+2C4]
             Jump{
-                Code{0xE8}, Ptr{base_ptrs[0] + 0x256A60}
+                Code{0xE8}, Ptr{base_ptr + 0x256A60}
             },                       // call HitmanBloodMoney.exe+256A60
             Code{0x89, 0x04, 0x24},  // mov [esp],eax
             Label{240},
@@ -124,17 +125,17 @@ HookPtr hitman_blood_money::hook(
             JumpShort{Code{0x74}, Label{250}},   // je Label{250}
             Code{0x55},                          // push ebp
             Jump{
-                Code{0xE8}, Ptr{base_ptrs[0] + 0x256A10}
+                Code{0xE8}, Ptr{base_ptr + 0x256A10}
             },  // call HitmanBloodMoney.exe+256A10
             Code{0x8B, 0x8E, 0xC8, 0x02, 0, 0},  // mov ecx,[esi+2C8]
             Jump{
-                Code{0xE8}, Ptr{base_ptrs[0] + 0x256A60}
+                Code{0xE8}, Ptr{base_ptr + 0x256A60}
             },                       // call HitmanBloodMoney.exe+256A60
             Code{0x01, 0x04, 0x24},  // add [esp],eax
             Label{250},
             Code{0x8B, 0xCE},  // mov ecx,esi
             Jump{
-                Code{0xE8}, Ptr{base_ptrs[0] + 0x2AE000}
+                Code{0xE8}, Ptr{base_ptr + 0x2AE000}
             },  // call HitmanBloodMoney.exe+2AE000
             Code{0x8B, 0x8E, 0xB4, 0x01, 0, 0},  // mov ecx,[esi+1B4]
             Code{0x2B, 0x0C, 0x24},              // sub ecx,[esp]

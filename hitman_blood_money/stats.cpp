@@ -144,16 +144,16 @@ constexpr std::size_t CAMERA_CAUGHT = 59;
 constexpr std::size_t CUSTOM_WEAPONS_LEFT_ON_LEVEL = 61;
 
 static std::optional<int32_t> get_time(
-    void* handle, const BasePtrs& base_ptrs, MapStage map_stage
+    void* handle, uintptr_t base_ptr, MapStage map_stage
 ) {
     if (map_stage == MapStage::main)
         // game.time_manager.time
         return read<int32_t>(
-            handle, base_ptrs[0] + 0x41F820, {0x48}, INT32_MAX
+            handle, base_ptr + 0x41F820, {0x48}, INT32_MAX
         );
     if (map_stage == MapStage::post)
         // game.stats[TIME]
-        return read<int32_t>(handle, base_ptrs[0] + 0x5B2538 + 4 * TIME);
+        return read<int32_t>(handle, base_ptr + 0x5B2538 + 4 * TIME);
     // map_stage == MapStage::pre
     return 0;
 }
@@ -205,10 +205,11 @@ bool hitman_blood_money::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
+    const auto& base_ptr = base_ptrs.at(0);
     MemoryReader<uint32_t> reader{handle};
     auto tracer
         = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
-    if (!mempeep::read<structs::TGame>(base_ptrs[0], reader, tracer, game))
+    if (!mempeep::read<structs::TGame>(base_ptr, reader, tracer, game))
         return false;
     if (!game.settings) return true;  // game starting
     stats.difficulty = game.settings->difficulty;
@@ -273,7 +274,8 @@ bool hitman_blood_money::update_fast(
     Stats& stats
 ) {
     if (stats.map > 0) {
-        auto time = get_time(handle, base_ptrs, stats.map_stage);
+        const auto& base_ptr = base_ptrs.at(0);
+        auto time = get_time(handle, base_ptr, stats.map_stage);
         if (time) stats.time = time.value() * 0.001f;
         return time.has_value();
     }

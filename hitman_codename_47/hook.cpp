@@ -3,11 +3,12 @@
 HookPtr hitman_codename_47::hook(
     std::shared_ptr<void> handle, const BasePtrs& base_ptrs
 ) {
+    const auto& base_ptr = base_ptrs.at(1);  // hitmandlc.dlc
     return install_hook(
         handle,
         {
             Source{
-                base_ptrs[1] + 0x64CEB,
+                base_ptr + 0x64CEB,
                 // mov esi,ecx
                 // mov ecx,[esi+0C]
                 {0x8B, 0xF1, 0x8B, 0x4E, 0x0C},
