@@ -82,18 +82,23 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         = std::chrono::duration<float>(now - last_now).count();
                     last_now = now;
                     if (game) {
-                        if (!game->hook
-                            && game->methods.hook_ready(
-                                game->handle.get(), game->base_ptrs
-                            )) {
-                            logging::debug("Hook is ready to be installed");
-                            game->hook = game->methods.hook(
-                                game->handle, game->base_ptrs
-                            );
-                            if (!game->hook) {
-                                logging::error("Hook installation failed");
-                                // skip hooking, use stub...
-                                game->hook = HookPtr{new Hook{}};
+                        if (!game->hook) {
+                            if (game->methods.hook_ready(
+                                    game->handle.get(), game->base_ptrs
+                                )) {
+                                logging::debug("Hook is ready to be installed");
+                                game->hook = game->methods.hook(
+                                    game->handle, game->base_ptrs
+                                );
+                                if (!game->hook) {
+                                    logging::error("Hook installation failed");
+                                    // skip hooking, use stub...
+                                    game->hook = HookPtr{new Hook{}};
+                                }
+                            } else {
+                                logging::debug(
+                                    "Hook is not yet ready to be installed"
+                                );
                             }
                         }
                         auto scoped_slow = ScopedProfiler{profiler_slow, dt};
