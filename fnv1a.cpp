@@ -8,6 +8,7 @@
 #include "logging.hpp"
 
 uint64_t fnv1a::fnv1a(uint64_t hash, std::span<const std::byte> data) {
+    logging::trace("Processing {} bytes for checksum", data.size());
     for (std::byte b : data) {
         hash ^= std::to_integer<uint8_t>(b);
         hash *= 0x100000001b3ULL;
@@ -29,20 +30,22 @@ std::optional<uint64_t> fnv1a::fnv1a(const std::filesystem::path& path) {
     }
     logging::debug("Calculating checksum of {}", path.string());
     std::ifstream f(path, std::ios::binary);
-    if (!f) return {};
+    if (!f) {
+        logging::error("Failed to open {}", path.string());
+        return {};
+    }
     uint64_t hash = INITIAL_HASH;
     while (f) {
         f.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
         std::streamsize count = f.gcount();
         if (count > 0) {
-            logging::trace("Processing {} bytes for checksum", (int)count);
             hash = fnv1a(
                 hash, std::span(buffer.data(), static_cast<size_t>(count))
             );
         }
     }
     if (!f.eof() && f.fail()) {
-        logging::error("Failed to calculate checksum of {}", path.string());
+        logging::error("Failed to read {}", path.string());
         return {};
     }
     logging::debug("Checksum is 0x{:X}", hash);
