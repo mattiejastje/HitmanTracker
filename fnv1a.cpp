@@ -24,7 +24,7 @@ std::optional<uint64_t> fnv1a::fnv1a(const std::filesystem::path& path) {
     auto it = cache.find(path);
     if (it != cache.end()) {
         logging::debug(
-            "Using cached checksum  0x{:X} for {}", it->second, path.string()
+            "Using cached checksum  {:#x} for {}", it->second, path.string()
         );
         return it->second;
     }
@@ -48,7 +48,7 @@ std::optional<uint64_t> fnv1a::fnv1a(const std::filesystem::path& path) {
         logging::error("Failed to read {}", path.string());
         return {};
     }
-    logging::debug("Checksum is 0x{:X}", hash);
+    logging::debug("Checksum is {:#x}", hash);
     cache[path] = hash;
     return hash;
 }
