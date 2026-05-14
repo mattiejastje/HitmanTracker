@@ -70,33 +70,32 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case WM_TIMER:
             switch (wParam) {
                 case TIMER_FIND_GAME:
+                    // try find game if none found yet
                     if (!game
                         || (game && !is_process_running(game->handle.get()))) {
                         stats = {0};
                         game = find_game();
                     };
+                    // try install hook if none installed yet
+                    if (game && !game->hook) {
+                        if (game->methods.hook_ready(
+                                game->handle.get(), game->base_ptrs
+                            )) {
+                            game->hook = game->methods.hook(
+                                game->handle, game->base_ptrs
+                            );
+                            if (!game->hook) {
+                                // skip hooking, use stub...
+                                game->hook = HookPtr{new Hook{}};
+                            }
+                            logging::info("Game is now tracked");
+                        } else {
+                            logging::info("Game not yet ready for tracking...");
+                        }
+                    }
                     return 0;
                 case TIMER_UPDATE_STATS:
-                    if (game) {
-                        if (!game->hook) {
-                            if (game->methods.hook_ready(
-                                    game->handle.get(), game->base_ptrs
-                                )) {
-                                logging::debug("Hook is ready to be installed");
-                                game->hook = game->methods.hook(
-                                    game->handle, game->base_ptrs
-                                );
-                                if (!game->hook) {
-                                    logging::error("Hook installation failed");
-                                    // skip hooking, use stub...
-                                    game->hook = HookPtr{new Hook{}};
-                                }
-                            } else {
-                                logging::debug(
-                                    "Hook is not yet ready to be installed"
-                                );
-                            }
-                        }
+                    if (game && game->hook) {
                         auto now = std::chrono::steady_clock::now();
                         float dt = std::chrono::duration<float>(now - last_now)
                                        .count();
@@ -105,11 +104,11 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         auto ok = game->methods.update_slow(
                             game->handle.get(),
                             game->base_ptrs,
-                            game->hook ? game->hook->label_ptrs : LabelPtrs{},
+                            game->hook->label_ptrs,
                             stats
                         );
                         error_slow.update(100.0f * static_cast<float>(!ok), dt);
-                    };
+                    }
                     return 0;
             }
     }
@@ -135,12 +134,12 @@ static void Frame(UI* ui, const settings::Gui settings) {
             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
                 | ImGuiWindowFlags_NoMove
         )) {
-        if (game) {
+        if (game && game->hook) {
             auto scoped_fast = ScopedProfiler{profiler_fast, dt};
             bool ok = game->methods.update_fast(
                 game->handle.get(),
                 game->base_ptrs,
-                game->hook ? game->hook->label_ptrs : LabelPtrs{},
+                game->hook->label_ptrs,
                 stats
             );
             error_fast.update(100.0f * static_cast<float>(!ok), dt);

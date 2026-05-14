@@ -247,7 +247,7 @@ static std::optional<Game> get_game_for_process(
         if (!modules) continue;
         std::shared_ptr<void> handle = std::move(process_handle);
         auto base_ptrs = get_base_ptrs(*modules);
-        logging::info("Found game {}", info.name);
+        logging::info("Found process for {}", info.name);
         return Game{
             handle,
             base_ptrs,
