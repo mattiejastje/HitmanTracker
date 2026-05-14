@@ -68,78 +68,77 @@ static bool hook_immediately_ready(void* handle, const BasePtrs& base_ptrs) {
 
 static const std::vector<GameInfo> game_infos = {
     GameInfo{
-        hitman_codename_47::GAME_NAME,
-        GameMethods{
+        .name = hitman_codename_47::GAME_NAME,
+        .methods = GameMethods{
             hitman_codename_47::gui,
             hitman_codename_47::hook,
             hook_immediately_ready,
             hitman_codename_47::update_slow,
             hitman_codename_47::update_fast,
         },
-        {{
+        .module_infos = {
             {"hitman.exe", 0xD6739CF25081C0F5ULL},
             {"hitmandlc.dlc", 0xCC2D12E73040901FULL},
             {"enginedata.dll", 0xA0C506C5C1D98559ULL},
-        }},
+        },
     },
     GameInfo{
-        hitman_2016::GAME_NAME,
-        GameMethods{
+        .name = hitman_2016::GAME_NAME,
+        .methods = GameMethods{
             hitman_2016::gui,
             hook_nothing,
             hook_immediately_ready,
             stats_nothing,
             stats_nothing,
         },
-        {{
+        .module_infos = {
             {"hitman.exe", 0x9019923E9B36C383ULL},
             {"tobii.gameintegration.dll", 0xB36F82D72789C260ULL},
-        }},
+        },
     },
     GameInfo{
-        hitman2_silent_assassin::GAME_NAME,
-        GameMethods{
+        .name = hitman2_silent_assassin::GAME_NAME,
+        .methods = GameMethods{
             hitman2_silent_assassin::gui,
             hitman2_silent_assassin::hook,
             hook_immediately_ready,
             hitman2_silent_assassin::update_slow,
             hitman2_silent_assassin::update_fast
         },
-        {{{"hitman2.exe", 0xB68C2F1042BD339DULL}}},
-
+        .module_infos = {{"hitman2.exe", 0xB68C2F1042BD339DULL}},
     },
     GameInfo{
-        hitman_contracts::GAME_NAME,
-        GameMethods{
+        .name = hitman_contracts::GAME_NAME,
+        .methods = GameMethods{
             hitman_contracts::gui,
             hitman_contracts::hook,
             hook_immediately_ready,
             hitman_contracts::update_slow,
             hitman_contracts::update_fast
         },
-        {{{"hitmancontracts.exe", 0xA7AD9FC9AF91F8CBULL}}},
+        .module_infos = {{"hitmancontracts.exe", 0xA7AD9FC9AF91F8CBULL}},
     },
     GameInfo{
-        hitman_blood_money::GAME_NAME,
-        GameMethods{
+        .name = hitman_blood_money::GAME_NAME,
+        .methods = GameMethods{
             hitman_blood_money::gui,
             hitman_blood_money::hook,
             hook_immediately_ready,
             hitman_blood_money::update_slow,
             hitman_blood_money::update_fast,
         },
-        {{{"hitmanbloodmoney.exe", 0xD31C7C7A7C311D9BULL}}},
+        .module_infos = {{"hitmanbloodmoney.exe", 0xD31C7C7A7C311D9BULL}},
     },
     GameInfo{
-        hitman_absolution::GAME_NAME,
-        GameMethods{
+        .name = hitman_absolution::GAME_NAME,
+        .methods = GameMethods{
             hitman_absolution::gui,
             hitman_absolution::hook,
             hitman_absolution::hook_ready,
             hitman_absolution::update_slow,
             hitman_absolution::update_fast
         },
-        {{{"hma.exe", 0x3618C80C35CA45F1ULL}}},
+        .module_infos = {{"hma.exe", 0x3618C80C35CA45F1ULL}},
     },
 };
 
@@ -231,7 +230,8 @@ static std::optional<Game> get_game_for_process(
 ) {
     logging::trace("Inspecting process {} with id {:#x}", exe_file, process_id);
     for (auto& info : game_infos) {
-        if (stricmp(info.module_infos.at(0).name.c_str(), exe_file) != 0) continue;
+        if (stricmp(info.module_infos.at(0).name.c_str(), exe_file) != 0)
+            continue;
         auto process_handle = open_process_handle(process_id);
         if (!process_handle) continue;
         auto modules = get_modules(
