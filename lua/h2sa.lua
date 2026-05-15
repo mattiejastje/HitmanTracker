@@ -27,12 +27,39 @@ local EntityManager = d.Struct("EntityManager", {
     d.Field(d.Ref(d.Array(d.RawAddr(), 0x40000)), "entities"),  -- entities themselves
 })
 
-local SharedComContainer = d.Struct("SharedComContainer", {
-    d.Field(d.RawAddr(), "vtable"),
-    d.Field(d.RawAddr(), "data_begin"),
+local PropertyType = d.Struct("PropertyType", {
+    d.Field(d.UInt32, "fourcc"),
+    d.Field(d.Int32, "unk_04"),
     d.Field(d.Int32, "unk_08"),
     d.Field(d.Int32, "unk_0c"),
-    d.Field(d.Int32, "offset_end"),
+    d.Field(d.Int32, "unk_10"),
+})
+
+local Property = d.Struct("Property", {
+    d.Field(d.Int32, "key_length"),  -- including terminating null
+    d.Field(d.Ref(PropertyType), "type"),  -- fourcc identifying the type
+    d.Field(d.Int32, "size"),   -- size of the data
+    d.Field(d.ZString(0x100), "key"),  -- the key string
+    -- data follows immediately after the key string
+    -- no static offset, need to calculate at runtime
+})
+
+local PropertyBlock = d.Struct("PropertyBlock", {
+    d.Field(d.RawAddr(), "prev_block"),  -- address of previous block (null if first)
+    d.Field(d.RawAddr(), "next_block"),  -- address of next block (null if last)
+    d.Field(d.Int32, "num_properties"),  -- number of properties in this block
+    d.Field(d.Int32, "tombstone_marker"),  -- property pointers beyond num_properties are equal to this value
+    d.Field(d.Array(d.Ref(Property), 0x20), "properties")
+})
+
+local SharedComContainer = d.Struct("SharedComContainer", {
+    d.Field(d.RawAddr(), "vtable"),
+    d.Field(d.List(PropertyBlock, "next_block", d.list_kind.NULL_TERMINATED, 0x1000), "blocks"),
+    d.Field(d.RawAddr(PropertyBlock), "last_block"),
+    d.Field(d.Int32, "unk_0c"),
+    d.Field(d.Int32, "max_num_properties_per_block"),  -- maximum number of properties per block (always 0x20)
+    d.Field(d.Int32, "unk_14"),
+    d.Field(d.Int32, "property_size"),  -- properties array is this times 4 (always 1 so always 4)
 })
 
 local SharedCom = d.Struct("SharedCom", {
