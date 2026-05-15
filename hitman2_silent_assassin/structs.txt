@@ -7,12 +7,37 @@ struct SmallString {
   char* text;  // offset 0x0
 };
 
-struct SharedComContainer {
-  void* vtable;  // offset 0x0
-  void* data_begin;  // offset 0x4
+struct PropertyType {
+  uint32_t fourcc;  // offset 0x0
+  int32_t unk_04;  // offset 0x4
   int32_t unk_08;  // offset 0x8
   int32_t unk_0c;  // offset 0xc
-  int32_t offset_end;  // offset 0x10
+  int32_t unk_10;  // offset 0x10
+};
+
+struct Property {
+  int32_t key_length;  // offset 0x0
+  PropertyType* type;  // offset 0x4
+  int32_t size;  // offset 0x8
+  char[256] key;  // offset 0xc
+};
+
+struct PropertyBlock {
+  void* prev_block;  // offset 0x0
+  void* next_block;  // offset 0x4
+  int32_t num_properties;  // offset 0x8
+  int32_t tombstone_marker;  // offset 0xc
+  std::array<Property*, 0x20> properties;  // offset 0x10
+};
+
+struct SharedComContainer {
+  void* vtable;  // offset 0x0
+  PropertyBlock* blocks;  // offset 0x4
+  void* last_block;  // offset 0x8
+  int32_t unk_0c;  // offset 0xc
+  int32_t max_num_properties_per_block;  // offset 0x10
+  int32_t unk_14;  // offset 0x14
+  int32_t property_size;  // offset 0x18
 };
 
 struct SharedCom {
