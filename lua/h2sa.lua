@@ -110,10 +110,12 @@ M.mission_scene_names = {
     "SCENES\\C8-1\\C8-1__MAIN.gms",  -- finale
 }
 
--- player entity index appears to be deterministic for each mission
--- possibly quite fragile, would be nice if we did not need this...
-M.level_control_entity_index = {
-    -1,  -- unknown / not relevant
+-- The level control code is the index of the level control entity.
+-- It appears to be deterministic for each mission.
+-- Possibly quite fragile, but seems to work consistently.
+-- We store it here without the 0x40000 tag so we can use it directly as an index.
+M.level_control_code = {
+    0x205,
     0x20E, 0x2C9, 0x228, 0x4E, 0x2E2, 0x2EE, 0x2D2, 0x33A, 0x4DB, 0x2B4,
     0x3D4, 0x235, 0x27B, 0x100, 0x27B, 0x191, 0x2C2, 0x25B, 0x2C0, 0x2
 }

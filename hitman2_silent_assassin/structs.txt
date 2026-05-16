@@ -25,12 +25,22 @@ struct Property {
   int32_t key_length;  // offset 0x0
   PropertyType* type;  // offset 0x4
   int32_t size;  // offset 0x8
-  char[256] key;  // offset 0xc
+  char[64] key;  // offset 0xc
 };
 
 struct EntityManager {
   std::array<int32_t, 0x40000>* versions;  // offset 0x24
   std::array<void*, 0x40000>* entities;  // offset 0x28
+};
+
+struct GRefManagerPool {
+  void* base;  // offset 0x4
+};
+
+struct GRefManager {
+  GRefManagerPool* pool;  // offset 0x14
+  int32_t unk_24_flag;  // offset 0x24
+  int32_t pool_size;  // offset 0x28
 };
 
 struct PropertyBlock {
@@ -52,10 +62,12 @@ struct SharedComContainer {
 };
 
 struct SharedCom {
+  void* vtable;  // offset 0x0
   SharedComContainer container;  // offset 0x4008
 };
 
 struct SceneManager {
+  GRefManager* gref_manager;  // offset 0x4
   SmallString scene_name;  // offset 0xbb7
   SharedCom shared_com;  // offset 0x1c4b
 };
