@@ -1,18 +1,24 @@
-struct EntityManager {
-  std::array<int32_t, 0x40000>* versions;  // offset 0x24
-  std::array<void*, 0x40000>* entities;  // offset 0x28
-};
-
 struct SmallString {
   char* text;  // offset 0x0
 };
 
+struct LevelControl {
+  SmallString unk_scene_name;  // offset 0x154
+  int32_t headshots;  // offset 0x208
+  int32_t enemies_wounded;  // offset 0x20c
+  int32_t enemies_killed;  // offset 0x210
+  int32_t innocents_wounded;  // offset 0x214
+  int32_t innocents_killed;  // offset 0x218
+  int32_t alerts;  // offset 0x21c
+  int32_t close_encounters;  // offset 0x220
+};
+
 struct PropertyType {
   uint32_t fourcc;  // offset 0x0
-  int32_t unk_04;  // offset 0x4
-  int32_t unk_08;  // offset 0x8
-  int32_t unk_0c;  // offset 0xc
-  int32_t unk_10;  // offset 0x10
+  int32_t fourcc_length;  // offset 0x4
+  int32_t unk_id;  // offset 0x8
+  int32_t size;  // offset 0xc
+  int32_t unk_elem_type;  // offset 0x10
 };
 
 struct Property {
@@ -22,21 +28,26 @@ struct Property {
   char[256] key;  // offset 0xc
 };
 
+struct EntityManager {
+  std::array<int32_t, 0x40000>* versions;  // offset 0x24
+  std::array<void*, 0x40000>* entities;  // offset 0x28
+};
+
 struct PropertyBlock {
   void* prev_block;  // offset 0x0
   void* next_block;  // offset 0x4
   int32_t num_properties;  // offset 0x8
   int32_t tombstone_marker;  // offset 0xc
-  std::array<Property*, 0x20> properties;  // offset 0x10
+  std::array<void*, 0x20> properties;  // offset 0x10
 };
 
 struct SharedComContainer {
   void* vtable;  // offset 0x0
   PropertyBlock* blocks;  // offset 0x4
   void* last_block;  // offset 0x8
-  int32_t unk_0c;  // offset 0xc
+  int32_t unk_flags;  // offset 0xc
   int32_t max_num_properties_per_block;  // offset 0x10
-  int32_t unk_14;  // offset 0x14
+  int32_t num_properties_total;  // offset 0x14
   int32_t property_size;  // offset 0x18
 };
 
@@ -56,16 +67,5 @@ struct Engine {
 struct Game {
   EntityManager* entity_manager;  // offset 0x2a6c50
   Engine* engine;  // offset 0x2a6c5c
-};
-
-struct LevelControl {
-  SmallString unk_scene_name;  // offset 0x154
-  int32_t headshots;  // offset 0x208
-  int32_t enemies_wounded;  // offset 0x20c
-  int32_t enemies_killed;  // offset 0x210
-  int32_t innocents_wounded;  // offset 0x214
-  int32_t innocents_killed;  // offset 0x218
-  int32_t alerts;  // offset 0x21c
-  int32_t close_encounters;  // offset 0x220
 };
 

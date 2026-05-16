@@ -28,38 +28,38 @@ local EntityManager = d.Struct("EntityManager", {
 })
 
 local PropertyType = d.Struct("PropertyType", {
-    d.Field(d.UInt32, "fourcc"),
-    d.Field(d.Int32, "unk_04"),
-    d.Field(d.Int32, "unk_08"),
-    d.Field(d.Int32, "unk_0c"),
-    d.Field(d.Int32, "unk_10"),
+    d.Field(d.UInt32, "fourcc"),  -- space padded fourcc code (always 4 chars, reverse order)
+    d.Field(d.Int32, "fourcc_length"),  -- length of code without padding
+    d.Field(d.Int32, "unk_id"),  -- unique number, maybe some id or index?
+    d.Field(d.Int32, "size"),  -- size of the data in bytes
+    d.Field(d.Int32, "unk_elem_type"),  -- maybe element type: 1 = bytes, 2 = characters, 4 = ints, 8 = floats, ...?
 })
 
-local Property = d.Struct("Property", {
+M.Property = d.Struct("Property", {
     d.Field(d.Int32, "key_length"),  -- including terminating null
     d.Field(d.Ref(PropertyType), "type"),  -- fourcc identifying the type
     d.Field(d.Int32, "size"),   -- size of the data
     d.Field(d.ZString(0x100), "key"),  -- the key string
     -- data follows immediately after the key string
-    -- no static offset, need to calculate at runtime
+    -- offset is not static, need to calculate at runtime: 0x0C + key_length
 })
 
 local PropertyBlock = d.Struct("PropertyBlock", {
     d.Field(d.RawAddr(), "prev_block"),  -- address of previous block (null if first)
     d.Field(d.RawAddr(), "next_block"),  -- address of next block (null if last)
     d.Field(d.Int32, "num_properties"),  -- number of properties in this block
-    d.Field(d.Int32, "tombstone_marker"),  -- property pointers beyond num_properties are equal to this value
-    d.Field(d.Array(d.Ref(Property), 0x20), "properties")
+    d.Field(d.Int32, "tombstone_marker"),  -- property pointers beyond num_properties may be equal to this value (though not always)
+    d.Field(d.Array(d.RawAddr(), 0x20), "properties")  --- size is max_num_properties_per_block * property_size * 4
 })
 
 local SharedComContainer = d.Struct("SharedComContainer", {
     d.Field(d.RawAddr(), "vtable"),
     d.Field(d.List(PropertyBlock, "next_block", d.list_kind.NULL_TERMINATED, 0x1000), "blocks"),
     d.Field(d.RawAddr(PropertyBlock), "last_block"),
-    d.Field(d.Int32, "unk_0c"),
-    d.Field(d.Int32, "max_num_properties_per_block"),  -- maximum number of properties per block (always 0x20)
-    d.Field(d.Int32, "unk_14"),
-    d.Field(d.Int32, "property_size"),  -- properties array is this times 4 (always 1 so always 4)
+    d.Field(d.Int32, "unk_flags"),  -- unknown, always 0x20, 0x80000000 is cleared on access
+    d.Field(d.Bounded(d.Int32, 0x20, 0x20), "max_num_properties_per_block"),  -- maximum number of properties per block (always 0x20)
+    d.Field(d.Int32, "num_properties_total"),  -- total number of properties across all blocks
+    d.Field(d.Bounded(d.Int32, 1, 1), "property_size"), -- always 1
 })
 
 local SharedCom = d.Struct("SharedCom", {
