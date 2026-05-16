@@ -1,6 +1,7 @@
 M = {}
 
 local d = require("mempeep.descriptors")
+local read = require("mempeep.read")
 
 local SmallString = d.Struct("SmallString", {
     d.Field(d.Ref(d.ZString(0x100)), "text"),
@@ -35,13 +36,32 @@ local PropertyType = d.Struct("PropertyType", {
     d.Field(d.Int32, "unk_elem_type"),  -- maybe element type: 1 = bytes, 2 = characters, 4 = ints, 8 = floats, ...?
 })
 
+--- map PropertyType.fourcc to struct
+M.property_struct = {
+    -- "r": entity manager handle (version << 18) | (index & 0x3FFFF)
+    [0x72202020] = d.UInt32,
+    -- "gref": global reference handle
+    -- a gref is an offset relative to gref_manager.pool.base
+    -- the pool itself is presumably relocatable
+    -- tagged with 0x40000000 to mark as gref (as opposed to regular pointer)
+    -- 0x40000000 | (addr - gref_manager.pool.base) & 0x3FFFFFFF)
+    [0x67726566] = d.UInt32,
+    -- "l": integer
+    [0x6c202020] = d.Int32,
+    -- "f": float
+    [0x66202020] = d.Float,
+    -- "b": bool
+    [0x62202020] = d.Int32,
+}
+
 M.Property = d.Struct("Property", {
     d.Field(d.Int32, "key_length"),  -- including terminating null
-    d.Field(d.Ref(PropertyType), "type"),  -- fourcc identifying the type
-    d.Field(d.Int32, "size"),   -- size of the data
-    d.Field(d.ZString(0x100), "key"),  -- the key string
+    d.Field(d.Ref(PropertyType), "type"),  -- type of data
+    d.Field(d.Int32, "size"),   -- size of the data in bytes
+    d.Field(d.ZString(0x40), "key"),  -- the key string
     -- data follows immediately after the key string
     -- offset is not static, need to calculate at runtime: 0x0C + key_length
+    -- number of elements is size / type.size
 })
 
 local PropertyBlock = d.Struct("PropertyBlock", {
@@ -49,7 +69,7 @@ local PropertyBlock = d.Struct("PropertyBlock", {
     d.Field(d.RawAddr(), "next_block"),  -- address of next block (null if last)
     d.Field(d.Int32, "num_properties"),  -- number of properties in this block
     d.Field(d.Int32, "tombstone_marker"),  -- property pointers beyond num_properties may be equal to this value (though not always)
-    d.Field(d.Array(d.RawAddr(), 0x20), "properties")  --- size is max_num_properties_per_block * property_size * 4
+    d.Field(d.Array(d.RawAddr(), 0x20), "properties")  --- pointer to each property, size in bytes is max_num_properties_per_block * property_size * 4
 })
 
 local SharedComContainer = d.Struct("SharedComContainer", {
@@ -59,15 +79,33 @@ local SharedComContainer = d.Struct("SharedComContainer", {
     d.Field(d.Int32, "unk_flags"),  -- unknown, always 0x20, 0x80000000 is cleared on access
     d.Field(d.Bounded(d.Int32, 0x20, 0x20), "max_num_properties_per_block"),  -- maximum number of properties per block (always 0x20)
     d.Field(d.Int32, "num_properties_total"),  -- total number of properties across all blocks
-    d.Field(d.Bounded(d.Int32, 1, 1), "property_size"), -- always 1
+    d.Field(d.Bounded(d.Int32, 1, 1), "property_size"), -- always 1 (size of each property reference block in units of 4 bytes)
 })
 
 local SharedCom = d.Struct("SharedCom", {
+    d.Field(d.RawAddr(), "vtable"),
     d.Seek(0x4008),
     d.Field(SharedComContainer, "container"),
 })
 
+local GRefManagerPool = d.Struct("GRefManagerPool", {
+    d.Skip(0x4),
+    -- base address of memory pool
+    -- size is gref_manager.pool_size (in bytes)
+    d.Field(d.RawAddr(), "base")
+})
+
+local GRefManager = d.Struct("GRefManager", {
+    d.Seek(0x14),
+    d.Field(d.Ref(GRefManagerPool), "pool"),  -- relocateble objects referenced by gref
+    d.Seek(0x24),
+    d.Field(d.Int32, "unk_24_flag"),  -- 1 if allocated?
+    d.Field(d.Int32, "pool_size")
+})
+
 local SceneManager = d.Struct("SceneManager", {
+    d.Skip(0x4),
+    d.Field(d.Ref(GRefManager), "gref_manager"),  -- holds relocatable scene memory pool
     d.Seek(0xBB7),
     d.Field(SmallString, "scene_name"),
     d.Seek(0x1C4B),
@@ -85,6 +123,45 @@ M.Game = d.Struct("Game", {
     d.Seek(0x2A6C5C),
     d.Field(d.Ref(Engine), "engine"),
 })
+
+--- Get all valid property addresses from the shared_com container.
+M.get_properties_addrs = function(shared_com_container_blocks)
+    local addrs = {}
+    for _, block in ipairs(shared_com_container_blocks) do
+        for i = 1,block.num_properties,1 do
+            addrs[#addrs + 1] = block.properties[i]
+        end
+    end
+    return addrs
+end
+
+--- Read all properties and their data at the given addresses.
+M.read_properties = function(addrs, reader, tracer)
+    local ok = true
+    local properties = {}
+    for _, addr in ipairs(addrs) do
+        local property, ok = read.read(M.Property, addr, reader, tracer)
+        if not ok then
+            return properties, false
+        end
+        struc = M.property_struct[property.type.fourcc]
+        if not struc then
+            error(string.format("unknown type fourcc: 0x%x", property.type.fourcc))
+        end
+        local data = {}
+        for offset = 0,property.size-1,property.type.size do
+            data[#data+1], ok = read.read(struc, addr + 0x0C + property.key_length + offset, reader, tracer)
+            if not ok then
+                return properties, false
+            end
+        end
+        properties[property.key] = {
+            type_fourcc = property.type.fourcc,
+            data = data,
+        }
+    end
+    return properties, true
+end
 
 M.mission_scene_names = {
     "SCENES\\C0-1\\C0-1__MAIN.gms",  -- sanctuary
@@ -120,7 +197,7 @@ M.level_control_code = {
     0x3D4, 0x235, 0x27B, 0x100, 0x27B, 0x191, 0x2C2, 0x25B, 0x2C0, 0x2
 }
 
--- return mission as index between 1 and 21 (or nil if not a mission name)
+--- Return mission as index between 1 and 21 (or nil if not a mission name).
 M.get_mission_index = function(scene_name)
     for i, v in ipairs(M.mission_scene_names) do
         if v == scene_name then
@@ -130,13 +207,26 @@ M.get_mission_index = function(scene_name)
     return nil
 end
 
+--- Get the level control address similar to how the game does it.
+M.get_level_control_addr_1 = function(entity_manager, properties)
+    local property = properties["LevelControlCode"]
+    assert(property)
+    local handle = property.data[1]
+    assert(handle)
+    local version = handle >> 18
+    assert(version == 1)
+    local index = handle & 0x3FFFF
+    local actual_version = entity_manager.versions[index + 1] >> 18
+    assert(actual_version == 1)
+    return entity_manager.entities[index + 1]
+end
+
+--- Get the level control address using lookup table.
 -- mission_index is number from 1 to 21 (1 for training, 2 for first real mission)
-M.get_level_control_entity_addr = function(entity_manager, mission_index)
-    entity_index = M.level_control_entity_index[mission_index]
-    if entity_index == -1 then return nil end
-    -- +1 due to lua indexing
-    assert(entity_manager.versions[entity_index + 1] == 0x40000)
-    return entity_manager.entities[entity_index + 1]
+M.get_level_control_addr_2 = function(entity_manager, mission_index)
+    local index = M.level_control_code[mission_index]
+    assert(entity_manager.versions[index + 1] == 0x40000)
+    return entity_manager.entities[index + 1]
 end
 
 return M
