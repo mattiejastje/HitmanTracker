@@ -148,9 +148,7 @@ static std::optional<int32_t> get_time(
 ) {
     if (map_stage == MapStage::main)
         // game.time_manager.time
-        return read<int32_t>(
-            handle, base_ptr + 0x41F820, {0x48}, INT32_MAX
-        );
+        return read<int32_t>(handle, base_ptr + 0x41F820, {0x48}, INT32_MAX);
     if (map_stage == MapStage::post)
         // game.stats[TIME]
         return read<int32_t>(handle, base_ptr + 0x5B2538 + 4 * TIME);
