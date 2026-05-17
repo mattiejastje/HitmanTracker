@@ -1,9 +1,9 @@
-struct TypeDescriptor {
-  uint32_t prefix;  // offset 0x0
-  int32_t prefix_length;  // offset 0x4
-  int32_t unk_08;  // offset 0x8
+struct PropertyType {
+  uint32_t fourcc;  // offset 0x0
+  int32_t fourcc_length;  // offset 0x4
+  int32_t unk_id;  // offset 0x8
   int32_t size;  // offset 0xc
-  int32_t unk_10;  // offset 0x10
+  int32_t unk_elem_type;  // offset 0x10
 };
 
 struct EngineEntityManager {
@@ -67,7 +67,7 @@ struct HitmanContracts {
   float seconds_per_tick;  // offset 0x30e484
   float ticks_per_second;  // offset 0x30e808
   char[6] first_mission_name;  // offset 0x363f58
-  std::array<TypeDescriptor, 0x12> type_descriptors;  // offset 0x37eef8
+  std::array<PropertyType, 0x12> property_types;  // offset 0x37eef8
   EngineEntityManager* entity_manager;  // offset 0x394570
   Engine* engine;  // offset 0x39457c
   void* player_ptr;  // offset 0x3945a4
