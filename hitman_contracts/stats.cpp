@@ -86,6 +86,11 @@ static int32_t measure_aggression(
 static int32_t measure_stealth(const CommonGameStats& stats) {
     auto value = stats.alerts + stats.close_encounters;
     // static_cast to round down towards zero (value is non-negative)
+    // game produces stealth 90 if value is 1
+    // note 0.9f (32 bit) is approx 0.89999997615814208984375
+    // but  0.9  (64 bit) is approx 0.90000000000000002220446
+    // so we do the calculation with 0.9 double
+    // alternatively we could just use a lookup table to avoid ambiguity
     return static_cast<int32_t>(100 * std::pow(0.9, value));
 }
 
