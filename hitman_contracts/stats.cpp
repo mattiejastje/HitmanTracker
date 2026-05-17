@@ -68,7 +68,7 @@ static int32_t measure_aggression(
                  + stats.enemies_wounded + 3 * stats.enemies_killed
                  + 2 * shots_fired + stats.headshots + stats.close_encounters;
     // static_cast to round down towards zero (value is non-negative)
-    auto aggression = static_cast<int32_t>(100 * std::tanh(0.005f * value));
+    auto aggression = static_cast<int32_t>(100 * std::tanh(0.005 * value));
     if (aggression <= 2) {
         // cap min at 3 if innocents hurt or close encounter on 1st map
         if (stats.innocents_killed > 0 || stats.innocents_wounded > 0) return 3;
@@ -86,7 +86,7 @@ static int32_t measure_aggression(
 static int32_t measure_stealth(const CommonGameStats& stats) {
     auto value = stats.alerts + stats.close_encounters;
     // static_cast to round down towards zero (value is non-negative)
-    return static_cast<int32_t>(100 * std::pow(0.9f, value));
+    return static_cast<int32_t>(100 * std::pow(0.9, value));
 }
 
 bool hitman_contracts::update_slow(
