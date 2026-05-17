@@ -42,4 +42,4 @@ write_structs_txt("hitman2_silent_assassin", {
   h2sa.Game,
 })
 write_structs_txt("hitman_contracts", { hcon.HitmanContracts })
-write_structs_cpp("hitman_contracts", { hcon.HitmanContractsCpp }, "hitman_contracts::structs")
+write_structs_cpp("hitman_contracts", { hcon.HitmanContracts }, "hitman_contracts::structs")

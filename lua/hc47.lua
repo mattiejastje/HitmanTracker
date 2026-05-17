@@ -98,8 +98,8 @@ local Engine = d.Struct("Engine", {
 local EntityManagerData = d.Struct("EntityManagerData", {
     -- entity handle = (version << 18) | (index & 0x3FFFF)
     d.Seek(0x09),
-    d.Field(d.Ref(d.Array(d.Int32, 0x40000)), "versions"),  -- (version << 18) of each object
-    d.Field(d.Ref(d.Array(d.RawAddr(), 0x40000)), "entities"),  -- entities themselves
+    d.Field(d.Ref(d.RemoteAddr(d.Array(d.Int32, 0x40000))), "versions"),  -- (version << 18) of each object
+    d.Field(d.Ref(d.RemoteAddr(d.Array(d.RawAddr(), 0x40000))), "entities"),  -- entities themselves
 })
 
 local EntityManager = d.Struct("EntityManager", {

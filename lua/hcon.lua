@@ -18,8 +18,8 @@ local PropertyType = d.Struct("PropertyType", {
 local EngineEntityManager = d.Struct("EngineEntityManager", {
     -- entity handle = (version << 18) | (index & 0x3FFFF)
     d.Seek(0x24),
-    d.Field(d.Ref(d.Array(d.Int32, 0x40000)), "versions"),  -- (version << 18) of each object
-    d.Field(d.Ref(d.Array(d.RawAddr(), 0x40000)), "entities"),  -- entities themselves
+    d.Field(d.NullableRef(d.RemoteAddr(d.Array(d.Int32, 0x40000))), "versions"),  -- (version << 18) of each object
+    d.Field(d.NullableRef(d.RemoteAddr(d.Array(d.RawAddr(), 0x40000))), "entities"),  -- entities themselves
 })
 
 local SceneEntityManagerUnk08 = d.Struct("SceneEntityManagerUnk08", {
@@ -118,14 +118,6 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Field(d.Int32, "innocents_wounded"),  -- only during stats screen
     d.Field(d.Int32, "stealth"),  -- only during stats screen
     d.Field(d.Int32, "aggression"),  -- only during stats screen
-})
-
--- trimmed version of HitmanContracts, removed fields not needed for cpp code
-M.HitmanContractsCpp = d.Struct("HitmanContracts", {
-    d.Seek(0x39457C),
-    d.Field(d.Ref(Engine), "engine"),
-    d.Seek(0x3947A8),
-    d.Field(Player, "player"),
 })
 
 M.mission_scene_names = {
