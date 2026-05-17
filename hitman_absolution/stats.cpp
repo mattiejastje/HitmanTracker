@@ -667,12 +667,13 @@ bool hitman_absolution::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
-    const auto& base_ptr = base_ptrs.at(0);
+    const RemoteValue<structs::TGame, uint32_t> remote_game{
+        static_cast<uint32_t>(base_ptrs.at(0))
+    };
     MemoryReader<uint32_t> reader{handle};
     auto tracer
         = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::VALUES};
-    if (!mempeep::read<structs::TGame>(base_ptr, reader, tracer, game))
-        return false;
+    if (!mempeep::read(remote_game, reader, tracer, game)) return false;
     stats.difficulty = game.global_data.difficulty;
     // engine may set level to -1 if not in a mission
     // sadly it's not a reliable way to detect if we are in a mission

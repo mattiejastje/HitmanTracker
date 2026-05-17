@@ -201,14 +201,14 @@ using TChallengeData = Struct<
     Fields<Seek<0x98>, Field<Int8, &ChallengeData::completed>>>;
 
 struct ChallengeNode {
-    uintptr_t next_node;
+    uint32_t next_node;
     std::optional<ChallengeData> data;
 };
 
 using TChallengeNode = Struct<
     ChallengeNode,
     Fields<
-        Field<RawAddr<uintptr_t>, &ChallengeNode::next_node>,
+        Field<RawAddr<uint32_t>, &ChallengeNode::next_node>,
         Skip<0x8>,
         Field<NullableRef<TChallengeData>, &ChallengeNode::data>>>;
 
@@ -389,7 +389,7 @@ struct TimeManager {
 
 struct Game {
     GlobalData global_data;
-    uintptr_t property_manager;
+    uint32_t property_manager;
     StatsManager stats_manager;
     ChallengeManager challenge_manager;
     ActorManager actor_manager;
@@ -407,7 +407,7 @@ using TGame = Struct<
         Seek<0xd58c70>,
         Field<Primitive<GlobalData>, &Game::global_data>,
         Seek<0xd61620>,
-        Field<RawAddr<uintptr_t>, &Game::property_manager>,
+        Field<RawAddr<uint32_t>, &Game::property_manager>,
         Seek<0xd61710>,
         Field<TStatsManager, &Game::stats_manager>,
         Seek<0xd617c0>,

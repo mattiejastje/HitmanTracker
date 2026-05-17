@@ -16,7 +16,7 @@ local function write_structs_cpp(dir, descs, namespace)
   ctypes.write_native_includes(descs, hpp)
   hpp:write("\nusing namespace mempeep;\n\n")
   hpp:write("namespace " .. namespace .. " {\n\n")
-  ctypes.native_struct_cdecls(descs, "", hpp)
+  ctypes.native_struct_cdecls(descs, 4, "", hpp)
   hpp:write("}  // namespace " .. namespace .. "\n")
   hpp:close()
 end

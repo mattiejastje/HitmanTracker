@@ -205,12 +205,13 @@ bool hitman_blood_money::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
-    const auto& base_ptr = base_ptrs.at(0);
+    const RemoteValue<structs::TGame, uint32_t> remote_game{
+        static_cast<uint32_t>(base_ptrs.at(0))
+    };
     MemoryReader<uint32_t> reader{handle};
     auto tracer
         = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
-    if (!mempeep::read<structs::TGame>(base_ptr, reader, tracer, game))
-        return false;
+    if (!mempeep::read(remote_game, reader, tracer, game)) return false;
     if (!game.settings) return true;  // game starting
     stats.difficulty = game.settings->difficulty;
     auto scene = read_string(handle, label_ptrs.at(150), 64);
