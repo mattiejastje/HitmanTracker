@@ -7,12 +7,12 @@ local SmallString = d.Struct("SmallString", {
     d.Skip(0x7C),  -- inline buffer for strings <= 0x7C chars
 })
 
-local TypeDescriptor = d.Struct("TypeDescriptor", {
-    d.Field(d.UInt32, "prefix"),
-    d.Field(d.Int32, "prefix_length"),
-    d.Field(d.Int32, "unk_08"),
-    d.Field(d.Int32, "size"),
-    d.Field(d.Int32, "unk_10"),
+local PropertyType = d.Struct("PropertyType", {
+    d.Field(d.UInt32, "fourcc"),  -- space padded fourcc code (always 4 chars, reverse order)
+    d.Field(d.Int32, "fourcc_length"),  -- length of code without padding
+    d.Field(d.Int32, "unk_id"),  -- unique number, maybe some id or index?
+    d.Field(d.Int32, "size"),  -- size of the data in bytes
+    d.Field(d.Int32, "unk_elem_type"),  -- maybe element type: 1 = bytes, 2 = characters, 4 = ints, 8 = floats, ...?
 })
 
 local EngineEntityManager = d.Struct("EngineEntityManager", {
@@ -94,7 +94,7 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Seek(0x363F58),
     d.Field(d.ZString(0x6), "first_mission_name"),  -- "C01-1"
     d.Seek(0x37EEF8),
-    d.Field(d.Array(TypeDescriptor, 18), "type_descriptors"),
+    d.Field(d.Array(PropertyType, 18), "property_types"),
     d.Seek(0x394570),
     d.Field(d.Ref(EngineEntityManager), "entity_manager"),
     d.Seek(0x39457C),
