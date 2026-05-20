@@ -79,5 +79,17 @@ struct Engine {
 struct Game {
   EntityManager* entity_manager;  // offset 0x2a6c50
   Engine* engine;  // offset 0x2a6c5c
+  char[64] lethed;  // offset 0x28aa18
+  char[14] current_mission_name;  // offset 0x2b3418
+  int32_t shots_fired;  // offset 0x2b3420
+  int32_t close_encounters;  // offset 0x2b3424
+  int32_t headshots;  // offset 0x2b3428
+  int32_t alerts;  // offset 0x2b342c
+  int32_t enemies_killed;  // offset 0x2b3430
+  int32_t enemies_wounded;  // offset 0x2b3434
+  int32_t innocents_killed;  // offset 0x2b3438
+  int32_t innocents_wounded;  // offset 0x2b343c
+  int32_t stealth;  // offset 0x2b3440
+  int32_t aggression;  // offset 0x2b3444
 };
 

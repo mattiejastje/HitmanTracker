@@ -122,6 +122,21 @@ M.Game = d.Struct("Game", {
     d.Field(d.Ref(EntityManager), "entity_manager"),
     d.Seek(0x2A6C5C),
     d.Field(d.Ref(Engine), "engine"),
+    d.Seek(0x28AA18),
+    d.Field(d.ZString(0x40), "lethed"),  -- literal string constant
+    d.Seek(0x2B3418),
+    d.Field(d.ZString(0x0E), "current_mission_name"),  -- only during stats screen
+    d.Seek(0x2B3420),
+    d.Field(d.Int32, "shots_fired"),  -- only during stats screen
+    d.Field(d.Int32, "close_encounters"),  -- only during stats screen
+    d.Field(d.Int32, "headshots"),  -- only during stats screen
+    d.Field(d.Int32, "alerts"),  -- only during stats screen
+    d.Field(d.Int32, "enemies_killed"),  -- only during stats screen
+    d.Field(d.Int32, "enemies_wounded"),  -- only during stats screen
+    d.Field(d.Int32, "innocents_killed"),  -- only during stats screen
+    d.Field(d.Int32, "innocents_wounded"),  -- only during stats screen
+    d.Field(d.Int32, "stealth"),  -- only during stats screen
+    d.Field(d.Int32, "aggression"),  -- only during stats screen
 })
 
 --- Get all valid property addresses from the shared_com container.
@@ -140,7 +155,8 @@ M.read_properties = function(addrs, reader, tracer)
     local ok = true
     local properties = {}
     for _, addr in ipairs(addrs) do
-        local property, ok = read.read(M.Property, addr, reader, tracer)
+        local remote_property = d.remote_value(M.Property, addr)
+        local property, ok = read.read(remote_property, reader, tracer)
         if not ok then
             return properties, false
         end
@@ -150,7 +166,8 @@ M.read_properties = function(addrs, reader, tracer)
         end
         local data = {}
         for offset = 0,property.size-1,property.type.size do
-            data[#data+1], ok = read.read(struc, addr + 0x0C + property.key_length + offset, reader, tracer)
+            local remote_data = d.remote_value(struc, addr + 0x0C + property.key_length + offset)
+            data[#data+1], ok = read.read(remote_data, reader, tracer)
             if not ok then
                 return properties, false
             end
@@ -207,26 +224,70 @@ M.get_mission_index = function(scene_name)
     return nil
 end
 
---- Get the level control address similar to how the game does it.
-M.get_level_control_addr_1 = function(entity_manager, properties)
-    local property = properties["LevelControlCode"]
+M.resolve_gref = function(base, handle)
+    if (handle & 0x40000000) == 0 then
+        assert(handle == 0)
+        return 0
+    end
+    offset = handle & 0x3FFFFFFF
+    return base + offset
+end
+
+M.resolve_entity = function(versions, entities, handle)
+    local version = handle >> 18
+    assert(version >= 1)
+    local index = handle & 0x3FFFF
+    local actual_version = versions[index + 1] >> 18
+    assert(actual_version == version)
+    return entities[index + 1]
+end
+
+M.get_property_entity = function(versions, entities, properties, name)
+    local property = properties[name]
     assert(property)
     local handle = property.data[1]
     assert(handle)
-    local version = handle >> 18
-    assert(version == 1)
-    local index = handle & 0x3FFFF
-    local actual_version = entity_manager.versions[index + 1] >> 18
-    assert(actual_version == 1)
-    return entity_manager.entities[index + 1]
+    assert(type(handle) == "number")
+    assert(math.type(handle) == "integer")
+    return M.resolve_entity(versions, entities, handle)
+end
+
+--- Get the level control address similar to how the game does it.
+M.get_level_control_addr_1 = function(versions, entities, properties)
+    return M.get_property_entity(versions, entities, properties, "LevelControlCode")
 end
 
 --- Get the level control address using lookup table.
 -- mission_index is number from 1 to 21 (1 for training, 2 for first real mission)
-M.get_level_control_addr_2 = function(entity_manager, mission_index)
+M.get_level_control_addr_2 = function(versions, entities, mission_index)
     local index = M.level_control_code[mission_index]
-    assert(entity_manager.versions[index + 1] == 0x40000)
-    return entity_manager.entities[index + 1]
+    assert(versions[index + 1] == 0x40000)
+    return entities[index + 1]
+end
+
+--- Calculate aggression from player statistics.
+-- Can be at most 2 for silent assassin rating.
+M.measure_aggression = function(level_control, shots_fired)
+    -- raw measure of aggression (non-negative)
+    local value = (
+        3 * level_control.innocents_wounded + 6 * level_control.innocents_killed
+        + level_control.enemies_wounded + 3 * level_control.enemies_killed
+        + 2 * data.shots_fired
+        + level_control.headshots + level_control.close_encounters
+    )
+    -- convert to [0,100] scale
+    -- 0.5 * value for small values, ramping off at 100
+    local aggression = math.floor(100 * math.tanh(0.005 * value))
+    return aggression
+end
+
+--- Calculate stealth from player statistics.
+-- Must be above 85 for silent assassin rating.
+M.measure_stealth = function(level_control)
+    -- raw measure of stealth (non-negative)
+    local value = level_control.alerts + level_control.close_encounters
+    -- convert to [0,100] scale using power law
+    return math.floor(100 * (0.9 ^ value))
 end
 
 return M
