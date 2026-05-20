@@ -91,5 +91,7 @@ struct Game {
   int32_t innocents_wounded;  // offset 0x2b343c
   int32_t stealth;  // offset 0x2b3440
   int32_t aggression;  // offset 0x2b3444
+  int32_t time;  // offset 0x2b3448
+  int32_t saves_used;  // offset 0x2b344c
 };
 

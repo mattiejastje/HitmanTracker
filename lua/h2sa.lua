@@ -137,6 +137,8 @@ M.Game = d.Struct("Game", {
     d.Field(d.Int32, "innocents_wounded"),  -- only during stats screen
     d.Field(d.Int32, "stealth"),  -- only during stats screen
     d.Field(d.Int32, "aggression"),  -- only during stats screen
+    d.Field(d.Int32, "time"),  -- only during stats screen
+    d.Field(d.Int32, "saves_used"),  -- only during stats screen
 })
 
 --- Get all valid property addresses from the shared_com container.
