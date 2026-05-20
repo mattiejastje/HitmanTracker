@@ -116,9 +116,8 @@ bool hitman2_silent_assassin::update_slow(
                stealth == 0    ? Status::GREEN
                : stealth == -1 ? Status::YELLOW
                                : Status::RED};
-        auto aggression = measure_aggression(
-            game_stats, stats.shots_fired.value
-        );
+        auto aggression
+            = measure_aggression(game_stats, stats.shots_fired.value);
         stats.aggression
             = {aggression,
                aggression <= 5   ? Status::GREEN
