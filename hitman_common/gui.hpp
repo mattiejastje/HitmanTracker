@@ -4,9 +4,10 @@
 
 namespace hitman_common {
 
+template <typename T>
 struct TableRow {
     std::string name;
-    StatsValue<int32_t> stats_value;
+    StatsValue<T> stats_value;
 };
 
 void gui(
@@ -16,7 +17,7 @@ void gui(
     const std::string& game_name,
     const std::string& difficulty,
     const std::vector<std::string>& map_names,
-    const std::vector<TableRow>& table_rows
+    const std::vector<TableRow<int32_t>>& table_rows
 );
 
 }  // namespace hitman_common

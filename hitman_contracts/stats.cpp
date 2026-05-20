@@ -61,37 +61,32 @@ const std::vector<StatsArray> silent_assassin_combinations_map_1
 // global to avoid allocating large object on stack
 static hitman_contracts::structs::HitmanContracts game{};
 
-static int32_t measure_aggression(
+static auto measure_aggression(
     const CommonGameStats& stats, int32_t shots_fired, int32_t map
 ) {
     auto value = 3 * stats.innocents_wounded + 6 * stats.innocents_killed
                  + stats.enemies_wounded + 3 * stats.enemies_killed
                  + 2 * shots_fired + stats.headshots + stats.close_encounters;
     // static_cast to round down towards zero (value is non-negative)
-    auto aggression = static_cast<int32_t>(100 * std::tanh(0.005 * value));
+    auto aggression = 100 * std::tanh(0.005 * value);
     if (aggression <= 2) {
         // cap min at 3 if innocents hurt or close encounter on 1st map
-        if (stats.innocents_killed > 0 || stats.innocents_wounded > 0) return 3;
-        if (map == 1 && stats.close_encounters > 0) return 3;
+        if (stats.innocents_killed > 0 || stats.innocents_wounded > 0)
+            return 3.0;
+        if (map == 1 && stats.close_encounters > 0) return 3.0;
     } else if (stats.close_encounters == 0 && stats.enemies_killed == 0
                && stats.enemies_wounded == 0 && stats.innocents_killed == 0
                && stats.innocents_wounded == 0 && stats.headshots == 0) {
         // cap max at 2 in distraction shots only scenario
-        return 2;
+        return 2.0;
     }
     // no special case
     return aggression;
 }
 
-static int32_t measure_stealth(const CommonGameStats& stats) {
+static auto measure_stealth(const CommonGameStats& stats) {
     auto value = stats.alerts + stats.close_encounters;
-    // static_cast to round down towards zero (value is non-negative)
-    // game produces stealth 90 if value is 1
-    // note 0.9f (32 bit) is approx 0.89999997615814208984375
-    // but  0.9  (64 bit) is approx 0.90000000000000002220446
-    // so we do the calculation with 0.9 double
-    // alternatively we could just use a lookup table to avoid ambiguity
-    return static_cast<int32_t>(100 * std::pow(0.9, value));
+    return 100 * std::pow(0.9, value);
 }
 
 bool hitman_contracts::update_slow(
@@ -146,16 +141,18 @@ bool hitman_contracts::update_slow(
             );
             auto stealth = measure_stealth(game_stats);
             stats.stealth
-                = {stealth, stealth >= 85 ? Status::YELLOW : Status::RED};
+                = {stealth,
+                   stealth >= 84.999999 ? Status::YELLOW : Status::RED};
             auto aggression = measure_aggression(
                 game_stats, stats.shots_fired.value, stats.map
             );
             stats.aggression
-                = {aggression, aggression <= 2 ? Status::YELLOW : Status::RED};
+                = {aggression,
+                   aggression <= 2.999999 ? Status::YELLOW : Status::RED};
 #ifndef NDEBUG
             // validate the two methods (to be removed when confirmed stable)
             bool is_sa_1 = (stats.rating.status == Status::GREEN);
-            bool is_sa_2 = (stealth >= 85 && aggression <= 2);
+            bool is_sa_2 = (stealth >= 84.999999 && aggression <= 2.999999);
             if (is_sa_1 != is_sa_2) {
                 logging::error(
                     "silent assassin status stealth/aggression mismatch"

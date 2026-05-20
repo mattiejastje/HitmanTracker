@@ -56,26 +56,19 @@ const std::vector<StatsArray> silent_assassin_combinations
        {3, 0, 0, 1, 0, 0, 0, 0}};
 
 // note: almost same as Hitman Contracts, move to common?
-static int32_t measure_aggression(
+static auto measure_aggression(
     const CommonGameStats& stats, int32_t shots_fired
 ) {
     auto value = 3 * stats.innocents_wounded + 6 * stats.innocents_killed
                  + stats.enemies_wounded + 3 * stats.enemies_killed
                  + 2 * shots_fired + stats.headshots + stats.close_encounters;
-    // static_cast to round down towards zero (value is non-negative)
-    return static_cast<int32_t>(100 * std::tanh(0.005 * value));
+    return 100 * std::tanh(0.005 * value);
 }
 
 // note: same as Hitman Contracts, move to common?
-static int32_t measure_stealth(const CommonGameStats& stats) {
+static auto measure_stealth(const CommonGameStats& stats) {
     auto value = stats.alerts + stats.close_encounters;
-    // static_cast to round down towards zero (value is non-negative)
-    // game produces stealth 90 if value is 1
-    // note 0.9f (32 bit) is approx 0.89999997615814208984375
-    // but  0.9  (64 bit) is approx 0.90000000000000002220446
-    // so we do the calculation with 0.9 double
-    // alternatively we could just use a lookup table to avoid ambiguity
-    return static_cast<int32_t>(100 * std::pow(0.9, value));
+    return 100 * std::pow(0.9, value);
 }
 
 bool hitman2_silent_assassin::update_slow(
@@ -118,15 +111,17 @@ bool hitman2_silent_assassin::update_slow(
             silent_assassin_combinations, game_stats, stats
         );
         auto stealth = measure_stealth(game_stats);
-        stats.stealth = {stealth, stealth >= 85 ? Status::YELLOW : Status::RED};
+        stats.stealth
+            = {stealth, stealth >= 84.999999 ? Status::YELLOW : Status::RED};
         auto aggression
             = measure_aggression(game_stats, stats.shots_fired.value);
         stats.aggression
-            = {aggression, aggression <= 2 ? Status::YELLOW : Status::RED};
+            = {aggression,
+               aggression <= 2.999999 ? Status::YELLOW : Status::RED};
 #ifndef NDEBUG
         // validate the two methods (to be removed when confirmed stable)
         bool is_sa_1 = (stats.rating.status == Status::GREEN);
-        bool is_sa_2 = (stealth >= 85 && aggression <= 2);
+        bool is_sa_2 = (stealth >= 84.999999 && aggression <= 2.999999);
         if (is_sa_1 != is_sa_2) {
             logging::error(
                 "silent assassin status stealth/aggression mismatch"

@@ -53,7 +53,7 @@ void hitman_contracts::gui(
                 | ImGuiTableFlags_NoKeepColumnsVisible
                 | ImGuiTableFlags_NoHostExtendX
         );
-        std::vector<hitman_common::TableRow> table_rows = {
+        std::vector<hitman_common::TableRow<double>> table_rows = {
             {"Stealth", stats.stealth},
             {"Aggression", stats.aggression},
         };
@@ -63,7 +63,7 @@ void hitman_contracts::gui(
                 settings,
                 row.stats_value.status,
                 row.name.c_str(),
-                "%d",
+                "%.3f",
                 row.stats_value.value
             );
         }
