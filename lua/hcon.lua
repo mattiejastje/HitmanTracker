@@ -106,7 +106,7 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Seek(0x395718),
     d.Field(d.RawAddr(), "player_data_copy"),  -- equal to the player.data pointer but sometimes stale e.g. when in menu after mission
     d.Seek(0x39FFBC),
-    d.Field(d.ZString(0x6), "current_mission_name"),  -- only during stats screen
+    d.Field(d.ZString(0x0E), "current_mission_name"),  -- only during stats screen
     d.Seek(0x39FFC4),
     d.Field(d.Int32, "shots_fired"),  -- only during stats screen
     d.Field(d.Int32, "close_encounters"),  -- only during stats screen

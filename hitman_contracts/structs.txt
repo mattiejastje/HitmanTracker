@@ -73,7 +73,7 @@ struct HitmanContracts {
   void* player_ptr;  // offset 0x3945a4
   Player player;  // offset 0x3947a8
   void* player_data_copy;  // offset 0x395718
-  char[6] current_mission_name;  // offset 0x39ffbc
+  char[14] current_mission_name;  // offset 0x39ffbc
   int32_t shots_fired;  // offset 0x39ffc4
   int32_t close_encounters;  // offset 0x39ffc8
   int32_t headshots;  // offset 0x39ffcc

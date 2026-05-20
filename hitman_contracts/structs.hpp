@@ -212,7 +212,7 @@ using THitmanContracts = Struct<
         Seek<0x395718>,
         Field<RawAddr<uint32_t>, &HitmanContracts::player_data_copy>,
         Seek<0x39ffbc>,
-        Field<ZString<0x6>, &HitmanContracts::current_mission_name>,
+        Field<ZString<0xe>, &HitmanContracts::current_mission_name>,
         Seek<0x39ffc4>,
         Field<Int32, &HitmanContracts::shots_fired>,
         Field<Int32, &HitmanContracts::close_encounters>,
