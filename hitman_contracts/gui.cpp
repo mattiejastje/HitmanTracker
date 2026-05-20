@@ -63,8 +63,8 @@ void hitman_contracts::gui(
                 settings,
                 row.stats_value.status,
                 row.name.c_str(),
-                "%d",
-                row.stats_value.value
+                "%.3g",
+                row.stats_value.value / 10.0
             );
         }
         ImGui::EndTable();

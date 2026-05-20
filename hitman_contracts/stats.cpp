@@ -95,9 +95,7 @@ static int32_t measure_aggression(
 
 static int32_t measure_stealth(const CommonGameStats& stats) {
     auto value = stats.alerts + stats.close_encounters;
-    // game uses 100 * std::pow(0.9, value)
-    // here we use negative exponent (maximum clarity)
-    return -value;
+    return value;
 }
 
 bool hitman_contracts::update_slow(
@@ -152,22 +150,22 @@ bool hitman_contracts::update_slow(
             );
             auto stealth = measure_stealth(game_stats);
             stats.stealth
-                = {stealth,
-                   stealth == 0    ? Status::GREEN
-                   : stealth == -1 ? Status::YELLOW
-                                   : Status::RED};
+                = {std::lround(1000 * std::pow(0.9, stealth)),
+                   stealth == 0   ? Status::GREEN
+                   : stealth == 1 ? Status::YELLOW
+                                  : Status::RED};
             auto aggression = measure_aggression(
                 game_stats, stats.shots_fired.value, stats.map
             );
             stats.aggression
-                = {aggression,
+                = {std::lround(1000 * std::tanh(0.005 * aggression)),
                    aggression <= 5   ? Status::GREEN
                    : aggression == 6 ? Status::YELLOW
                                      : Status::RED};
 #ifndef NDEBUG
             // validate the two methods (to be removed when confirmed stable)
             bool is_sa_1 = (stats.rating.status == Status::GREEN);
-            bool is_sa_2 = (stealth >= -1 && aggression <= 6);
+            bool is_sa_2 = (stealth <= 1 && aggression <= 6);
             if (is_sa_1 != is_sa_2) {
                 logging::error(
                     "silent assassin status stealth/aggression mismatch"
