@@ -16,7 +16,7 @@ void hitman_common::gui(
     const std::string& game_name,
     const std::string& difficulty,
     const std::vector<std::string>& map_names,
-    const std::vector<TableRow<int32_t>>& table_rows
+    const std::vector<TableRow>& table_rows
 ) {
     text(fonts.title, settings.title.color, game_name.c_str());
     text(fonts.difficulty, settings.difficulty.color, difficulty.c_str());

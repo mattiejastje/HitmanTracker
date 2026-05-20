@@ -56,19 +56,19 @@ const std::vector<StatsArray> silent_assassin_combinations
        {3, 0, 0, 1, 0, 0, 0, 0}};
 
 // note: almost same as Hitman Contracts, move to common?
-static auto measure_aggression(
+static int32_t measure_aggression(
     const CommonGameStats& stats, int32_t shots_fired
 ) {
     auto value = 3 * stats.innocents_wounded + 6 * stats.innocents_killed
                  + stats.enemies_wounded + 3 * stats.enemies_killed
                  + 2 * shots_fired + stats.headshots + stats.close_encounters;
-    return 100 * std::tanh(0.005 * value);
+    return value;
 }
 
 // note: same as Hitman Contracts, move to common?
-static auto measure_stealth(const CommonGameStats& stats) {
+static int32_t measure_stealth(const CommonGameStats& stats) {
     auto value = stats.alerts + stats.close_encounters;
-    return 100 * std::pow(0.9, value);
+    return -value;
 }
 
 bool hitman2_silent_assassin::update_slow(
@@ -112,16 +112,22 @@ bool hitman2_silent_assassin::update_slow(
         );
         auto stealth = measure_stealth(game_stats);
         stats.stealth
-            = {stealth, stealth >= 84.999999 ? Status::YELLOW : Status::RED};
-        auto aggression
-            = measure_aggression(game_stats, stats.shots_fired.value);
+            = {stealth,
+               stealth == 0    ? Status::GREEN
+               : stealth == -1 ? Status::YELLOW
+                               : Status::RED};
+        auto aggression = measure_aggression(
+            game_stats, stats.shots_fired.value
+        );
         stats.aggression
             = {aggression,
-               aggression <= 2.999999 ? Status::YELLOW : Status::RED};
+               aggression <= 5   ? Status::GREEN
+               : aggression == 6 ? Status::YELLOW
+                                 : Status::RED};
 #ifndef NDEBUG
         // validate the two methods (to be removed when confirmed stable)
         bool is_sa_1 = (stats.rating.status == Status::GREEN);
-        bool is_sa_2 = (stealth >= 84.999999 && aggression <= 2.999999);
+        bool is_sa_2 = (stealth >= -1 && aggression <= 6);
         if (is_sa_1 != is_sa_2) {
             logging::error(
                 "silent assassin status stealth/aggression mismatch"

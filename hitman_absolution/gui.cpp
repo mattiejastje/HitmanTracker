@@ -132,7 +132,7 @@ void hitman_absolution::gui(
                     | ImGuiTableFlags_NoKeepColumnsVisible
                     | ImGuiTableFlags_NoHostExtendX
             );
-            std::vector<hitman_common::TableRow<int32_t>> table_rows = {
+            std::vector<hitman_common::TableRow> table_rows = {
                 {"Civilian Casualty", stats.score_civilian_casualty},
                 {"Pacification", stats.score_pacification},
                 {"Body Hidden", stats.score_body_hidden},

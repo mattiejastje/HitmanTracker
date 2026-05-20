@@ -48,7 +48,7 @@ void hitman2_silent_assassin::gui(
                                 : "",
         map_names,
         stats.map >= 2 ?
-        std::vector<hitman_common::TableRow<int32_t>>{
+        std::vector<hitman_common::TableRow>{
             {"Close Encounters", stats.close_encounters},
             {"Alerts", stats.alerts},
             {"Shots Fired", stats.shots_fired},
@@ -57,7 +57,7 @@ void hitman2_silent_assassin::gui(
             {"Enemies Wounded", stats.enemies_wounded},
             {"Innocents Killed", stats.innocents_killed},
             {"Innocents Wounded", stats.innocents_wounded},
-        } : std::vector<hitman_common::TableRow<int32_t>>{}
+        } : std::vector<hitman_common::TableRow>{}
     );
     if (stats.map >= 2) {
         ImGui::Spacing();
@@ -68,7 +68,7 @@ void hitman2_silent_assassin::gui(
                 | ImGuiTableFlags_NoKeepColumnsVisible
                 | ImGuiTableFlags_NoHostExtendX
         );
-        std::vector<hitman_common::TableRow<double>> table_rows = {
+        std::vector<hitman_common::TableRow> table_rows = {
             {"Stealth", stats.stealth},
             {"Aggression", stats.aggression},
         };
@@ -78,7 +78,7 @@ void hitman2_silent_assassin::gui(
                 settings,
                 row.stats_value.status,
                 row.name.c_str(),
-                "%.3f",
+                "%d",
                 row.stats_value.value
             );
         }

@@ -61,32 +61,43 @@ const std::vector<StatsArray> silent_assassin_combinations_map_1
 // global to avoid allocating large object on stack
 static hitman_contracts::structs::HitmanContracts game{};
 
-static auto measure_aggression(
+static int32_t measure_aggression(
     const CommonGameStats& stats, int32_t shots_fired, int32_t map
 ) {
     auto value = 3 * stats.innocents_wounded + 6 * stats.innocents_killed
                  + stats.enemies_wounded + 3 * stats.enemies_killed
                  + 2 * shots_fired + stats.headshots + stats.close_encounters;
-    // static_cast to round down towards zero (value is non-negative)
-    auto aggression = 100 * std::tanh(0.005 * value);
-    if (aggression <= 2) {
-        // cap min at 3 if innocents hurt or close encounter on 1st map
+    // game uses 100 * std::tanh(0.005 * value) and truncates it to zero
+    // 0 -> 0.0
+    // 1 -> 0.4999958333749996
+    // 2 -> 0.999966667999946
+    // 3 -> 1.499887510124078
+    // 4 -> 1.9997333759930933
+    // 5 -> 2.4994792968420687
+    // 6 -> 2.9991003238820144
+    // 7 -> 3.4985715332779446
+    // here we use the raw value (maximum clarity)
+    if (value <= 6) {
+        // cap min at 7 (aggression = 3) if innocents hurt or close encounter on
+        // 1st map
         if (stats.innocents_killed > 0 || stats.innocents_wounded > 0)
-            return 3.0;
-        if (map == 1 && stats.close_encounters > 0) return 3.0;
+            return 7;
+        else if (map == 1 && stats.close_encounters > 0)
+            return 7;
     } else if (stats.close_encounters == 0 && stats.enemies_killed == 0
                && stats.enemies_wounded == 0 && stats.innocents_killed == 0
                && stats.innocents_wounded == 0 && stats.headshots == 0) {
-        // cap max at 2 in distraction shots only scenario
-        return 2.0;
+        // cap max at 6 (aggression = 2) in distraction shots only scenario
+        return 6;
     }
-    // no special case
-    return aggression;
+    return value;
 }
 
-static auto measure_stealth(const CommonGameStats& stats) {
+static int32_t measure_stealth(const CommonGameStats& stats) {
     auto value = stats.alerts + stats.close_encounters;
-    return 100 * std::pow(0.9, value);
+    // game uses 100 * std::pow(0.9, value)
+    // here we use negative exponent (maximum clarity)
+    return -value;
 }
 
 bool hitman_contracts::update_slow(
@@ -142,17 +153,21 @@ bool hitman_contracts::update_slow(
             auto stealth = measure_stealth(game_stats);
             stats.stealth
                 = {stealth,
-                   stealth >= 84.999999 ? Status::YELLOW : Status::RED};
+                   stealth == 0    ? Status::GREEN
+                   : stealth == -1 ? Status::YELLOW
+                                   : Status::RED};
             auto aggression = measure_aggression(
                 game_stats, stats.shots_fired.value, stats.map
             );
             stats.aggression
                 = {aggression,
-                   aggression <= 2.999999 ? Status::YELLOW : Status::RED};
+                   aggression <= 5   ? Status::GREEN
+                   : aggression == 6 ? Status::YELLOW
+                                     : Status::RED};
 #ifndef NDEBUG
             // validate the two methods (to be removed when confirmed stable)
             bool is_sa_1 = (stats.rating.status == Status::GREEN);
-            bool is_sa_2 = (stealth >= 84.999999 && aggression <= 2.999999);
+            bool is_sa_2 = (stealth >= -1 && aggression <= 6);
             if (is_sa_1 != is_sa_2) {
                 logging::error(
                     "silent assassin status stealth/aggression mismatch"
