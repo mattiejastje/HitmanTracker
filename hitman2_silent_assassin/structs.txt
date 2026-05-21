@@ -13,6 +13,18 @@ struct LevelControl {
   int32_t close_encounters;  // offset 0x220
 };
 
+struct PlayerEntity {
+  uint32_t gref;  // offset 0x48
+};
+
+struct PlayerData {
+  int32_t shots_fired;  // offset 0x11c7
+};
+
+struct Player {
+  PlayerData* data;  // offset 0x54
+};
+
 struct PropertyType {
   uint32_t fourcc;  // offset 0x0
   int32_t fourcc_length;  // offset 0x4
@@ -43,6 +55,13 @@ struct GRefManager {
   int32_t pool_size;  // offset 0x28
 };
 
+struct SceneEntities {
+  std::array<int32_t, 0x3e8>* handles;  // offset 0x4
+  void* unk_08;  // offset 0x8
+  int32_t unk_0c;  // offset 0xc
+  int32_t num_handles;  // offset 0x10
+};
+
 struct PropertyBlock {
   void* prev_block;  // offset 0x0
   void* next_block;  // offset 0x4
@@ -68,6 +87,7 @@ struct SharedCom {
 
 struct SceneManager {
   GRefManager* gref_manager;  // offset 0x4
+  SceneEntities* entities;  // offset 0xc4
   SmallString scene_name;  // offset 0xbb7
   SharedCom shared_com;  // offset 0x1c4b
 };
@@ -80,7 +100,7 @@ struct Game {
   EntityManager* entity_manager;  // offset 0x2a6c50
   Engine* engine;  // offset 0x2a6c5c
   char[64] lethed;  // offset 0x28aa18
-  char[14] current_mission_name;  // offset 0x2b3418
+  char[14] current_level_name;  // offset 0x2b3418
   int32_t shots_fired;  // offset 0x2b3420
   int32_t close_encounters;  // offset 0x2b3424
   int32_t headshots;  // offset 0x2b3428

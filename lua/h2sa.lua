@@ -52,6 +52,8 @@ M.property_struct = {
     [0x66202020] = d.Float,
     -- "b": bool
     [0x62202020] = d.Int32,
+    -- "str ": string
+    [0x73747220] = d.ZString(0x100),
 }
 
 M.Property = d.Struct("Property", {
@@ -62,6 +64,22 @@ M.Property = d.Struct("Property", {
     -- data follows immediately after the key string
     -- offset is not static, need to calculate at runtime: 0x0C + key_length
     -- number of elements is size / type.size
+})
+
+local PlayerData = d.Struct("PlayerData", {
+    d.Seek(0x11C7),
+    d.Field(d.Int32, "shots_fired"),
+})
+
+M.Player = d.Struct("Player", {
+    d.Seek(0x54),
+    d.Field(d.Ref(PlayerData), "data"),
+})
+
+M.PlayerEntity = d.Struct("PlayerEntity", {
+    d.Seek(0x48),
+    -- gref to Player
+    d.Field(d.UInt32, "gref"),
 })
 
 local PropertyBlock = d.Struct("PropertyBlock", {
@@ -103,9 +121,21 @@ local GRefManager = d.Struct("GRefManager", {
     d.Field(d.Int32, "pool_size")
 })
 
+local SceneEntities = d.Struct("SceneEntities", {
+    d.Skip(0x4),
+    -- handles must be resolved with the entity_manager
+    -- not sure about capacity, 1000 is wild guess
+    d.Field(d.Ref(d.RemoteAddr(d.Array(d.Int32, 1000))), "handles"),
+    d.Field(d.RawAddr(), "unk_08"),
+    d.Field(d.Int32, "unk_0c"),
+    d.Field(d.Int32, "num_handles"),
+})
+
 local SceneManager = d.Struct("SceneManager", {
     d.Skip(0x4),
     d.Field(d.Ref(GRefManager), "gref_manager"),  -- holds relocatable scene memory pool
+    d.Seek(0xC4),
+    d.Field(d.Ref(SceneEntities), "entities"),
     d.Seek(0xBB7),
     d.Field(SmallString, "scene_name"),
     d.Seek(0x1C4B),
@@ -125,7 +155,7 @@ M.Game = d.Struct("Game", {
     d.Seek(0x28AA18),
     d.Field(d.ZString(0x40), "lethed"),  -- literal string constant
     d.Seek(0x2B3418),
-    d.Field(d.ZString(0x0E), "current_mission_name"),  -- only during stats screen
+    d.Field(d.ZString(0x0E), "current_level_name"),  -- only during stats screen
     d.Seek(0x2B3420),
     d.Field(d.Int32, "shots_fired"),  -- only during stats screen
     d.Field(d.Int32, "close_encounters"),  -- only during stats screen
@@ -167,7 +197,12 @@ M.read_properties = function(addrs, reader, tracer)
             error(string.format("unknown type fourcc: 0x%x", property.type.fourcc))
         end
         local data = {}
-        for offset = 0,property.size-1,property.type.size do
+        local total_size = property.type.size
+        if total_size == 0 then
+            -- happens for "str " property
+            total_size = property.size
+        end
+        for offset = 0,property.size-1,total_size do
             local remote_data = d.remote_value(struc, addr + 0x0C + property.key_length + offset)
             data[#data+1], ok = read.read(remote_data, reader, tracer)
             if not ok then
@@ -182,44 +217,143 @@ M.read_properties = function(addrs, reader, tracer)
     return properties, true
 end
 
-M.mission_scene_names = {
-    "SCENES\\C0-1\\C0-1__MAIN.gms",  -- sanctuary
-    "SCENES\\C1-1\\C1-1__MAIN.gms",  -- anathema
-    "SCENES\\C2-1\\C2-1__MAIN.gms",  -- stakeout
-    "SCENES\\C2-2\\C2-2__MAIN.gms",  -- kirov
-    "SCENES\\C2-3\\C2-3__MAIN.gms",  -- tubeway
-    "SCENES\\C2-4\\C2-4__MAIN.gms",  -- invitation
-    "SCENES\\C3-1\\C3-1__MAIN.gms",  -- tracking
-    "SCENES\\C3-2a\\C3-2a__MAIN.gms",  -- hidden valley
-    "SCENES\\C3-2b\\C3-2b__MAIN.gms",  -- gates
-    "SCENES\\C3-3\\C3-3__MAIN.gms",  -- showdown
-    "SCENES\\C4-1\\C4-1__MAIN.gms",  -- basement
-    "SCENES\\C4-2\\C4-2__MAIN.gms",  -- graveyard
-    "SCENES\\C4-3\\C4-3__MAIN.gms",  -- jacuzzi
-    "SCENES\\C5-1\\C5-1__MAIN.gms",  -- bazaar
-    "SCENES\\C5-2\\C5-2__MAIN.gms",  -- motorcade
-    "SCENES\\C5-3\\C5-3__MAIN.gms",  -- tunnel rat
-    "SCENES\\C6-1\\C6-1__MAIN.gms",  -- temple city
-    "SCENES\\C6-2\\C6-2__MAIN.gms",  -- hannelore
-    "SCENES\\C6-3\\C6-3__MAIN.gms",  -- hospitality
-    "SCENES\\C7-1\\C7-1__MAIN.gms",  -- revisited
-    "SCENES\\C8-1\\C8-1__MAIN.gms",  -- finale
-}
-
--- The level control code is the index of the level control entity.
--- It appears to be deterministic for each mission.
+-- The level control code and player code are the indices of the entity.
+-- These appear to be deterministic for each level.
 -- Possibly quite fragile, but seems to work consistently.
 -- We store it here without the 0x40000 tag so we can use it directly as an index.
-M.level_control_code = {
-    0x205,
-    0x20E, 0x2C9, 0x228, 0x4E, 0x2E2, 0x2EE, 0x2D2, 0x33A, 0x4DB, 0x2B4,
-    0x3D4, 0x235, 0x27B, 0x100, 0x27B, 0x191, 0x2C2, 0x25B, 0x2C0, 0x2
+M.level_infos = {
+    -- sanctuary
+    {
+        scene_name = "SCENES\\C0-1\\C0-1__MAIN.gms", 
+        level_control_code = 0x205,
+        player_code = 0x6FD,
+    },
+    -- anathema
+    {
+        scene_name = "SCENES\\C1-1\\C1-1__MAIN.gms",
+        level_control_code = 0x20E,
+        player_code = 0x657,
+    },
+    -- stakeout
+    {
+        scene_name = "SCENES\\C2-1\\C2-1__MAIN.gms",
+        level_control_code = 0x2C9,
+        player_code = 0x6D5,
+    },
+    -- kirov  
+    {
+        scene_name = "SCENES\\C2-2\\C2-2__MAIN.gms",  
+        level_control_code = 0x228,
+        player_code = 0x62A,
+    },
+    -- tubeway
+    {
+        scene_name = "SCENES\\C2-3\\C2-3__MAIN.gms",
+        level_control_code = 0x4E,
+        player_code = 0x7DC,
+    },
+    -- invitation  
+    {
+        scene_name = "SCENES\\C2-4\\C2-4__MAIN.gms",  
+        level_control_code = 0x2E2,
+        player_code = 0x6F7,
+    },
+    -- tracking
+    {
+        scene_name = "SCENES\\C3-1\\C3-1__MAIN.gms",  
+        level_control_code = 0x2EE,
+        player_code = 0x71D,
+    },
+    -- hidden valley
+    {
+        scene_name = "SCENES\\C3-2a\\C3-2a__MAIN.gms",  
+        level_control_code = 0x2D2,
+        player_code = 0x690,
+    },
+    -- gates
+    {
+        scene_name = "SCENES\\C3-2b\\C3-2b__MAIN.gms",
+        level_control_code = 0x33A,
+        player_code = 0x790,
+    },
+    -- showdown  
+    {
+        scene_name = "SCENES\\C3-3\\C3-3__MAIN.gms",
+        level_control_code = 0x4DB,
+        player_code = 0x919,
+    },
+    -- basement  
+    {
+        scene_name = "SCENES\\C4-1\\C4-1__MAIN.gms",
+        level_control_code = 0x2B4,
+        player_code = 0x74B,
+    },
+    -- graveyard
+    {
+        scene_name = "SCENES\\C4-2\\C4-2__MAIN.gms",  
+        level_control_code = 0x3D4,
+        player_code = 0x800,
+    },
+    -- jacuzzi
+    {
+        scene_name = "SCENES\\C4-3\\C4-3__MAIN.gms",  
+        level_control_code = 0x235,
+        player_code = 0x638,
+    },
+    -- bazaar
+    {
+        scene_name = "SCENES\\C5-1\\C5-1__MAIN.gms",  
+        level_control_code = 0x27B,
+        player_code = 0x694,
+    },
+    -- motorcade
+    {
+        scene_name = "SCENES\\C5-2\\C5-2__MAIN.gms",  
+        level_control_code = 0x100,
+        player_code = 0x4B5,
+    },
+    -- tunnel rat
+    {
+        scene_name = "SCENES\\C5-3\\C5-3__MAIN.gms",  
+        level_control_code = 0x27B,
+        player_code = 0x63B,
+    },
+    -- temple city
+    {
+        scene_name = "SCENES\\C6-1\\C6-1__MAIN.gms",  
+        level_control_code = 0x191,
+        player_code = 0x5F3,
+    },
+    -- hannelore
+    {
+        scene_name = "SCENES\\C6-2\\C6-2__MAIN.gms",  
+        level_control_code = 0x2C2,
+        player_code = 0x79E,
+    },
+    -- hospitality
+    {
+        scene_name = "SCENES\\C6-3\\C6-3__MAIN.gms",  
+        level_control_code = 0x25B,
+        player_code = 0x80D,
+    },
+    -- revisited
+    {
+        scene_name = "SCENES\\C7-1\\C7-1__MAIN.gms",  
+        level_control_code = 0x2C0,
+        player_code = 0x70A,
+    },
+    -- finale
+    {
+        scene_name = "SCENES\\C8-1\\C8-1__MAIN.gms",  
+        level_control_code = 0x2,
+        player_code = 0x7B0,
+    },
 }
 
---- Return mission as index between 1 and 21 (or nil if not a mission name).
-M.get_mission_index = function(scene_name)
-    for i, v in ipairs(M.mission_scene_names) do
-        if v == scene_name then
+--- Return level as index between 1 and 21 (or nil if scene_name not found).
+M.get_level_index = function(scene_name)
+    for i, info in ipairs(M.level_infos) do
+        if info.scene_name == scene_name then
             return i
         end
     end
@@ -228,8 +362,11 @@ end
 
 M.resolve_gref = function(base, handle)
     if (handle & 0x40000000) == 0 then
-        assert(handle == 0)
-        return 0
+        if handle == 0 then
+            return 0
+        else
+            return nil
+        end
     end
     offset = handle & 0x3FFFFFFF
     return base + offset
@@ -260,15 +397,29 @@ M.get_level_control_addr_1 = function(versions, entities, properties)
 end
 
 --- Get the level control address using lookup table.
--- mission_index is number from 1 to 21 (1 for training, 2 for first real mission)
-M.get_level_control_addr_2 = function(versions, entities, mission_index)
-    local index = M.level_control_code[mission_index]
+-- level_index is number from 1 to 21 (1 for training, 2 for first real level)
+M.get_level_control_addr_2 = function(versions, entities, level_index)
+    local index = M.level_infos[level_index].level_control_code
     assert(versions[index + 1] == 0x40000)
     return entities[index + 1]
 end
 
+M.get_player = function(level_index, entities, gref_pool_base, reader, tracer)
+    local index = M.level_infos[level_index].player_code
+    local entity_addr = entities[index + 1]
+    local remote_entity = d.remote_value(M.PlayerEntity, entity_addr)
+    local entity, ok = read.read(remote_entity, reader, tracer)
+    if not ok then
+        return nil, false
+    end
+    local player_addr = M.resolve_gref(gref_pool_base, entity.gref)
+    local remote_player = d.remote_value(M.Player, player_addr)
+    return read.read(remote_player, reader, tracer)
+end
+
 --- Calculate aggression from player statistics.
--- Can be at most 2 for silent assassin rating.
+-- Must be strictly less than 3 for silent assassin rating.
+-- This means value <= 6.
 M.measure_aggression = function(level_control, shots_fired)
     -- raw measure of aggression (non-negative)
     local value = (
@@ -279,17 +430,17 @@ M.measure_aggression = function(level_control, shots_fired)
     )
     -- convert to [0,100] scale
     -- 0.5 * value for small values, ramping off at 100
-    local aggression = math.floor(100 * math.tanh(0.005 * value))
-    return aggression
+    return 100 * math.tanh(0.005 * value)
 end
 
 --- Calculate stealth from player statistics.
--- Must be above 85 for silent assassin rating.
+-- Must be 85 or more for silent assassin rating.
+-- This means value <= 1.
 M.measure_stealth = function(level_control)
     -- raw measure of stealth (non-negative)
     local value = level_control.alerts + level_control.close_encounters
     -- convert to [0,100] scale using power law
-    return math.floor(100 * (0.9 ^ value))
+    return 100 * (0.9 ^ value)
 end
 
 return M

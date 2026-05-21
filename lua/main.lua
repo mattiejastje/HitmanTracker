@@ -38,6 +38,8 @@ write_structs_cpp("hitman_blood_money", { hbm.Game }, "hitman_blood_money::struc
 write_structs_txt("hitman_codename_47", { hc47.HitmanDlc })
 write_structs_txt("hitman2_silent_assassin", {
   h2sa.LevelControl,
+  h2sa.PlayerEntity,
+  h2sa.Player,
   h2sa.Property,
   h2sa.Game,
 })
