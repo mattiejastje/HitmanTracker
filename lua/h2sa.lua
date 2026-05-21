@@ -69,6 +69,7 @@ M.Property = d.Struct("Property", {
 local PlayerData = d.Struct("PlayerData", {
     d.Seek(0x11C7),
     d.Field(d.Int32, "shots_fired"),
+    d.Seek(0x1263),  -- confirmed size
 })
 
 M.Player = d.Struct("Player", {
