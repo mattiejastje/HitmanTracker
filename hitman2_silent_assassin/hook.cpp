@@ -7,6 +7,14 @@ HookPtr hitman2_silent_assassin::hook(
     return install_hook(
         handle,
         {
+            // increment shots fired
+            Source{
+                base_ptr + 0x11C3F0,
+                // inc [ecx+000011C7]
+                {0xFF, 0x81, 0xC7, 0x11, 0x00, 0x00},
+                // new source code (jumps to target code)
+                {Jump{Code{0xE9}, Label{110}}, Code{0x90}, Label{100}},
+            },
             // set property
             Source{
                 base_ptr + 0x1B3050,
@@ -18,6 +26,17 @@ HookPtr hitman2_silent_assassin::hook(
             },
         },
         {
+            // increment shots fired
+            Label{110},
+            Code{0x89, 0x0D},                          // mov [Label{150}],ecx
+            Ptr{Label{150}},                           // ...
+            Code{0xFF, 0x81, 0xC7, 0x11, 0x00, 0x00},  // inc [ecx+000011C7]
+            Jump{Code{0xE9}, Label{100}},              // jmp Label{100}
+
+            Align{4, 0xCC},
+            Label{150},  // shots fired base pointer
+            Fill{0x40},
+
             // set property
             Label{210},
             Code{0x8B, 0x54, 0x24, 0x04},        // mov edx,[esp+04]
