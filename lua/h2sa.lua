@@ -405,7 +405,9 @@ end
 
 M.get_player = function(level_index, entities, gref_pool_base, reader, tracer)
     local index = M.level_infos[level_index].player_code
+    print(index);
     local entity_addr = entities[index + 1]
+    print("entity_addr ", entity_addr)
     local remote_entity = d.remote_value(M.PlayerEntity, entity_addr)
     local entity, ok = read.read(remote_entity, reader, tracer)
     if not ok then
