@@ -155,8 +155,7 @@ M.Game = d.Struct("Game", {
     d.Seek(0x28AA18),
     d.Field(d.ZString(0x40), "lethed"),  -- literal string constant
     d.Seek(0x2B3418),
-    d.Field(d.ZString(0x0E), "current_level_name"),  -- only during stats screen
-    d.Seek(0x2B3420),
+    d.Field(d.ZString(0x08), "current_level_name"),  -- only during stats screen
     d.Field(d.Int32, "shots_fired"),  -- only during stats screen
     d.Field(d.Int32, "close_encounters"),  -- only during stats screen
     d.Field(d.Int32, "headshots"),  -- only during stats screen
