@@ -12,9 +12,7 @@ local Vector3 = d.Array(d.Float, 3)
 local Matrix33 = d.Array(d.Array(d.Float, 3), 3)
 
 M.LevelControl = d.Struct("LevelControl", {
-    d.Seek(0x154),
-    d.Field(SmallString, "unk_scene_name"),  -- "C0-2\C0-2__MAIN"
-    d.Seek(0x208),
+    d.Skip(0x208),
     d.Field(d.Int32, "headshots"),
     d.Field(d.Int32, "enemies_wounded"),
     d.Field(d.Int32, "enemies_killed"),
@@ -27,8 +25,8 @@ M.LevelControl = d.Struct("LevelControl", {
 local EntityManager = d.Struct("EntityManager", {
     -- entity handle = (version << 18) | (index & 0x3FFFF)
     d.Seek(0x24),
-    d.Field(d.Ref(d.RemoteAddr(d.Array(d.Int32, 0x40000))), "versions"),  -- (version << 18) of each object
-    d.Field(d.Ref(d.RemoteAddr(d.Array(d.RawAddr(), 0x40000))), "entities"),  -- entities themselves
+    d.Field(d.NullableRef(d.RemoteAddr(d.Array(d.Int32, 0x40000))), "versions"),  -- (version << 18) of each object
+    d.Field(d.NullableRef(d.RemoteAddr(d.Array(d.RawAddr(), 0x40000))), "entities"),  -- entities themselves
 })
 
 local PropertyType = d.Struct("PropertyType", {
@@ -70,11 +68,15 @@ M.Property = d.Struct("Property", {
 })
 
 local PlayerData = d.Struct("PlayerData", {
+    --[[
     d.Seek(0xB61),
     d.Field(d.Int32, "unk_b61"),
     d.Field(d.Int32, "unk_b65"),
     d.Field(d.Int32, "unk_b69"),
+    ]]
+    d.Seek(0xB6D),
     d.Field(d.Int32, "player_gref"),  -- gref to player that owns this data
+    --[[
     d.Field(d.Int32, "unk_gref_b71"),
     d.Field(d.Int32, "unk_b75"),
     d.Field(d.Int32, "unk_b79"),
@@ -110,6 +112,8 @@ local PlayerData = d.Struct("PlayerData", {
     d.Field(d.RawAddr(), "unk_vtable"),
     d.Seek(0x11C3),
     d.Field(d.UInt32, "unk_11c3"),  -- could also be a gref
+    ]]
+    d.Seek(0x11C7),
     d.Field(d.Int32, "shots_fired"),
     d.Seek(0x1263),  -- confirmed size
 })
@@ -186,7 +190,7 @@ local SceneEntities = d.Struct("SceneEntities", {
 
 local SceneManager = d.Struct("SceneManager", {
     d.Skip(0x4),
-    d.Field(d.Ref(GRefManager), "gref_manager"),  -- holds relocatable scene memory pool
+    d.Field(d.NullableRef(GRefManager), "gref_manager"),  -- holds relocatable scene memory pool
     d.Seek(0xC4),
     d.Field(d.NullableRef(SceneEntities), "entities"),  -- can be null during mission reload
     d.Seek(0xBB7),

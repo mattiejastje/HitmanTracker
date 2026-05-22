@@ -1,42 +1,213 @@
 #include "stats.hpp"
 
 #include <cstdint>
+#include <mempeep/read.hpp>
+#include <mempeep/tracers/log_tracer.hpp>
 #include <unordered_map>
 #include <vector>
 
 #include "../hitman_common/stats.hpp"
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
+#include "structs.hpp"
 
-// unordered_map for fast lookup
-const std::unordered_map<std::string, int> scenes = {
-    {R"(SCENES\C0-1\C0-1__MAIN.gms)", 1},
-    {R"(SCENES\C1-1\C1-1__MAIN.gms)", 2},
-    {R"(SCENES\C2-1\C2-1__MAIN.gms)", 3},
-    {R"(SCENES\C2-2\C2-2__MAIN.gms)", 4},
-    {R"(SCENES\C2-3\C2-3__MAIN.gms)", 5},
-    {R"(SCENES\C2-4\C2-4__MAIN.gms)", 6},
-    {R"(SCENES\C3-1\C3-1__MAIN.gms)", 7},
-    {R"(SCENES\C3-2a\C3-2a__MAIN.gms)", 8},
-    {R"(SCENES\C3-2b\C3-2b__MAIN.gms)", 9},
-    {R"(SCENES\C3-3\C3-3__MAIN.gms)", 10},
-    {R"(SCENES\C4-1\C4-1__MAIN.gms)", 11},
-    {R"(SCENES\C4-2\C4-2__MAIN.gms)", 12},
-    {R"(SCENES\C4-3\C4-3__MAIN.gms)", 13},
-    {R"(SCENES\C5-1\C5-1__MAIN.gms)", 14},
-    {R"(SCENES\C5-2\C5-2__MAIN.gms)", 15},
-    {R"(SCENES\C5-3\C5-3__MAIN.gms)", 16},
-    {R"(SCENES\C6-1\C6-1__MAIN.gms)", 17},
-    {R"(SCENES\C6-2\C6-2__MAIN.gms)", 18},
-    {R"(SCENES\C6-3\C6-3__MAIN.gms)", 19},
-    {R"(SCENES\C7-1\C7-1__MAIN.gms)", 20},
-    {R"(SCENES\C8-1\C8-1__MAIN.gms)", 21},
+struct LevelInfo {
+    int map;
+    std::size_t level_control_code;
+    uint32_t player_gref;
 };
 
-// note: index 0 is for map 2 etc.
-const std::vector<intptr_t> second_offsets
-    = {0x838, 0xB24, 0x8A0, 0x138, 0xB88, 0xBB8, 0xB48, 0xCE8, 0x136C, 0xAD0,
-       0xF50, 0x8D4, 0x9EC, 0x400, 0x9EC, 0x644, 0xB08, 0x96C, 0xB00,  0x8};
+std::unordered_map<std::string, LevelInfo> level_infos{
+    // sanctuary
+    {
+        "SCENES\\C0-1\\C0-1__MAIN.gms",
+        {
+            .map = 1,
+            .level_control_code = 0x205,
+            .player_gref = 0x38EE0,
+        },
+    },
+    // anathema
+    {
+        "SCENES\\C1-1\\C1-1__MAIN.gms",
+        {
+            .map = 2,
+            .level_control_code = 0x20E,
+            .player_gref = 0x68F20,
+        },
+    },
+    // stakeout
+    {
+        "SCENES\\C2-1\\C2-1__MAIN.gms",
+        {
+            .map = 3,
+            .level_control_code = 0x2C9,
+            .player_gref = 0x9FE10,
+        },
+    },
+    // kirov
+    {
+        "SCENES\\C2-2\\C2-2__MAIN.gms",
+        {
+            .map = 4,
+            .level_control_code = 0x228,
+            .player_gref = 0x54A10,
+        },
+    },
+    // tubeway
+    {
+        "SCENES\\C2-3\\C2-3__MAIN.gms",
+        {
+            .map = 5,
+            .level_control_code = 0x4E,
+            .player_gref = 0x1E610,
+        },
+    },
+    // invitation
+    {
+        "SCENES\\C2-4\\C2-4__MAIN.gms",
+        {
+            .map = 6,
+            .level_control_code = 0x2E2,
+            .player_gref = 0x108CC0,
+        },
+    },
+    // tracking
+    {
+        "SCENES\\C3-1\\C3-1__MAIN.gms",
+        {
+            .map = 7,
+            .level_control_code = 0x2EE,
+            .player_gref = 0x55650,
+        },
+    },
+    // hidden valley
+    {
+        "SCENES\\C3-2a\\C3-2a__MAIN.gms",
+        {
+            .map = 8,
+            .level_control_code = 0x2D2,
+            .player_gref = 0x5F670,
+        },
+    },
+    // gates
+    {
+        "SCENES\\C3-2b\\C3-2b__MAIN.gms",
+        {
+            .map = 9,
+            .level_control_code = 0x33A,
+            .player_gref = 0x4EDC0,
+        },
+    },
+    // showdown
+    {
+        "SCENES\\C3-3\\C3-3__MAIN.gms",
+        {
+            .map = 10,
+            .level_control_code = 0x4DB,
+            .player_gref = 0x62A10,
+        },
+    },
+    // basement
+    {
+        "SCENES\\C4-1\\C4-1__MAIN.gms",
+        {
+            .map = 11,
+            .level_control_code = 0x2B4,
+            .player_gref = 0x77620,
+        },
+    },
+    // graveyard
+    {
+        "SCENES\\C4-2\\C4-2__MAIN.gms",
+        {
+            .map = 12,
+            .level_control_code = 0x3D4,
+            .player_gref = 0x811E0,
+        },
+    },
+    // jacuzzi
+    {
+        "SCENES\\C4-3\\C4-3__MAIN.gms",
+        {
+            .map = 13,
+            .level_control_code = 0x235,
+            .player_gref = 0x44630,
+        },
+    },
+    // bazaar
+    {
+        "SCENES\\C5-1\\C5-1__MAIN.gms",
+        {
+            .map = 14,
+            .level_control_code = 0x27B,
+            .player_gref = 0x3CFA0,
+        },
+    },
+    // motorcade
+    {
+        "SCENES\\C5-2\\C5-2__MAIN.gms",
+        {
+            .map = 15,
+            .level_control_code = 0x100,
+            .player_gref = 0x35590,
+        },
+    },
+    // tunnel rat
+    {
+        "SCENES\\C5-3\\C5-3__MAIN.gms",
+        {
+            .map = 16,
+            .level_control_code = 0x27B,
+            .player_gref = 0x4D310,
+        },
+    },
+    // temple city
+    {
+        "SCENES\\C6-1\\C6-1__MAIN.gms",
+        {
+            .map = 17,
+            .level_control_code = 0x191,
+            .player_gref = 0x6F820,
+        },
+    },
+    // hannelore
+    {
+        "SCENES\\C6-2\\C6-2__MAIN.gms",
+        {
+            .map = 18,
+            .level_control_code = 0x2C2,
+            .player_gref = 0x60860,
+        },
+    },
+    // hospitality
+    {
+        "SCENES\\C6-3\\C6-3__MAIN.gms",
+        {
+            .map = 19,
+            .level_control_code = 0x25B,
+            .player_gref = 0xC5110,
+        },
+    },
+    // revisited
+    {
+        "SCENES\\C7-1\\C7-1__MAIN.gms",
+        {
+            .map = 20,
+            .level_control_code = 0x2C0,
+            .player_gref = 0xA0270,
+        },
+    },
+    // finale
+    {
+        "SCENES\\C8-1\\C8-1__MAIN.gms",
+        {
+            .map = 21,
+            .level_control_code = 0x2,
+            .player_gref = 0x15B60,
+        },
+    },
+};
 
 // https://docs.google.com/spreadsheets/d/1i6dmzcBROqoJlsQjUGY8wxdqwxt2hXzjB9fPVggTf2k/edit?gid=1074822823#gid=1074822823
 const std::vector<StatsArray> silent_assassin_combinations
@@ -54,6 +225,9 @@ const std::vector<StatsArray> silent_assassin_combinations
        {2, 1, 1, 0, 0, 0, 0, 0}, {2, 1, 0, 0, 0, 1, 0, 0},
        {2, 0, 2, 1, 0, 0, 0, 0}, {2, 0, 1, 1, 0, 1, 0, 0},
        {3, 0, 0, 1, 0, 0, 0, 0}};
+
+// global to avoid allocating large object on stack
+static hitman2_silent_assassin::structs::Game game{};
 
 // note: almost same as Hitman Contracts, move to common?
 static int32_t measure_aggression(
@@ -77,36 +251,74 @@ bool hitman2_silent_assassin::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
-    const auto& base_ptr = base_ptrs.at(0);
-    auto scene = read_string(
-        handle, base_ptr + 0x2A6C5C, {0x98, 0xBB7, 0x0}, INT32_MAX, 64
-    );
-    if (scene) logging::trace("Scene {}", scene.value());
-    auto iter = scene ? scenes.find(scene.value()) : scenes.end();
-    stats.map = iter != scenes.end() ? iter->second : 0;
-    // the hook does not reset shots fired pointer on mission load/reload
-    // so we reset the pointer when the mission has just started i.e. during the
-    // first second (assuming no shots in first second of the mission...)
-    if (stats.time < 1.0f) write<int32_t>(handle, label_ptrs.at(150), 0);
+    const RemoteValue<structs::TGame, uint32_t> remote_game{
+        static_cast<uint32_t>(base_ptrs.at(0))
+    };
+    MemoryReader<uint32_t> reader{handle};
+    auto tracer
+        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
+    if (!mempeep::read(remote_game, reader, tracer, game)) return false;
+    const auto& scene = game.engine.scene_manager.scene_name.text;
+    auto iter = level_infos.find(scene);
+    if (iter == level_infos.end()) {
+        // no map loaded
+        stats.map = 0;
+        return true;
+    }
+    const auto& info = iter->second;
+    stats.map = info.map;
     stats.map_stage = MapStage::main;  // always render stats
     stats.difficulty = read<int32_t>(handle, label_ptrs.at(250)).value_or(0);
     if (stats.map >= 2) {
-        intptr_t shots_fired_ptr
-            = read<int32_t>(handle, label_ptrs.at(150)).value_or(0);
-        stats.shots_fired.value
-            = shots_fired_ptr
-                  ? read<int32_t>(handle, shots_fired_ptr + 0x11C7).value_or(0)
-                  : 0;
+        structs::LevelControl level_control{};
+        // entities can be briefly null if mission is still loading
+        if (game.entity_manager.entities) {
+            uint32_t level_control_addr{};
+            if (!mempeep::read_at(
+                    *game.entity_manager.entities,
+                    info.level_control_code,
+                    reader,
+                    tracer,
+                    level_control_addr
+                ))
+                return false;
+            // address can be briefly zero if mission is still loading
+            if (level_control_addr != 0) {
+                const RemoteValue<Primitive<structs::LevelControl>, uint32_t>
+                    remote_level_control{level_control_addr};
+                if (!mempeep::read(
+                        remote_level_control, reader, tracer, level_control
+                    )) {
+                    logging::warn("Failed to read level control");
+                    return false;
+                }
+            }
+        }
+        structs::Player player{};
+        // gref_manager can be null if mission is still loading
+        if (game.engine.scene_manager.gref_manager) {
+            const RemoteValue<structs::TPlayer, uint32_t> remote_player{
+                game.engine.scene_manager.gref_manager->pool.base
+                + info.player_gref
+            };
+            if (!mempeep::read(remote_player, reader, tracer, player)) {
+                logging::warn("Failed to read player");
+                return false;
+            }
+            if (player.data.player_gref != (0x40000000 | info.player_gref)) {
+                logging::warn("Player gref validation check failed");
+                return false;
+            }
+        }
         CommonGameStats game_stats{0};
-        // note: reading game_stats may fail if we are reloading
-        read_bytes(
-            handle,
-            base_ptr + 0x2A6C50,
-            {0x28, second_offsets.at(stats.map - 2), 0x208},
-            INT32_MAX,
-            &game_stats,
-            sizeof(game_stats)
-        );
+        stats.shots_fired.value = player.data.shots_fired;
+        game_stats.headshots = level_control.headshots;
+        game_stats.enemies_wounded = level_control.enemies_wounded;
+        game_stats.enemies_killed = level_control.enemies_killed;
+        game_stats.innocents_wounded = level_control.innocents_wounded;
+        game_stats.innocents_killed = level_control.innocents_killed;
+        game_stats.alerts = level_control.alerts;
+        game_stats.close_encounters = level_control.close_encounters;
         process_common_game_stats(
             silent_assassin_combinations, game_stats, stats
         );
@@ -116,9 +328,8 @@ bool hitman2_silent_assassin::update_slow(
                stealth == 0   ? Status::GREEN
                : stealth == 1 ? Status::YELLOW
                               : Status::RED};
-        auto aggression = measure_aggression(
-            game_stats, stats.shots_fired.value
-        );
+        auto aggression
+            = measure_aggression(game_stats, stats.shots_fired.value);
         stats.aggression
             = {std::lround(1000 * std::tanh(0.005 * aggression)),
                aggression <= 5   ? Status::GREEN

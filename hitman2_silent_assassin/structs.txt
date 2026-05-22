@@ -1,9 +1,4 @@
-struct SmallString {
-  char* text;  // offset 0x0
-};
-
 struct LevelControl {
-  SmallString unk_scene_name;  // offset 0x154
   int32_t headshots;  // offset 0x208
   int32_t enemies_wounded;  // offset 0x20c
   int32_t enemies_killed;  // offset 0x210
@@ -18,40 +13,7 @@ struct PlayerEntity {
 };
 
 struct PlayerData {
-  int32_t unk_b61;  // offset 0xb61
-  int32_t unk_b65;  // offset 0xb65
-  int32_t unk_b69;  // offset 0xb69
   int32_t player_gref;  // offset 0xb6d
-  int32_t unk_gref_b71;  // offset 0xb71
-  int32_t unk_b75;  // offset 0xb75
-  int32_t unk_b79;  // offset 0xb79
-  int32_t unk_b85;  // offset 0xb85
-  int32_t unk_b89;  // offset 0xb89
-  SmallString interaction;  // offset 0xb8d
-  SmallString unk_c0d;  // offset 0xc0d
-  int32_t unk_c8d;  // offset 0xc8d
-  int32_t unk_gref_c91;  // offset 0xc91
-  int8_t unk_c95;  // offset 0xc95
-  int8_t unk_c96;  // offset 0xc96
-  int32_t unk_c97;  // offset 0xc97
-  int32_t unk_d34;  // offset 0xd34
-  int8_t unk_d38;  // offset 0xd38
-  std::array<float, 0x3> unk_d39;  // offset 0xd39
-  int8_t unk_d45;  // offset 0xd45
-  int32_t unk_d46;  // offset 0xd46
-  std::array<float, 0x3> unk_d4e;  // offset 0xd4e
-  int32_t unk_d5a;  // offset 0xd5a
-  int32_t unk_d5e;  // offset 0xd5e
-  int32_t unk_d62;  // offset 0xd62
-  float unk_d66;  // offset 0xd66
-  int32_t unk_d6a;  // offset 0xd6a
-  int32_t unk_d6e;  // offset 0xd6e
-  int32_t unk_d72;  // offset 0xd72
-  int32_t unk_d76;  // offset 0xd76
-  int32_t unk_d7a;  // offset 0xd7a
-  int32_t unk_d7e;  // offset 0xd7e
-  void* unk_vtable;  // offset 0x108c
-  uint32_t unk_11c3;  // offset 0x11c3
   int32_t shots_fired;  // offset 0x11c7
 };
 
@@ -100,6 +62,10 @@ struct SceneEntities {
   void* unk_08;  // offset 0x8
   int32_t unk_0c;  // offset 0xc
   int32_t num_handles;  // offset 0x10
+};
+
+struct SmallString {
+  char* text;  // offset 0x0
 };
 
 struct PropertyBlock {
