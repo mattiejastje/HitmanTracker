@@ -8,6 +8,9 @@ local SmallString = d.Struct("SmallString", {
     d.Skip(0x7C),  -- inline buffer for strings <= 0x7C chars
 })
 
+local Vector3 = d.Array(d.Float, 3)
+local Matrix33 = d.Array(d.Array(d.Float, 3), 3)
+
 M.LevelControl = d.Struct("LevelControl", {
     d.Seek(0x154),
     d.Field(SmallString, "unk_scene_name"),  -- "C0-2\C0-2__MAIN"
@@ -67,14 +70,60 @@ M.Property = d.Struct("Property", {
 })
 
 local PlayerData = d.Struct("PlayerData", {
-    d.Seek(0x11C7),
+    d.Seek(0xB61),
+    d.Field(d.Int32, "unk_b61"),
+    d.Field(d.Int32, "unk_b65"),
+    d.Field(d.Int32, "unk_b69"),
+    d.Field(d.Int32, "player_gref"),  -- gref to player that owns this data
+    d.Field(d.Int32, "unk_gref_b71"),
+    d.Field(d.Int32, "unk_b75"),
+    d.Field(d.Int32, "unk_b79"),
+    d.Skip(0x8),
+    d.Field(d.Int32, "unk_b85"),
+    d.Field(d.Int32, "unk_b89"),
+    d.Field(SmallString, "interaction"),  -- text from top left menu
+    d.Field(SmallString, "unk_c0d"),
+    d.Field(d.Int32, "unk_c8d"),
+    d.Field(d.Int32, "unk_gref_c91"),
+    d.Field(d.Int8, "unk_c95"),
+    d.Field(d.Int8, "unk_c96"),
+    d.Field(d.Int32, "unk_c97"),
+    d.Seek(0xD34),
+    d.Field(d.Int32, "unk_d34"),
+    d.Field(d.Int8, "unk_d38"),
+    d.Field(Vector3, "unk_d39"),
+    d.Field(d.Int8, "unk_d45"),
+    d.Field(d.Int32, "unk_d46"),
+    d.Skip(0x4),
+    d.Field(Vector3, "unk_d4e"),
+    d.Field(d.Int32, "unk_d5a"),
+    d.Field(d.Int32, "unk_d5e"),
+    d.Field(d.Int32, "unk_d62"),
+    d.Field(d.Float, "unk_d66"),
+    d.Field(d.Int32, "unk_d6a"),
+    d.Field(d.Int32, "unk_d6e"),
+    d.Field(d.Int32, "unk_d72"),
+    d.Field(d.Int32, "unk_d76"),
+    d.Field(d.Int32, "unk_d7a"),
+    d.Field(d.Int32, "unk_d7e"),
+    d.Seek(0x108C),
+    d.Field(d.RawAddr(), "unk_vtable"),
+    d.Seek(0x11C3),
+    d.Field(d.UInt32, "unk_11c3"),  -- could also be a gref
     d.Field(d.Int32, "shots_fired"),
     d.Seek(0x1263),  -- confirmed size
 })
 
 M.Player = d.Struct("Player", {
+    d.Field(Matrix33, "unk_matrix_00"),
+    d.Seek(0x3C),
+    d.Field(d.Int32, "unk_flag_3c"), -- bit 0x08000000 means "don't free this object"?
     d.Seek(0x54),
     d.Field(d.Ref(PlayerData), "data"),
+    d.Field(d.Int8, "unk_flag_58"),
+    d.Seek(0x6C),
+    d.Field(d.Int32, "unk_6c"),
+    -- was last field, size is likely 0x70
 })
 
 M.PlayerEntity = d.Struct("PlayerEntity", {
@@ -115,11 +164,14 @@ local GRefManagerPool = d.Struct("GRefManagerPool", {
 })
 
 local GRefManager = d.Struct("GRefManager", {
+    d.Field(d.RawAddr(), "vtable"),
     d.Seek(0x14),
     d.Field(d.Ref(GRefManagerPool), "pool"),  -- relocateble objects referenced by gref
     d.Seek(0x24),
-    d.Field(d.Int32, "unk_24_flag"),  -- 1 if allocated?
-    d.Field(d.Int32, "pool_size")
+    d.Field(d.Int32, "is_allocated"),
+    d.Field(d.Int32, "pool_size"),
+    d.Seek(0x5D),
+    d.Field(d.RawAddr(), "slots"),  -- seems to keep track where things have been allocated, exact structure unknown
 })
 
 local SceneEntities = d.Struct("SceneEntities", {
@@ -136,7 +188,7 @@ local SceneManager = d.Struct("SceneManager", {
     d.Skip(0x4),
     d.Field(d.Ref(GRefManager), "gref_manager"),  -- holds relocatable scene memory pool
     d.Seek(0xC4),
-    d.Field(d.Ref(SceneEntities), "entities"),
+    d.Field(d.NullableRef(SceneEntities), "entities"),  -- can be null during mission reload
     d.Seek(0xBB7),
     d.Field(SmallString, "scene_name"),
     d.Seek(0x1C4B),
@@ -149,6 +201,8 @@ local Engine = d.Struct("Engine", {
 })
 
 M.Game = d.Struct("Game", {
+    d.Seek(0x2625D4),
+    d.Field(d.RawAddr(), "engine_ptr"),  -- always points to engine field
     d.Seek(0x2A6C50),
     d.Field(d.Ref(EntityManager), "entity_manager"),
     d.Seek(0x2A6C5C),
@@ -218,6 +272,7 @@ M.read_properties = function(addrs, reader, tracer)
 end
 
 -- The level control code and player code are the indices of the entity.
+-- The player gref is the offset relative to the gref base.
 -- These appear to be deterministic for each level.
 -- Possibly quite fragile, but level control code seems to work consistently.
 -- Unfortunately player code is not consistent,
@@ -230,126 +285,147 @@ M.level_infos = {
         scene_name = "SCENES\\C0-1\\C0-1__MAIN.gms", 
         level_control_code = 0x205,
         player_code = 0x6FD,
+        player_gref = 0x38EE0,
     },
     -- anathema
     {
         scene_name = "SCENES\\C1-1\\C1-1__MAIN.gms",
         level_control_code = 0x20E,
         player_code = 0x657,
+        player_gref = 0x68F20,
     },
     -- stakeout
     {
         scene_name = "SCENES\\C2-1\\C2-1__MAIN.gms",
         level_control_code = 0x2C9,
         player_code = 0x6D5,
+        player_gref = 0x9FE10,
     },
     -- kirov  
     {
         scene_name = "SCENES\\C2-2\\C2-2__MAIN.gms",  
         level_control_code = 0x228,
         player_code = 0x62A,
+        player_gref = 0x54A10,
     },
     -- tubeway
     {
         scene_name = "SCENES\\C2-3\\C2-3__MAIN.gms",
         level_control_code = 0x4E,
         player_code = 0x7DC,
+        player_gref = 0x1E610,
     },
     -- invitation  
     {
         scene_name = "SCENES\\C2-4\\C2-4__MAIN.gms",  
         level_control_code = 0x2E2,
         player_code = 0x6F7,
+        player_gref = 0x108CC0,
     },
     -- tracking
     {
         scene_name = "SCENES\\C3-1\\C3-1__MAIN.gms",  
         level_control_code = 0x2EE,
         player_code = 0x71D,
+        player_gref = 0x55650,
     },
     -- hidden valley
     {
         scene_name = "SCENES\\C3-2a\\C3-2a__MAIN.gms",  
         level_control_code = 0x2D2,
         player_code = 0x690,
+        player_gref = 0x5F670,
     },
     -- gates
     {
         scene_name = "SCENES\\C3-2b\\C3-2b__MAIN.gms",
         level_control_code = 0x33A,
         player_code = 0x790,
+        player_gref = 0x4EDC0,
     },
     -- showdown  
     {
         scene_name = "SCENES\\C3-3\\C3-3__MAIN.gms",
         level_control_code = 0x4DB,
         player_code = 0x919,
+        player_gref = 0x62A10,
     },
     -- basement  
     {
         scene_name = "SCENES\\C4-1\\C4-1__MAIN.gms",
         level_control_code = 0x2B4,
         player_code = 0x74B,
+        player_gref = 0x77620,
     },
     -- graveyard
     {
         scene_name = "SCENES\\C4-2\\C4-2__MAIN.gms",  
         level_control_code = 0x3D4,
         player_code = 0x800,
+        player_gref = 0x811E0,
     },
     -- jacuzzi
     {
         scene_name = "SCENES\\C4-3\\C4-3__MAIN.gms",  
         level_control_code = 0x235,
         player_code = 0x638,
+        player_gref = 0x44630,
     },
     -- bazaar
     {
         scene_name = "SCENES\\C5-1\\C5-1__MAIN.gms",  
         level_control_code = 0x27B,
         player_code = 0x694,
+        player_gref = 0x3CFA0,
     },
     -- motorcade
     {
         scene_name = "SCENES\\C5-2\\C5-2__MAIN.gms",  
         level_control_code = 0x100,
         player_code = 0x4B5,
+        player_gref = 0x35590,
     },
     -- tunnel rat
     {
         scene_name = "SCENES\\C5-3\\C5-3__MAIN.gms",  
         level_control_code = 0x27B,
         player_code = 0x63B,
+        player_gref = 0x4D310,
     },
     -- temple city
     {
         scene_name = "SCENES\\C6-1\\C6-1__MAIN.gms",  
         level_control_code = 0x191,
         player_code = 0x5F3,
+        player_gref = 0x6F820,
     },
     -- hannelore
     {
         scene_name = "SCENES\\C6-2\\C6-2__MAIN.gms",  
         level_control_code = 0x2C2,
         player_code = 0x79E,
+        player_gref = 0x60860,
     },
     -- hospitality
     {
         scene_name = "SCENES\\C6-3\\C6-3__MAIN.gms",  
         level_control_code = 0x25B,
         player_code = 0x80D,
+        player_gref = 0xC5110,
     },
     -- revisited
     {
         scene_name = "SCENES\\C7-1\\C7-1__MAIN.gms",  
         level_control_code = 0x2C0,
         player_code = 0x70A,
+        player_gref = 0xA0270,
     },
     -- finale
     {
         scene_name = "SCENES\\C8-1\\C8-1__MAIN.gms",  
         level_control_code = 0x2,
         player_code = 0x7B0,
+        player_gref = 0x15B60,
     },
 }
 
@@ -407,7 +483,18 @@ M.get_level_control_addr_2 = function(versions, entities, level_index)
     return entities[index + 1]
 end
 
-M.get_player = function(level_index, entities, gref_pool_base, reader, tracer)
+--- Get player via player_gref.
+-- Need more testing to check if reliable.
+M.get_player_1 = function(level_index, gref_pool_base, reader, tracer)
+    local gref = M.level_infos[level_index].player_gref
+    -- no need to resolve: was stored without gref marker
+    local remote_player = d.remote_value(M.Player, gref_pool_base + gref)
+    return read.read(remote_player, reader, tracer)
+end
+
+--- Get player via player_code.
+-- Seems only reliable when starting fresh mission.
+M.get_player_2 = function(level_index, entities, gref_pool_base, reader, tracer)
     local index = M.level_infos[level_index].player_code
     local entity_addr = entities[index + 1]
     local remote_entity = d.remote_value(M.PlayerEntity, entity_addr)
