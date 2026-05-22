@@ -32,9 +32,9 @@ local EntityManager = d.Struct("EntityManager", {
 local PropertyType = d.Struct("PropertyType", {
     d.Field(d.UInt32, "fourcc"),  -- space padded fourcc code (always 4 chars, reverse order)
     d.Field(d.Int32, "fourcc_length"),  -- length of code without padding
-    d.Field(d.Int32, "unk_id"),  -- unique number, maybe some id or index?
+    d.Field(d.Int32, "index"),  -- some index into the property manager system (unique for each type)
     d.Field(d.Int32, "size"),  -- size of the data in bytes
-    d.Field(d.Int32, "unk_elem_type"),  -- maybe element type: 1 = bytes, 2 = characters, 4 = ints, 8 = floats, ...?
+    d.Field(d.Int32, "type_flags"),  -- element type bit flags: 1 = bytes, 2 = characters, 4 = ints, 8 = floats, ...
 })
 
 --- map PropertyType.fourcc to struct
@@ -204,13 +204,40 @@ local Engine = d.Struct("Engine", {
     d.Field(d.Ref(SceneManager), "scene_manager"),
 })
 
+-- the property manager data is these items packed together
+M.PropertyManagerRecord = d.Struct("PropertyManagerRecord", {
+    d.Field(d.Int32, "record_size"),
+    d.Field(d.Int8, "is_active"),
+    d.Field(d.Int32, "key_length"),  -- including terminating null
+    d.Field(d.Ref(PropertyType), "type"),  -- type of data
+    d.Field(d.Int32, "size"),   -- size of the data in bytes
+    d.Field(d.ZString(0x40), "key"),  -- the key string
+    -- data follows immediately after the key string
+    -- offset is not static, need to calculate at runtime: 0x11 + key_length
+    -- number of elements is size / type.size
+})
+
+local PropertyManager = d.Struct("PropertyManager", {
+    d.Field(d.RawAddr(), "vtable"),
+    d.Field(d.Int32, "data_capacity"),  -- total size
+    d.Field(d.RawAddr(), "data"),  -- actual data
+    d.Field(d.Int32, "data_used"),   -- how much is actually used
+})
+
 M.Game = d.Struct("Game", {
     d.Seek(0x2625D4),
     d.Field(d.RawAddr(), "engine_ptr"),  -- always points to engine field
+    d.Seek(0x2625DC),
+    d.Field(d.RawAddr(), "unk_2a6c54_ptr"),  -- always points to unk_2a6c54 field
+    d.Seek(0x297840),
+    d.Field(d.Array(PropertyType, 18), "property_types"),
     d.Seek(0x2A6C50),
     d.Field(d.Ref(EntityManager), "entity_manager"),
+    d.Field(d.RawAddr(), "unk_2a6c54"),
     d.Seek(0x2A6C5C),
     d.Field(d.Ref(Engine), "engine"),
+    d.Seek(0x2A6C7C),
+    d.Field(d.Ref(PropertyManager), "property_manager"),
     d.Seek(0x28AA18),
     d.Field(d.ZString(0x40), "lethed"),  -- literal string constant
     d.Seek(0x2B3418),

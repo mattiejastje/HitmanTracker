@@ -28,9 +28,9 @@ struct Player {
 struct PropertyType {
   uint32_t fourcc;  // offset 0x0
   int32_t fourcc_length;  // offset 0x4
-  int32_t unk_id;  // offset 0x8
+  int32_t index;  // offset 0x8
   int32_t size;  // offset 0xc
-  int32_t unk_elem_type;  // offset 0x10
+  int32_t type_flags;  // offset 0x10
 };
 
 struct Property {
@@ -38,6 +38,15 @@ struct Property {
   PropertyType* type;  // offset 0x4
   int32_t size;  // offset 0x8
   char[64] key;  // offset 0xc
+};
+
+struct PropertyManagerRecord {
+  int32_t record_size;  // offset 0x0
+  int8_t is_active;  // offset 0x4
+  int32_t key_length;  // offset 0x5
+  PropertyType* type;  // offset 0x9
+  int32_t size;  // offset 0xd
+  char[64] key;  // offset 0x11
 };
 
 struct EntityManager {
@@ -102,10 +111,21 @@ struct Engine {
   SceneManager* scene_manager;  // offset 0x98
 };
 
+struct PropertyManager {
+  void* vtable;  // offset 0x0
+  int32_t data_capacity;  // offset 0x4
+  void* data;  // offset 0x8
+  int32_t data_used;  // offset 0xc
+};
+
 struct Game {
   void* engine_ptr;  // offset 0x2625d4
+  void* unk_2a6c54_ptr;  // offset 0x2625dc
+  std::array<PropertyType, 0x12> property_types;  // offset 0x297840
   EntityManager* entity_manager;  // offset 0x2a6c50
+  void* unk_2a6c54;  // offset 0x2a6c54
   Engine* engine;  // offset 0x2a6c5c
+  PropertyManager* property_manager;  // offset 0x2a6c7c
   char[64] lethed;  // offset 0x28aa18
   char[8] current_level_name;  // offset 0x2b3418
   int32_t shots_fired;  // offset 0x2b3420

@@ -41,6 +41,7 @@ h2sa_structs = {
   h2sa.PlayerEntity,
   h2sa.Player,
   h2sa.Property,
+  h2sa.PropertyManagerRecord,
   h2sa.Game,
 }
 write_structs_txt("hitman2_silent_assassin", h2sa_structs)

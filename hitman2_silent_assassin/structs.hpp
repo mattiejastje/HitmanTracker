@@ -69,9 +69,9 @@ using TPlayer = Struct<
 struct PropertyType {
     uint32_t fourcc;
     int32_t fourcc_length;
-    int32_t unk_id;
+    int32_t index;
     int32_t size;
-    int32_t unk_elem_type;
+    int32_t type_flags;
 };
 
 struct Property {
@@ -88,6 +88,25 @@ using TProperty = Struct<
         Field<Ref<Primitive<PropertyType>>, &Property::type>,
         Field<Int32, &Property::size>,
         Field<ZString<0x40>, &Property::key>>>;
+
+struct PropertyManagerRecord {
+    int32_t record_size;
+    int8_t is_active;
+    int32_t key_length;
+    PropertyType type;
+    int32_t size;
+    std::string key;
+};
+
+using TPropertyManagerRecord = Struct<
+    PropertyManagerRecord,
+    Fields<
+        Field<Int32, &PropertyManagerRecord::record_size>,
+        Field<Int8, &PropertyManagerRecord::is_active>,
+        Field<Int32, &PropertyManagerRecord::key_length>,
+        Field<Ref<Primitive<PropertyType>>, &PropertyManagerRecord::type>,
+        Field<Int32, &PropertyManagerRecord::size>,
+        Field<ZString<0x40>, &PropertyManagerRecord::key>>>;
 
 struct EntityManager {
     std::optional<
@@ -238,10 +257,21 @@ using TEngine = Struct<
     Engine,
     Fields<Seek<0x98>, Field<Ref<TSceneManager>, &Engine::scene_manager>>>;
 
+struct PropertyManager {
+    uint32_t vtable;
+    int32_t data_capacity;
+    uint32_t data;
+    int32_t data_used;
+};
+
 struct Game {
     uint32_t engine_ptr;
+    uint32_t unk_2a6c54_ptr;
+    std::array<PropertyType, 0x12> property_types;
     EntityManager entity_manager;
+    uint32_t unk_2a6c54;
     Engine engine;
+    PropertyManager property_manager;
     std::string lethed;
     std::string current_level_name;
     int32_t shots_fired;
@@ -263,10 +293,17 @@ using TGame = Struct<
     Fields<
         Seek<0x2625d4>,
         Field<RawAddr<uint32_t>, &Game::engine_ptr>,
+        Seek<0x2625dc>,
+        Field<RawAddr<uint32_t>, &Game::unk_2a6c54_ptr>,
+        Seek<0x297840>,
+        Field<Primitive<std::array<PropertyType, 0x12>>, &Game::property_types>,
         Seek<0x2a6c50>,
         Field<Ref<TEntityManager>, &Game::entity_manager>,
+        Field<RawAddr<uint32_t>, &Game::unk_2a6c54>,
         Seek<0x2a6c5c>,
         Field<Ref<TEngine>, &Game::engine>,
+        Seek<0x2a6c7c>,
+        Field<Ref<Primitive<PropertyManager>>, &Game::property_manager>,
         Seek<0x28aa18>,
         Field<ZString<0x40>, &Game::lethed>,
         Seek<0x2b3418>,
