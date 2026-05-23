@@ -210,13 +210,10 @@ local Engine = d.Struct("Engine", {
 M.PropertyManagerRecord = d.Struct("PropertyManagerRecord", {
     d.Field(d.Int32, "record_size"),
     d.Field(d.Int8, "is_active"),
-    d.Field(d.Int32, "key_length"),  -- including terminating null
-    d.Field(d.Ref(PropertyType), "type"),  -- type of data
-    d.Field(d.Int32, "size"),   -- size of the data in bytes
-    d.Field(d.ZString(0x40), "key"),  -- the key string
+    d.Field(d.RemoteAddr(M.Property), "property"),
+    -- property has same structure as SharedCom property:
     -- data follows immediately after the key string
-    -- offset is not static, need to calculate at runtime: 0x11 + key_length
-    -- number of elements is size / type.size
+    -- offset is not static, need to calculate at runtime
 })
 
 local PropertyManager = d.Struct("PropertyManager", {
@@ -258,10 +255,10 @@ M.Game = d.Struct("Game", {
     d.Field(d.Int32, "saves_used"),  -- only during stats screen
 })
 
---- Get all valid property addresses from the shared_com container.
-M.get_properties_addrs = function(shared_com_container_blocks)
+--- Get all valid property addresses from the SceneManager shared_com container.
+M.get_scene_manager_property_addrs = function(scene_manager)
     local addrs = {}
-    for _, block in ipairs(shared_com_container_blocks) do
+    for _, block in ipairs(scene_manager.shared_com.container.blocks) do
         for i = 1,block.num_properties,1 do
             addrs[#addrs + 1] = block.properties[i]
         end
@@ -269,39 +266,60 @@ M.get_properties_addrs = function(shared_com_container_blocks)
     return addrs
 end
 
---- Read all properties and their data at the given addresses.
-M.read_properties = function(addrs, reader, tracer)
+--- Read all PropertyManager records to get their addresses.
+M.read_property_manager_property_addrs = function(property_manager, reader, tracer)
+    local ok = true
+    local addrs = {}
+    local offset = 0
+    while offset < property_manager.data_used do
+        local remote_record = d.remote_value(M.PropertyManagerRecord, property_manager.data + offset)
+        local record, ok = read.read(remote_record, reader, tracer)
+        if not ok then break end
+        addrs[#addrs + 1] = record.property.address
+        offset = offset + record.record_size
+    end
+    return addrs, ok
+end
+
+--- Read single SharedCom property and its data at the given address.
+M.read_shared_com_property = function(addr, reader, tracer)
+    local remote_property = d.remote_value(M.Property, addr)
+    local property, ok = read.read(remote_property, reader, tracer)
+    if not ok then return nil end
+    local struc = M.property_struct[property.type.fourcc]
+    if not struc then
+        error(string.format("unknown type fourcc: 0x%x", property.type.fourcc))
+    end
+    local data = {}
+    local total_size = property.type.size
+    if total_size == 0 then
+        -- happens for "str " property
+        total_size = property.size
+    end
+    for offset = 0,property.size-1,total_size do
+        local remote_data = d.remote_value(struc, addr + 0x0C + property.key_length + offset)
+        data[#data+1], ok = read.read(remote_data, reader, tracer)
+        if not ok then return nil end
+    end
+    return property, data
+end
+
+--- Read all SharedCom properties and their data at the given addresses.
+M.read_shared_com_properties = function(addrs, reader, tracer)
     local ok = true
     local properties = {}
     for _, addr in ipairs(addrs) do
-        local remote_property = d.remote_value(M.Property, addr)
-        local property, ok = read.read(remote_property, reader, tracer)
-        if not ok then
-            return properties, false
-        end
-        struc = M.property_struct[property.type.fourcc]
-        if not struc then
-            error(string.format("unknown type fourcc: 0x%x", property.type.fourcc))
-        end
-        local data = {}
-        local total_size = property.type.size
-        if total_size == 0 then
-            -- happens for "str " property
-            total_size = property.size
-        end
-        for offset = 0,property.size-1,total_size do
-            local remote_data = d.remote_value(struc, addr + 0x0C + property.key_length + offset)
-            data[#data+1], ok = read.read(remote_data, reader, tracer)
-            if not ok then
-                return properties, false
-            end
+        local property, data = M.read_shared_com_property(addr, reader, tracer)
+        if not property then
+            ok = false
+            break
         end
         properties[property.key] = {
             type_fourcc = property.type.fourcc,
             data = data,
         }
     end
-    return properties, true
+    return properties, ok
 end
 
 -- The level control code and player code are the indices of the entity.

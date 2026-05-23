@@ -43,10 +43,7 @@ struct Property {
 struct PropertyManagerRecord {
   int32_t record_size;  // offset 0x0
   int8_t is_active;  // offset 0x4
-  int32_t key_length;  // offset 0x5
-  PropertyType* type;  // offset 0x9
-  int32_t size;  // offset 0xd
-  char[64] key;  // offset 0x11
+  Property property;  // offset 0x5
 };
 
 struct EntityManager {

@@ -92,10 +92,7 @@ using TProperty = Struct<
 struct PropertyManagerRecord {
     int32_t record_size;
     int8_t is_active;
-    int32_t key_length;
-    PropertyType type;
-    int32_t size;
-    std::string key;
+    RemoteValue<TProperty, uint32_t> property;
 };
 
 using TPropertyManagerRecord = Struct<
@@ -103,10 +100,9 @@ using TPropertyManagerRecord = Struct<
     Fields<
         Field<Int32, &PropertyManagerRecord::record_size>,
         Field<Int8, &PropertyManagerRecord::is_active>,
-        Field<Int32, &PropertyManagerRecord::key_length>,
-        Field<Ref<Primitive<PropertyType>>, &PropertyManagerRecord::type>,
-        Field<Int32, &PropertyManagerRecord::size>,
-        Field<ZString<0x40>, &PropertyManagerRecord::key>>>;
+        Field<
+            RemoteAddr<TProperty, uint32_t>,
+            &PropertyManagerRecord::property>>>;
 
 struct EntityManager {
     std::optional<
