@@ -324,169 +324,115 @@ end
 
 -- The level control code and player code are the indices of the entity.
 -- The player gref is the offset relative to the gref base.
--- These appear to be deterministic for each level.
--- Looks fragile, but level control code and player_gref seem to work consistently.
--- Unfortunately player code only works when level is started from scratch.
--- Stored without 0x40000 or 0x40000000 tag so can be used directly as an index/offset.
+-- Looks fragile, but level control code and player_gref seem deterministic.
+-- The gref is stored without 0x40000000 tag so can be used directly as an offset.
 M.level_infos = {
     -- sanctuary
-    {
-        scene_name = "SCENES\\C0-1\\C0-1__MAIN.gms", 
+    ["SCENES\\C0-1\\C0-1__MAIN.gms"] = {
         level_control_code = 0x205,
-        player_code = 0x6FD,
         player_gref = 0x38EE0,
     },
     -- anathema
-    {
-        scene_name = "SCENES\\C1-1\\C1-1__MAIN.gms",
+    ["SCENES\\C1-1\\C1-1__MAIN.gms"] = {
         level_control_code = 0x20E,
-        player_code = 0x657,
         player_gref = 0x68F20,
     },
     -- stakeout
-    {
-        scene_name = "SCENES\\C2-1\\C2-1__MAIN.gms",
+    ["SCENES\\C2-1\\C2-1__MAIN.gms"] = {
         level_control_code = 0x2C9,
-        player_code = 0x6D5,
         player_gref = 0x9FE10,
     },
     -- kirov  
-    {
-        scene_name = "SCENES\\C2-2\\C2-2__MAIN.gms",  
+    ["SCENES\\C2-2\\C2-2__MAIN.gms"] = {
         level_control_code = 0x228,
-        player_code = 0x62A,
         player_gref = 0x54A10,
     },
     -- tubeway
-    {
-        scene_name = "SCENES\\C2-3\\C2-3__MAIN.gms",
+    ["SCENES\\C2-3\\C2-3__MAIN.gms"] = {
         level_control_code = 0x4E,
-        player_code = 0x7DC,
         player_gref = 0x1E610,
     },
     -- invitation  
-    {
-        scene_name = "SCENES\\C2-4\\C2-4__MAIN.gms",  
+    ["SCENES\\C2-4\\C2-4__MAIN.gms"] = {
         level_control_code = 0x2E2,
-        player_code = 0x6F7,
         player_gref = 0x108CC0,
     },
     -- tracking
-    {
-        scene_name = "SCENES\\C3-1\\C3-1__MAIN.gms",  
+    ["SCENES\\C3-1\\C3-1__MAIN.gms"] = {
         level_control_code = 0x2EE,
-        player_code = 0x71D,
         player_gref = 0x55650,
     },
     -- hidden valley
-    {
-        scene_name = "SCENES\\C3-2a\\C3-2a__MAIN.gms",  
+    ["SCENES\\C3-2a\\C3-2a__MAIN.gms"] = {
         level_control_code = 0x2D2,
-        player_code = 0x690,
         player_gref = 0x5F670,
     },
     -- gates
-    {
-        scene_name = "SCENES\\C3-2b\\C3-2b__MAIN.gms",
+    ["SCENES\\C3-2b\\C3-2b__MAIN.gms"] = {
         level_control_code = 0x33A,
-        player_code = 0x790,
         player_gref = 0x4EDC0,
     },
     -- showdown  
-    {
-        scene_name = "SCENES\\C3-3\\C3-3__MAIN.gms",
+    ["SCENES\\C3-3\\C3-3__MAIN.gms"] = {
         level_control_code = 0x4DB,
-        player_code = 0x919,
         player_gref = 0x62A10,
     },
     -- basement  
-    {
-        scene_name = "SCENES\\C4-1\\C4-1__MAIN.gms",
+    ["SCENES\\C4-1\\C4-1__MAIN.gms"] = {
         level_control_code = 0x2B4,
-        player_code = 0x74B,
         player_gref = 0x77620,
     },
     -- graveyard
-    {
-        scene_name = "SCENES\\C4-2\\C4-2__MAIN.gms",  
+    ["SCENES\\C4-2\\C4-2__MAIN.gms"] = {
         level_control_code = 0x3D4,
-        player_code = 0x800,
         player_gref = 0x811E0,
     },
     -- jacuzzi
-    {
-        scene_name = "SCENES\\C4-3\\C4-3__MAIN.gms",  
+    ["SCENES\\C4-3\\C4-3__MAIN.gms"] = {
         level_control_code = 0x235,
-        player_code = 0x638,
         player_gref = 0x44630,
     },
     -- bazaar
-    {
-        scene_name = "SCENES\\C5-1\\C5-1__MAIN.gms",  
+    ["SCENES\\C5-1\\C5-1__MAIN.gms"] = {
         level_control_code = 0x27B,
-        player_code = 0x694,
         player_gref = 0x3CFA0,
     },
     -- motorcade
-    {
-        scene_name = "SCENES\\C5-2\\C5-2__MAIN.gms",  
+    ["SCENES\\C5-2\\C5-2__MAIN.gms"] = {
         level_control_code = 0x100,
-        player_code = 0x4B5,
         player_gref = 0x35590,
     },
     -- tunnel rat
-    {
-        scene_name = "SCENES\\C5-3\\C5-3__MAIN.gms",  
+    ["SCENES\\C5-3\\C5-3__MAIN.gms"] = {
         level_control_code = 0x27B,
-        player_code = 0x63B,
         player_gref = 0x4D310,
     },
     -- temple city
-    {
-        scene_name = "SCENES\\C6-1\\C6-1__MAIN.gms",  
+    ["SCENES\\C6-1\\C6-1__MAIN.gms"] = {
         level_control_code = 0x191,
-        player_code = 0x5F3,
         player_gref = 0x6F820,
     },
     -- hannelore
-    {
-        scene_name = "SCENES\\C6-2\\C6-2__MAIN.gms",  
+    ["SCENES\\C6-2\\C6-2__MAIN.gms"] = {
         level_control_code = 0x2C2,
-        player_code = 0x79E,
         player_gref = 0x60860,
     },
     -- hospitality
-    {
-        scene_name = "SCENES\\C6-3\\C6-3__MAIN.gms",  
+    ["SCENES\\C6-3\\C6-3__MAIN.gms"] = {
         level_control_code = 0x25B,
-        player_code = 0x80D,
         player_gref = 0xC5110,
     },
     -- revisited
-    {
-        scene_name = "SCENES\\C7-1\\C7-1__MAIN.gms",  
+    ["SCENES\\C7-1\\C7-1__MAIN.gms"] = {
         level_control_code = 0x2C0,
-        player_code = 0x70A,
         player_gref = 0xA0270,
     },
     -- finale
-    {
-        scene_name = "SCENES\\C8-1\\C8-1__MAIN.gms",  
+    ["SCENES\\C8-1\\C8-1__MAIN.gms"] = {
         level_control_code = 0x2,
-        player_code = 0x7B0,
         player_gref = 0x15B60,
     },
 }
-
---- Return level as index between 1 and 21 (or nil if scene_name not found).
-M.get_level_index = function(scene_name)
-    for i, info in ipairs(M.level_infos) do
-        if info.scene_name == scene_name then
-            return i
-        end
-    end
-    return nil
-end
 
 M.resolve_gref = function(base, handle)
     if (handle & 0x40000000) == 0 then
@@ -519,40 +465,22 @@ M.get_property_entity = function(versions, entities, properties, name)
     return M.resolve_entity(versions, entities, handle)
 end
 
---- Get the level control address similar to how the game does it.
-M.get_level_control_addr_1 = function(versions, entities, properties)
-    return M.get_property_entity(versions, entities, properties, "LevelControlCode")
+--- Get the level control address from scene properties (similar to how the game does it).
+M.get_level_control_addr_1 = function(versions, entities, scene_properties)
+    return M.get_property_entity(versions, entities, scene_properties, "LevelControlCode")
 end
 
---- Get the level control address using lookup table.
--- level_index is number from 1 to 21 (1 for training, 2 for first real level)
-M.get_level_control_addr_2 = function(versions, entities, level_index)
-    local index = M.level_infos[level_index].level_control_code
-    assert(versions[index + 1] == 0x40000)
-    return entities[index + 1]
+--- Get the level control address directly from a given level control code (without version marker).
+M.get_level_control_addr_2 = function(versions, entities, level_control_code)
+    -- level_control_code stored without marker so no need to resolve, can use as index directly
+    assert(versions[level_control_code + 1] == 0x40000)
+    return entities[level_control_code + 1]
 end
 
---- Get player via player_gref.
--- Need more testing to check if reliable.
-M.get_player_1 = function(level_index, gref_pool_base, reader, tracer)
-    local gref = M.level_infos[level_index].player_gref
-    -- no need to resolve: was stored without gref marker
-    local remote_player = d.remote_value(M.Player, gref_pool_base + gref)
-    return read.read(remote_player, reader, tracer)
-end
-
---- Get player via player_code.
--- Seems only reliable when starting fresh mission.
-M.get_player_2 = function(level_index, entities, gref_pool_base, reader, tracer)
-    local index = M.level_infos[level_index].player_code
-    local entity_addr = entities[index + 1]
-    local remote_entity = d.remote_value(M.PlayerEntity, entity_addr)
-    local entity, ok = read.read(remote_entity, reader, tracer)
-    if not ok then
-        return nil, false
-    end
-    local player_addr = M.resolve_gref(gref_pool_base, entity.gref)
-    local remote_player = d.remote_value(M.Player, player_addr)
+--- Read player via a level's stable player_gref (without marker).
+M.read_player = function(gref_pool_base, player_gref, reader, tracer)
+    -- gref not resolved as passed without marker
+    local remote_player = d.remote_value(M.Player, gref_pool_base + player_gref)
     return read.read(remote_player, reader, tracer)
 end
 
