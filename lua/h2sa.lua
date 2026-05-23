@@ -305,11 +305,9 @@ end
 -- The level control code and player code are the indices of the entity.
 -- The player gref is the offset relative to the gref base.
 -- These appear to be deterministic for each level.
--- Possibly quite fragile, but level control code seems to work consistently.
--- Unfortunately player code is not consistent,
--- and only works when level is started from scratch.
--- TODO find consistent method and remove here when found
--- We store it here without the 0x40000 tag so we can use it directly as an index.
+-- Looks fragile, but level control code and player_gref seem to work consistently.
+-- Unfortunately player code only works when level is started from scratch.
+-- Stored without 0x40000 or 0x40000000 tag so can be used directly as an index/offset.
 M.level_infos = {
     -- sanctuary
     {
