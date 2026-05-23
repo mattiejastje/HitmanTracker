@@ -38,14 +38,16 @@ local PropertyType = d.Struct("PropertyType", {
 })
 
 --- map PropertyType.fourcc to struct
+-- There are more fourcc's registered in the type system but these appear to be the only ones used.
 M.property_struct = {
     -- "r": entity manager handle (version << 18) | (index & 0x3FFFF)
     [0x72202020] = d.UInt32,
     -- "gref": global reference handle
     -- a gref is an offset relative to gref_manager.pool.base
-    -- the pool itself is presumably relocatable
+    -- the pool itself is relocatable so this gives a stable reference inside the pool
     -- tagged with 0x40000000 to mark as gref (as opposed to regular pointer)
-    -- 0x40000000 | (addr - gref_manager.pool.base) & 0x3FFFFFFF)
+    -- gref = 0x40000000 | (addr - gref_manager.pool.base)
+    -- addr = gref_manager.pool.base + (gref & 0x3FFFFFFF)
     [0x67726566] = d.UInt32,
     -- "l": integer
     [0x6c202020] = d.Int32,
