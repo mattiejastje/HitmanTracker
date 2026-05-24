@@ -48,7 +48,7 @@ using TPropertyManagerRecord = Struct<
             RemoteAddr<TProperty, uint32_t>,
             &PropertyManagerRecord::property>>>;
 
-struct EngineEntityManager {
+struct EntityManager {
     std::optional<
         RemoteValue<Primitive<std::array<int32_t, 0x40000>>, uint32_t>>
         versions;
@@ -57,18 +57,18 @@ struct EngineEntityManager {
         entities;
 };
 
-using TEngineEntityManager = Struct<
-    EngineEntityManager,
+using TEntityManager = Struct<
+    EntityManager,
     Fields<
         Seek<0x24>,
         Field<
             NullableRef<
                 RemoteAddr<Primitive<std::array<int32_t, 0x40000>>, uint32_t>>,
-            &EngineEntityManager::versions>,
+            &EntityManager::versions>,
         Field<
             NullableRef<
                 RemoteAddr<Primitive<std::array<uint32_t, 0x40000>>, uint32_t>>,
-            &EngineEntityManager::entities>>>;
+            &EntityManager::entities>>>;
 
 struct SceneEntityManagerUnk08 {
     int32_t mask;
@@ -207,7 +207,7 @@ struct HitmanContracts {
     float ticks_per_second;
     std::string first_mission_name;
     std::array<PropertyType, 0x12> property_types;
-    EngineEntityManager entity_manager;
+    EntityManager entity_manager;
     Engine engine;
     PropertyManager property_manager;
     uint32_t player_ptr;
@@ -224,6 +224,8 @@ struct HitmanContracts {
     int32_t innocents_wounded;
     int32_t stealth;
     int32_t aggression;
+    int32_t time;
+    int32_t saves_used;
 };
 
 using THitmanContracts = Struct<
@@ -240,7 +242,7 @@ using THitmanContracts = Struct<
             Primitive<std::array<PropertyType, 0x12>>,
             &HitmanContracts::property_types>,
         Seek<0x394570>,
-        Field<Ref<TEngineEntityManager>, &HitmanContracts::entity_manager>,
+        Field<Ref<TEntityManager>, &HitmanContracts::entity_manager>,
         Seek<0x39457c>,
         Field<Ref<TEngine>, &HitmanContracts::engine>,
         Seek<0x39459c>,
@@ -265,6 +267,8 @@ using THitmanContracts = Struct<
         Field<Int32, &HitmanContracts::innocents_killed>,
         Field<Int32, &HitmanContracts::innocents_wounded>,
         Field<Int32, &HitmanContracts::stealth>,
-        Field<Int32, &HitmanContracts::aggression>>>;
+        Field<Int32, &HitmanContracts::aggression>,
+        Field<Int32, &HitmanContracts::time>,
+        Field<Int32, &HitmanContracts::saves_used>>>;
 
 }  // namespace hitman_contracts::structs

@@ -27,7 +27,6 @@
 #include "hitman_codename_47/hook.hpp"
 #include "hitman_codename_47/stats.hpp"
 #include "hitman_contracts/gui.hpp"
-#include "hitman_contracts/hook.hpp"
 #include "hitman_contracts/stats.hpp"
 #include "logging.hpp"
 #include "mem/handle.hpp"
@@ -110,7 +109,7 @@ static const std::vector<GameInfo> game_infos = {
         .name = hitman_contracts::GAME_NAME,
         .methods = GameMethods{
             hitman_contracts::gui,
-            hitman_contracts::hook,
+            hook_nothing,
             hook_immediately_ready,
             hitman_contracts::update_slow,
             hitman_contracts::update_fast

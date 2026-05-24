@@ -22,7 +22,7 @@ M.LevelControl = d.Struct("LevelControl", {
     d.Field(d.Int32, "close_encounters"),
 })
 
-local EntityManager = d.Struct("EntityManager", {
+M.EntityManager = d.Struct("EntityManager", {
     -- entity handle = (version << 18) | (index & 0x3FFFF)
     d.Seek(0x24),
     d.Field(d.NullableRef(d.RemoteAddr(d.Array(d.Int32, 0x40000))), "versions"),  -- (version << 18) of each object
@@ -231,7 +231,7 @@ M.Game = d.Struct("Game", {
     d.Seek(0x297840),
     d.Field(d.Array(M.PropertyType, 18), "property_types"),
     d.Seek(0x2A6C50),
-    d.Field(d.Ref(EntityManager), "entity_manager"),
+    d.Field(d.Ref(M.EntityManager), "entity_manager"),
     d.Field(d.RawAddr(), "unk_2a6c54"),
     d.Seek(0x2A6C5C),
     d.Field(d.Ref(Engine), "engine"),

@@ -3,13 +3,6 @@ M = {}
 local d = require("mempeep.descriptors")
 local h2sa = require("h2sa")
 
-local EngineEntityManager = d.Struct("EngineEntityManager", {
-    -- entity handle = (version << 18) | (index & 0x3FFFF)
-    d.Seek(0x24),
-    d.Field(d.NullableRef(d.RemoteAddr(d.Array(d.Int32, 0x40000))), "versions"),  -- (version << 18) of each object
-    d.Field(d.NullableRef(d.RemoteAddr(d.Array(d.RawAddr(), 0x40000))), "entities"),  -- entities themselves
-})
-
 local SceneEntityManagerUnk08 = d.Struct("SceneEntityManagerUnk08", {
     d.Seek(0x10),
     d.Field(d.Int32, "mask"),
@@ -84,7 +77,7 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Seek(0x37EEF8),
     d.Field(d.Array(h2sa.PropertyType, 18), "property_types"),
     d.Seek(0x394570),
-    d.Field(d.Ref(EngineEntityManager), "entity_manager"),
+    d.Field(d.Ref(h2sa.EntityManager), "entity_manager"),
     d.Seek(0x39457C),
     d.Field(d.Ref(Engine), "engine"),
     d.Seek(0x39459C),
@@ -108,6 +101,8 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Field(d.Int32, "innocents_wounded"),  -- only during stats screen
     d.Field(d.Int32, "stealth"),  -- only during stats screen
     d.Field(d.Int32, "aggression"),  -- only during stats screen
+    d.Field(d.Int32, "time"),  -- only during stats screen
+    d.Field(d.Int32, "saves_used"),  -- only during stats screen
 })
 
 M.mission_scene_names = {

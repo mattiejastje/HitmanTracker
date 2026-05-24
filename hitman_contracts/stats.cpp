@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "../hitman_common/read_lethed.hpp"
 #include "../hitman_common/stats.hpp"
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
@@ -103,7 +104,13 @@ bool hitman_contracts::update_slow(
         logging::trace("Unhandled scene {}", scene);
         stats.map = 0;
     }
-    stats.difficulty = read<int32_t>(handle, label_ptrs.at(250)).value_or(0);
+    stats.difficulty = read_lethed(
+                           game.property_manager.data,
+                           game.property_manager.data_used,
+                           reader,
+                           tracer
+    )
+                           .value_or(0);
     if (stats.map >= 1) {
         const auto& player_data = game.player.data;
         if (player_data) {
