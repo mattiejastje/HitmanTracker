@@ -118,17 +118,17 @@ static std::optional<std::string> read_hitman_sav(
     std::string payload(
         reinterpret_cast<char*>(raw.data()) + header_size, payload_size
     );
-    Random prng(seed);
+    Random rand(seed);
     size_t word_count = payload_size / 2;
     for (size_t i = 0; i < word_count; i++) {
-        uint16_t key = prng.next();
+        uint16_t key = rand.next();
         uint16_t word;
         memcpy(&word, payload.data() + i * 2, 2);
         word ^= key;
         memcpy(payload.data() + i * 2, &word, 2);
     }
     if (payload_size % 2 == 1) {
-        uint16_t key = prng.next();
+        uint16_t key = rand.next();
         payload[payload_size - 1] ^= static_cast<uint8_t>(key & 0xFF);
     }
     uint32_t calculated_checksum = checksum(payload.data(), payload_size);
@@ -154,9 +154,16 @@ static std::optional<int32_t> read_difficulty_from_hitman_sav(
 ) {
     static std::filesystem::file_time_type cached_mtime{};
     static std::optional<int32_t> cached_difficulty{};
-    auto mtime = std::filesystem::last_write_time(path);
+    std::error_code ec;
+    auto mtime = std::filesystem::last_write_time(path, ec);
+    if (ec) {
+        logging::error(
+            "Unable to check last write time of {}: {}", path, ec.message()
+        );
+        return {};
+    }
     if (mtime == cached_mtime) return cached_difficulty;
-    logging::debug("Reading Hitman.sav");
+    logging::debug("Reading {}", path);
     cached_mtime = mtime;
     auto payload = read_hitman_sav(path);
     if (!payload) return {};
