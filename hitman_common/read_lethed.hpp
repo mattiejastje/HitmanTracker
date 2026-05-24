@@ -16,7 +16,7 @@ inline std::optional<uint32_t> read_lethed(
 ) {
     uint32_t offset = 0;
     uint32_t index = 0;  // to avoid infinite loop
-    while (offset <= data_used) {
+    while (offset < data_used) {
         if (index++ > 0x200) {
             logging::warn("Too many properties");
             break;
@@ -28,6 +28,10 @@ inline std::optional<uint32_t> read_lethed(
         hitman2_silent_assassin::structs::PropertyManagerRecord record{};
         if (!mempeep::read(remote_record, reader, tracer, record)) {
             logging::warn("Unable to read property manager record");
+            return {};
+        }
+        if (record.record_size <= 0x11) {
+            logging::warn("Invalid property record size");
             return {};
         }
         // "lethed" property has record size 0x1C so filter on that first
