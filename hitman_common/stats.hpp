@@ -2,29 +2,27 @@
 
 #include <array>
 #include <cstdint>
-#include <vector>
+#include <functional>
 
 #include "../stats.hpp"
 
-// these stats are common to Hitman 2 SA and Hitman Contracts
-struct CommonGameStats {
-    int32_t headshots;          // 0x208
-    int32_t enemies_wounded;    // 0x20C
-    int32_t enemies_killed;     // 0x210
-    int32_t innocents_wounded;  // 0x214
-    int32_t innocents_killed;   // 0x218
-    int32_t alerts;             // 0x21C
-    int32_t close_encounters;   // 0x220
-};
+inline constexpr std::size_t SHOTS_FIRED = 0;
+inline constexpr std::size_t CLOSE_ENCOUNTERS = 1;
+inline constexpr std::size_t HEADSHOTS = 2;
+inline constexpr std::size_t ALERTS = 3;
+inline constexpr std::size_t ENEMIES_KILLED = 4;
+inline constexpr std::size_t ENEMIES_WOUNDED = 5;
+inline constexpr std::size_t INNOCENTS_KILLED = 6;
+inline constexpr std::size_t INNOCENTS_WOUNDED = 7;
 
-static_assert(sizeof(CommonGameStats) == 28);
+template <typename T>
+using StatsArray = std::array<T, 8>;
 
-using StatsArray = std::array<int32_t, 8>;
+using StatsFunc = std::function<int32_t(const StatsArray<int32_t>&)>;
 
 void process_common_game_stats(
-    const std::vector<StatsArray>& silent_assassin_combinations,
-    const CommonGameStats& game_stats,
+    StatsFunc measure_aggression,
+    StatsFunc measure_stealth,
+    const StatsArray<int32_t> game_stats,
     Stats& stats
 );
-
-std::string get_simple_rating_value(Status status);

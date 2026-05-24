@@ -6,7 +6,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "../hitman_common/stats.hpp"
+#include "../hitman_common/simple_rating.hpp"
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
 #include "structs.hpp"

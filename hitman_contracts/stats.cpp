@@ -28,45 +28,16 @@ const std::unordered_map<std::string, int> scenes = {
     {R"(SCENES\C09-1\C09-1_MAIN.gms)", 12},
 };
 
-// https://docs.google.com/spreadsheets/d/1JgNscwEak6pR5qMcUzjRlGh34IG4aZJ6id9V8rahL18/edit?gid=1089548412#gid=1089548412
-const std::vector<StatsArray> silent_assassin_combinations
-    = {{999, 0, 999, 1, 0, 0, 0, 0},
-       {2, 1, 1, 0, 0, 0, 0, 0},
-       {2, 1, 0, 0, 0, 1, 0, 0},
-       {2, 0, 1, 1, 0, 1, 0, 0},
-       {2, 0, 0, 0, 0, 2, 0, 0},
-       {1, 1, 1, 0, 0, 2, 0, 0},
-       {1, 1, 0, 0, 1, 0, 0, 0},
-       {1, 1, 0, 0, 0, 3, 0, 0},
-       {1, 0, 1, 1, 1, 0, 0, 0},
-       {1, 0, 1, 1, 0, 3, 0, 0},
-       {1, 0, 0, 1, 1, 1, 0, 0},
-       {1, 0, 0, 1, 0, 4, 0, 0},
-       {0, 1, 0, 0, 1, 2, 0, 0},
-       {0, 1, 0, 0, 0, 5, 0, 0},
-       {0, 0, 0, 1, 1, 3, 0, 0},
-       {0, 0, 0, 1, 2, 0, 0, 0},
-       {0, 0, 0, 1, 0, 6, 0, 0}};
-
-const std::vector<StatsArray> silent_assassin_combinations_map_1
-    = {{999, 0, 0, 1, 0, 0, 0, 0},
-       {2, 0, 0, 0, 0, 2, 0, 0},
-       {1, 0, 1, 1, 1, 0, 0, 0},
-       {1, 0, 0, 1, 1, 1, 0, 0},
-       {1, 0, 0, 1, 0, 4, 0, 0},
-       {0, 0, 0, 1, 1, 3, 0, 0},
-       {0, 0, 0, 1, 2, 0, 0, 0},
-       {0, 0, 0, 1, 0, 6, 0, 0}};
-
 // global to avoid allocating large object on stack
 static hitman_contracts::structs::HitmanContracts game{};
 
-static int32_t measure_aggression(
-    const CommonGameStats& stats, int32_t shots_fired, int32_t map
+static int32_t _measure_aggression(
+    const StatsArray<int32_t>& stats, bool is_first_map
 ) {
-    auto value = 3 * stats.innocents_wounded + 6 * stats.innocents_killed
-                 + stats.enemies_wounded + 3 * stats.enemies_killed
-                 + 2 * shots_fired + stats.headshots + stats.close_encounters;
+    auto value = 3 * stats[INNOCENTS_WOUNDED] + 6 * stats[INNOCENTS_KILLED]
+                 + stats[ENEMIES_WOUNDED] + 3 * stats[ENEMIES_KILLED]
+                 + 2 * stats[SHOTS_FIRED] + stats[HEADSHOTS]
+                 + stats[CLOSE_ENCOUNTERS];
     // game uses 100 * std::tanh(0.005 * value) and truncates it to zero
     // 0 -> 0.0
     // 1 -> 0.4999958333749996
@@ -80,21 +51,31 @@ static int32_t measure_aggression(
     if (value <= 6) {
         // cap min at 7 (aggression = 3) if innocents hurt or close encounter on
         // 1st map
-        if (stats.innocents_killed > 0 || stats.innocents_wounded > 0)
+        if (stats[INNOCENTS_KILLED] > 0 || stats[INNOCENTS_WOUNDED] > 0)
             return 7;
-        else if (map == 1 && stats.close_encounters > 0)
+        else if (is_first_map && stats[CLOSE_ENCOUNTERS > 0])
             return 7;
-    } else if (stats.close_encounters == 0 && stats.enemies_killed == 0
-               && stats.enemies_wounded == 0 && stats.innocents_killed == 0
-               && stats.innocents_wounded == 0 && stats.headshots == 0) {
+    } else if (stats[CLOSE_ENCOUNTERS] == 0 && stats[ENEMIES_KILLED] == 0
+               && stats[ENEMIES_WOUNDED] == 0 && stats[INNOCENTS_KILLED] == 0
+               && stats[INNOCENTS_WOUNDED] == 0 && stats[HEADSHOTS] == 0) {
         // cap max at 6 (aggression = 2) in distraction shots only scenario
         return 6;
     }
     return value;
 }
 
-static int32_t measure_stealth(const CommonGameStats& stats) {
-    auto value = stats.alerts + stats.close_encounters;
+// measure aggression on map 1
+static int32_t measure_aggression_1(const StatsArray<int32_t>& stats) {
+    return _measure_aggression(stats, true);
+}
+
+// measure aggression on other maps
+static int32_t measure_aggression_2(const StatsArray<int32_t>& stats) {
+    return _measure_aggression(stats, false);
+}
+
+static int32_t measure_stealth(const StatsArray<int32_t>& stats) {
+    auto value = stats[ALERTS] + stats[CLOSE_ENCOUNTERS];
     return value;
 }
 
@@ -131,48 +112,22 @@ bool hitman_contracts::update_slow(
             stats.shots_fired.value = 0;
         }
         const auto& player_stats = game.player.stats;
-        CommonGameStats game_stats{0};
         if (player_stats) {
-            game_stats.headshots = player_stats->headshots;
-            game_stats.enemies_wounded = player_stats->enemies_wounded;
-            game_stats.enemies_killed = player_stats->enemies_killed;
-            game_stats.innocents_wounded = player_stats->innocents_wounded;
-            game_stats.innocents_killed = player_stats->innocents_killed;
-            game_stats.alerts = player_stats->alerts;
-            game_stats.close_encounters = player_stats->close_encounters;
-            // TODO rely on stealth & aggression instead to compute rating,
-            // and to identify at-risk and violating variables
+            StatsArray<int32_t> game_stats{};
+            game_stats[SHOTS_FIRED] = player_data->shots_fired;
+            game_stats[HEADSHOTS] = player_stats->headshots;
+            game_stats[ENEMIES_WOUNDED] = player_stats->enemies_wounded;
+            game_stats[ENEMIES_KILLED] = player_stats->enemies_killed;
+            game_stats[INNOCENTS_WOUNDED] = player_stats->innocents_wounded;
+            game_stats[INNOCENTS_KILLED] = player_stats->innocents_killed;
+            game_stats[ALERTS] = player_stats->alerts;
+            game_stats[CLOSE_ENCOUNTERS] = player_stats->close_encounters;
+            StatsFunc measure_aggression
+                = stats.map == 1 ? measure_aggression_1 : measure_aggression_2;
             process_common_game_stats(
-                stats.map == 1 ? silent_assassin_combinations_map_1
-                               : silent_assassin_combinations,
-                game_stats,
-                stats
+                measure_aggression, measure_stealth, game_stats, stats
             );
-            auto stealth = measure_stealth(game_stats);
-            stats.stealth
-                = {std::lround(1000 * std::pow(0.9, stealth)),
-                   stealth == 0   ? Status::GREEN
-                   : stealth == 1 ? Status::YELLOW
-                                  : Status::RED};
-            auto aggression = measure_aggression(
-                game_stats, stats.shots_fired.value, stats.map
-            );
-            stats.aggression
-                = {std::lround(1000 * std::tanh(0.005 * aggression)),
-                   aggression <= 5   ? Status::GREEN
-                   : aggression == 6 ? Status::YELLOW
-                                     : Status::RED};
-#ifndef NDEBUG
-            // validate the two methods (to be removed when confirmed stable)
-            bool is_sa_1 = (stats.rating.status == Status::GREEN);
-            bool is_sa_2 = (stealth <= 1 && aggression <= 6);
-            if (is_sa_1 != is_sa_2) {
-                logging::error(
-                    "silent assassin status stealth/aggression mismatch"
-                );
-            }
-#endif
-        }
+        };
     }
     return true;
 }

@@ -209,23 +209,6 @@ std::unordered_map<std::string, LevelInfo> level_infos{
     },
 };
 
-// https://docs.google.com/spreadsheets/d/1i6dmzcBROqoJlsQjUGY8wxdqwxt2hXzjB9fPVggTf2k/edit?gid=1074822823#gid=1074822823
-const std::vector<StatsArray> silent_assassin_combinations
-    = {{0, 1, 0, 0, 1, 2, 0, 0}, {0, 1, 0, 0, 0, 5, 0, 0},
-       {0, 1, 0, 0, 0, 2, 0, 1}, {0, 0, 0, 1, 2, 0, 0, 0},
-       {0, 0, 0, 1, 1, 3, 0, 0}, {0, 0, 0, 1, 1, 0, 0, 1},
-       {0, 0, 0, 1, 0, 6, 0, 0}, {0, 0, 0, 1, 0, 3, 0, 1},
-       {0, 0, 0, 1, 0, 0, 1, 0}, {0, 0, 0, 1, 0, 0, 0, 2},
-       {0, 0, 0, 0, 1, 0, 0, 1}, {1, 1, 1, 0, 0, 2, 0, 0},
-       {1, 1, 0, 0, 1, 0, 0, 0}, {1, 1, 0, 0, 0, 3, 0, 0},
-       {1, 1, 0, 0, 0, 0, 0, 1}, {1, 0, 1, 1, 1, 0, 0, 0},
-       {1, 0, 1, 1, 0, 3, 0, 0}, {1, 0, 1, 1, 0, 0, 0, 1},
-       {1, 0, 0, 1, 1, 1, 0, 0}, {1, 0, 0, 1, 0, 4, 0, 0},
-       {1, 0, 0, 1, 0, 1, 0, 1}, {1, 0, 0, 0, 1, 1, 0, 0},
-       {2, 1, 1, 0, 0, 0, 0, 0}, {2, 1, 0, 0, 0, 1, 0, 0},
-       {2, 0, 2, 1, 0, 0, 0, 0}, {2, 0, 1, 1, 0, 1, 0, 0},
-       {3, 0, 0, 1, 0, 0, 0, 0}};
-
 // global to avoid allocating large object on stack
 static hitman2_silent_assassin::structs::Game game{};
 
@@ -276,18 +259,17 @@ static std::optional<uint32_t> read_lethed(
 }
 
 // note: almost same as Hitman Contracts, move to common?
-static int32_t measure_aggression(
-    const CommonGameStats& stats, int32_t shots_fired
-) {
-    auto value = 3 * stats.innocents_wounded + 6 * stats.innocents_killed
-                 + stats.enemies_wounded + 3 * stats.enemies_killed
-                 + 2 * shots_fired + stats.headshots + stats.close_encounters;
+static int32_t measure_aggression(const StatsArray<int32_t>& stats) {
+    auto value = 3 * stats[INNOCENTS_WOUNDED] + 6 * stats[INNOCENTS_KILLED]
+                 + stats[ENEMIES_WOUNDED] + 3 * stats[ENEMIES_KILLED]
+                 + 2 * stats[SHOTS_FIRED] + stats[HEADSHOTS]
+                 + stats[CLOSE_ENCOUNTERS];
     return value;
 }
 
 // note: same as Hitman Contracts, move to common?
-static int32_t measure_stealth(const CommonGameStats& stats) {
-    auto value = stats.alerts + stats.close_encounters;
+static int32_t measure_stealth(const StatsArray<int32_t>& stats) {
+    auto value = stats[ALERTS] + stats[CLOSE_ENCOUNTERS];
     return value;
 }
 
@@ -357,42 +339,16 @@ bool hitman2_silent_assassin::update_slow(
                 return false;
             }
         }
-        CommonGameStats game_stats{0};
-        stats.shots_fired.value = player.data.shots_fired;
-        game_stats.headshots = level_control.headshots;
-        game_stats.enemies_wounded = level_control.enemies_wounded;
-        game_stats.enemies_killed = level_control.enemies_killed;
-        game_stats.innocents_wounded = level_control.innocents_wounded;
-        game_stats.innocents_killed = level_control.innocents_killed;
-        game_stats.alerts = level_control.alerts;
-        game_stats.close_encounters = level_control.close_encounters;
-        process_common_game_stats(
-            silent_assassin_combinations, game_stats, stats
-        );
-        auto stealth = measure_stealth(game_stats);
-        stats.stealth
-            = {std::lround(1000 * std::pow(0.9, stealth)),
-               stealth == 0   ? Status::GREEN
-               : stealth == 1 ? Status::YELLOW
-                              : Status::RED};
-        auto aggression
-            = measure_aggression(game_stats, stats.shots_fired.value);
-        stats.aggression
-            = {std::lround(1000 * std::tanh(0.005 * aggression)),
-               aggression <= 5   ? Status::GREEN
-               : aggression == 6 ? Status::YELLOW
-                                 : Status::RED};
-#ifndef NDEBUG
-        // validate the two methods (to be removed when confirmed stable)
-        bool is_sa_1 = (stats.rating.status == Status::GREEN);
-        bool is_sa_2 = (stealth <= 1 && aggression <= 6);
-        if (is_sa_1 != is_sa_2) {
-            logging::error(
-                "silent assassin status stealth/aggression mismatch"
-            );
-        }
-        // TODO validate the values themselves when on the stats screen
-#endif
+        StatsArray<int32_t> game_stats{};
+        game_stats[SHOTS_FIRED] = player.data.shots_fired;
+        game_stats[HEADSHOTS] = level_control.headshots;
+        game_stats[ENEMIES_WOUNDED] = level_control.enemies_wounded;
+        game_stats[ENEMIES_KILLED] = level_control.enemies_killed;
+        game_stats[INNOCENTS_WOUNDED] = level_control.innocents_wounded;
+        game_stats[INNOCENTS_KILLED] = level_control.innocents_killed;
+        game_stats[ALERTS] = level_control.alerts;
+        game_stats[CLOSE_ENCOUNTERS] = level_control.close_encounters;
+        process_common_game_stats(measure_aggression, measure_stealth, game_stats, stats);
     } else {
         stats.rating = {"Unrated", Status::GREEN};
     }

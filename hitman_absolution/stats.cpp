@@ -5,6 +5,7 @@
 #include <mempeep/read.hpp>
 #include <mempeep/tracers/log_tracer.hpp>
 
+#include "../hitman_common/simple_rating.hpp"
 #include "../hitman_common/stats.hpp"
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
