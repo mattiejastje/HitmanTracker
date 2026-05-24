@@ -260,7 +260,9 @@ static std::optional<uint32_t> read_lethed(
                     return {};
                 }
                 int32_t lethed;
-                if (!reader(property_manager.data + offset + 0x18, 4, &lethed)) {
+                if (!reader(
+                        property_manager.data + offset + 0x18, 4, &lethed
+                    )) {
                     logging::warn("Unable to read property \"lethed\" value");
                     return {};
                 }
