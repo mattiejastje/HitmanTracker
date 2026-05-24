@@ -81,6 +81,7 @@ static int32_t measure_stealth(const StatsArray<int32_t>& stats) {
 }
 
 bool hitman_contracts::update_slow(
+    const std::filesystem::path& exe_path,
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,

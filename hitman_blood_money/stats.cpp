@@ -198,6 +198,7 @@ static Status get_rating_status(const Stats& stats) {
 static hitman_blood_money::structs::Game game{};
 
 bool hitman_blood_money::update_slow(
+    const std::filesystem::path& exe_path,
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,

@@ -663,6 +663,7 @@ static std::optional<int32_t> get_shadow_raw_score_threshold(
 static hitman_absolution::structs::Game game{};
 
 bool hitman_absolution::update_slow(
+    const std::filesystem::path& exe_path,
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,

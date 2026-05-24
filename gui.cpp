@@ -102,6 +102,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         last_now = now;
                         auto scoped_slow = ScopedProfiler{profiler_slow, dt};
                         auto ok = game->methods.update_slow(
+                            game->exe_path,
                             game->handle.get(),
                             game->base_ptrs,
                             game->hook->label_ptrs,

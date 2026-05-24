@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <filesystem>
 #include <functional>
 #include <optional>
 
@@ -18,18 +19,27 @@ using GameHook
 
 using GameHookReady = std::function<bool(void *, const BasePtrs &)>;
 
-using GameStats
+using GameStatsSlow = std::function<bool(
+    const std::filesystem::path &,
+    void *,
+    const BasePtrs &,
+    const LabelPtrs &,
+    Stats &
+)>;
+
+using GameStatsFast
     = std::function<bool(void *, const BasePtrs &, const LabelPtrs &, Stats &)>;
 
 struct GameMethods {
-    GameGui gui;               // called every frame for displaying stats
-    GameHook hook;             // called once when we are ready to hook
-    GameHookReady hook_ready;  // called to check if we are ready to hook
-    GameStats update_slow;  // called every 0.1 seconds for slow varying stats
-    GameStats update_fast;  // called every frame for fast varying stats
+    GameGui gui;                // called every frame for displaying stats
+    GameHook hook;              // called once when we are ready to hook
+    GameHookReady hook_ready;   // called to check if we are ready to hook
+    GameStatsSlow update_slow;  // called every 0.1 seconds
+    GameStatsFast update_fast;  // called every frame
 };
 
 struct Game {
+    std::filesystem::path exe_path;
     std::shared_ptr<void> handle;
     BasePtrs base_ptrs;
     GameMethods methods;

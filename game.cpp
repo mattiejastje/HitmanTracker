@@ -24,7 +24,6 @@
 #include "hitman_blood_money/hook.hpp"
 #include "hitman_blood_money/stats.hpp"
 #include "hitman_codename_47/gui.hpp"
-#include "hitman_codename_47/hook.hpp"
 #include "hitman_codename_47/stats.hpp"
 #include "hitman_contracts/gui.hpp"
 #include "hitman_contracts/stats.hpp"
@@ -44,7 +43,17 @@ struct GameInfo {
     std::vector<ModuleInfo> module_infos;
 };
 
-static bool stats_nothing(
+static bool stats_nothing_slow(
+    const std::filesystem::path& exe_path,
+    void* handle,
+    const BasePtrs& base_ptrs,
+    const LabelPtrs& label_ptrs,
+    Stats& stats
+) {
+    return true;
+}
+
+static bool stats_nothing_fast(
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
@@ -69,7 +78,7 @@ static const std::vector<GameInfo> game_infos = {
         .name = hitman_codename_47::GAME_NAME,
         .methods = GameMethods{
             hitman_codename_47::gui,
-            hitman_codename_47::hook,
+            hook_nothing,
             hook_immediately_ready,
             hitman_codename_47::update_slow,
             hitman_codename_47::update_fast,
@@ -86,8 +95,8 @@ static const std::vector<GameInfo> game_infos = {
             hitman_2016::gui,
             hook_nothing,
             hook_immediately_ready,
-            stats_nothing,
-            stats_nothing,
+            stats_nothing_slow,
+            stats_nothing_fast,
         },
         .module_infos = {
             {"hitman.exe", 0x9019923E9B36C383ULL},
@@ -240,6 +249,7 @@ static std::optional<Game> get_game_for_process(
         auto base_ptrs = get_base_ptrs(*modules);
         logging::info("Found process for {}", info.name);
         return Game{
+            (*modules)[0].exe_path,
             handle,
             base_ptrs,
             info.methods,

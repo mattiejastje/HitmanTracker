@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include "../base_ptrs.hpp"
 #include "../label_ptrs.hpp"
 #include "../stats.hpp"
@@ -7,6 +9,7 @@
 namespace hitman_blood_money {
 
 bool update_slow(
+    const std::filesystem::path& exe_path,
     void* handle,
     const BasePtrs& base_ptrs,
     const LabelPtrs& label_ptrs,
