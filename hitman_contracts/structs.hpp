@@ -13,10 +13,40 @@ namespace hitman_contracts::structs {
 struct PropertyType {
     uint32_t fourcc;
     int32_t fourcc_length;
-    int32_t unk_id;
+    int32_t index;
     int32_t size;
-    int32_t unk_elem_type;
+    int32_t type_flags;
 };
+
+struct Property {
+    int32_t key_length;
+    PropertyType type;
+    int32_t size;
+    std::string key;
+};
+
+using TProperty = Struct<
+    Property,
+    Fields<
+        Field<Int32, &Property::key_length>,
+        Field<Ref<Primitive<PropertyType>>, &Property::type>,
+        Field<Int32, &Property::size>,
+        Field<ZString<0x40>, &Property::key>>>;
+
+struct PropertyManagerRecord {
+    int32_t record_size;
+    int8_t is_active;
+    RemoteValue<TProperty, uint32_t> property;
+};
+
+using TPropertyManagerRecord = Struct<
+    PropertyManagerRecord,
+    Fields<
+        Field<Int32, &PropertyManagerRecord::record_size>,
+        Field<Int8, &PropertyManagerRecord::is_active>,
+        Field<
+            RemoteAddr<TProperty, uint32_t>,
+            &PropertyManagerRecord::property>>>;
 
 struct EngineEntityManager {
     std::optional<
@@ -115,6 +145,13 @@ using TEngine = Struct<
         Seek<0x80d>,
         Field<Float, &Engine::game_time_update_interval>>>;
 
+struct PropertyManager {
+    uint32_t vtable;
+    int32_t data_capacity;
+    uint32_t data;
+    int32_t data_used;
+};
+
 struct PlayerData {
     int8_t unk_flag_e59;
     int32_t shots_fired;
@@ -172,6 +209,7 @@ struct HitmanContracts {
     std::array<PropertyType, 0x12> property_types;
     EngineEntityManager entity_manager;
     Engine engine;
+    PropertyManager property_manager;
     uint32_t player_ptr;
     Player player;
     uint32_t player_data_copy;
@@ -205,6 +243,10 @@ using THitmanContracts = Struct<
         Field<Ref<TEngineEntityManager>, &HitmanContracts::entity_manager>,
         Seek<0x39457c>,
         Field<Ref<TEngine>, &HitmanContracts::engine>,
+        Seek<0x39459c>,
+        Field<
+            Ref<Primitive<PropertyManager>>,
+            &HitmanContracts::property_manager>,
         Seek<0x3945a4>,
         Field<RawAddr<uint32_t>, &HitmanContracts::player_ptr>,
         Seek<0x3947a8>,

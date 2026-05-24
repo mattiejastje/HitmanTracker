@@ -40,11 +40,14 @@ h2sa_structs = {
   h2sa.LevelControl,
   h2sa.PlayerEntity,
   h2sa.Player,
-  h2sa.Property,
   h2sa.PropertyManagerRecord,
   h2sa.Game,
 }
 write_structs_txt("hitman2_silent_assassin", h2sa_structs)
 write_structs_cpp("hitman2_silent_assassin", h2sa_structs, "hitman2_silent_assassin::structs")
-write_structs_txt("hitman_contracts", { hcon.HitmanContracts })
-write_structs_cpp("hitman_contracts", { hcon.HitmanContracts }, "hitman_contracts::structs")
+hcon_structs = {
+  h2sa.PropertyManagerRecord,
+  hcon.HitmanContracts,
+}
+write_structs_txt("hitman_contracts", hcon_structs)
+write_structs_cpp("hitman_contracts", hcon_structs, "hitman_contracts::structs")

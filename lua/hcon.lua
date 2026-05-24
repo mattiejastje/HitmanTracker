@@ -1,19 +1,7 @@
 M = {}
 
 local d = require("mempeep.descriptors")
-
-local SmallString = d.Struct("SmallString", {
-    d.Field(d.Ref(d.ZString(0x100)), "text"),
-    d.Skip(0x7C),  -- inline buffer for strings <= 0x7C chars
-})
-
-local PropertyType = d.Struct("PropertyType", {
-    d.Field(d.UInt32, "fourcc"),  -- space padded fourcc code (always 4 chars, reverse order)
-    d.Field(d.Int32, "fourcc_length"),  -- length of code without padding
-    d.Field(d.Int32, "unk_id"),  -- unique number, maybe some id or index?
-    d.Field(d.Int32, "size"),  -- size of the data in bytes
-    d.Field(d.Int32, "unk_elem_type"),  -- maybe element type: 1 = bytes, 2 = characters, 4 = ints, 8 = floats, ...?
-})
+local h2sa = require("h2sa")
 
 local EngineEntityManager = d.Struct("EngineEntityManager", {
     -- entity handle = (version << 18) | (index & 0x3FFFF)
@@ -39,7 +27,7 @@ local SceneManager = d.Struct("SceneManager", {
     d.Field(d.Int8, "pause_flag_1"),
     d.Field(d.Int8, "pause_flag_2"),
     d.Seek(0xBCD),
-    d.Field(SmallString, "scene_name"),
+    d.Field(h2sa.SmallString, "scene_name"),
     d.Seek(0x6D39),
     d.Field(d.Int32, "unk_6d39"),
 })
@@ -94,11 +82,13 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Seek(0x363F58),
     d.Field(d.ZString(0x6), "first_mission_name"),  -- "C01-1"
     d.Seek(0x37EEF8),
-    d.Field(d.Array(PropertyType, 18), "property_types"),
+    d.Field(d.Array(h2sa.PropertyType, 18), "property_types"),
     d.Seek(0x394570),
     d.Field(d.Ref(EngineEntityManager), "entity_manager"),
     d.Seek(0x39457C),
     d.Field(d.Ref(Engine), "engine"),
+    d.Seek(0x39459C),
+    d.Field(d.Ref(h2sa.PropertyManager), "property_manager"),
     d.Seek(0x3945A4),
     d.Field(d.RawAddr(), "player_ptr"),  -- always points at +3947A8
     d.Seek(0x3947A8),

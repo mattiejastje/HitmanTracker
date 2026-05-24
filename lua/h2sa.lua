@@ -3,7 +3,7 @@ M = {}
 local d = require("mempeep.descriptors")
 local read = require("mempeep.read")
 
-local SmallString = d.Struct("SmallString", {
+M.SmallString = d.Struct("SmallString", {
     d.Field(d.Ref(d.ZString(0x100)), "text"),
     d.Skip(0x7C),  -- inline buffer for strings <= 0x7C chars
 })
@@ -29,7 +29,7 @@ local EntityManager = d.Struct("EntityManager", {
     d.Field(d.NullableRef(d.RemoteAddr(d.Array(d.RawAddr(), 0x40000))), "entities"),  -- entities themselves
 })
 
-local PropertyType = d.Struct("PropertyType", {
+M.PropertyType = d.Struct("PropertyType", {
     d.Field(d.UInt32, "fourcc"),  -- space padded fourcc code (always 4 chars, reverse order)
     d.Field(d.Int32, "fourcc_length"),  -- length of code without padding
     d.Field(d.Int32, "index"),  -- some index into the property manager system (unique for each type)
@@ -61,7 +61,7 @@ M.property_struct = {
 
 M.Property = d.Struct("Property", {
     d.Field(d.Int32, "key_length"),  -- including terminating null
-    d.Field(d.Ref(PropertyType), "type"),  -- type of data
+    d.Field(d.Ref(M.PropertyType), "type"),  -- type of data
     d.Field(d.Int32, "size"),   -- size of the data in bytes
     d.Field(d.ZString(0x40), "key"),  -- the key string
     -- data follows immediately after the key string
@@ -85,8 +85,8 @@ local PlayerData = d.Struct("PlayerData", {
     d.Skip(0x8),
     d.Field(d.Int32, "unk_b85"),
     d.Field(d.Int32, "unk_b89"),
-    d.Field(SmallString, "interaction"),  -- text from top left menu
-    d.Field(SmallString, "unk_c0d"),
+    d.Field(M.SmallString, "interaction"),  -- text from top left menu
+    d.Field(M.SmallString, "unk_c0d"),
     d.Field(d.Int32, "unk_c8d"),
     d.Field(d.Int32, "unk_gref_c91"),
     d.Field(d.Int8, "unk_c95"),
@@ -196,7 +196,7 @@ local SceneManager = d.Struct("SceneManager", {
     d.Seek(0xC4),
     d.Field(d.NullableRef(SceneEntities), "entities"),  -- can be null during mission reload
     d.Seek(0xBB7),
-    d.Field(SmallString, "scene_name"),
+    d.Field(M.SmallString, "scene_name"),
     d.Seek(0x1C4B),
     d.Field(SharedCom, "shared_com"),  -- holds scene properties
 })
@@ -216,7 +216,7 @@ M.PropertyManagerRecord = d.Struct("PropertyManagerRecord", {
     -- offset is not static, need to calculate at runtime
 })
 
-local PropertyManager = d.Struct("PropertyManager", {
+M.PropertyManager = d.Struct("PropertyManager", {
     d.Field(d.RawAddr(), "vtable"),
     d.Field(d.Int32, "data_capacity"),  -- total size
     d.Field(d.RawAddr(), "data"),  -- actual data
@@ -229,14 +229,14 @@ M.Game = d.Struct("Game", {
     d.Seek(0x2625DC),
     d.Field(d.RawAddr(), "unk_2a6c54_ptr"),  -- always points to unk_2a6c54 field
     d.Seek(0x297840),
-    d.Field(d.Array(PropertyType, 18), "property_types"),
+    d.Field(d.Array(M.PropertyType, 18), "property_types"),
     d.Seek(0x2A6C50),
     d.Field(d.Ref(EntityManager), "entity_manager"),
     d.Field(d.RawAddr(), "unk_2a6c54"),
     d.Seek(0x2A6C5C),
     d.Field(d.Ref(Engine), "engine"),
     d.Seek(0x2A6C7C),
-    d.Field(d.Ref(PropertyManager), "property_manager"),
+    d.Field(d.Ref(M.PropertyManager), "property_manager"),
     d.Seek(0x28AA18),
     d.Field(d.ZString(0x40), "lethed"),  -- literal string constant
     d.Seek(0x2B3418),
