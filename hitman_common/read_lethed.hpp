@@ -16,7 +16,7 @@ inline std::optional<uint32_t> read_lethed(
 ) {
     uint32_t offset = 0;
     uint32_t index = 0;  // to avoid infinite loop
-    while (offset <= data_used || index < 0x200) {
+    while (offset <= data_used || index++ < 0x200) {
         mempeep::RemoteValue<
             hitman2_silent_assassin::structs::TPropertyManagerRecord,
             uint32_t>
