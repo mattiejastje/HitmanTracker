@@ -15,7 +15,6 @@
 #include "base_ptrs.hpp"
 #include "fnv1a.hpp"
 #include "hitman2_silent_assassin/gui.hpp"
-#include "hitman2_silent_assassin/hook.hpp"
 #include "hitman2_silent_assassin/stats.hpp"
 #include "hitman_2016/gui.hpp"
 #include "hitman_absolution/gui.hpp"
@@ -100,7 +99,7 @@ static const std::vector<GameInfo> game_infos = {
         .name = hitman2_silent_assassin::GAME_NAME,
         .methods = GameMethods{
             hitman2_silent_assassin::gui,
-            hitman2_silent_assassin::hook,
+            hook_nothing,
             hook_immediately_ready,
             hitman2_silent_assassin::update_slow,
             hitman2_silent_assassin::update_fast

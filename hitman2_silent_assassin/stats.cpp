@@ -229,6 +229,50 @@ const std::vector<StatsArray> silent_assassin_combinations
 // global to avoid allocating large object on stack
 static hitman2_silent_assassin::structs::Game game{};
 
+template <IsTracer Tracer>
+static std::optional<uint32_t> read_lethed(
+    const hitman2_silent_assassin::structs::PropertyManager& property_manager,
+    MemoryReader<uint32_t> reader,
+    Tracer tracer
+) {
+    uint32_t offset = 0;
+    uint32_t index = 0;  // to avoid infinite loop
+    while (offset < property_manager.data_used || index < 0x200) {
+        mempeep::RemoteValue<
+            hitman2_silent_assassin::structs::TPropertyManagerRecord,
+            uint32_t>
+            remote_record{property_manager.data + offset};
+        hitman2_silent_assassin::structs::PropertyManagerRecord record{};
+        if (!mempeep::read(remote_record, reader, tracer, record)) {
+            logging::warn("Unable to read property manager record");
+            return {};
+        }
+        // "lethed" property has record size 0x1C so filter on that first
+        if (record.is_active && record.record_size == 0x1C) {
+            hitman2_silent_assassin::structs::Property property{};
+            if (!mempeep::read(record.property, reader, tracer, property)) {
+                logging::warn("Unable to read property");
+                return {};
+            }
+            if (property.key == "lethed") {
+                if (property.size != 4) {
+                    logging::warn("Property \"lethed\" has wrong size");
+                    return {};
+                }
+                int32_t lethed;
+                if (!reader(property_manager.data + offset + 0x18, 4, &lethed)) {
+                    logging::warn("Unable to read property \"lethed\" value");
+                    return {};
+                }
+                return lethed;
+            }
+        }
+        offset += record.record_size;
+    }
+    if (index == 0x200) logging::warn("Too many properties");
+    return {};
+}
+
 // note: almost same as Hitman Contracts, move to common?
 static int32_t measure_aggression(
     const CommonGameStats& stats, int32_t shots_fired
@@ -268,7 +312,8 @@ bool hitman2_silent_assassin::update_slow(
     const auto& info = iter->second;
     stats.map = info.map;
     stats.map_stage = MapStage::main;  // always render stats
-    stats.difficulty = read<int32_t>(handle, label_ptrs.at(250)).value_or(0);
+    stats.difficulty
+        = read_lethed(game.property_manager, reader, tracer).value_or(0);
     if (stats.map >= 2) {
         structs::LevelControl level_control{};
         // entities can be briefly null if mission is still loading
