@@ -16,7 +16,11 @@ inline std::optional<uint32_t> read_lethed(
 ) {
     uint32_t offset = 0;
     uint32_t index = 0;  // to avoid infinite loop
-    while (offset <= data_used || index++ < 0x200) {
+    while (offset <= data_used) {
+        if (index++ > 0x200) {
+            logging::warn("Too many properties");
+            break;
+        }
         mempeep::RemoteValue<
             hitman2_silent_assassin::structs::TPropertyManagerRecord,
             uint32_t>
@@ -48,6 +52,5 @@ inline std::optional<uint32_t> read_lethed(
         }
         offset += record.record_size;
     }
-    if (index == 0x200) logging::warn("Too many properties");
     return {};
 }
