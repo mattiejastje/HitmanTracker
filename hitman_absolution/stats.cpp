@@ -620,7 +620,7 @@ static int32_t get_current_checkpoint_index(
     return -1;
 }
 
-int32_t get_raw_score(const std::array<int16_t, 0x64>& values) {
+static int32_t get_raw_score(const std::array<int16_t, 0x64>& values) {
     int32_t score = 0;
     for (std::size_t index = 1; index < 13; index++) {
         score += values[index] * STATS_MULTIPLIERS[index];
@@ -628,7 +628,7 @@ int32_t get_raw_score(const std::array<int16_t, 0x64>& values) {
     return score;
 };
 
-const hitman_absolution::structs::GameDataLevelInfo* get_level_info(
+static const hitman_absolution::structs::GameDataLevelInfo* get_level_info(
     const std::vector<hitman_absolution::structs::GameDataLevelInfo>&
         level_infos,
     int32_t level
