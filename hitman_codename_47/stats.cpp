@@ -158,12 +158,14 @@ static std::optional<int32_t> read_difficulty_from_hitman_sav(
     auto mtime = std::filesystem::last_write_time(path, ec);
     if (ec) {
         logging::error(
-            "Unable to check last write time of {}: {}", path, ec.message()
+            "Unable to check last write time of {}: {}",
+            path.string(),
+            ec.message()
         );
         return {};
     }
     if (mtime == cached_mtime) return cached_difficulty;
-    logging::debug("Reading {}", path);
+    logging::debug("Reading Hitman.sav");
     cached_mtime = mtime;
     auto payload = read_hitman_sav(path);
     if (!payload) return {};
