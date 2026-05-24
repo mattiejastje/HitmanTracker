@@ -2,11 +2,9 @@
 
 #include <imgui.h>
 
-#include <array>
 #include <string>
 #include <vector>
 
-#include "../format_duration.hpp"
 #include "../hitman_common/gui.hpp"
 #include "../imgui_utils.hpp"
 

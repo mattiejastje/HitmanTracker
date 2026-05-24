@@ -2,6 +2,9 @@
 
 #include <imgui.h>
 
+#include <string>
+#include <vector>
+
 #include "../hitman_common/gui.hpp"
 #include "../imgui_utils.hpp"
 
