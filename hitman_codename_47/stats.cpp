@@ -1,5 +1,6 @@
 #include "stats.hpp"
 
+#include <bit>  // std::rotl, std::rotr
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -86,13 +87,9 @@ static uint32_t checksum(const char* data, size_t len) {
         int16_t word;
         memcpy(&word, data + i * 2, 2);
         // cast to int32_t to ensure sign is extended
-        // then cast to unsigned to ensure correct type for shifting
+        // then cast to unsigned to ensure correct type for rotation
         acc ^= static_cast<uint32_t>(static_cast<int32_t>(word));
-        if (acc & 0x110) {
-            acc = (acc << 1) | (acc >> 31);
-        } else {
-            acc = (acc >> 1) | (acc << 31);
-        }
+        acc = (acc & 0x110) ? std::rotl(acc, 1) : std::rotr(acc, 1);
     }
     return acc;
 }
