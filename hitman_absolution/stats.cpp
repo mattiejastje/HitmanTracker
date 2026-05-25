@@ -753,7 +753,7 @@ bool hitman_absolution::update_slow(
         if (maybe_shadow_raw_score_threshold.value()
             != map_info.shadow_raw_score_threshold) {
             logging::error(
-                "wrong shadow score for level {} checkpoint {}: {} -> {}",
+                "Wrong shadow score for level {} checkpoint {}: {} -> {}",
                 game.level,
                 checkpoint_index,
                 map_info.shadow_raw_score_threshold,
