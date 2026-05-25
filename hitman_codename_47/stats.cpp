@@ -203,7 +203,7 @@ bool hitman_codename_47::update_slow(
         = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
     if (!mempeep::read(remote_game, reader, tracer, game)) return false;
     const auto hitman_sav = exe_path.parent_path() / "Hitman.sav";
-    stats.difficulty = read_difficulty_from_hitman_sav(hitman_sav).value_or(0);
+    stats.difficulty = read_difficulty_from_hitman_sav(hitman_sav).value_or(-1);
     const auto& scene_container
         = game.engine.engine_data.scene_manager.scene_container;
     if (!scene_container) return false;
