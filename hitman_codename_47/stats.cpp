@@ -3,60 +3,68 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <mempeep/read.hpp>
+#include <mempeep/tracers/log_tracer.hpp>
 #include <regex>
 #include <string>
 #include <unordered_map>
 
 #include "../logging.hpp"
 #include "../mem/read_write.hpp"
+#include "structs.hpp"
 
-const std::unordered_map<std::string, int> scenes = {
-    {R"(OptionsScreen)", 0},              // options
-    {R"(OptionsScreen.zip)", 0},          // options
-    {R"(Intro.zip)", 0},                  // menu
-    {R"(CutScenes/Intro/Intro.zip)", 0},  // menu
-    {R"(Intro)", 0},                      // menu (after beating game)
-    {R"(C0_Training\C0_1_Pre)", 1},
-    {R"(C0_Training\C0_1)", 1},
-    {R"(C1_HongKong\C1_1_Pre)", 2},
-    {R"(C1_HongKong\C1_1)", 2},
-    {R"(CutScenes/C1_HongKong/C1_1_HitmanArrive.zip)", 2},
-    {R"(C1_Hongkong\C1_1_Laptop)", 2},
-    {R"(C1_HongKong\C1_2_Pre)", 3},
-    {R"(C1_HongKong\C1_2)", 3},
-    {R"(C1_Hongkong\C1_2_Laptop)", 3},
-    {R"(C1_HongKong\C1_3_Pre)", 4},
-    {R"(C1_HongKong\C1_3)", 4},
-    {R"(C1_Hongkong\C1_3_Laptop)", 4},
-    {R"(C1_HongKong\C1_4_Pre)", 5},
-    {R"(C1_HongKong\C1_4)", 5},
-    {R"(C1_Hongkong\C1_4_Laptop)", 5},
-    {R"(CutScenes/FlashBacks/FlashBack1_4)", 5},
-    {R"(C4_ColombianRainforest\C4_1_Pre)", 6},
-    {R"(C4_ColombianRainforest\C4_1)", 6},
-    {R"(C4_ColombianRainForest\C4_1_Laptop)", 6},
-    {R"(C4_ColombianRainforest\C4_2_Pre)", 7},
-    {R"(C4_ColombianRainforest\C4_2)", 7},
-    {R"(C4_ColombianRainForest\C4_2_Laptop)", 7},
-    {R"(C4_ColombianRainforest\C4_3_Pre)", 8},
-    {R"(C4_ColombianRainforest\C4_3)", 8},
-    {R"(C4_ColombianRainForest\C4_3_Laptop)", 8},
-    {R"(C3_BudapestHotel\C3_1_Pre)", 9},
-    {R"(C3_BudapestHotel\C3_1)", 9},
-    {R"(C3_BudapestHotel\C3_1_Laptop)", 9},
-    {R"(CutScenes/FlashBacks/FlashBack3_1)", 9},
-    {R"(C2_RotterdamHarbor\C2_1_Pre)", 10},
-    {R"(C2_RotterdamHarbor\C2_1)", 10},
-    {R"(C2_RotterdamHarbor\C2_1_Laptop)", 10},
-    {R"(C2_RotterdamHarbor\C2_2_Pre)", 11},
-    {R"(C2_RotterdamHarbor\C2_2)", 11},
-    {R"(C2_RotterdamHarbor\C2_2_Laptop)", 11},
-    {R"(CutScenes/FlashBacks/FlashBack2_2)", 11},
-    {R"(C5_Sanitarium\C5_1_Pre)", 12},
-    {R"(C5_Sanitarium\C5_1)", 12},
-    {R"(C5_Sanitarium\C5_1_Laptop)", 12},
-    {R"(C5_Sanitarium\C5_2_Pre)", 13},
-    {R"(C5_Sanitarium\C5_2)", 13},
+struct Scene {
+    int map{0};
+    MapStage map_stage{MapStage::pre};
+};
+
+const std::unordered_map<std::string, Scene> scenes = {
+    {R"(OptionsScreen)", {}},              // options
+    {R"(OptionsScreen.zip)", {}},          // options
+    {R"(Intro.zip)", {}},                  // menu
+    {R"(CutScenes/Intro/Intro.zip)", {}},  // menu
+    {R"(Intro)", {}},                      // menu (after beating game)
+    {R"(C0_Training\C0_1_Pre)", {1}},
+    {R"(C0_Training\C0_1)", {1, MapStage::main}},
+    {R"(C1_HongKong\C1_1_Pre)", {2}},
+    {R"(C1_HongKong\C1_1)", {2, MapStage::main}},
+    {R"(CutScenes/C1_HongKong/C1_1_HitmanArrive.zip)", {2}},
+    {R"(C1_Hongkong\C1_1_Laptop)", {2}},
+    {R"(C1_HongKong\C1_2_Pre)", {3}},
+    {R"(C1_HongKong\C1_2)", {3, MapStage::main}},
+    {R"(C1_Hongkong\C1_2_Laptop)", {3}},
+    {R"(C1_HongKong\C1_3_Pre)", {4}},
+    {R"(C1_HongKong\C1_3)", {4, MapStage::main}},
+    {R"(C1_Hongkong\C1_3_Laptop)", {4}},
+    {R"(C1_HongKong\C1_4_Pre)", {5}},
+    {R"(C1_HongKong\C1_4)", {5, MapStage::main}},
+    {R"(C1_Hongkong\C1_4_Laptop)", {5}},
+    {R"(CutScenes/FlashBacks/FlashBack1_4)", {5}},
+    {R"(C4_ColombianRainforest\C4_1_Pre)", {6}},
+    {R"(C4_ColombianRainforest\C4_1)", {6, MapStage::main}},
+    {R"(C4_ColombianRainForest\C4_1_Laptop)", {6}},
+    {R"(C4_ColombianRainforest\C4_2_Pre)", {7}},
+    {R"(C4_ColombianRainforest\C4_2)", {7, MapStage::main}},
+    {R"(C4_ColombianRainForest\C4_2_Laptop)", {7}},
+    {R"(C4_ColombianRainforest\C4_3_Pre)", {8}},
+    {R"(C4_ColombianRainforest\C4_3)", {8, MapStage::main}},
+    {R"(C4_ColombianRainForest\C4_3_Laptop)", {8}},
+    {R"(C3_BudapestHotel\C3_1_Pre)", {9}},
+    {R"(C3_BudapestHotel\C3_1)", {9, MapStage::main}},
+    {R"(C3_BudapestHotel\C3_1_Laptop)", {9}},
+    {R"(CutScenes/FlashBacks/FlashBack3_1)", {9}},
+    {R"(C2_RotterdamHarbor\C2_1_Pre)", {10}},
+    {R"(C2_RotterdamHarbor\C2_1)", {10, MapStage::main}},
+    {R"(C2_RotterdamHarbor\C2_1_Laptop)", {10}},
+    {R"(C2_RotterdamHarbor\C2_2_Pre)", {11}},
+    {R"(C2_RotterdamHarbor\C2_2)", {11, MapStage::main}},
+    {R"(C2_RotterdamHarbor\C2_2_Laptop)", {11}},
+    {R"(CutScenes/FlashBacks/FlashBack2_2)", {11}},
+    {R"(C5_Sanitarium\C5_1_Pre)", {12}},
+    {R"(C5_Sanitarium\C5_1)", {12, MapStage::main}},
+    {R"(C5_Sanitarium\C5_1_Laptop)", {12}},
+    {R"(C5_Sanitarium\C5_2_Pre)", {13}},
+    {R"(C5_Sanitarium\C5_2)", {13, MapStage::main}},
 };
 
 struct Random {
@@ -176,6 +184,9 @@ static std::optional<int32_t> read_difficulty_from_hitman_sav(
     return cached_difficulty;
 }
 
+// global to avoid allocating large object on stack
+static hitman_codename_47::structs::HitmanDlc game{};
+
 bool hitman_codename_47::update_slow(
     const std::filesystem::path& exe_path,
     void* handle,
@@ -183,36 +194,40 @@ bool hitman_codename_47::update_slow(
     const LabelPtrs& label_ptrs,
     Stats& stats
 ) {
-    const auto& base_ptr = base_ptrs.at(1);  // hitmandlc.dlc
+    // base_ptrs.at(1) is for hitmandlc.dlc
+    const RemoteValue<structs::THitmanDlc, uint32_t> remote_game{
+        static_cast<uint32_t>(base_ptrs.at(1))
+    };
+    MemoryReader<uint32_t> reader{handle};
+    auto tracer
+        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
+    if (!mempeep::read(remote_game, reader, tracer, game)) return false;
     const auto hitman_sav = exe_path.parent_path() / "Hitman.sav";
     stats.difficulty = read_difficulty_from_hitman_sav(hitman_sav).value_or(0);
-    auto scene_head = read<int32_t>(
-        handle, base_ptr + 0x1F000C, {0, 0x59, 0x7E, 0x1C}, INT32_MAX
-    );
-    auto scene_tail = read<int32_t>(
-        handle, base_ptr + 0x1F000C, {0, 0x59, 0x7E, 0x20}, INT32_MAX
-    );
-    if (!scene_head || !scene_tail) return false;
-    // tail = root scene (i.e. mission, main menu, options from main menu, ...)
-    // head = child scene (i.e. laptop, options from mission, ...)
-    auto scene = read_string(
-        handle,
-        base_ptr + 0x1F000C,
-        {0, 0x59, 0x7E, 0x20, -0x106, 0x0, 0x0},
-        INT32_MAX,
-        64
-    );
-    if (!scene) return false;
-    logging::trace("Scene {}", scene.value());
-    auto iter = scenes.find(scene.value());
+    const auto& scene_container
+        = game.engine.engine_data.scene_manager.scene_container;
+    if (!scene_container) return false;
+    if (scene_container->scenes.empty()) return false;
+    // back = root scene (i.e. mission, main menu, options from main menu, ...)
+    // front = child scene (i.e. laptop, options from mission, ...)
+    logging::trace("scenes:");
+    for (const auto& _scene : scene_container->scenes) {
+        logging::trace(
+            "  {}", _scene.scene_name ? _scene.scene_name->text : "NULL"
+        );
+    }
+    const auto& root_scene = scene_container->scenes.back();
+    if (!root_scene.scene_name) return false;
+    const auto& scene = root_scene.scene_name->text;
+    if (scene.empty()) return false;
+    auto iter = scenes.find(scene);
     if (iter != scenes.end()) {
-        stats.map = iter->second;
-        stats.map_stage = MapStage::main;
+        stats.map = iter->second.map;
+        stats.map_stage = iter->second.map_stage;
         logging::trace("Map {}", stats.map);
     } else {
-        if (!scene.value().empty()) {
-            logging::error("No map registered for scene {}", scene.value());
-        }
+        logging::error("No map registered for scene {}", scene);
+        return false;
     }
     return true;
 }
@@ -243,7 +258,7 @@ bool hitman_codename_47::update_fast(
             time = read<double>(
                 handle,
                 base_ptr + 0x1F000C,
-                {0, 0x59, 0x7E, 0x1C, -0x108 + 0xD6},
+                {0, 0x59, 0x7E, 0x1C, -0x32},
                 INT32_MAX
             );
         }

@@ -12,7 +12,7 @@ local SceneNode = d.Struct("SceneNode", {
     d.Skip(0x4),
     d.Field(d.Int8, "unk_flag_1"),
     d.Field(d.Int8, "unk_flag_2"),
-    d.Field(d.Ref(SmallString), "scene_name"),
+    d.Field(d.NullableRef(SmallString), "scene_name"),
     d.Seek(-0x10C + 0xDA),
     d.Field(d.Double, "scene_creation_time"),
     d.Seek(0),

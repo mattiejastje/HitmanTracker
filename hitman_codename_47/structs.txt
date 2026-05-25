@@ -7,11 +7,6 @@ struct EntityManager {
   EntityManagerData* data;  // offset 0x0
 };
 
-struct SceneContainerVTable {
-  void* unk_func_3c;  // offset 0x3c
-  void* unk_func_48;  // offset 0x48
-};
-
 struct SmallString {
   char* text;  // offset 0x0
 };
@@ -26,7 +21,7 @@ struct SceneNode {
 };
 
 struct SceneContainer {
-  SceneContainerVTable* vtable;  // offset 0x0
+  void* vtable;  // offset 0x0
   uint32_t flags;  // offset 0xc
   int32_t link_offset;  // offset 0x18
   SceneNode* scenes;  // offset 0x1c
@@ -38,13 +33,8 @@ struct SceneManager {
   SceneContainer* scene_container;  // offset 0x7e
 };
 
-struct UnkNodeVTable {
-  void* unk_func_98;  // offset 0x98
-  void* unk_func_9C;  // offset 0x9c
-};
-
 struct UnkNode {
-  UnkNodeVTable* vtable;  // offset 0x0
+  void* vtable;  // offset 0x0
   int32_t unk2;  // offset 0x4
   void* next_node;  // offset 0x8
 };
