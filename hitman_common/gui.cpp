@@ -21,9 +21,11 @@ void hitman_common::gui(
     text(fonts.title, settings.title.color, game_name.c_str());
     text(fonts.difficulty, settings.difficulty.color, difficulty.c_str());
     if (stats.map > 0) {
+        ImGui::PushTextWrapPos();
         text(
             fonts.map, settings.map.color, map_names.at(stats.map - 1).c_str()
         );
+        ImGui::PopTextWrapPos();
         if (stats.map_stage != MapStage::pre) {
             ImGui::Spacing();
             text(
