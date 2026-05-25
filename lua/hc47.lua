@@ -20,15 +20,8 @@ local SceneNode = d.Struct("SceneNode", {
     d.Field(d.RawAddr(), "next_node"); -- toward older nodes
 })
 
-local SceneContainerVTable = d.Struct("SceneContainerVTable", {
-    d.Seek(0x3C),
-    d.Field(d.RawAddr(), "unk_func_3c"),
-    d.Seek(0x48),
-    d.Field(d.RawAddr(), "unk_func_48"),
-})
-
 local SceneContainer = d.Struct("SceneContainer", {
-    d.Field(d.Ref(SceneContainerVTable), "vtable"),
+    d.Field(d.RawAddr(), "vtable"),
     d.Skip(0x8),
     d.Field(d.UInt32, "flags"),
     d.Skip(0x8),
@@ -45,14 +38,8 @@ local SceneManager = d.Struct("SceneManager", {
     d.Field(d.NullableRef(SceneContainer), "scene_container"),
 })
 
-local UnkNodeVTable = d.Struct("UnkNodeVTable", {
-    d.Seek(0x98),
-    d.Field(d.RawAddr(), "unk_func_98"),
-    d.Field(d.RawAddr(), "unk_func_9C"),
-})
-
 local UnkNode = d.Struct("UnkNode", {
-    d.Field(d.Ref(UnkNodeVTable), "vtable"),
+    d.Field(d.RawAddr(), "vtable"),
     d.Field(d.Int32, "unk2"),
     d.Field(d.RawAddr(), "next_node"),
 })
