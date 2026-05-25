@@ -67,16 +67,17 @@ const std::unordered_map<std::string, Scene> scenes = {
     {R"(C5_Sanitarium\C5_2)", {13, MapStage::main}},
 };
 
-struct Random {
-    uint32_t state;
+namespace lcg {
 
-    explicit Random(uint32_t seed) : state(seed) {}
+using State = uint32_t;
 
-    uint16_t next() {
-        state = state * 69069u + 1u;
-        return static_cast<uint16_t>((state >> 8) & 0x7FFF);
-    }
-};
+static constexpr State step(State s) { return s * 69069u + 1u; }
+
+static constexpr uint16_t output(State s) {
+    return static_cast<uint16_t>((s >> 8) & 0x7FFF);
+}
+
+}  // namespace lcg
 
 static uint32_t checksum(const char* data, size_t len) {
     uint32_t acc = 0;
@@ -121,24 +122,25 @@ static std::optional<std::string> read_hitman_sav(
     }
     uint32_t stored_checksum;
     memcpy(&stored_checksum, raw.data() + 4, 4);
-    uint32_t seed;
-    memcpy(&seed, raw.data() + 8, 4);
+    lcg::State state;
+    memcpy(&state, raw.data() + 8, 4);
     const size_t header_size = 12;
     size_t payload_size = file_size - header_size;
     std::string payload(
         reinterpret_cast<char*>(raw.data()) + header_size, payload_size
     );
-    Random rand(seed);
     size_t word_count = payload_size / 2;
     for (size_t i = 0; i < word_count; i++) {
-        uint16_t key = rand.next();
+        state = lcg::step(state);
+        uint16_t key = lcg::output(state);
         uint16_t word;
         memcpy(&word, payload.data() + i * 2, 2);
         word ^= key;
         memcpy(payload.data() + i * 2, &word, 2);
     }
     if (payload_size % 2 == 1) {
-        uint16_t key = rand.next();
+        state = lcg::step(state);
+        uint16_t key = lcg::output(state);
         payload[payload_size - 1] ^= static_cast<uint8_t>(key & 0xFF);
     }
     uint32_t calculated_checksum = checksum(payload.data(), payload_size);
