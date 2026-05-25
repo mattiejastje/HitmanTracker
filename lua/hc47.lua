@@ -33,7 +33,9 @@ local SceneContainer = d.Struct("SceneContainer", {
     d.Field(d.UInt32, "flags"),
     d.Skip(0x8),
     d.Field(d.Int32, "link_offset"),  -- always 0x45? actual offset is (2 - link_offset) * 4
-    d.Field(d.List(SceneNode, "next_node", d.list_kind.NULL_TERMINATED, 0x100), "scenes"),  -- from newest scene to oldest
+    -- from newest scene to oldest
+    -- seems to only contain up to two nodes at most: e.g. [mission] or [options, mission]
+    d.Field(d.List(SceneNode, "next_node", d.list_kind.NULL_TERMINATED, 0x100), "scenes"),
     d.Field(d.RawAddr(), "scenes_tail"),  -- pointer root scene on stack (current mission)
 })
 
