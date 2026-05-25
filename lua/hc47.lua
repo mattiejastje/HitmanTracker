@@ -65,7 +65,7 @@ local EngineData = d.Struct("EngineData", {
     d.Field(d.Double, "game_time_copy"),  -- seems to hold a copy of game_time?
     d.Field(d.Double, "game_time_previous"),  -- game_time from previous frame
     d.Skip(0x10),
-    d.Field(d.RemoteAddr(d.List(UnkNode, "next_node", d.list_kind.NULL_TERMINATED, 0x1000), "unk_nodes")),
+    d.Field(d.RemoteAddr(d.List(UnkNode, "next_node", d.list_kind.NULL_TERMINATED, 0x1000)), "unk_nodes"),
     d.Seek(0x38F0),
     d.Field(d.Int8, "unk_flag_38f0"),
     d.Field(d.Int8, "timestep_mode"),  -- 1 fixed time (each frame 0.03 seconds), 0 real time
