@@ -1,4 +1,10 @@
+struct SceneInfo {
+  int8_t unk_flag_00;  // offset 0x0
+  char[260] scene_name;  // offset 0x2
+};
+
 struct SceneManager {
+  SceneInfo* info;  // offset 0x24
   int8_t is_paused;  // offset 0xbc
 };
 

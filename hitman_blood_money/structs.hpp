@@ -4,18 +4,36 @@
 #include <cstdint>
 #include <mempeep/descriptors.hpp>
 #include <optional>
+#include <string>
 
 using namespace mempeep;
 
 namespace hitman_blood_money::structs {
 
+struct SceneInfo {
+    int8_t unk_flag_00;
+    std::string scene_name;
+};
+
+using TSceneInfo = Struct<
+    SceneInfo,
+    Fields<
+        Field<Int8, &SceneInfo::unk_flag_00>,
+        Skip<0x1>,
+        Field<ZString<0x104>, &SceneInfo::scene_name>>>;
+
 struct SceneManager {
+    SceneInfo info;
     int8_t is_paused;
 };
 
 using TSceneManager = Struct<
     SceneManager,
-    Fields<Seek<0xbc>, Field<Int8, &SceneManager::is_paused>>>;
+    Fields<
+        Seek<0x24>,
+        Field<Ref<TSceneInfo>, &SceneManager::info>,
+        Seek<0xbc>,
+        Field<Int8, &SceneManager::is_paused>>>;
 
 struct SysInterface {
     uint32_t vtable;
@@ -54,15 +72,15 @@ using TSysInterface = Struct<
         Field<Int32, &SysInterface::clock_ticks>,
         Field<Float, &SysInterface::clock_delta>,
         Field<Int32, &SysInterface::clock_ticks_previous>,
-        Seek<0x38>,
+        Skip<0x4>,
         Field<Int32, &SysInterface::qpc_ticks>,
         Field<Float, &SysInterface::qpc_delta>,
-        Seek<0x48>,
+        Skip<0x8>,
         Field<Int32, &SysInterface::game_ticks>,
         Field<Int32, &SysInterface::game_ticks_previous>,
         Field<Float, &SysInterface::game_frame_time>,
         Field<Int32, &SysInterface::pause_ticks_offset>,
-        Seek<0x60>,
+        Skip<0x8>,
         Field<Float, &SysInterface::qpc_frequency>,
         Seek<0xb8>,
         Field<Ref<TSceneManager>, &SysInterface::scene_manager>,

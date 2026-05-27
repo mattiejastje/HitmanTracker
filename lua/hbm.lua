@@ -2,9 +2,17 @@ local M = {}
 
 local d = require("mempeep.descriptors")
 
+local SceneInfo = d.Struct("SceneInfo", {
+  d.Field(d.Int8, "unk_flag_00"),
+  d.Skip(0x1),
+  d.Field(d.ZString(260), "scene_name"),
+})
+
 local SceneManager = d.Struct("SceneManager", {
-    d.Seek(0xBC),
-    d.Field(d.Int8, "is_paused"),
+  d.Seek(0x24),
+  d.Field(d.Ref(SceneInfo), "info"),
+  d.Seek(0xBC),
+  d.Field(d.Int8, "is_paused"),
 })
 
 local SysInterface = d.Struct("SysInterface", {
