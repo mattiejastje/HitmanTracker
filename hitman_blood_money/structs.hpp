@@ -125,7 +125,7 @@ using TSettings = Struct<
         Field<Bounded<Int32, 0, 3>, &Settings::difficulty>>>;
 
 struct Game {
-    SysInterface SysInterface;
+    SysInterface sys_interface;
     std::optional<Settings> settings;
     std::array<int32_t, 0x42> stats;
     float seconds_per_tick;
@@ -136,7 +136,7 @@ using TGame = Struct<
     Game,
     Fields<
         Seek<0x41f820>,
-        Field<Ref<TSysInterface>, &Game::SysInterface>,
+        Field<Ref<TSysInterface>, &Game::sys_interface>,
         Seek<0x41f83c>,
         Field<NullableRef<TSettings>, &Game::settings>,
         Seek<0x5b2538>,

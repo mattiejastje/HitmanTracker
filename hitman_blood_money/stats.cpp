@@ -213,13 +213,13 @@ bool hitman_blood_money::update_slow(
     if (!mempeep::read(remote_game, reader, tracer, game)) return false;
     if (!game.settings) return true;  // game starting
     stats.difficulty = game.settings->difficulty;
-    auto scene = read_string(handle, label_ptrs.at(150), 64);
-    if (!scene) {
-        logging::error("Unable to read scene");
-        return false;
-    }
-    logging::trace("Scene {}", scene.value());
-    auto iter = scenes.find(scene.value());
+    auto& scene = game.sys_interface.scene_manager.info.scene_name;
+    logging::trace("Scene {}", scene);
+    std::transform(scene.begin(), scene.end(), scene.begin(), [](char& c) {
+        if (c == '\\') return '/';
+        return static_cast<char>(std::tolower(c));
+    });
+    auto iter = scenes.find(scene);
     if (iter != scenes.end()) {
         stats.map = iter->second.map;
         stats.map_stage = iter->second.map_stage;
@@ -231,9 +231,7 @@ bool hitman_blood_money::update_slow(
                                                 : "post"
         );
     } else {
-        if (!scene.value().empty()) {
-            logging::error("No map registered for scene {}", scene.value());
-        }
+        logging::error("No map registered for scene {}", scene);
     }
     if (stats.map > 0) {
         // force values to zero at mission start

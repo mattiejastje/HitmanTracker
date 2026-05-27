@@ -49,7 +49,7 @@ struct Settings {
 };
 
 struct Game {
-  SysInterface* SysInterface;  // offset 0x41f820
+  SysInterface* sys_interface;  // offset 0x41f820
   Settings* settings;  // offset 0x41f83c
   std::array<int32_t, 0x42> stats;  // offset 0x5b2538
   float seconds_per_tick;  // offset 0x356108

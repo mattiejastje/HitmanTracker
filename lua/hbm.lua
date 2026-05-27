@@ -70,7 +70,7 @@ local Settings = d.Struct("Settings", {
 
 M.Game = d.Struct("Game", {
   d.Seek(0x41F820),
-  d.Field(d.Ref(SysInterface), "SysInterface"),
+  d.Field(d.Ref(SysInterface), "sys_interface"),
   d.Seek(0x41F83C),
   d.Field(d.NullableRef(Settings), "settings"),  -- null when game starts
   d.Seek(0x5B2538),
