@@ -2,9 +2,45 @@ local M = {}
 
 local d = require("mempeep.descriptors")
 
-local TimeManager = d.Struct("TimeManager", {
+local SceneManager = d.Struct("SceneManager", {
+    d.Seek(0xBC),
+    d.Field(d.Int8, "is_paused"),
+})
+
+local SysInterface = d.Struct("SysInterface", {
+  d.Field(d.RawAddr(), "vtable"),
+  d.Skip(0x0C),
+  d.Field(d.Double, "clock_elapsed"),  -- elapsed time in current mission (based on clock)
+  d.Field(d.Double, "clock_current"),  -- "wall clock" time
+  d.Field(d.Double, "qpc_elapsed"),  -- elapsed time in current mission (based on qpc)
+  d.Field(d.Int32, "clock_ticks"),  -- clock_elapsed * 1024
+  d.Field(d.Float, "clock_delta"),  -- scaled frame delta
+  d.Field(d.Int32, "clock_ticks_previous"),  -- previous clock_ticks
+  d.Seek(0x38),
+  d.Field(d.Int32, "qpc_ticks"),  -- qpc_elapsed * 1024
+  d.Field(d.Float, "qpc_delta"),  -- scaled frame delta
   d.Seek(0x48),
-  d.Field(d.Int32, "time"),
+  d.Field(d.Int32, "game_ticks"),  -- in ticks, based on qpc_ticks but accounts for pause
+  d.Field(d.Int32, "game_ticks_previous"),
+  d.Field(d.Float, "game_frame_time"),  -- (game_ticks - game_ticks_previous) / 1024.0
+  d.Field(d.Int32, "pause_ticks_offset"),  -- total time game was paused, in negative ticks
+  d.Seek(0x60),
+  d.Field(d.Float, "qpc_frequency"),  -- 1000000 (number of qpc's per second)
+  d.Seek(0xB8),
+  d.Field(d.Ref(SceneManager), "scene_manager"),
+  d.Seek(0xB24),
+  d.Field(d.Float, "requested_timescale"),  -- -1.0 if default
+  d.Field(d.Float, "timescale"),  -- 1.0
+  d.Field(d.Int8, "is_timescale_locked"),
+  d.Seek(0xDE1),
+  d.Field(d.Int8, "use_qpc"),  -- whether to use QueryPerformanceCounter
+  d.Seek(0x11F8),
+  d.Field(d.Int64, "qpc_time_offset"),
+  d.Seek(0x1438),
+  d.Field(d.Int64, "qpc_last_sample"),  -- result of QueryPerformanceCounter
+  d.Field(d.Double, "qpc_frame_time"),  -- smoothed time spent on each frame (seconds)
+  d.Seek(0x1660),
+  d.Field(d.Int8, "qpc_force_tick"),
 })
 
 local Suits = d.Struct("Suits", {
@@ -26,11 +62,15 @@ local Settings = d.Struct("Settings", {
 
 M.Game = d.Struct("Game", {
   d.Seek(0x41F820),
-  d.Field(d.Ref(TimeManager), "time_manager"),
+  d.Field(d.Ref(SysInterface), "SysInterface"),
   d.Seek(0x41F83C),
   d.Field(d.NullableRef(Settings), "settings"),  -- null when game starts
   d.Seek(0x5B2538),
   d.Field(d.Array(d.Int32, 66), "stats"),
+  d.Seek(0x356108),
+  d.Field(d.Float, "seconds_per_tick"),  -- 1/1024
+  d.Seek(0x35ECD0),
+  d.Field(d.Double, "seconds_per_millisecond"),  -- 1/1000
 })
 
 return M

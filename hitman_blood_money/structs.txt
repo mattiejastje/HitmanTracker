@@ -1,5 +1,31 @@
-struct TimeManager {
-  int32_t time;  // offset 0x48
+struct SceneManager {
+  int8_t is_paused;  // offset 0xbc
+};
+
+struct SysInterface {
+  void* vtable;  // offset 0x0
+  double clock_elapsed;  // offset 0x10
+  double clock_current;  // offset 0x18
+  double qpc_elapsed;  // offset 0x20
+  int32_t clock_ticks;  // offset 0x28
+  float clock_delta;  // offset 0x2c
+  int32_t clock_ticks_previous;  // offset 0x30
+  int32_t qpc_ticks;  // offset 0x38
+  float qpc_delta;  // offset 0x3c
+  int32_t game_ticks;  // offset 0x48
+  int32_t game_ticks_previous;  // offset 0x4c
+  float game_frame_time;  // offset 0x50
+  int32_t pause_ticks_offset;  // offset 0x54
+  float qpc_frequency;  // offset 0x60
+  SceneManager* scene_manager;  // offset 0xb8
+  float requested_timescale;  // offset 0xb24
+  float timescale;  // offset 0xb28
+  int8_t is_timescale_locked;  // offset 0xb2c
+  int8_t use_qpc;  // offset 0xde1
+  int64_t qpc_time_offset;  // offset 0x11f8
+  int64_t qpc_last_sample;  // offset 0x1438
+  double qpc_frame_time;  // offset 0x1440
+  int8_t qpc_force_tick;  // offset 0x1660
 };
 
 struct Suits {
@@ -17,8 +43,10 @@ struct Settings {
 };
 
 struct Game {
-  TimeManager* time_manager;  // offset 0x41f820
+  SysInterface* SysInterface;  // offset 0x41f820
   Settings* settings;  // offset 0x41f83c
   std::array<int32_t, 0x42> stats;  // offset 0x5b2538
+  float seconds_per_tick;  // offset 0x356108
+  double seconds_per_millisecond;  // offset 0x35ecd0
 };
 
