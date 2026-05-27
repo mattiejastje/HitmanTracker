@@ -16,15 +16,15 @@ local SysInterface = d.Struct("SysInterface", {
   d.Field(d.Int32, "clock_ticks"),  -- clock_elapsed * 1024
   d.Field(d.Float, "clock_delta"),  -- scaled frame delta
   d.Field(d.Int32, "clock_ticks_previous"),  -- previous clock_ticks
-  d.Seek(0x38),
+  d.Skip(0x4),
   d.Field(d.Int32, "qpc_ticks"),  -- qpc_elapsed * 1024
   d.Field(d.Float, "qpc_delta"),  -- scaled frame delta
-  d.Seek(0x48),
+  d.Skip(0x8),
   d.Field(d.Int32, "game_ticks"),  -- in ticks, based on qpc_ticks but accounts for pause
   d.Field(d.Int32, "game_ticks_previous"),
   d.Field(d.Float, "game_frame_time"),  -- (game_ticks - game_ticks_previous) / 1024.0
   d.Field(d.Int32, "pause_ticks_offset"),  -- total time game was paused, in negative ticks
-  d.Seek(0x60),
+  d.Skip(0x8),
   d.Field(d.Float, "qpc_frequency"),  -- 1000000 (number of qpc's per second)
   d.Seek(0xB8),
   d.Field(d.Ref(SceneManager), "scene_manager"),
