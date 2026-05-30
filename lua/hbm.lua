@@ -27,7 +27,8 @@ local SysInterface = d.Struct("SysInterface", {
   d.Skip(0x4),
   d.Field(d.Int32, "qpc_ticks"),  -- qpc_elapsed * 1024
   d.Field(d.Float, "qpc_delta"),  -- scaled frame delta
-  d.Skip(0x8),
+  d.Field(d.Int32, "game_ticks_copy"),  -- unsure, copy of game_ticks
+  d.Skip(0x4),
   d.Field(d.Int32, "game_ticks"),  -- in ticks, based on qpc_ticks but accounts for pause
   d.Field(d.Int32, "game_ticks_previous"),
   d.Field(d.Float, "game_frame_time"),  -- (game_ticks - game_ticks_previous) / 1024.0
