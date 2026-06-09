@@ -24,6 +24,12 @@ Fully supported.
 
 Fully supported.
 
+The game tracks time internally using 1024 ticks per second.
+However, the final mission screen shows time assuming 1000 ticks per second.
+This appears to be a bug.
+The tracker will show a time that is consistent with the final mission screen
+(i.e. the timer will run too fast by a factor of 1.024).
+
 ### Hitman: Absolution
 
 Fully supported.
