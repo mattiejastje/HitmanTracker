@@ -147,7 +147,7 @@ static std::optional<int32_t> get_time(
     void* handle, uintptr_t base_ptr, MapStage map_stage
 ) {
     if (map_stage == MapStage::main)
-        // game.time_manager.time
+        // game.sys_interface.game_ticks
         return read<int32_t>(handle, base_ptr + 0x41F820, {0x48}, INT32_MAX);
     if (map_stage == MapStage::post)
         // game.stats[TIME]
@@ -265,6 +265,12 @@ bool hitman_blood_money::update_slow(
     return true;
 }
 
+// ticks are 1 / 1024 but final game screen shows 1 / 1000
+// this seems to be a bug in the game
+// here we use the mission time as shown by the game
+// timer will run too fast but will be consistent with final mission screen
+constexpr float seconds_per_tick = 1.0f / 1000;
+
 bool hitman_blood_money::update_fast(
     void* handle,
     const BasePtrs& base_ptrs,
@@ -274,7 +280,7 @@ bool hitman_blood_money::update_fast(
     if (stats.map > 0) {
         const auto& base_ptr = base_ptrs.at(0);
         auto time = get_time(handle, base_ptr, stats.map_stage);
-        if (time) stats.time = time.value() * 0.001f;
+        if (time) stats.time = time.value() * seconds_per_tick;
         return time.has_value();
     }
     return true;
