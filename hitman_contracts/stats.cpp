@@ -114,15 +114,11 @@ bool hitman_contracts::update_slow(
                            .value_or(0);
     if (stats.map >= 1) {
         const auto& player_data = game.player.data;
-        if (player_data) {
-            stats.shots_fired.value = player_data->shots_fired;
-        } else {
-            stats.shots_fired.value = 0;
-        }
         const auto& player_stats = game.player.stats;
         if (player_stats) {
             StatsArray<int32_t> game_stats{};
-            game_stats[SHOTS_FIRED] = player_data->shots_fired;
+            game_stats[SHOTS_FIRED]
+                = player_data ? player_data->shots_fired : 0;
             game_stats[HEADSHOTS] = player_stats->headshots;
             game_stats[ENEMIES_WOUNDED] = player_stats->enemies_wounded;
             game_stats[ENEMIES_KILLED] = player_stats->enemies_killed;
