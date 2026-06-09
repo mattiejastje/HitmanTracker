@@ -492,7 +492,7 @@ M.measure_aggression = function(level_control, shots_fired)
     local value = (
         3 * level_control.innocents_wounded + 6 * level_control.innocents_killed
         + level_control.enemies_wounded + 3 * level_control.enemies_killed
-        + 2 * data.shots_fired
+        + 2 * shots_fired
         + level_control.headshots + level_control.close_encounters
     )
     -- convert to [0,100] scale
