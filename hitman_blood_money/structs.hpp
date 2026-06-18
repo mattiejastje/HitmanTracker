@@ -45,6 +45,7 @@ struct SysInterface {
     int32_t clock_ticks_previous;
     int32_t qpc_ticks;
     float qpc_delta;
+    int32_t game_ticks_copy;
     int32_t game_ticks;
     int32_t game_ticks_previous;
     float game_frame_time;
@@ -75,7 +76,8 @@ using TSysInterface = Struct<
         Skip<0x4>,
         Field<Int32, &SysInterface::qpc_ticks>,
         Field<Float, &SysInterface::qpc_delta>,
-        Skip<0x8>,
+        Field<Int32, &SysInterface::game_ticks_copy>,
+        Skip<0x4>,
         Field<Int32, &SysInterface::game_ticks>,
         Field<Int32, &SysInterface::game_ticks_previous>,
         Field<Float, &SysInterface::game_frame_time>,
