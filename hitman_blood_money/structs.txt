@@ -3,9 +3,27 @@ struct SceneInfo {
   char[260] scene_name;  // offset 0x2
 };
 
+struct SceneTask {
+  void* prev_task;  // offset 0x0
+  void* next_task;  // offset 0x4
+  float unk_tick_interval;  // offset 0xc
+  int32_t unk_last_tick;  // offset 0x10
+  int32_t unk_flags_1;  // offset 0x18
+  int32_t unk_flags_2;  // offset 0x1c
+  void* unk_ptr_24;  // offset 0x20
+};
+
+struct SceneTaskScheduler {
+  std::array<SceneTask*, 0x9> tasks;  // offset 0x4
+  void* unk_current_54;  // offset 0x54
+  void* unk_active_58;  // offset 0x58
+};
+
 struct SceneManager {
   SceneInfo* info;  // offset 0x24
+  SceneTaskScheduler task_scheduler;  // offset 0x30
   int8_t is_paused;  // offset 0xbc
+  void* unk_52d0;  // offset 0x52d0
 };
 
 struct SysInterface {

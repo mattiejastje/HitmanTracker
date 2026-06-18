@@ -8,11 +8,35 @@ local SceneInfo = d.Struct("SceneInfo", {
   d.Field(d.ZString(260), "scene_name"),
 })
 
+local SceneTask = d.Struct("SceneTask", {
+  d.Field(d.RawAddr(), "prev_task"),
+  d.Field(d.RawAddr(), "next_task"),
+  d.Seek(0x0C),
+  d.Field(d.Float, "unk_tick_interval"),  -- not sure
+  d.Field(d.Int32, "unk_last_tick"),  -- not sure
+  d.Skip(0x4),
+  d.Field(d.Int32, "unk_flags_1"),  -- not sure
+  d.Field(d.Int32, "unk_flags_2"),  -- not sure
+  d.Field(d.RawAddr(), "unk_ptr_24"),
+})
+
+local SceneTaskScheduler = d.Struct("SceneTaskScheduler", {
+  d.Skip(0x4),  -- vtable?
+  d.Field(d.RemoteAddr(d.Array(d.List(SceneTask, "next_task", d.list_kind.CIRCULAR, 0x100), 9)), "tasks"),
+  d.Seek(0x54),
+  d.Field(d.RawAddr(), "unk_current_54"),
+  d.Field(d.RawAddr(), "unk_active_58"),
+})
+
 local SceneManager = d.Struct("SceneManager", {
   d.Seek(0x24),
   d.Field(d.Ref(SceneInfo), "info"),
+  d.Seek(0x30),
+  d.Field(SceneTaskScheduler, "task_scheduler"),
   d.Seek(0xBC),
   d.Field(d.Int8, "is_paused"),
+  d.Seek(0x52D0),
+  d.Field(d.RawAddr(), "unk_52d0"),  -- related to task_scheduler->unk_active_58
 })
 
 local SysInterface = d.Struct("SysInterface", {

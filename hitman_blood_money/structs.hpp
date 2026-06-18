@@ -22,9 +22,64 @@ using TSceneInfo = Struct<
         Skip<0x1>,
         Field<ZString<0x104>, &SceneInfo::scene_name>>>;
 
+struct SceneTask {
+    uint32_t prev_task;
+    uint32_t next_task;
+    float unk_tick_interval;
+    int32_t unk_last_tick;
+    int32_t unk_flags_1;
+    int32_t unk_flags_2;
+    uint32_t unk_ptr_24;
+};
+
+using TSceneTask = Struct<
+    SceneTask,
+    Fields<
+        Field<RawAddr<uint32_t>, &SceneTask::prev_task>,
+        Field<RawAddr<uint32_t>, &SceneTask::next_task>,
+        Seek<0xc>,
+        Field<Float, &SceneTask::unk_tick_interval>,
+        Field<Int32, &SceneTask::unk_last_tick>,
+        Skip<0x4>,
+        Field<Int32, &SceneTask::unk_flags_1>,
+        Field<Int32, &SceneTask::unk_flags_2>,
+        Field<RawAddr<uint32_t>, &SceneTask::unk_ptr_24>>>;
+
+struct SceneTaskScheduler {
+    RemoteValue<
+        Array<
+            List<TSceneTask, &SceneTask::next_task, ListKind::CIRCULAR, 0x100>,
+            0x9>,
+        uint32_t>
+        tasks;
+    uint32_t unk_current_54;
+    uint32_t unk_active_58;
+};
+
+using TSceneTaskScheduler = Struct<
+    SceneTaskScheduler,
+    Fields<
+        Skip<0x4>,
+        Field<
+            RemoteAddr<
+                Array<
+                    List<
+                        TSceneTask,
+                        &SceneTask::next_task,
+                        ListKind::CIRCULAR,
+                        0x100>,
+                    0x9>,
+                uint32_t>,
+            &SceneTaskScheduler::tasks>,
+        Seek<0x54>,
+        Field<RawAddr<uint32_t>, &SceneTaskScheduler::unk_current_54>,
+        Field<RawAddr<uint32_t>, &SceneTaskScheduler::unk_active_58>>>;
+
 struct SceneManager {
     SceneInfo info;
+    SceneTaskScheduler task_scheduler;
     int8_t is_paused;
+    uint32_t unk_52d0;
 };
 
 using TSceneManager = Struct<
@@ -32,8 +87,12 @@ using TSceneManager = Struct<
     Fields<
         Seek<0x24>,
         Field<Ref<TSceneInfo>, &SceneManager::info>,
+        Seek<0x30>,
+        Field<TSceneTaskScheduler, &SceneManager::task_scheduler>,
         Seek<0xbc>,
-        Field<Int8, &SceneManager::is_paused>>>;
+        Field<Int8, &SceneManager::is_paused>,
+        Seek<0x52d0>,
+        Field<RawAddr<uint32_t>, &SceneManager::unk_52d0>>>;
 
 struct SysInterface {
     uint32_t vtable;
