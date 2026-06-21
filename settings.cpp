@@ -80,6 +80,29 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     return app;
 }
 
+static void save(const CLI::App& app, std::filesystem::path path) {
+    std::string content{};
+    try {
+        content = app.config_to_str(true, true);
+    } catch (const CLI::Error& e) {
+        logging::error(
+            "Failed to save configuration ({}: {})", e.get_name(), e.what()
+        );
+        return;
+    }
+    try {
+        std::ofstream out(path);
+        out.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+        out << content;
+        out.close();
+        logging::debug("Configuration saved to {}", path.string());
+    } catch (const std::exception& e) {
+        logging::warn(
+            "Failed to save configuration to {}: {}", path.string(), e.what()
+        );
+    }
+}
+
 std::optional<Settings> settings::load(int argc, char** argv) {
     Settings settings{};
     auto app = make_app(settings);
@@ -91,8 +114,11 @@ std::optional<Settings> settings::load(int argc, char** argv) {
         return {};
     } catch (const CLI::ParseError& e) {
         logging::error("Settings error ({}: {})", e.get_name(), e.what());
-        return {};
+        logging::warn("Fix HitmanTracker.ini or delete it to recreate.");
+        logging::warn("Falling back on default settings for now.");
+        return Settings{};
     }
-    std::cout << app->config_to_str(false, false);
+    std::filesystem::path ini_file{"HitmanTracker.ini"};
+    if (!std::filesystem::exists(ini_file)) save(*app, ini_file);
     return settings;
 }
