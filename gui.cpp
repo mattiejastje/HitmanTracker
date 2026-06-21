@@ -116,7 +116,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return ::DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-static void Frame(UI* ui, const settings::Gui settings) {
+static void Frame(UI* ui, const settings::Gui& settings) {
     logging::trace("New frame...");
     static auto last_now = std::chrono::steady_clock::now();
     auto now = std::chrono::steady_clock::now();
