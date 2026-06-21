@@ -39,7 +39,7 @@ std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
     // need to create the window before we know the dpi...
     // so first create 10x10 window then resize
     window->handle = ::CreateWindowExW(
-        0,
+        WS_EX_TOPMOST,
         window->cls.lpszClassName,
         L"Hitman Tracker",
         WS_OVERLAPPEDWINDOW,
