@@ -13,9 +13,9 @@ int main(int argc, char** argv) {
     auto settings = settings::load(argc, argv);
     if (settings) {
         spdlog_set_level(
-            settings.value().log.level, settings.value().log.flush_level
+            settings->log.level, settings->log.flush_level
         );
-        gui_run(settings.value());
+        gui_run(*settings);
     }
     return 0;
 }
