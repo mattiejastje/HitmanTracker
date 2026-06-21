@@ -25,14 +25,14 @@ static void add_text_style_options(
            style.file,
            std::format("Font for {}", desc)
     )
-        ->transform(CLI::ExistingFile)
-        ->capture_default_str();
+        ->check(CLI::ExistingFile)
+        ->default_str(style.file.string());
     app.add_option(
            std::format("--{}-scale", name),
            style.scale,
            std::format("Scale for {}", desc)
     )
-        ->transform(CLI::PositiveNumber)
+        ->check(CLI::PositiveNumber)
         ->capture_default_str();
     app.add_option(
            std::format("--{}-color", name),
