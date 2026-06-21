@@ -12,6 +12,7 @@
 void hitman_common::gui(
     const settings::Gui& settings,
     const Fonts& fonts,
+    float time_scale,
     const Stats& stats,
     const std::string& game_name,
     const std::string& difficulty,
@@ -31,7 +32,7 @@ void hitman_common::gui(
             text(
                 fonts.time,
                 settings.time.color,
-                format_duration(stats.time).c_str()
+                format_duration(time_scale * stats.time).c_str()
             );
             auto rating_font
                 = stats.rating.status == Status::RED     ? fonts.rating_bad

@@ -38,6 +38,7 @@ void hitman2_silent_assassin::gui(
     hitman_common::gui(
         settings,
         fonts,
+        1.0f,
         stats,
         GAME_NAME,
         stats.difficulty == 1   ? "Normal"

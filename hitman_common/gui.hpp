@@ -12,6 +12,7 @@ struct TableRow {
 void gui(
     const settings::Gui& settings,
     const Fonts& fonts,
+    float time_scale,
     const Stats& stats,
     const std::string& game_name,
     const std::string& difficulty,

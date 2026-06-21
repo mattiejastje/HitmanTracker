@@ -25,6 +25,7 @@ void hitman_blood_money::gui(
     hitman_common::gui(
         settings,
         fonts,
+        settings.hbm.real_time ? (1000 / 1024.0f) : 1.0f,
         stats,
         GAME_NAME,
         stats.difficulty == 0   ? "Rookie"

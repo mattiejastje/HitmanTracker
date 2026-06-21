@@ -5,5 +5,5 @@
 void hitman_2016::gui(
     const settings::Gui& settings, const Fonts& fonts, const Stats& stats
 ) {
-    hitman_common::gui(settings, fonts, stats, GAME_NAME, "", {}, {});
+    hitman_common::gui(settings, fonts, 1.0f, stats, GAME_NAME, "", {}, {});
 }

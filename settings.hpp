@@ -20,6 +20,10 @@ struct TextStyle {
     Color color{1.0f, 1.0f, 1.0f};
 };
 
+struct HBM {
+    bool real_time{false};
+};
+
 struct Gui {
     bool topmost{false};
     float font_size{20.0f};
@@ -43,16 +47,12 @@ struct Gui {
     TextStyle value{
         "fonts/DejaVuSansMono-Bold.ttf", 0.9f, Color{0.4f, 0.4f, 1.0f}
     };
-};
-
-struct HBM {
-    bool real_time{false};
+    HBM hbm;
 };
 
 struct Settings {
     Log log;
     Gui gui;
-    HBM hbm;
 };
 
 std::optional<Settings> load(int argc, char** argv);

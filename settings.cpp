@@ -91,7 +91,7 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     hbm_group
         ->add_flag(
             "--hbm-real-time",
-            settings.hbm.real_time,
+            settings.gui.hbm.real_time,
             "Use real time instead of mission time (mission time is 2.4% fast)"
         )
         ->capture_default_str();
