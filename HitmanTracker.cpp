@@ -17,9 +17,5 @@ int main(int argc, char** argv) {
         );
         gui_run(settings.value());
     }
-    spdlog_shutdown();  // force flush before showing exit message
-    std::cout << std::endl;
-    std::cout << "Press enter to exit." << std::endl;
-    std::cin.get();
     return 0;
 }
