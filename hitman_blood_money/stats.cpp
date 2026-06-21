@@ -211,9 +211,14 @@ bool hitman_blood_money::update_slow(
     auto tracer
         = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
     if (!mempeep::read(remote_game, reader, tracer, game)) return false;
-    if (!game.settings) return true;  // game starting
-    stats.difficulty = game.settings->difficulty;
-    auto& scene = game.sys_interface.scene_manager.info.scene_name;
+    auto& settings = game.settings;
+    if (!settings) return true;  // game starting
+    stats.difficulty = settings->difficulty;
+    auto& sys_interface = game.sys_interface;
+    if (!sys_interface) return true;  // game starting
+    auto& scene_manager = sys_interface->scene_manager;
+    if (!scene_manager) return true;  // game starting
+    auto& scene = scene_manager->info.scene_name;
     logging::trace("Scene {}", scene);
     std::transform(scene.begin(), scene.end(), scene.begin(), [](char& c) {
         if (c == '\\') return '/';

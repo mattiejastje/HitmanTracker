@@ -110,7 +110,7 @@ struct SysInterface {
     float game_frame_time;
     int32_t pause_ticks_offset;
     float qpc_frequency;
-    SceneManager scene_manager;
+    std::optional<SceneManager> scene_manager;
     float requested_timescale;
     float timescale;
     int8_t is_timescale_locked;
@@ -144,7 +144,7 @@ using TSysInterface = Struct<
         Skip<0x8>,
         Field<Float, &SysInterface::qpc_frequency>,
         Seek<0xb8>,
-        Field<Ref<TSceneManager>, &SysInterface::scene_manager>,
+        Field<NullableRef<TSceneManager>, &SysInterface::scene_manager>,
         Seek<0xb24>,
         Field<Float, &SysInterface::requested_timescale>,
         Field<Float, &SysInterface::timescale>,
@@ -186,7 +186,7 @@ using TSettings = Struct<
         Field<Bounded<Int32, 0, 3>, &Settings::difficulty>>>;
 
 struct Game {
-    SysInterface sys_interface;
+    std::optional<SysInterface> sys_interface;
     std::optional<Settings> settings;
     std::array<int32_t, 0x42> stats;
     float seconds_per_tick;
@@ -197,7 +197,7 @@ using TGame = Struct<
     Game,
     Fields<
         Seek<0x41f820>,
-        Field<Ref<TSysInterface>, &Game::sys_interface>,
+        Field<NullableRef<TSysInterface>, &Game::sys_interface>,
         Seek<0x41f83c>,
         Field<NullableRef<TSettings>, &Game::settings>,
         Seek<0x5b2538>,

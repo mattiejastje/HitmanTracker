@@ -60,7 +60,7 @@ local SysInterface = d.Struct("SysInterface", {
   d.Skip(0x8),
   d.Field(d.Float, "qpc_frequency"),  -- 1000000 (number of qpc's per second)
   d.Seek(0xB8),
-  d.Field(d.Ref(SceneManager), "scene_manager"),
+  d.Field(d.NullableRef(SceneManager), "scene_manager"),
   d.Seek(0xB24),
   d.Field(d.Float, "requested_timescale"),  -- -1.0 if default
   d.Field(d.Float, "timescale"),  -- 1.0
@@ -95,7 +95,7 @@ local Settings = d.Struct("Settings", {
 
 M.Game = d.Struct("Game", {
   d.Seek(0x41F820),
-  d.Field(d.Ref(SysInterface), "sys_interface"),
+  d.Field(d.NullableRef(SysInterface), "sys_interface"),
   d.Seek(0x41F83C),
   d.Field(d.NullableRef(Settings), "settings"),  -- null when game starts
   d.Seek(0x5B2538),
