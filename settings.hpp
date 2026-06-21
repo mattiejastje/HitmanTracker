@@ -45,9 +45,14 @@ struct Gui {
     };
 };
 
+struct HBM {
+    bool real_time{false};
+};
+
 struct Settings {
     Log log;
     Gui gui;
+    HBM hbm;
 };
 
 std::optional<Settings> load(int argc, char** argv);

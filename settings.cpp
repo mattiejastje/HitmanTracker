@@ -44,39 +44,57 @@ static void add_text_style_options(
 
 static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     auto app = std::make_unique<CLI::App>("Hitman tracker", "HitmanTracker");
-    app->add_option("--log-level", settings.log.level, "Log level")
-        ->capture_default_str()
-        ->transform(CLI::CheckedTransformer(log_level_map, CLI::ignore_case));
-    app->add_option(
-           "--log-flush-level",
-           settings.log.flush_level,
-           "On which level to flush the log"
-    )
-        ->capture_default_str()
-        ->transform(CLI::CheckedTransformer(log_level_map, CLI::ignore_case));
     app->set_config(
         "--config", "HitmanTracker.ini", "Read options from ini file"
     );
-    app->add_flag("--topmost", settings.gui.topmost, "Force topmost window")
+    auto log_group
+        = app->add_option_group("Logging", "Options related to logging");
+    log_group->add_option("--log-level", settings.log.level, "Log level")
+        ->capture_default_str()
+        ->transform(CLI::CheckedTransformer(log_level_map, CLI::ignore_case));
+    log_group
+        ->add_option(
+            "--log-flush-level",
+            settings.log.flush_level,
+            "On which level to flush the log"
+        )
+        ->capture_default_str()
+        ->transform(CLI::CheckedTransformer(log_level_map, CLI::ignore_case));
+    auto gui_group = app->add_option_group(
+        "GUI", "Options related to the graphical user interface"
+    );
+    gui_group
+        ->add_flag("--topmost", settings.gui.topmost, "Force topmost window")
         ->capture_default_str();
-    app->add_option("--font-size", settings.gui.font_size, "Font size")
+    gui_group->add_option("--font-size", settings.gui.font_size, "Font size")
         ->capture_default_str();
-    app->add_option("--bg-color", settings.gui.bg_color, "Background color")
+    gui_group
+        ->add_option("--bg-color", settings.gui.bg_color, "Background color")
         ->capture_default_str();
-    add_text_style_options(*app, "title", "title", settings.gui.title);
-    add_text_style_options(*app, "map", "map", settings.gui.map);
-    add_text_style_options(*app, "time", "time", settings.gui.time);
+    add_text_style_options(*gui_group, "title", "title", settings.gui.title);
+    add_text_style_options(*gui_group, "map", "map", settings.gui.map);
+    add_text_style_options(*gui_group, "time", "time", settings.gui.time);
     add_text_style_options(
-        *app, "rating-good", "good rating", settings.gui.rating_good
+        *gui_group, "rating-good", "good rating", settings.gui.rating_good
     );
     add_text_style_options(
-        *app, "rating-maybe", "maybe rating", settings.gui.rating_maybe
+        *gui_group, "rating-maybe", "maybe rating", settings.gui.rating_maybe
     );
     add_text_style_options(
-        *app, "rating-bad", "bad rating", settings.gui.rating_bad
+        *gui_group, "rating-bad", "bad rating", settings.gui.rating_bad
     );
-    add_text_style_options(*app, "label", "labels", settings.gui.label);
-    add_text_style_options(*app, "value", "values", settings.gui.value);
+    add_text_style_options(*gui_group, "label", "labels", settings.gui.label);
+    add_text_style_options(*gui_group, "value", "values", settings.gui.value);
+    auto hbm_group = app->add_option_group(
+        "Hitman Blood Money", "Options related to Hitman Blood Money"
+    );
+    hbm_group
+        ->add_flag(
+            "--hbm-real-time",
+            settings.hbm.real_time,
+            "Use real time instead of mission time (mission time is 2.4% fast)"
+        )
+        ->capture_default_str();
     return app;
 }
 
