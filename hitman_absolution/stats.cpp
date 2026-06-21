@@ -674,7 +674,7 @@ bool hitman_absolution::update_slow(
     };
     MemoryReader<uint32_t> reader{handle};
     auto tracer
-        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::VALUES};
+        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
     if (!mempeep::read(remote_game, reader, tracer, game)) return false;
     stats.difficulty = game.global_data.difficulty;
     // engine may set level to -1 if not in a mission
