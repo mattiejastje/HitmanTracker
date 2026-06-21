@@ -155,6 +155,7 @@ static void Frame(UI* ui, const settings::Gui settings) {
 
 // Main code
 int gui_run(const settings::Settings& settings) {
+    logging::info("Running user interface");
     ImGui_ImplWin32_EnableDpiAwareness();
     auto window = CreateWindowWin32(WndProc, settings.gui.font_size, settings.gui.topmost);
     if (!window) return 1;
@@ -229,6 +230,7 @@ int gui_run(const settings::Settings& settings) {
         HRESULT result = RenderAndPresent(dev.get());
         if (result == D3DERR_DEVICELOST) g_DeviceLost = true;
     }
+    logging::info("Closing user interface");
     logging::debug("Cleanup...");
     KillTimer(window->handle, TIMER_UPDATE_STATS);
     KillTimer(window->handle, TIMER_FIND_GAME);
