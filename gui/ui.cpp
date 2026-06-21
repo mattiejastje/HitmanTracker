@@ -75,12 +75,12 @@ std::unique_ptr<UI, UIDeleter> CreateUI(
     if (!ImGui_ImplDX9_Init(dev->d3d_device)) return nullptr;
 
     float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(window->handle);
-    if (!UpdateUIScaling(ui.get(), dpiscale > 1.0f ? dpiscale : 1.0f, settings))
+    if (!UpdateUIScaling(*ui, dpiscale > 1.0f ? dpiscale : 1.0f, settings))
         return nullptr;
     return ui;
 }
 
-bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
+bool UpdateUIScaling(UI& ui, float dpiscale, const settings::Gui& settings) {
     logging::debug("Updating ImGui for dpi scale {}...", dpiscale);
     ImGuiIO& io = ImGui::GetIO();
     ImGui_ImplDX9_InvalidateDeviceObjects();
@@ -107,7 +107,7 @@ bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings) {
     // Load fonts
     io.Fonts->Clear();
     FontRegistry font_registry{};
-    ui->fonts = Fonts{
+    ui.fonts = Fonts{
         .title = load_font(
             io,
             font_registry,

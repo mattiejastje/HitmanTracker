@@ -116,7 +116,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return ::DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-static void Frame(UI* ui, const settings::Gui& settings) {
+static void Frame(const UI& ui, const settings::Gui& settings) {
     logging::trace("New frame...");
     static auto last_now = std::chrono::steady_clock::now();
     auto now = std::chrono::steady_clock::now();
@@ -144,9 +144,9 @@ static void Frame(UI* ui, const settings::Gui& settings) {
                 stats
             );
             error_fast.update(100.0f * static_cast<float>(!ok), dt);
-            game->methods.gui(settings, ui->fonts, stats);
+            game->methods.gui(settings, ui.fonts, stats);
         } else {
-            text(ui->fonts.title, settings.title.color, "Game not running");
+            text(ui.fonts.title, settings.title.color, "Game not running");
         }
     }
     ImGui::End();
@@ -154,10 +154,12 @@ static void Frame(UI* ui, const settings::Gui& settings) {
 }
 
 // Main code
-int gui_run(const settings::Settings& settings) {
+int gui_run(const settings::Gui& settings) {
     logging::info("Running user interface");
     ImGui_ImplWin32_EnableDpiAwareness();
-    auto window = CreateWindowWin32(WndProc, settings.gui.font_size, settings.gui.topmost);
+    auto window = CreateWindowWin32(
+        WndProc, settings.font_size, settings.topmost
+    );
     if (!window) return 1;
     auto dev = CreateDeviceD3D(window->handle);
     if (!dev) return 1;
@@ -166,7 +168,7 @@ int gui_run(const settings::Settings& settings) {
     ::ShowWindow(window->handle, SW_SHOWDEFAULT);
     ::UpdateWindow(window->handle);
 
-    auto ui = CreateUI(settings.gui, window.get(), dev.get());
+    auto ui = CreateUI(settings, window.get(), dev.get());
     if (!ui) return 1;
 
     // Set timer
@@ -223,10 +225,10 @@ int gui_run(const settings::Settings& settings) {
             float dpiscale
                 = (float)g_ChangeDpi / (float)USER_DEFAULT_SCREEN_DPI;
             g_ChangeDpi = 0;
-            UpdateUIScaling(ui.get(), dpiscale, settings.gui);
+            UpdateUIScaling(*ui, dpiscale, settings);
         }
 
-        Frame(ui.get(), settings.gui);
+        Frame(*ui, settings);
         HRESULT result = RenderAndPresent(dev.get());
         if (result == D3DERR_DEVICELOST) g_DeviceLost = true;
     }

@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
         spdlog_set_level(
             settings->log.level, settings->log.flush_level
         );
-        gui_run(*settings);
+        gui_run(settings->gui);
     }
     return 0;
 }

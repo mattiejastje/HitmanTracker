@@ -27,11 +27,11 @@ struct UI {
 };
 
 struct UIDeleter {
-    void operator()(UI* window) const;
+    void operator()(UI* ui) const;
 };
 
 std::unique_ptr<UI, UIDeleter> CreateUI(
     const settings::Gui& settings, Window* window, DeviceD3D* dev
 );
 
-bool UpdateUIScaling(UI* ui, float dpiscale, const settings::Gui& settings);
+bool UpdateUIScaling(UI& ui, float dpiscale, const settings::Gui& settings);
