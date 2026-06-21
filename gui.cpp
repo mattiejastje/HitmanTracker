@@ -29,7 +29,7 @@ static RECT g_ChangeRect = {};
 static UINT g_ChangeDpi = 0;
 static std::optional<Game> game{};
 static Stats stats{0};
-static Signal frametime_signal{"frame time", "seconds"};
+static Signal frametime_signal{"fps", "frames per second"};
 static Signal error_slow{"slow update failure rate", "%", 50.0f};
 static Signal error_fast{"fast update failure rate", "%", 50.0f};
 static Profiler profiler_slow{{"slow update time", "seconds"}};
@@ -122,7 +122,7 @@ static void Frame(UI* ui, const settings::Gui settings) {
     auto now = std::chrono::steady_clock::now();
     float dt = std::chrono::duration<float>(now - last_now).count();
     last_now = now;
-    frametime_signal.update(dt, dt);
+    frametime_signal.update(1 / dt, dt);
     ImGui_ImplDX9_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
