@@ -156,7 +156,7 @@ static void Frame(UI* ui, const settings::Gui settings) {
 // Main code
 int gui_run(const settings::Settings& settings) {
     ImGui_ImplWin32_EnableDpiAwareness();
-    auto window = CreateWindowWin32(WndProc, settings.gui.font_size);
+    auto window = CreateWindowWin32(WndProc, settings.gui.font_size, settings.gui.topmost);
     if (!window) return 1;
     auto dev = CreateDeviceD3D(window->handle);
     if (!dev) return 1;

@@ -16,7 +16,7 @@ void WindowDeleter::operator()(Window* window) const {
 }
 
 std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
-    WNDPROC WndProc, float font_size
+    WNDPROC WndProc, float font_size, bool topmost
 ) {
     logging::debug("Creating application window...");
     auto window = std::unique_ptr<Window, WindowDeleter>(new Window{
@@ -39,7 +39,7 @@ std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
     // need to create the window before we know the dpi...
     // so first create 10x10 window then resize
     window->handle = ::CreateWindowExW(
-        WS_EX_TOPMOST,
+        topmost ? WS_EX_TOPMOST : 0,
         window->cls.lpszClassName,
         L"Hitman Tracker",
         WS_OVERLAPPEDWINDOW,

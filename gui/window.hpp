@@ -15,5 +15,5 @@ struct WindowDeleter {
 };
 
 std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
-    WNDPROC WndProc, float font_size
+    WNDPROC WndProc, float font_size, bool topmost
 );

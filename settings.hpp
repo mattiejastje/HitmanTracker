@@ -21,6 +21,7 @@ struct TextStyle {
 };
 
 struct Gui {
+    bool topmost{false};
     float font_size{20.0f};
     Color bg_color{0.0f, 0.0f, 0.0f};
     TextStyle title{"fonts/DejaVuSansCondensed.ttf"};
