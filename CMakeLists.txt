@@ -32,7 +32,7 @@ add_executable (HitmanTracker
 	"hitman_2016/gui.cpp"
 	"hitman_absolution/game_info.cpp"
 	"hitman_absolution/gui.cpp"
-    "hitman_absolution/hook.cpp"
+	"hitman_absolution/hook.cpp"
 	"hitman_absolution/stats.cpp"
 	"hitman_common/gui.cpp"
 	"hitman_common/stats.cpp"
