@@ -6,13 +6,15 @@
 #include "hook.hpp"
 #include "stats.hpp"
 
-void hitman_blood_money::register_game_info(const settings::Gui& settings) {
+void hitman_blood_money::register_game_info(
+    const settings::Gui& settings, const settings::HBM& hbm
+) {
     auto& registry = get_game_info_registry();
     registry.emplace_back(
         GameInfo{
         .name = GAME_NAME,
         .methods = GameMethods{
-            gui(settings),
+            gui(settings, hbm),
             hook,
             hook_immediately_ready,
             update_slow,

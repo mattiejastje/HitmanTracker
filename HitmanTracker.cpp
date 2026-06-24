@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
         hitman_codename_47::register_game_info(settings->gui);
         hitman2_silent_assassin::register_game_info(settings->gui);
         hitman_contracts::register_game_info(settings->gui);
-        hitman_blood_money::register_game_info(settings->gui);
+        hitman_blood_money::register_game_info(settings->gui, settings->hbm);
         hitman_absolution::register_game_info(settings->gui);
         hitman_2016::register_game_info(settings->gui);
         gui_run(settings->gui);

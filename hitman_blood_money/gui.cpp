@@ -19,12 +19,15 @@ const std::vector<std::string> map_names = {
     "#13 Requiem",                  // 14
 };
 
-GameGui hitman_blood_money::gui(const settings::Gui& settings) {
-    return [settings = settings](const Fonts& fonts, const Stats& stats) {
+GameGui hitman_blood_money::gui(
+    const settings::Gui& settings, const settings::HBM& hbm
+) {
+    return [settings = settings,
+            hbm = hbm](const Fonts& fonts, const Stats& stats) {
         hitman_common::gui(
             settings,
             fonts,
-            settings.hbm.real_time ? (1000 / 1024.0f) : 1.0f,
+            hbm.real_time ? (1000 / 1024.0f) : 1.0f,
             stats,
             GAME_NAME,
             stats.difficulty == 0   ? "Rookie"
