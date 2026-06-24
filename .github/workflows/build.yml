@@ -11,7 +11,7 @@ jobs:
       matrix:
         preset: [x64-release]
     steps:
-      - name: Checkout (with submodules)
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive

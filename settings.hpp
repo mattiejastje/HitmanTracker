@@ -37,13 +37,19 @@ struct Gui {
     TextStyle map{"fonts/dejavu/DejaVuSansCondensed-Oblique.ttf"};
     TextStyle time{"fonts/dejavu/DejaVuSansMono-Bold.ttf", 1.1f};
     TextStyle rating_bad{
-        "fonts/dejavu/DejaVuSansCondensed-Bold.ttf", 1.1f, Color{1.0f, 0.0f, 0.0f}
+        "fonts/dejavu/DejaVuSansCondensed-Bold.ttf",
+        1.1f,
+        Color{1.0f, 0.0f, 0.0f}
     };
     TextStyle rating_good{
-        "fonts/dejavu/DejaVuSansCondensed-Bold.ttf", 1.1f, Color{0.0f, 1.0f, 0.0f}
+        "fonts/dejavu/DejaVuSansCondensed-Bold.ttf",
+        1.1f,
+        Color{0.0f, 1.0f, 0.0f}
     };
     TextStyle rating_maybe{
-        "fonts/dejavu/DejaVuSansCondensed-Bold.ttf", 1.1f, Color{0.85f, 0.85f, 0.0f}
+        "fonts/dejavu/DejaVuSansCondensed-Bold.ttf",
+        1.1f,
+        Color{0.85f, 0.85f, 0.0f}
     };
     TextStyle label{
         "fonts/dejavu/DejaVuSansCondensed.ttf", 0.9f, Color{0.9f, 0.9f, 0.9f}
