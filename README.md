@@ -2,6 +2,17 @@
 
 A statistics tracker for Hitman games.
 
+## Configuration
+
+After running the tracker for the first time, a ``HitmanTracker.ini`` file will be created.
+It contains the default settings. If you ever corrupt this file or want to restore defaults you can delete it.
+The file should be self-explanatory. Some options worth highlighting:
+
+* ``font-size=...`` sets the overall font size (default is 20).
+* ``topmost=true`` will force the tracket to be always the topmost window.
+* ``hbm-real-time=true`` will use real time instead of mission time in *Hitman: Blood Money*.
+* ``hma-always-track-sa=true`` will track Silent Assassin status even in missions with no targets in *Hitman: Absolution*.
+
 ## Supported Games
 
 For now, only the steam versions are supported.
@@ -30,6 +41,10 @@ This appears to be a bug.
 The tracker will show a time that is consistent with the final mission screen
 i.e. the timer will run too fast by a factor of 1.024
 (or 1.44 seconds per minute).
+If you prefer to use real time instead,
+set ``hbm-real-time=true`` in ``HitmanTracker.ini``.
+The tracker's timer will then be in sync with real time,
+but obviously out of sync with the final mission screen.
 
 ### Hitman: Absolution
 
@@ -74,15 +89,24 @@ In the game, the final rating is determined in two distinct steps:
 To fix these issues,
 the tracker displays both rating systems independently as follows:
 
-- Silent Assassin rating is awarded for all maps if:
+- Silent Assassin rating is awarded for maps with targets if:
 
   * No non-target kills.
   * Never spotted.
 
-  Target presence no longer affects eligibility.
-  This is an intentional deviation from the original rule
-  so that "Silent Assassin" can be tracked also for checkpoints without targets
-  and for unrated checkpoints.
+  Additionally, if you set ``hma-always-track-sa=true`` in ``HitmanTracker.ini``,
+  then the tracker awards Silent Assassin even for maps that do not have targets.
+  Specifically, for maps without targets, instead of showing "No Targets",
+  the tracker will show "Silent Assassin" or "No Silent Assassin"
+  depending on your statistics.
+  This is a deviation from the game so it is not enabled by default.
+  However, it makes the Silent Assassin rating consistent across all maps,
+  and some players may prefer playing this way.
+
+  Beware that
+  *in a handful of missions, the game triggers a non-target kill if you do not first locate the target*
+  (e.g. King of Chinatown, Vixen Club, possibly a few others).
+  This appears to be a bug in the game.
 
 - Score-based rating is awarded as follows, for rated maps:
 
