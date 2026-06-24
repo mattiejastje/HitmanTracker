@@ -4,12 +4,15 @@ A statistics tracker for Hitman games.
 
 ## Configuration
 
-After running the tracker for the first time, a ``HitmanTracker.ini`` file will be created.
-It contains the default settings. If you ever corrupt this file or want to restore defaults you can delete it.
-The file should be self-explanatory. Some options worth highlighting:
+After running the tracker for the first time,
+a ``HitmanTracker.ini`` file will be created.
+This file contains the default configuration settings.
+If it becomes corrupted, or if you simply want to restore the default settings,
+you can safely delete it and a new one will be generated the next time the tracker starts.
 
+Most settings are self-explanatory, but a few options are worth highlighting:
 * ``font-size=...`` sets the overall font size (default is 20).
-* ``topmost=true`` will force the tracket to be always the topmost window.
+* ``topmost=true`` will force the tracker to be always the topmost window.
 * ``hbm-real-time=true`` will use real time instead of mission time in *Hitman: Blood Money*.
 * ``hma-always-track-sa=true`` will track Silent Assassin status even in missions with no targets in *Hitman: Absolution*.
 
