@@ -663,11 +663,13 @@ static std::optional<int32_t> get_shadow_raw_score_threshold(
 static hitman_absolution::structs::Game game{};
 
 GameStatsSlow hitman_absolution::update_slow(const settings::HMA& hma) {
-    return [](const std::filesystem::path& exe_path,
-              void* handle,
-              const BasePtrs& base_ptrs,
-              const LabelPtrs& label_ptrs,
-              Stats& stats) {
+    return [hma = hma](
+               const std::filesystem::path& exe_path,
+               void* handle,
+               const BasePtrs& base_ptrs,
+               const LabelPtrs& label_ptrs,
+               Stats& stats
+           ) {
         const RemoteValue<structs::TGame, uint32_t> remote_game{
             static_cast<uint32_t>(base_ptrs.at(0))
         };
@@ -740,11 +742,15 @@ GameStatsSlow hitman_absolution::update_slow(const settings::HMA& hma) {
                 if (!spotted) logging::warn("Unable to read spotted value");
                 game_stats[SPOTTED] = spotted.value_or(0);
             }
-            auto status = game_stats[NON_TARGET_CASUALTY] != 0
-                                  || game_stats[SPOTTED] != 0
-                              ? Status::RED
-                              : Status::GREEN;
-            stats.rating = {get_simple_rating_value(status), status};
+            if (hma.always_track_sa || map_info.num_targets > 0) {
+                auto status = game_stats[NON_TARGET_CASUALTY] != 0
+                                      || game_stats[SPOTTED] != 0
+                                  ? Status::RED
+                                  : Status::GREEN;
+                stats.rating = {get_simple_rating_value(status), status};
+            } else {
+                stats.rating = {"No Targets", Status::GREEN};
+            }
             auto score = get_raw_score(game_stats);
 #ifndef NDEBUG
             auto maybe_shadow_raw_score_threshold
