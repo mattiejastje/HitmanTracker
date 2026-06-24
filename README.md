@@ -134,6 +134,7 @@ while remaining faithful to the rating system of the original game:
 
 * https://github.com/nvillemin/HitmanStatistics (statistics tracker for Hitman 2: Silent Assassin and Hitman: Contracts)
 * https://github.com/SuiMachine/HitmanStatisticsUber (extended version of HitmanStatistics)
+* https://github.com/Deji69/HitmanStatisticsUber (extended version of HitmanStatistics with shots fired fix for H2SA)
 * https://github.com/Attrup/StatTracker (similar to HitmanStatistics but written in rust)
 * https://github.com/kurtis2221/hitmanstat (similar to HitmanStatistics, also supporting Hitman: Blood Money)
 * https://github.com/OrfeasZ/Statman (statistics tracker for Hitman: Blood Money, Hitman (2016), and Hitman: World of Assassination)
