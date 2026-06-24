@@ -2,6 +2,8 @@
 
 A statistics tracker for Hitman games.
 
+Note only Steam is supported.
+
 ## Configuration
 
 After running the tracker for the first time,
