@@ -6,6 +6,6 @@ namespace hitman_blood_money {
 
 inline constexpr auto GAME_NAME = "Hitman: Blood Money";
 
-void gui(const settings::Gui& settings, const Fonts& fonts, const Stats& stats);
+GameGui gui(const settings::Gui& settings);
 
 }  // namespace hitman_blood_money

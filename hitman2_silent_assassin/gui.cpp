@@ -32,10 +32,9 @@ const std::vector<std::string> map_names = {
     "#20 Redemption at Gontranno",     // 21
 };
 
-void hitman2_silent_assassin::gui(
-    const settings::Gui& settings, const Fonts& fonts, const Stats& stats
-) {
-    hitman_common::gui(
+GameGui hitman2_silent_assassin::gui(const settings::Gui& settings) {
+    return [settings = settings](const Fonts& fonts, const Stats& stats) {
+        hitman_common::gui(
         settings,
         fonts,
         1.0f,
@@ -58,29 +57,30 @@ void hitman2_silent_assassin::gui(
             {"Innocents Wounded", stats.innocents_wounded},
         } : std::vector<hitman_common::TableRow>{}
     );
-    if (stats.map >= 2) {
-        ImGui::Spacing();
-        ImGui::BeginTable(
-            "Statistics",
-            2,
-            ImGuiTableFlags_SizingFixedFit
-                | ImGuiTableFlags_NoKeepColumnsVisible
-                | ImGuiTableFlags_NoHostExtendX
-        );
-        std::vector<hitman_common::TableRow> table_rows = {
-            {"Stealth", stats.stealth},
-            {"Aggression", stats.aggression},
-        };
-        for (auto& row : table_rows) {
-            table_row(
-                fonts,
-                settings,
-                row.stats_value.status,
-                row.name.c_str(),
-                "%.3g",
-                row.stats_value.value / 10.0
+        if (stats.map >= 2) {
+            ImGui::Spacing();
+            ImGui::BeginTable(
+                "Statistics",
+                2,
+                ImGuiTableFlags_SizingFixedFit
+                    | ImGuiTableFlags_NoKeepColumnsVisible
+                    | ImGuiTableFlags_NoHostExtendX
             );
+            std::vector<hitman_common::TableRow> table_rows = {
+                {"Stealth", stats.stealth},
+                {"Aggression", stats.aggression},
+            };
+            for (auto& row : table_rows) {
+                table_row(
+                    fonts,
+                    settings,
+                    row.stats_value.status,
+                    row.name.c_str(),
+                    "%.3g",
+                    row.stats_value.value / 10.0
+                );
+            }
+            ImGui::EndTable();
         }
-        ImGui::EndTable();
-    }
+    };
 }

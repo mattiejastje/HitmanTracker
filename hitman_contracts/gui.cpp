@@ -23,54 +23,54 @@ const std::vector<std::string> map_names = {
     "#12 Hunter and Hunted",
 };
 
-void hitman_contracts::gui(
-    const settings::Gui& settings, const Fonts& fonts, const Stats& stats
-) {
-    hitman_common::gui(
-        settings,
-        fonts,
-        1.0f,
-        stats,
-        GAME_NAME,
-        stats.difficulty == 1   ? "Normal"
-        : stats.difficulty == 2 ? "Expert"
-        : stats.difficulty == 3 ? "Professional"
-                                : "",
-        map_names,
-        {
-            {"Close Encounters", stats.close_encounters},
-            {"Alerts", stats.alerts},
-            {"Shots Fired", stats.shots_fired},
-            {"Headshots", stats.headshots},
-            {"Enemies Killed", stats.enemies_killed},
-            {"Enemies Wounded", stats.enemies_wounded},
-            {"Innocents Killed", stats.innocents_killed},
-            {"Innocents Wounded", stats.innocents_wounded},
-        }
-    );
-    if (stats.map > 0) {
-        ImGui::Spacing();
-        ImGui::BeginTable(
-            "Statistics",
-            2,
-            ImGuiTableFlags_SizingFixedFit
-                | ImGuiTableFlags_NoKeepColumnsVisible
-                | ImGuiTableFlags_NoHostExtendX
+GameGui hitman_contracts::gui(const settings::Gui& settings) {
+    return [settings = settings](const Fonts& fonts, const Stats& stats) {
+        hitman_common::gui(
+            settings,
+            fonts,
+            1.0f,
+            stats,
+            GAME_NAME,
+            stats.difficulty == 1   ? "Normal"
+            : stats.difficulty == 2 ? "Expert"
+            : stats.difficulty == 3 ? "Professional"
+                                    : "",
+            map_names,
+            {
+                {"Close Encounters", stats.close_encounters},
+                {"Alerts", stats.alerts},
+                {"Shots Fired", stats.shots_fired},
+                {"Headshots", stats.headshots},
+                {"Enemies Killed", stats.enemies_killed},
+                {"Enemies Wounded", stats.enemies_wounded},
+                {"Innocents Killed", stats.innocents_killed},
+                {"Innocents Wounded", stats.innocents_wounded},
+            }
         );
-        std::vector<hitman_common::TableRow> table_rows = {
-            {"Stealth", stats.stealth},
-            {"Aggression", stats.aggression},
-        };
-        for (auto& row : table_rows) {
-            table_row(
-                fonts,
-                settings,
-                row.stats_value.status,
-                row.name.c_str(),
-                "%.3g",
-                row.stats_value.value / 10.0
+        if (stats.map > 0) {
+            ImGui::Spacing();
+            ImGui::BeginTable(
+                "Statistics",
+                2,
+                ImGuiTableFlags_SizingFixedFit
+                    | ImGuiTableFlags_NoKeepColumnsVisible
+                    | ImGuiTableFlags_NoHostExtendX
             );
+            std::vector<hitman_common::TableRow> table_rows = {
+                {"Stealth", stats.stealth},
+                {"Aggression", stats.aggression},
+            };
+            for (auto& row : table_rows) {
+                table_row(
+                    fonts,
+                    settings,
+                    row.stats_value.status,
+                    row.name.c_str(),
+                    "%.3g",
+                    row.stats_value.value / 10.0
+                );
+            }
+            ImGui::EndTable();
         }
-        ImGui::EndTable();
-    }
+    };
 }

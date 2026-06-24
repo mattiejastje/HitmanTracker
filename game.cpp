@@ -14,140 +14,10 @@
 
 #include "base_ptrs.hpp"
 #include "fnv1a.hpp"
-#include "hitman2_silent_assassin/gui.hpp"
-#include "hitman2_silent_assassin/stats.hpp"
-#include "hitman_2016/gui.hpp"
-#include "hitman_absolution/gui.hpp"
-#include "hitman_absolution/hook.hpp"
-#include "hitman_absolution/stats.hpp"
-#include "hitman_blood_money/gui.hpp"
-#include "hitman_blood_money/hook.hpp"
-#include "hitman_blood_money/stats.hpp"
-#include "hitman_codename_47/gui.hpp"
-#include "hitman_codename_47/stats.hpp"
-#include "hitman_contracts/gui.hpp"
-#include "hitman_contracts/stats.hpp"
+#include "game_info_registry.hpp"
 #include "logging.hpp"
 #include "mem/handle.hpp"
 #include "mem/read_write.hpp"
-
-struct ModuleInfo {
-    std::string name;
-    uint64_t hash;
-};
-
-struct GameInfo {
-    std::string name;
-    GameMethods methods;
-    // first module name is always exe name
-    std::vector<ModuleInfo> module_infos;
-};
-
-static bool stats_nothing_slow(
-    const std::filesystem::path& exe_path,
-    void* handle,
-    const BasePtrs& base_ptrs,
-    const LabelPtrs& label_ptrs,
-    Stats& stats
-) {
-    return true;
-}
-
-static bool stats_nothing_fast(
-    void* handle,
-    const BasePtrs& base_ptrs,
-    const LabelPtrs& label_ptrs,
-    Stats& stats
-) {
-    return true;
-}
-
-static HookPtr hook_nothing(
-    std::shared_ptr<void> handle, const BasePtrs& base_ptrs
-) {
-    // non-null hook pointer means success so return stub
-    return HookPtr{new Hook{}};
-}
-
-static bool hook_immediately_ready(void* handle, const BasePtrs& base_ptrs) {
-    return true;
-}
-
-static const std::vector<GameInfo> game_infos = {
-    GameInfo{
-        .name = hitman_codename_47::GAME_NAME,
-        .methods = GameMethods{
-            hitman_codename_47::gui,
-            hook_nothing,
-            hook_immediately_ready,
-            hitman_codename_47::update_slow,
-            hitman_codename_47::update_fast,
-        },
-        .module_infos = {
-            {"hitman.exe", 0xD6739CF25081C0F5ULL},
-            {"hitmandlc.dlc", 0xCC2D12E73040901FULL},
-            {"enginedata.dll", 0xA0C506C5C1D98559ULL},
-        },
-    },
-    GameInfo{
-        .name = hitman_2016::GAME_NAME,
-        .methods = GameMethods{
-            hitman_2016::gui,
-            hook_nothing,
-            hook_immediately_ready,
-            stats_nothing_slow,
-            stats_nothing_fast,
-        },
-        .module_infos = {
-            {"hitman.exe", 0x9019923E9B36C383ULL},
-            {"tobii.gameintegration.dll", 0xB36F82D72789C260ULL},
-        },
-    },
-    GameInfo{
-        .name = hitman2_silent_assassin::GAME_NAME,
-        .methods = GameMethods{
-            hitman2_silent_assassin::gui,
-            hook_nothing,
-            hook_immediately_ready,
-            hitman2_silent_assassin::update_slow,
-            hitman2_silent_assassin::update_fast
-        },
-        .module_infos = {{"hitman2.exe", 0xB68C2F1042BD339DULL}},
-    },
-    GameInfo{
-        .name = hitman_contracts::GAME_NAME,
-        .methods = GameMethods{
-            hitman_contracts::gui,
-            hook_nothing,
-            hook_immediately_ready,
-            hitman_contracts::update_slow,
-            hitman_contracts::update_fast
-        },
-        .module_infos = {{"hitmancontracts.exe", 0xA7AD9FC9AF91F8CBULL}},
-    },
-    GameInfo{
-        .name = hitman_blood_money::GAME_NAME,
-        .methods = GameMethods{
-            hitman_blood_money::gui,
-            hitman_blood_money::hook,
-            hook_immediately_ready,
-            hitman_blood_money::update_slow,
-            hitman_blood_money::update_fast,
-        },
-        .module_infos = {{"hitmanbloodmoney.exe", 0xD31C7C7A7C311D9BULL}},
-    },
-    GameInfo{
-        .name = hitman_absolution::GAME_NAME,
-        .methods = GameMethods{
-            hitman_absolution::gui,
-            hitman_absolution::hook,
-            hitman_absolution::hook_ready,
-            hitman_absolution::update_slow,
-            hitman_absolution::update_fast
-        },
-        .module_infos = {{"hma.exe", 0x3618C80C35CA45F1ULL}},
-    },
-};
 
 struct Module {
     intptr_t base_ptr{};
@@ -236,7 +106,7 @@ static std::optional<Game> get_game_for_process(
     const char* exe_file, DWORD process_id
 ) {
     logging::trace("Inspecting process {} with id {:#x}", exe_file, process_id);
-    for (auto& info : game_infos) {
+    for (auto& info : get_game_info_registry()) {
         if (stricmp(info.module_infos.at(0).name.c_str(), exe_file) != 0)
             continue;
         auto process_handle = open_process_handle(process_id);

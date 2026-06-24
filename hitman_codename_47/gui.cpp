@@ -20,20 +20,20 @@ const std::vector<std::string> map_names = {
     "#13 Meet Your Brother",
 };
 
-void hitman_codename_47::gui(
-    const settings::Gui& settings, const Fonts& fonts, const Stats& stats
-) {
-    hitman_common::gui(
-        settings,
-        fonts,
-        1.0f,
-        stats,
-        GAME_NAME,
-        stats.difficulty == 0   ? "Easy"
-        : stats.difficulty == 1 ? "Normal"
-        : stats.difficulty == 2 ? "Hard"
-                                : "",
-        map_names,
-        {}
-    );
+GameGui hitman_codename_47::gui(const settings::Gui& settings) {
+    return [settings = settings](const Fonts& fonts, const Stats& stats) {
+        hitman_common::gui(
+            settings,
+            fonts,
+            1.0f,
+            stats,
+            GAME_NAME,
+            stats.difficulty == 0   ? "Easy"
+            : stats.difficulty == 1 ? "Normal"
+            : stats.difficulty == 2 ? "Hard"
+                                    : "",
+            map_names,
+            {}
+        );
+    };
 }

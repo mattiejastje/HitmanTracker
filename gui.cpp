@@ -144,7 +144,7 @@ static void Frame(const UI& ui, const settings::Gui& settings) {
                 stats
             );
             error_fast.update(100.0f * static_cast<float>(!ok), dt);
-            game->methods.gui(settings, ui.fonts, stats);
+            game->methods.gui(ui.fonts, stats);
         } else {
             text(ui.fonts.title, settings.title.color, "Game not running");
         }
