@@ -31,6 +31,6 @@ jobs:
         with:
           name: HitmanTracker-${{ matrix.preset }}
           path: |
-            out/build/${{ matrix.preset }}/**/*.exe
-            out/build/${{ matrix.preset }}/**/*.dll
+            out/build/${{ matrix.preset }}/*.exe
+            out/build/${{ matrix.preset }}/*.dll
           if-no-files-found: warn
