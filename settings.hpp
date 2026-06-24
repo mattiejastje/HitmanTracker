@@ -32,24 +32,24 @@ struct Gui {
     bool topmost{false};
     float font_size{20.0f};
     Color bg_color{0.0f, 0.0f, 0.0f};
-    TextStyle title{"fonts/DejaVuSansCondensed.ttf"};
-    TextStyle difficulty{"fonts/DejaVuSansCondensed.ttf", 0.9f};
-    TextStyle map{"fonts/DejaVuSansCondensed-Oblique.ttf"};
-    TextStyle time{"fonts/DejaVuSansMono-Bold.ttf", 1.1f};
+    TextStyle title{"fonts/dejavu/DejaVuSansCondensed.ttf"};
+    TextStyle difficulty{"fonts/dejavu/DejaVuSansCondensed.ttf", 0.9f};
+    TextStyle map{"fonts/dejavu/DejaVuSansCondensed-Oblique.ttf"};
+    TextStyle time{"fonts/dejavu/DejaVuSansMono-Bold.ttf", 1.1f};
     TextStyle rating_bad{
-        "fonts/DejaVuSansCondensed-Bold.ttf", 1.1f, Color{1.0f, 0.0f, 0.0f}
+        "fonts/dejavu/DejaVuSansCondensed-Bold.ttf", 1.1f, Color{1.0f, 0.0f, 0.0f}
     };
     TextStyle rating_good{
-        "fonts/DejaVuSansCondensed-Bold.ttf", 1.1f, Color{0.0f, 1.0f, 0.0f}
+        "fonts/dejavu/DejaVuSansCondensed-Bold.ttf", 1.1f, Color{0.0f, 1.0f, 0.0f}
     };
     TextStyle rating_maybe{
-        "fonts/DejaVuSansCondensed-Bold.ttf", 1.1f, Color{0.85f, 0.85f, 0.0f}
+        "fonts/dejavu/DejaVuSansCondensed-Bold.ttf", 1.1f, Color{0.85f, 0.85f, 0.0f}
     };
     TextStyle label{
-        "fonts/DejaVuSansCondensed.ttf", 0.9f, Color{0.9f, 0.9f, 0.9f}
+        "fonts/dejavu/DejaVuSansCondensed.ttf", 0.9f, Color{0.9f, 0.9f, 0.9f}
     };
     TextStyle value{
-        "fonts/DejaVuSansMono-Bold.ttf", 0.9f, Color{0.4f, 0.4f, 1.0f}
+        "fonts/dejavu/DejaVuSansMono-Bold.ttf", 0.9f, Color{0.4f, 0.4f, 1.0f}
     };
 };
 
