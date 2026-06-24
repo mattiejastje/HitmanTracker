@@ -6,13 +6,15 @@
 #include "hook.hpp"
 #include "stats.hpp"
 
-void hitman_absolution::register_game_info(const settings::Gui& settings) {
+void hitman_absolution::register_game_info(
+    const settings::Gui& settings, const settings::HMA& hma
+) {
     auto& registry = get_game_info_registry();
     registry.emplace_back(
         GameInfo{
             .name = GAME_NAME,
             .methods
-            = GameMethods{gui(settings), hook, hook_ready, update_slow, update_fast},
+            = GameMethods{gui(settings), hook, hook_ready, update_slow(hma), update_fast},
             .module_infos = {{"hma.exe", 0x3618C80C35CA45F1ULL}},
         }
     );

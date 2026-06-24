@@ -95,6 +95,16 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
             "Use real time instead of mission time (mission time is 2.4% fast)"
         )
         ->capture_default_str();
+    auto hma_group = app->add_option_group(
+        "Hitman Absolution", "Options related to Hitman Absolution"
+    );
+    hma_group
+        ->add_flag(
+            "--hma-always-track-sa",
+            settings.hma.always_track_sa,
+            "Track Silent Assassin rating even on maps with no targets"
+        )
+        ->capture_default_str();
     return app;
 }
 

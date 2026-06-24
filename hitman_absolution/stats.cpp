@@ -662,192 +662,203 @@ static std::optional<int32_t> get_shadow_raw_score_threshold(
 // global to avoid allocating large object on stack
 static hitman_absolution::structs::Game game{};
 
-bool hitman_absolution::update_slow(
-    const std::filesystem::path& exe_path,
-    void* handle,
-    const BasePtrs& base_ptrs,
-    const LabelPtrs& label_ptrs,
-    Stats& stats
-) {
-    const RemoteValue<structs::TGame, uint32_t> remote_game{
-        static_cast<uint32_t>(base_ptrs.at(0))
-    };
-    MemoryReader<uint32_t> reader{handle};
-    auto tracer
-        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
-    if (!mempeep::read(remote_game, reader, tracer, game)) return false;
-    stats.difficulty = game.global_data.difficulty;
-    // engine may set level to -1 if not in a mission
-    // sadly it's not a reliable way to detect if we are in a mission
-    if (game.level == -1) {
-        stats.map = 0;
-        return true;
-    }
-    if (!game.checkpoints_manager.checkpoints) {
-        // in main menu and haven't loaded level yet
-        logging::trace("Checkpoints pointer is null");
-        return true;
-    }
-    auto& checkpoints = *game.checkpoints_manager.checkpoints;
-    auto checkpoint_index = get_current_checkpoint_index(checkpoints);
-    if (checkpoint_index < 0) {
-        stats.map = 0;
-        return true;
-    }
-    logging::trace("Level {} at checkpoint {}", game.level, checkpoint_index);
-    if (game.level >= scenes.size()) {
-        logging::error("No map registered for level {}", game.level);
-        return false;
-    }
-    auto& map_infos = scenes.at(game.level);
-    if (checkpoint_index >= map_infos.size()) {
-        logging::error(
-            "No map registered for level {}, checkpoint {}",
-            game.level,
-            checkpoint_index
-        );
-        return false;
-    }
-    auto& map_info = map_infos.at(checkpoint_index);
-    logging::trace("Map {}", map_info.map);
-    if (stats.map != map_info.map) {
-        // map changed: reset "spotted"
-        write<int32_t>(handle, label_ptrs.at(150), 0);
-    }
-    stats.map = map_info.map;
-    stats.map_stage = MapStage::main;  // always render stats
-    if (stats.map > 0) {
-        auto& stats_manager = game.stats_manager;
-        auto& game_stats = stats_manager.values[game.level][checkpoint_index];
-        if (map_info.max_rating == AGENT) {
-            // stats are always 0 for unrated maps so try and fix stats here
-            // event_manager.kills_per_npc_type?
-            // npc type 1 = civ, 2 = guard/cop, 3 = target: easy to count
-            // but it does not reset between checkpoints
-            // event_manager.npcs_killed?
-            // resets between checkpoints
-            // but includes targets
-            // however unrated maps never have targets! so we can use that
-            game_stats[NON_TARGET_CASUALTY] = game.event_manager.npcs_killed;
-            // event_type_2 0x23 = spotted
-            // event_manager.events_per_event_type_2[0x23] gets stuck once set...
-            // so we use a code hook
-            auto spotted = read<int32_t>(handle, label_ptrs.at(150));
-            if (!spotted) logging::warn("Unable to read spotted value");
-            game_stats[SPOTTED] = spotted.value_or(0);
+GameStatsSlow hitman_absolution::update_slow(const settings::HMA& hma) {
+    return [](const std::filesystem::path& exe_path,
+              void* handle,
+              const BasePtrs& base_ptrs,
+              const LabelPtrs& label_ptrs,
+              Stats& stats) {
+        const RemoteValue<structs::TGame, uint32_t> remote_game{
+            static_cast<uint32_t>(base_ptrs.at(0))
+        };
+        MemoryReader<uint32_t> reader{handle};
+        auto tracer = mempeep::LogTracer{
+            MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS
+        };
+        if (!mempeep::read(remote_game, reader, tracer, game)) return false;
+        stats.difficulty = game.global_data.difficulty;
+        // engine may set level to -1 if not in a mission
+        // sadly it's not a reliable way to detect if we are in a mission
+        if (game.level == -1) {
+            stats.map = 0;
+            return true;
         }
-        auto status
-            = game_stats[NON_TARGET_CASUALTY] != 0 || game_stats[SPOTTED] != 0
-                  ? Status::RED
-                  : Status::GREEN;
-        stats.rating = {get_simple_rating_value(status), status};
-        auto score = get_raw_score(game_stats);
-#ifndef NDEBUG
-        auto maybe_shadow_raw_score_threshold = get_shadow_raw_score_threshold(
-            game.game_data.level_infos, game.level, checkpoint_index
+        if (!game.checkpoints_manager.checkpoints) {
+            // in main menu and haven't loaded level yet
+            logging::trace("Checkpoints pointer is null");
+            return true;
+        }
+        auto& checkpoints = *game.checkpoints_manager.checkpoints;
+        auto checkpoint_index = get_current_checkpoint_index(checkpoints);
+        if (checkpoint_index < 0) {
+            stats.map = 0;
+            return true;
+        }
+        logging::trace(
+            "Level {} at checkpoint {}", game.level, checkpoint_index
         );
-        if (!maybe_shadow_raw_score_threshold) {
-            logging::error("Unable to read shadow score");
+        if (game.level >= scenes.size()) {
+            logging::error("No map registered for level {}", game.level);
             return false;
         }
-        if (maybe_shadow_raw_score_threshold.value()
-            != map_info.shadow_raw_score_threshold) {
+        auto& map_infos = scenes.at(game.level);
+        if (checkpoint_index >= map_infos.size()) {
             logging::error(
-                "Wrong shadow score for level {} checkpoint {}: {} -> {}",
+                "No map registered for level {}, checkpoint {}",
                 game.level,
-                checkpoint_index,
-                map_info.shadow_raw_score_threshold,
-                maybe_shadow_raw_score_threshold.value()
+                checkpoint_index
             );
+            return false;
         }
+        auto& map_info = map_infos.at(checkpoint_index);
+        logging::trace("Map {}", map_info.map);
+        if (stats.map != map_info.map) {
+            // map changed: reset "spotted"
+            write<int32_t>(handle, label_ptrs.at(150), 0);
+        }
+        stats.map = map_info.map;
+        stats.map_stage = MapStage::main;  // always render stats
+        if (stats.map > 0) {
+            auto& stats_manager = game.stats_manager;
+            auto& game_stats
+                = stats_manager.values[game.level][checkpoint_index];
+            if (map_info.max_rating == AGENT) {
+                // stats are always 0 for unrated maps so try and fix stats here
+                // event_manager.kills_per_npc_type?
+                // npc type 1 = civ, 2 = guard/cop, 3 = target: easy to count
+                // but it does not reset between checkpoints
+                // event_manager.npcs_killed?
+                // resets between checkpoints
+                // but includes targets
+                // however unrated maps never have targets! so we can use that
+                game_stats[NON_TARGET_CASUALTY]
+                    = game.event_manager.npcs_killed;
+                // event_type_2 0x23 = spotted
+                // event_manager.events_per_event_type_2[0x23] gets stuck once
+                // set... so we use a code hook
+                auto spotted = read<int32_t>(handle, label_ptrs.at(150));
+                if (!spotted) logging::warn("Unable to read spotted value");
+                game_stats[SPOTTED] = spotted.value_or(0);
+            }
+            auto status = game_stats[NON_TARGET_CASUALTY] != 0
+                                  || game_stats[SPOTTED] != 0
+                              ? Status::RED
+                              : Status::GREEN;
+            stats.rating = {get_simple_rating_value(status), status};
+            auto score = get_raw_score(game_stats);
+#ifndef NDEBUG
+            auto maybe_shadow_raw_score_threshold
+                = get_shadow_raw_score_threshold(
+                    game.game_data.level_infos, game.level, checkpoint_index
+                );
+            if (!maybe_shadow_raw_score_threshold) {
+                logging::error("Unable to read shadow score");
+                return false;
+            }
+            if (maybe_shadow_raw_score_threshold.value()
+                != map_info.shadow_raw_score_threshold) {
+                logging::error(
+                    "Wrong shadow score for level {} checkpoint {}: {} -> {}",
+                    game.level,
+                    checkpoint_index,
+                    map_info.shadow_raw_score_threshold,
+                    maybe_shadow_raw_score_threshold.value()
+                );
+            }
 #endif
-        auto shadow_raw_score_threshold = map_info.shadow_raw_score_threshold;
-        stats.score_for_max_rating
-            = (map_info.max_rating * shadow_raw_score_threshold) / 100;
-        int32_t percent
-            = std::max(0, (100 * score) / shadow_raw_score_threshold);
-        stats.score_total = score;
-        stats.score_rating = map_info.max_rating == AGENT ? "Unrated"
-                             : percent < VETERAN          ? "Agent"
-                             : percent < SPECIALIST       ? "Veteran"
-                             : percent < PROFESSIONAL     ? "Specialist"
-                             : percent < SHADOW           ? "Professional"
-                                                          : "Shadow";
-        // major negative scores
-        stats.score_civilian_casualty
-            = {STATS_MULTIPLIERS[CIVILIAN_CASUALTY]
-                   * game_stats[CIVILIAN_CASUALTY],
-               game_stats[CIVILIAN_CASUALTY] ? Status::RED : Status::YELLOW};
-        stats.score_non_target_casualty
-            = {STATS_MULTIPLIERS[NON_TARGET_CASUALTY]
-                   * game_stats[NON_TARGET_CASUALTY],
-               game_stats[NON_TARGET_CASUALTY] ? Status::RED : Status::YELLOW};
-        stats.score_spotted
-            = {STATS_MULTIPLIERS[SPOTTED] * game_stats[SPOTTED],
-               game_stats[SPOTTED] ? Status::RED : Status::YELLOW};
-        // minor negative or positive scores
-        stats.score_pacification
-            = {STATS_MULTIPLIERS[PACIFICATION] * game_stats[PACIFICATION],
-               game_stats[PACIFICATION] ? Status::RED : Status::YELLOW};
-        stats.score_body_hidden
-            = {STATS_MULTIPLIERS[BODY_HIDDEN] * game_stats[BODY_HIDDEN],
-               game_stats[BODY_HIDDEN] ? Status::GREEN : Status::YELLOW};
-        stats.score_headshot
-            = {STATS_MULTIPLIERS[HEADSHOT] * game_stats[HEADSHOT],
-               game_stats[HEADSHOT] ? Status::GREEN : Status::YELLOW};
-        stats.score_silent_kill
-            = {STATS_MULTIPLIERS[SILENT_KILL] * game_stats[SILENT_KILL],
-               game_stats[SILENT_KILL] ? Status::GREEN : Status::YELLOW};
-        // major positive scores
-        if (map_info.num_evidence > 0) {
-            stats.score_evidence_removed
-                = {STATS_MULTIPLIERS[EVIDENCE_REMOVED]
-                       * game_stats[EVIDENCE_REMOVED],
-                   game_stats[EVIDENCE_REMOVED] < map_info.num_evidence
+            auto shadow_raw_score_threshold
+                = map_info.shadow_raw_score_threshold;
+            stats.score_for_max_rating
+                = (map_info.max_rating * shadow_raw_score_threshold) / 100;
+            int32_t percent
+                = std::max(0, (100 * score) / shadow_raw_score_threshold);
+            stats.score_total = score;
+            stats.score_rating = map_info.max_rating == AGENT ? "Unrated"
+                                 : percent < VETERAN          ? "Agent"
+                                 : percent < SPECIALIST       ? "Veteran"
+                                 : percent < PROFESSIONAL     ? "Specialist"
+                                 : percent < SHADOW           ? "Professional"
+                                                              : "Shadow";
+            // major negative scores
+            stats.score_civilian_casualty
+                = {STATS_MULTIPLIERS[CIVILIAN_CASUALTY]
+                       * game_stats[CIVILIAN_CASUALTY],
+                   game_stats[CIVILIAN_CASUALTY] ? Status::RED
+                                                 : Status::YELLOW};
+            stats.score_non_target_casualty
+                = {STATS_MULTIPLIERS[NON_TARGET_CASUALTY]
+                       * game_stats[NON_TARGET_CASUALTY],
+                   game_stats[NON_TARGET_CASUALTY] ? Status::RED
+                                                   : Status::YELLOW};
+            stats.score_spotted
+                = {STATS_MULTIPLIERS[SPOTTED] * game_stats[SPOTTED],
+                   game_stats[SPOTTED] ? Status::RED : Status::YELLOW};
+            // minor negative or positive scores
+            stats.score_pacification
+                = {STATS_MULTIPLIERS[PACIFICATION] * game_stats[PACIFICATION],
+                   game_stats[PACIFICATION] ? Status::RED : Status::YELLOW};
+            stats.score_body_hidden
+                = {STATS_MULTIPLIERS[BODY_HIDDEN] * game_stats[BODY_HIDDEN],
+                   game_stats[BODY_HIDDEN] ? Status::GREEN : Status::YELLOW};
+            stats.score_headshot
+                = {STATS_MULTIPLIERS[HEADSHOT] * game_stats[HEADSHOT],
+                   game_stats[HEADSHOT] ? Status::GREEN : Status::YELLOW};
+            stats.score_silent_kill
+                = {STATS_MULTIPLIERS[SILENT_KILL] * game_stats[SILENT_KILL],
+                   game_stats[SILENT_KILL] ? Status::GREEN : Status::YELLOW};
+            // major positive scores
+            if (map_info.num_evidence > 0) {
+                stats.score_evidence_removed
+                    = {STATS_MULTIPLIERS[EVIDENCE_REMOVED]
+                           * game_stats[EVIDENCE_REMOVED],
+                       game_stats[EVIDENCE_REMOVED] < map_info.num_evidence
+                           ? Status::YELLOW
+                           : Status::GREEN};
+            } else {
+                if (game_stats[EVIDENCE_REMOVED] != 0)
+                    logging::warn("no evidence but evidence removed not zero");
+                stats.score_evidence_removed = {0};
+            }
+            stats.score_objective_complete
+                = {STATS_MULTIPLIERS[OBJECTIVE_COMPLETE]
+                       * game_stats[OBJECTIVE_COMPLETE],
+                   game_stats[OBJECTIVE_COMPLETE] < map_info.num_objectives
                        ? Status::YELLOW
                        : Status::GREEN};
-        } else {
-            if (game_stats[EVIDENCE_REMOVED] != 0)
-                logging::warn("no evidence but evidence removed not zero");
-            stats.score_evidence_removed = {0};
+            // major positive scores for maps with targets
+            if (map_info.num_targets > 0) {
+                stats.score_signature_kill
+                    = {STATS_MULTIPLIERS[SIGNATURE_KILL]
+                           * game_stats[SIGNATURE_KILL],
+                       game_stats[SIGNATURE_KILL] < map_info.num_targets
+                           ? Status::YELLOW
+                           : Status::GREEN};
+                stats.score_target_kill
+                    = {STATS_MULTIPLIERS[TARGET_KILL] * game_stats[TARGET_KILL],
+                       game_stats[TARGET_KILL] < map_info.num_targets
+                           ? Status::YELLOW
+                           : Status::GREEN};
+                stats.score_silent_assassin_bonus
+                    = {STATS_MULTIPLIERS[SILENT_ASSASSIN_BONUS]
+                           * game_stats[SILENT_ASSASSIN_BONUS],
+                       game_stats[SILENT_ASSASSIN_BONUS] == 0 ? Status::YELLOW
+                                                              : Status::GREEN};
+            } else {
+                if (game_stats[SIGNATURE_KILL] != 0)
+                    logging::warn("no targets but signature kills not zero");
+                if (game_stats[TARGET_KILL] != 0)
+                    logging::warn("no targets but target kills not zero");
+                if (game_stats[SILENT_ASSASSIN_BONUS] != 0)
+                    logging::warn(
+                        "no targets but silent assassin bonus not zero"
+                    );
+                stats.score_signature_kill = {0};
+                stats.score_target_kill = {0};
+                stats.score_silent_assassin_bonus = {0};
+            }
         }
-        stats.score_objective_complete
-            = {STATS_MULTIPLIERS[OBJECTIVE_COMPLETE]
-                   * game_stats[OBJECTIVE_COMPLETE],
-               game_stats[OBJECTIVE_COMPLETE] < map_info.num_objectives
-                   ? Status::YELLOW
-                   : Status::GREEN};
-        // major positive scores for maps with targets
-        if (map_info.num_targets > 0) {
-            stats.score_signature_kill = {
-                STATS_MULTIPLIERS[SIGNATURE_KILL] * game_stats[SIGNATURE_KILL],
-                game_stats[SIGNATURE_KILL] < map_info.num_targets
-                    ? Status::YELLOW
-                    : Status::GREEN
-            };
-            stats.score_target_kill
-                = {STATS_MULTIPLIERS[TARGET_KILL] * game_stats[TARGET_KILL],
-                   game_stats[TARGET_KILL] < map_info.num_targets
-                       ? Status::YELLOW
-                       : Status::GREEN};
-            stats.score_silent_assassin_bonus
-                = {STATS_MULTIPLIERS[SILENT_ASSASSIN_BONUS]
-                       * game_stats[SILENT_ASSASSIN_BONUS],
-                   game_stats[SILENT_ASSASSIN_BONUS] == 0 ? Status::YELLOW
-                                                          : Status::GREEN};
-        } else {
-            if (game_stats[SIGNATURE_KILL] != 0)
-                logging::warn("no targets but signature kills not zero");
-            if (game_stats[TARGET_KILL] != 0)
-                logging::warn("no targets but target kills not zero");
-            if (game_stats[SILENT_ASSASSIN_BONUS] != 0)
-                logging::warn("no targets but silent assassin bonus not zero");
-            stats.score_signature_kill = {0};
-            stats.score_target_kill = {0};
-            stats.score_silent_assassin_bonus = {0};
-        }
-    }
-    return true;
+        return true;
+    };
 }
 
 constexpr float time_scale = 1.0f / (1024 * 1024);

@@ -24,6 +24,10 @@ struct HBM {
     bool real_time{false};
 };
 
+struct HMA {
+    bool always_track_sa{false};
+};
+
 struct Gui {
     bool topmost{false};
     float font_size{20.0f};
@@ -53,6 +57,7 @@ struct Settings {
     Log log;
     Gui gui;
     HBM hbm;
+    HMA hma;
 };
 
 std::optional<Settings> load(int argc, char** argv);

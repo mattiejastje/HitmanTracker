@@ -4,6 +4,8 @@
 
 namespace hitman_absolution {
 
-void register_game_info(const settings::Gui& settings);
+void register_game_info(
+    const settings::Gui& settings, const settings::HMA& hma
+);
 
 }
