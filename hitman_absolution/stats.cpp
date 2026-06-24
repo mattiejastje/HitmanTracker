@@ -661,6 +661,7 @@ static std::optional<int32_t> get_shadow_raw_score_threshold(
 
 // global to avoid allocating large object on stack
 static hitman_absolution::structs::Game game{};
+static int64_t start_time = 0;
 
 GameStatsSlow hitman_absolution::update_slow(const settings::HMA& hma) {
     return [hma = hma](
@@ -715,8 +716,9 @@ GameStatsSlow hitman_absolution::update_slow(const settings::HMA& hma) {
         auto& map_info = map_infos.at(checkpoint_index);
         logging::trace("Map {}", map_info.map);
         if (stats.map != map_info.map) {
-            // map changed: reset "spotted"
+            // map changed: reset "spotted" and start_time
             write<int32_t>(handle, label_ptrs.at(150), 0);
+            start_time = game.time_manager.game_time;
         }
         stats.map = map_info.map;
         stats.map_stage = MapStage::main;  // always render stats
@@ -878,7 +880,7 @@ bool hitman_absolution::update_fast(
     if (stats.map > 0) {
         const auto& base_ptr = base_ptrs.at(0);
         auto game_time = read<int64_t>(handle, base_ptr + 0xE24730 + 0x18);
-        if (game_time) stats.time = game_time.value() * time_scale;
+        if (game_time) stats.time = (*game_time - start_time) * time_scale;
         return game_time.has_value();
     }
     return true;
