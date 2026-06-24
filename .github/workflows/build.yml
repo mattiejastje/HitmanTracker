@@ -57,14 +57,10 @@ jobs:
           cp README.md "$STAGE_DIR/README.txt"
           cp LICENSE "$STAGE_DIR/LICENSE.txt"
           echo "STAGE_DIR=${STAGE_DIR}" >> "$GITHUB_ENV"
-      - name: Create versioned zip
-        shell: pwsh
-        run: |
-          Compress-Archive -Path "${{ env.STAGE_DIR }}\*" -DestinationPath "${{ env.STAGE_DIR }}.zip"
       - name: Upload build artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: HitmanTracker-v${{ steps.version.outputs.version }}
-          path: ${{ env.STAGE_DIR }}.zip
+          path: ${{ env.STAGE_DIR }}
           if-no-files-found: warn
