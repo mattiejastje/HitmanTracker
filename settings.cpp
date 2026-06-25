@@ -95,6 +95,20 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
             "Use real time instead of mission time (mission time is 2.4% fast)"
         )
         ->capture_default_str();
+    hbm_group
+        ->add_flag(
+            "--hbm-show-shots-hit",
+            settings.hbm.show_shots_hit,
+            "Show shots hit"
+        )
+        ->capture_default_str();
+    hbm_group
+        ->add_flag(
+            "--hbm-show-accident-kills",
+            settings.hbm.show_accident_kills,
+            "Show accident kills"
+        )
+        ->capture_default_str();
     auto hma_group = app->add_option_group(
         "Hitman Absolution", "Options related to Hitman Absolution"
     );

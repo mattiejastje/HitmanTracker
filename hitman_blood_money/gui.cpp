@@ -1,6 +1,7 @@
 #include "gui.hpp"
 
 #include "../hitman_common/gui.hpp"
+#include "../imgui_utils.hpp"
 
 const std::vector<std::string> map_names = {
     "Hideout",                      // 1
@@ -53,5 +54,37 @@ GameGui hitman_blood_money::gui(
                 {"Suit Left", stats.suit_left},
             }
         );
+        if (stats.map_stage != MapStage::pre) {
+            ImGui::Spacing();
+            ImGui::BeginTable(
+                "Extra",
+                2,
+                ImGuiTableFlags_SizingFixedFit
+                    | ImGuiTableFlags_NoKeepColumnsVisible
+                    | ImGuiTableFlags_NoHostExtendX
+            );
+            std::vector<hitman_common::TableRow> table_rows = {};
+            if (hbm.show_accident_kills) {
+                table_rows.emplace_back(
+                    "Accident Kills", StatsValue{stats.accident_kills}
+                );
+            }
+            if (hbm.show_shots_hit) {
+                table_rows.emplace_back(
+                    "Shots Hit", StatsValue{stats.shots_hit}
+                );
+            }
+            for (auto& row : table_rows) {
+                table_row(
+                    fonts,
+                    settings,
+                    row.stats_value.status,
+                    row.name.c_str(),
+                    "%d",
+                    row.stats_value.value
+                );
+            }
+            ImGui::EndTable();
+        }
     };
 }

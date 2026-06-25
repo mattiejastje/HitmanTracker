@@ -22,6 +22,8 @@ struct TextStyle {
 
 struct HBM {
     bool real_time{false};
+    bool show_shots_hit{false};
+    bool show_accident_kills{false};
 };
 
 struct HMA {

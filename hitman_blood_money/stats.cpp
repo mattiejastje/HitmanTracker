@@ -126,6 +126,8 @@ const std::unordered_map<std::string, Scene> scenes = {
 };
 
 // https://github.com/OrfeasZ/Statman/blob/master/StatModules/HM3/Src/HM3/Structs/HM3Stats.h
+constexpr std::size_t SHOTS_HIT = 8;
+constexpr std::size_t ACCIDENT_KILLS = 13;
 constexpr std::size_t WITNESSES = 15;
 constexpr std::size_t ENEMIES_KILLED = 16;
 constexpr std::size_t ENEMIES_WOUNDED = 18;
@@ -266,6 +268,9 @@ bool hitman_blood_money::update_slow(
         );
         auto status = get_rating_status(stats);
         stats.rating = {get_simple_rating_value(status), status};
+        // extra stats not affecting silent assassin
+        stats.shots_hit = game.stats[SHOTS_HIT];
+        stats.accident_kills = game.stats[ACCIDENT_KILLS];
     }
     return true;
 }

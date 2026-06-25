@@ -43,6 +43,8 @@ struct Stats {
     StatsValue<int32_t> on_camera;          // bm
     StatsValue<int32_t> cust_weapons_left;  // bm
     StatsValue<int32_t> suit_left;          // bm
+    int32_t shots_hit;                      // bm
+    int32_t accident_kills;                 // bm
     int32_t score_for_max_rating;           // hma: score needed for max rating
     int32_t score_total;                    // hma: actual score
     std::string score_rating;               // hma: actual rating
