@@ -664,7 +664,7 @@ static hitman_absolution::structs::Game game{};
 static int64_t start_time = 0;
 
 GameStatsSlow hitman_absolution::update_slow(const settings::HMA& hma) {
-    return [hma = hma](
+    return [&hma](
                const std::filesystem::path& exe_path,
                void* handle,
                const BasePtrs& base_ptrs,

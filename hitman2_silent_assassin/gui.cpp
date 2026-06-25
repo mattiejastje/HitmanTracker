@@ -33,7 +33,7 @@ const std::vector<std::string> map_names = {
 };
 
 GameGui hitman2_silent_assassin::gui(const settings::Gui& settings) {
-    return [settings = settings](const Fonts& fonts, const Stats& stats) {
+    return [&settings](const Fonts& fonts, const Stats& stats) {
         hitman_common::gui(
         settings,
         fonts,

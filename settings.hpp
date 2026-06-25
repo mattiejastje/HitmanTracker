@@ -69,5 +69,6 @@ struct Settings {
 };
 
 std::optional<Settings> load(int argc, char** argv);
+void save(Settings& settings);
 
 }  // namespace settings

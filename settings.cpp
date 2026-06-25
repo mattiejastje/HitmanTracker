@@ -64,7 +64,7 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
         "GUI", "Options related to the graphical user interface"
     );
     gui_group
-        ->add_flag("--topmost", settings.gui.topmost, "Force topmost window")
+        ->add_option("--topmost", settings.gui.topmost, "Force topmost window")
         ->capture_default_str();
     gui_group->add_option("--font-size", settings.gui.font_size, "Font size")
         ->capture_default_str();
@@ -89,21 +89,21 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
         "Hitman Blood Money", "Options related to Hitman Blood Money"
     );
     hbm_group
-        ->add_flag(
+        ->add_option(
             "--hbm-real-time",
             settings.hbm.real_time,
             "Use real time instead of mission time (mission time is 2.4% fast)"
         )
         ->capture_default_str();
     hbm_group
-        ->add_flag(
+        ->add_option(
             "--hbm-show-shots-hit",
             settings.hbm.show_shots_hit,
             "Show shots hit"
         )
         ->capture_default_str();
     hbm_group
-        ->add_flag(
+        ->add_option(
             "--hbm-show-accident-kills",
             settings.hbm.show_accident_kills,
             "Show accident kills"
@@ -113,7 +113,7 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
         "Hitman Absolution", "Options related to Hitman Absolution"
     );
     hma_group
-        ->add_flag(
+        ->add_option(
             "--hma-always-track-sa",
             settings.hma.always_track_sa,
             "Track Silent Assassin rating even on maps with no targets"
@@ -122,7 +122,7 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     return app;
 }
 
-static void save(const CLI::App& app, std::filesystem::path path) {
+static void _save(const CLI::App& app) {
     std::string content{};
     try {
         content = app.config_to_str(true, true);
@@ -133,15 +133,13 @@ static void save(const CLI::App& app, std::filesystem::path path) {
         return;
     }
     try {
-        std::ofstream out(path);
+        std::ofstream out("HitmanTracker.ini");
         out.exceptions(std::ofstream::failbit | std::ofstream::badbit);
         out << content;
         out.close();
-        logging::debug("Configuration saved to {}", path.string());
+        logging::debug("Configuration saved");
     } catch (const std::exception& e) {
-        logging::warn(
-            "Failed to save configuration to {}: {}", path.string(), e.what()
-        );
+        logging::warn("Failed to save configuration: {}", e.what());
     }
 }
 
@@ -161,6 +159,15 @@ std::optional<Settings> settings::load(int argc, char** argv) {
         return Settings{};
     }
     std::filesystem::path ini_file{"HitmanTracker.ini"};
-    if (!std::filesystem::exists(ini_file)) save(*app, ini_file);
+    if (!std::filesystem::exists(ini_file)) {
+        logging::info("Creating HitmanTracker.ini");
+        _save(*app);
+    }
     return settings;
 }
+
+void settings::save(Settings& settings) {
+    auto app = make_app(settings);
+    std::filesystem::path ini_file{"HitmanTracker.ini"};
+    _save(*app);
+};

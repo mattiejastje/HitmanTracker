@@ -12,9 +12,6 @@
 #include "spdlog.hpp"
 
 int main(int argc, char** argv) {
-    std::cout << "HitmanTracker" << std::endl;
-    std::cout << "-------------" << std::endl;
-    std::cout << std::endl;
     spdlog_init();
     spdlog_set_level(4, 4);  // don't know levels yet, set to "info" for now
     auto settings = settings::load(argc, argv);
@@ -26,7 +23,7 @@ int main(int argc, char** argv) {
         hitman_blood_money::register_game_info(settings->gui, settings->hbm);
         hitman_absolution::register_game_info(settings->gui, settings->hma);
         hitman_2016::register_game_info(settings->gui);
-        gui_run(settings->gui);
+        gui_run(*settings);
     }
     return 0;
 }

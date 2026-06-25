@@ -10,6 +10,7 @@
 
 // imgui font for each text style in settings::Gui
 struct Fonts {
+    ImFont* settings;
     ImFont* title;
     ImFont* difficulty;
     ImFont* map;

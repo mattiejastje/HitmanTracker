@@ -18,6 +18,7 @@
 #include "imgui_utils.hpp"
 #include "logging.hpp"
 #include "mem/handle.hpp"
+#include "settings_gui.hpp"
 #include "signal.hpp"
 
 // Data
@@ -34,6 +35,8 @@ static Signal error_slow{"slow update failure rate", "%", 50.0f};
 static Signal error_fast{"fast update failure rate", "%", 50.0f};
 static Profiler profiler_slow{{"slow update time", "seconds"}};
 static Profiler profiler_fast{{"fast update time", "seconds"}};
+static bool g_show_settings = false;
+static SettingsChanged g_settings_changed{};
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
@@ -116,7 +119,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return ::DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-static void Frame(const UI& ui, const settings::Gui& settings) {
+static void Frame(UI& ui, settings::Settings& settings) {
     logging::trace("New frame...");
     static auto last_now = std::chrono::steady_clock::now();
     auto now = std::chrono::steady_clock::now();
@@ -129,6 +132,9 @@ static void Frame(const UI& ui, const settings::Gui& settings) {
     auto& io = ImGui::GetIO();
     ImGui::SetNextWindowSize({io.DisplaySize.x, io.DisplaySize.y});
     ImGui::SetNextWindowPos({0, 0});
+    if (ImGui::IsKeyPressed(ImGuiKey_F1)) {
+        g_show_settings = !g_show_settings;
+    }
     if (ImGui::Begin(
             "Hitman Tracker",
             nullptr,
@@ -146,7 +152,15 @@ static void Frame(const UI& ui, const settings::Gui& settings) {
             error_fast.update(100.0f * static_cast<float>(!ok), dt);
             game->methods.gui(ui.fonts, stats);
         } else {
-            text(ui.fonts.title, settings.title.color, "Game not running");
+            text(ui.fonts.title, settings.gui.title.color, "Game not running");
+        }
+        if (g_show_settings) {
+            ImGui::Spacing();
+            g_settings_changed = settings_gui(settings);
+            if (g_settings_changed.any) {
+                settings::save(settings);
+                g_settings_changed.any = false;
+            }
         }
     }
     ImGui::End();
@@ -154,11 +168,11 @@ static void Frame(const UI& ui, const settings::Gui& settings) {
 }
 
 // Main code
-int gui_run(const settings::Gui& settings) {
+int gui_run(settings::Settings& settings) {
     logging::info("Running user interface");
     ImGui_ImplWin32_EnableDpiAwareness();
     auto window = CreateWindowWin32(
-        WndProc, settings.font_size, settings.topmost
+        WndProc, settings.gui.font_size, settings.gui.topmost
     );
     if (!window) return 1;
     auto dev = CreateDeviceD3D(window->handle);
@@ -168,7 +182,7 @@ int gui_run(const settings::Gui& settings) {
     ::ShowWindow(window->handle, SW_SHOWDEFAULT);
     ::UpdateWindow(window->handle);
 
-    auto ui = CreateUI(settings, window.get(), dev.get());
+    auto ui = CreateUI(settings.gui, window.get(), dev.get());
     if (!ui) return 1;
 
     // Set timer
@@ -225,7 +239,27 @@ int gui_run(const settings::Gui& settings) {
             float dpiscale
                 = (float)g_ChangeDpi / (float)USER_DEFAULT_SCREEN_DPI;
             g_ChangeDpi = 0;
-            UpdateUIScaling(*ui, dpiscale, settings);
+            UpdateUIScaling(*ui, dpiscale, settings.gui);
+        }
+
+        if (g_settings_changed.fonts) {
+            float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(window->handle);
+            UpdateUIScaling(*ui, dpiscale, settings.gui);
+            g_settings_changed.fonts = false;
+        }
+
+        if (g_settings_changed.topmost) {
+            logging::debug("Topmost is {}", settings.gui.topmost);
+            SetWindowPos(
+                window->handle,
+                settings.gui.topmost ? HWND_TOPMOST : HWND_NOTOPMOST,
+                0,
+                0,
+                0,
+                0,
+                SWP_NOMOVE | SWP_NOSIZE
+            );
+            g_settings_changed.topmost = false;
         }
 
         Frame(*ui, settings);

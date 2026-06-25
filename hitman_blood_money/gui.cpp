@@ -23,8 +23,7 @@ const std::vector<std::string> map_names = {
 GameGui hitman_blood_money::gui(
     const settings::Gui& settings, const settings::HBM& hbm
 ) {
-    return [settings = settings,
-            hbm = hbm](const Fonts& fonts, const Stats& stats) {
+    return [&settings, &hbm](const Fonts& fonts, const Stats& stats) {
         hitman_common::gui(
             settings,
             fonts,

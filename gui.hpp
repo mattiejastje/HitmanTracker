@@ -2,4 +2,4 @@
 
 #include "settings.hpp"
 
-int gui_run(const settings::Gui &settings);
+int gui_run(settings::Settings &settings);
