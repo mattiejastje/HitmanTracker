@@ -36,7 +36,7 @@ jobs:
       - name: Stage release files
         shell: bash
         run: |
-          STAGE_DIR="HitmanTracker-v${{ steps.version.outputs.semVer }}
+          STAGE_DIR="HitmanTracker-v${{ steps.version.outputs.semVer }}"
           mkdir -p "$STAGE_DIR"
           cp out/build/${{ matrix.preset }}/*.exe "$STAGE_DIR/"
           cp out/build/${{ matrix.preset }}/*.dll "$STAGE_DIR/"
