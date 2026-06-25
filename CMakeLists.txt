@@ -50,6 +50,10 @@ add_executable (HitmanTracker
 	"stats.cpp"
 )
 set_property(TARGET HitmanTracker PROPERTY CXX_STANDARD 20)
+target_link_options(HitmanTracker PRIVATE
+    $<$<NOT:$<CONFIG:Debug>>:/SUBSYSTEM:WINDOWS>
+    $<$<NOT:$<CONFIG:Debug>>:/ENTRY:mainCRTStartup>
+)
 add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
 target_link_libraries(HitmanTracker PRIVATE CLI11::CLI11)
 target_link_libraries(HitmanTracker PRIVATE imgui::imgui)
