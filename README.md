@@ -6,7 +6,7 @@ Note only Steam is supported.
 
 ## Configuration
 
-Press F1 at any time to toggle the configuration menu (it will appear on the bottom).
+Press F1 at any time to toggle the settings menu (it will appear on the bottom).
 
 All settings are stored in the ``HitmanTracker.ini`` file.
 If, for whatever reason, it becomes corrupted,
@@ -41,8 +41,7 @@ This appears to be a bug.
 The tracker will show a time that is consistent with the final mission screen
 i.e. the timer will run too fast by a factor of 1.024
 (or 1.44 seconds per minute).
-If you prefer to use real time instead,
-set ``hbm-real-time=true`` in ``HitmanTracker.ini``.
+In the settings, there is a toggle to use real time instead.
 The tracker's timer will then be in sync with real time,
 but obviously out of sync with the final mission screen.
 
@@ -94,9 +93,9 @@ the tracker displays both rating systems independently as follows:
   * No non-target kills.
   * Never spotted.
 
-  Additionally, if you set ``hma-always-track-sa=true`` in ``HitmanTracker.ini``,
-  then the tracker awards Silent Assassin even for maps that do not have targets.
-  Specifically, for maps without targets, instead of showing "No Targets",
+  Additionally, there's an option in the settings to track Silent Assassin
+  even for maps that do not have targets.
+  If enabled, for maps without targets, instead of showing "No Targets",
   the tracker will show "Silent Assassin" or "No Silent Assassin"
   depending on your statistics.
   This is a deviation from the game so it is not enabled by default.
