@@ -62,7 +62,7 @@ SettingsChanged settings_gui(settings::Settings& settings) {
             changed,
             ImGui::ColorEdit3("Background", settings.gui.bg_color.data())
         );
-        text_style_gui("Title", settings.gui.title, changed);
+        text_style_gui("Game", settings.gui.title, changed);
         text_style_gui("Difficulty", settings.gui.difficulty, changed);
         text_style_gui("Map", settings.gui.map, changed);
         text_style_gui("Time", settings.gui.time, changed);
