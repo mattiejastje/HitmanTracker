@@ -25,27 +25,13 @@ jobs:
         run: cmake --preset ${{ matrix.preset }}
       - name: Build
         run: cmake --build out/build/${{ matrix.preset }}
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v4.5.0
+        with:
+          versionSpec: '6.x'
       - name: Determine version
         id: version
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ ! -f VERSION ]]; then
-            echo "::error::VERSION file not found at repo root"
-            exit 1
-          fi
-          BASE_VERSION=$(tr -d '[:space:]' < VERSION)
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            TAG_VERSION="${GITHUB_REF_NAME#v}"
-            if [[ "$TAG_VERSION" != "$BASE_VERSION" ]]; then
-              echo "::error::Tag '$GITHUB_REF_NAME' does not match VERSION file ('$BASE_VERSION')"
-              exit 1
-            fi
-            VERSION="$BASE_VERSION"
-          else
-            VERSION="${BASE_VERSION}-dev.${GITHUB_RUN_NUMBER}+${GITHUB_SHA::7}"
-          fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        uses: gittools/actions/gitversion/execute@v4.5.0
       - name: Stage release files
         shell: bash
         run: |
