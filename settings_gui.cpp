@@ -51,6 +51,10 @@ SettingsChanged settings_gui(settings::Settings& settings) {
             changed,
             ImGui::Checkbox("Force topmost window", &settings.gui.topmost)
         );
+        mark_any(
+            changed,
+            ImGui::Checkbox("Hide menu on application start", &settings.gui.hide_menu_on_start)
+        );
         mark_fonts(
             changed,
             slider_float(
@@ -113,6 +117,8 @@ SettingsChanged settings_gui(settings::Settings& settings) {
             ImGui::TreePop();
         }
         ImGui::PopID();
+    } else {
+        ImGui::SetItemTooltip("Press F1 to toggle menu");
     }
     if (ImGui::CollapsingHeader("Blood Money")) {
         mark_any(
@@ -128,6 +134,8 @@ SettingsChanged settings_gui(settings::Settings& settings) {
             changed,
             ImGui::Checkbox("Show shots hit", &settings.hbm.show_shots_hit)
         );
+    } else {
+        ImGui::SetItemTooltip("Press F1 to toggle menu");
     }
     if (ImGui::CollapsingHeader("Absolution")) {
         mark_any(
@@ -136,6 +144,8 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                 "Always track Silent Assassin", &settings.hma.always_track_sa
             )
         );
+    } else {
+        ImGui::SetItemTooltip("Press F1 to toggle menu");
     }
     if (ImGui::CollapsingHeader("Logging")) {
         bool log_changed = false;
@@ -148,6 +158,8 @@ SettingsChanged settings_gui(settings::Settings& settings) {
         mark_any(changed, log_changed);
         if (log_changed)
             spdlog_set_level(settings.log.level, settings.log.flush_level);
+    } else {
+        ImGui::SetItemTooltip("Press F1 to toggle menu");
     }
     return changed;
 }

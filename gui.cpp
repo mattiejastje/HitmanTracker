@@ -35,7 +35,7 @@ static Signal error_slow{"slow update failure rate", "%", 50.0f};
 static Signal error_fast{"fast update failure rate", "%", 50.0f};
 static Profiler profiler_slow{{"slow update time", "seconds"}};
 static Profiler profiler_fast{{"fast update time", "seconds"}};
-static bool g_show_settings = false;
+static bool g_show_settings = true;
 static SettingsChanged g_settings_changed{};
 
 // Forward declare message handler from imgui_impl_win32.cpp
@@ -141,6 +141,14 @@ static void Frame(UI& ui, settings::Settings& settings) {
             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
                 | ImGuiWindowFlags_NoMove
         )) {
+        if (g_show_settings) {
+            g_settings_changed = settings_gui(settings);
+            if (g_settings_changed.any) {
+                settings::save(settings);
+                g_settings_changed.any = false;
+            }
+        }
+        ImGui::Spacing();
         if (game && game->hook) {
             auto scoped_fast = ScopedProfiler{profiler_fast, dt};
             bool ok = game->methods.update_fast(
@@ -152,15 +160,7 @@ static void Frame(UI& ui, settings::Settings& settings) {
             error_fast.update(100.0f * static_cast<float>(!ok), dt);
             game->methods.gui(ui.fonts, stats);
         } else {
-            text(ui.fonts.title, settings.gui.title.color, "Game not running");
-        }
-        if (g_show_settings) {
-            ImGui::Spacing();
-            g_settings_changed = settings_gui(settings);
-            if (g_settings_changed.any) {
-                settings::save(settings);
-                g_settings_changed.any = false;
-            }
+            text(ui.fonts.title, settings.gui.title.color, "No game running");
         }
     }
     ImGui::End();
@@ -170,6 +170,7 @@ static void Frame(UI& ui, settings::Settings& settings) {
 // Main code
 int gui_run(settings::Settings& settings) {
     logging::info("Running user interface");
+    g_show_settings = !settings.gui.hide_menu_on_start;
     ImGui_ImplWin32_EnableDpiAwareness();
     auto window = CreateWindowWin32(
         WndProc, settings.gui.font_size, settings.gui.topmost
