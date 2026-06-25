@@ -46,6 +46,7 @@ jobs:
           cp -r fonts "$STAGE_DIR/fonts"
           cp README.md "$STAGE_DIR/README.txt"
           cp LICENSE "$STAGE_DIR/LICENSE.txt"
+          cp CHANGELOG.md "$STAGE_DIR/CHANGELOG.txt"
           echo "STAGE_DIR=${STAGE_DIR}" >> "$GITHUB_ENV"
       - name: Upload build artifacts
         if: always()
