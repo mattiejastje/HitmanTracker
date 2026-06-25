@@ -38,7 +38,7 @@ jobs:
           STAGE_DIR="HitmanTracker-v${{ steps.version.outputs.version }}"
           mkdir -p "$STAGE_DIR"
           cp out/build/${{ matrix.preset }}/*.exe "$STAGE_DIR/"
-          cp out/build/${{ matrix.preset }}/*.dll "$STAGE_DIR/" 2>/dev/null || true
+          cp out/build/${{ matrix.preset }}/*.dll "$STAGE_DIR/"
           cp -r fonts "$STAGE_DIR/fonts"
           cp README.md "$STAGE_DIR/README.txt"
           cp LICENSE "$STAGE_DIR/LICENSE.txt"
