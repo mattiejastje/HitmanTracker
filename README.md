@@ -6,17 +6,12 @@ Note only Steam is supported.
 
 ## Configuration
 
-After running the tracker for the first time,
-a ``HitmanTracker.ini`` file will be created.
-This file contains the default configuration settings.
-If it becomes corrupted, or if you simply want to restore the default settings,
-you can safely delete it and a new one will be generated the next time the tracker starts.
+Press F1 at any time to toggle the configuration menu (it will appear on the bottom).
 
-Most settings are self-explanatory, but a few options are worth highlighting:
-* ``font-size=...`` sets the overall font size (default is 20).
-* ``topmost=true`` will force the tracker to be always the topmost window.
-* ``hbm-real-time=true`` will use real time instead of mission time in *Hitman: Blood Money*.
-* ``hma-always-track-sa=true`` will track Silent Assassin status even in missions with no targets in *Hitman: Absolution*.
+All settings are stored in the ``HitmanTracker.ini`` file.
+If, for whatever reason, it becomes corrupted,
+or you simply want to restore the default settings,
+you can safely delete it and a new one will be generated the next time the tracker starts.
 
 ## Supported Games
 
