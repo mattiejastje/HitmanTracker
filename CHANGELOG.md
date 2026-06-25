@@ -2,11 +2,19 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added some tooltips so users know to press F1 to toggle menu.
+- New option to hide the menu on application start.
+
 ### Changed
 
 - Moved menu to top of user interface.
-- Added some tooltips so users know to press F1 to toggle menu.
-- Menu is now active by default on application start (this can be configured).
+- Menu is now shown by default on application start.
+
+### Removed
+
+- Removed unused font file from distribution.
 
 ## [0.1.0] - 2026-06-25
 
