@@ -4,14 +4,28 @@ A statistics tracker for Hitman games.
 
 Note only Steam is supported.
 
-## Configuration
+* Download: https://github.com/mattiejastje/HitmanTracker/releases
+* Report issues: https://github.com/mattiejastje/HitmanTracker/issues
 
-Press F1 at any time to toggle the settings menu (it will appear on the bottom).
+## Usage
+
+Simple extract the zip file anywhere you like, and run the executable.
+The tracker will automatically detect whichever Hitman game you are running.
+Optionally, press F1 at any time to toggle the settings menu.
+
+Windows Defender may give a warning for (good!) security reasons:
+to function, the tracker must directly access the game's memory and it is therefore flagged.
+Unfortunately there appears no way around this.
 
 All settings are stored in the ``HitmanTracker.ini`` file.
 If, for whatever reason, it becomes corrupted,
 or you simply want to restore the default settings,
 you can safely delete it and a new one will be generated the next time the tracker starts.
+
+## Development
+
+Issues and pull requests are most welcome.
+All development takes place at https://github.com/mattiejastje/HitmanTracker
 
 ## Supported Games
 
