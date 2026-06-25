@@ -36,7 +36,7 @@ jobs:
       - name: Stage release files
         shell: bash
         run: |
-          STAGE_DIR="HitmanTracker-v${{ steps.version.outputs.version }}"
+          STAGE_DIR="HitmanTracker-v${{ steps.version.outputs.semVer }}
           mkdir -p "$STAGE_DIR"
           cp out/build/${{ matrix.preset }}/*.exe "$STAGE_DIR/"
           cp out/build/${{ matrix.preset }}/*.dll "$STAGE_DIR/"
@@ -48,6 +48,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: HitmanTracker-v${{ steps.version.outputs.version }}
+          name: HitmanTracker-v${{ steps.version.outputs.semVer }}
           path: ${{ env.STAGE_DIR }}
           if-no-files-found: warn
