@@ -2,7 +2,10 @@ name: Build
 
 on:
   push:
-    branches: [ master ]
+    branches: [ develop ]
+    tags: ['**']
+  pull_request:
+    branches: [ develop ]
 
 jobs:
   build:
