@@ -309,10 +309,13 @@ HookPtr install_hook(
         return {};
     // install new source code
     std::vector<SourceHookPtr> source_hooks{};
-    for (const auto& source : sources)
-        source_hooks.push_back(std::move(hook_install_source_code(
+    for (const auto& source : sources) {
+        auto source_hook = hook_install_source_code(
             handle, label_ptrs, source.ptr, source.original_code, source.new_asm
-        )));
+        );
+        if (!source_hook) return {};
+        source_hooks.push_back(std::move(source_hook));
+    }
     return HookPtr{new Hook{
         handle,
         std::move(source_hooks),

@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- In very rare cases, one or more hooks could be missing
+  without an error being logged. This is now fixed.
+
 ## [0.2.0] - 2026-06-25
 
 ### Added
