@@ -10,6 +10,8 @@
 - Fixed bug in aggression (and thus, silent assassin)
   on first map in Hitman Contracts.
 
+- CMakeLists.txt now properly targets C++23 as required.
+
 ## [0.2.0] - 2026-06-25
 
 ### Added

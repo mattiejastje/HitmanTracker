@@ -50,7 +50,7 @@ add_executable (HitmanTracker
 	"signal.cpp"
 	"stats.cpp"
 )
-set_property(TARGET HitmanTracker PROPERTY CXX_STANDARD 20)
+set_property(TARGET HitmanTracker PROPERTY CXX_STANDARD 23)
 target_link_options(HitmanTracker PRIVATE
     $<$<NOT:$<CONFIG:Debug>>:/SUBSYSTEM:WINDOWS>
     $<$<NOT:$<CONFIG:Debug>>:/ENTRY:mainCRTStartup>
