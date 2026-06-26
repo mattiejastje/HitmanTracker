@@ -7,6 +7,9 @@
 - In very rare cases, one or more hooks could be missing
   without an error being logged. This is now fixed.
 
+- Fixed bug in aggression (and thus, silent assassin)
+  on first map in Hitman Contracts.
+
 ## [0.2.0] - 2026-06-25
 
 ### Added

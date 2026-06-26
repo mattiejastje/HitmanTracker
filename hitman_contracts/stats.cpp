@@ -54,7 +54,7 @@ static int32_t _measure_aggression(
         // 1st map
         if (stats[INNOCENTS_KILLED] > 0 || stats[INNOCENTS_WOUNDED] > 0)
             return 7;
-        else if (is_first_map && stats[CLOSE_ENCOUNTERS > 0])
+        else if (is_first_map && stats[CLOSE_ENCOUNTERS] > 0)
             return 7;
     } else if (stats[CLOSE_ENCOUNTERS] == 0 && stats[ENEMIES_KILLED] == 0
                && stats[ENEMIES_WOUNDED] == 0 && stats[INNOCENTS_KILLED] == 0
