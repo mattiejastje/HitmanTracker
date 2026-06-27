@@ -17,8 +17,9 @@ void hitman_2016::register_game_info(const settings::Gui& settings) {
                 stats_nothing_fast,
             },
             .module_infos = {
-                {"hitman.exe", 0x9019923E9B36C383ULL},
-                {"tobii.gameintegration.dll", 0xB36F82D72789C260ULL},
+                // steam dx11 version ("retail/HITMAN.exe")
+                {"hitman.exe", PeId{0x5F8ED8B9}},
+                {"tobii.gameintegration.dll", PeId{0x59BFC9A6}},
             },
         }
     );

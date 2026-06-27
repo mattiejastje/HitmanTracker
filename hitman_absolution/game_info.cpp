@@ -15,7 +15,7 @@ void hitman_absolution::register_game_info(
             .name = GAME_NAME,
             .methods
             = GameMethods{gui(settings), hook, hook_ready, update_slow(hma), update_fast},
-            .module_infos = {{"hma.exe", 0x3618C80C35CA45F1ULL}},
+            .module_infos = {{"hma.exe", PeId{0x5149E0B4}}},
         }
     );
 }

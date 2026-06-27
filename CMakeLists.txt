@@ -24,7 +24,7 @@ add_executable (HitmanTracker
 	"mem/alloc.cpp"
 	"mem/handle.cpp"
 	"mem/read_write.cpp"
-	"fnv1a.cpp"
+	
 	"hitman2_silent_assassin/game_info.cpp"
 	"hitman2_silent_assassin/gui.cpp"
 	"hitman2_silent_assassin/stats.cpp"
@@ -46,6 +46,7 @@ add_executable (HitmanTracker
 	"hitman_blood_money/gui.cpp"
 	"hitman_blood_money/hook.cpp"
 	"hitman_blood_money/stats.cpp"
+	"pe.cpp"
 	"settings_gui.cpp"
 	"signal.cpp"
 	"stats.cpp"

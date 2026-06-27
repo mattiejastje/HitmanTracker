@@ -20,6 +20,6 @@ void hitman_blood_money::register_game_info(
             update_slow,
             update_fast,
         },
-        .module_infos = {{"hitmanbloodmoney.exe", 0xD31C7C7A7C311D9BULL}},
+        .module_infos = {{"hitmanbloodmoney.exe", PeId{0x447EF98A}}},
     });
 }

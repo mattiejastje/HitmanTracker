@@ -14,7 +14,7 @@ void hitman2_silent_assassin::register_game_info(
             .name = GAME_NAME,
             .methods
             = GameMethods{gui(settings), hook_nothing, hook_immediately_ready, update_slow, update_fast},
-            .module_infos = {{"hitman2.exe", 0xB68C2F1042BD339DULL}},
+            .module_infos = {{"hitman2.exe", PeId{0x3EF859D5}}},
         }
     );
 };

@@ -7,6 +7,7 @@
 #include "gui/ui.hpp"
 #include "hook.hpp"
 #include "label_ptrs.hpp"
+#include "pe.hpp"
 #include "stats.hpp"
 
 using GameGui = std::function<void(const Fonts &, const Stats &)>;
@@ -37,7 +38,7 @@ struct GameMethods {
 
 struct ModuleInfo {
     std::string name;
-    uint64_t hash;
+    PeId pe_id;
 };
 
 struct GameInfo {

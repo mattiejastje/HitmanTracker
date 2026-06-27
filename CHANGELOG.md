@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Game detection of Hitman Absolution was broken due to steam modifying
+  the executable upon install (aka CEG). This is now fixed.
+
+### Changed
+
+- Now using the date_time_stamp field of the PE header
+  to validate executables and dlls instead of relying on a checksum.
+
 ## [0.3.0] - 2026-06-27
 
 ### Fixed

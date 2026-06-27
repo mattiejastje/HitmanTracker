@@ -13,7 +13,7 @@
 #include <unordered_map>
 
 #include "base_ptrs.hpp"
-#include "fnv1a.hpp"
+#include "pe.hpp"
 #include "game_info_registry.hpp"
 #include "logging.hpp"
 #include "mem/handle.hpp"
@@ -58,7 +58,7 @@ static std::optional<std::vector<Module>> get_modules(
     const std::vector<ModuleInfo>& module_infos
 ) {
     std::vector<Module> modules{};
-    std::vector<uint64_t> hashes{};
+    std::vector<PeId> pe_ids{};
     for (const auto& module_info : module_infos) {
         auto module = all_modules.find(module_info.name);
         if (module == all_modules.end()) {
@@ -66,9 +66,9 @@ static std::optional<std::vector<Module>> get_modules(
             return {};
         }
         const auto& exe_path = module->second.exe_path;
-        auto hash = fnv1a::fnv1a(exe_path);
-        if (!hash) return {};
-        hashes.push_back(*hash);
+        auto pe_id = get_pe_id(exe_path);
+        if (!pe_id) return {};
+        pe_ids.push_back(*pe_id);
         modules.push_back(module->second);
         logging::debug(
             "Found required module {} at {:#x}",
@@ -76,17 +76,17 @@ static std::optional<std::vector<Module>> get_modules(
             module->second.base_ptr
         );
     }
-    // check hashes only once all modules processed
+    // check pe_ids only once all modules processed
     // this prevents spurious hash errors for games with same exe
-    for (const auto& [module_info, hash] :
-         std::views::zip(module_infos, hashes)) {
-        if (hash != module_info.hash) {
+    for (const auto& [module_info, pe_id] :
+         std::views::zip(module_infos, pe_ids)) {
+        if (pe_id.time_date_stamp != module_info.pe_id.time_date_stamp) {
             logging::error(
-                "{} has checksum {:#x} but expected {:#x}; "
+                "{} has time date stamp {:#x} but expected {:#x}; "
                 "perhaps not running steam version?",
                 module_info.name,
-                hash,
-                module_info.hash
+                pe_id.time_date_stamp,
+                module_info.pe_id.time_date_stamp
             );
             return {};
         }
