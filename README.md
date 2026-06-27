@@ -117,7 +117,7 @@ the tracker displays both rating systems independently as follows:
 
   Beware that
   *in a handful of missions, the game triggers a non-target kill if you do not first locate the target*
-  (e.g. King of Chinatown, Vixen Club, possibly a few others).
+  (e.g. King, Dom Osmond, Layla, Jade, possibly more).
   This appears to be a bug in the game.
 
 - Score-based rating is awarded as follows, for rated maps:
