@@ -12,6 +12,19 @@
 
 - CMakeLists.txt now properly targets C++23 as required.
 
+### Changed
+
+- Replaced F1 with Settings button, which is more intuitive.
+
+- Settings now appear in a popup window
+  so they do no longer interfere with the layout.
+
+### Removed
+
+- Removed settings tooltips as no longer needed.
+
+- Removed option to hide menu on application start.
+
 ## [0.2.0] - 2026-06-25
 
 ### Added

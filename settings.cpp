@@ -66,13 +66,6 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     gui_group
         ->add_option("--topmost", settings.gui.topmost, "Force topmost window")
         ->capture_default_str();
-    gui_group
-        ->add_option(
-            "--hide-menu-on-start",
-            settings.gui.hide_menu_on_start,
-            "Hide menu on application start"
-        )
-        ->capture_default_str();
     gui_group->add_option("--font-size", settings.gui.font_size, "Font size")
         ->capture_default_str();
     gui_group

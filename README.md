@@ -11,7 +11,6 @@ Note only Steam is supported.
 
 Simple extract the zip file anywhere you like, and run the executable.
 The tracker will automatically detect whichever Hitman game you are running.
-Optionally, press F1 at any time to toggle the settings menu.
 
 Windows Defender may give a warning for (good!) security reasons:
 to function, the tracker must directly access the game's memory and it is therefore flagged.

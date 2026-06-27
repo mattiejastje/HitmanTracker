@@ -35,7 +35,6 @@ static Signal error_slow{"slow update failure rate", "%", 50.0f};
 static Signal error_fast{"fast update failure rate", "%", 50.0f};
 static Profiler profiler_slow{{"slow update time", "seconds"}};
 static Profiler profiler_fast{{"fast update time", "seconds"}};
-static bool g_show_settings = true;
 static SettingsChanged g_settings_changed{};
 
 // Forward declare message handler from imgui_impl_win32.cpp
@@ -132,21 +131,22 @@ static void Frame(UI& ui, settings::Settings& settings) {
     auto& io = ImGui::GetIO();
     ImGui::SetNextWindowSize({io.DisplaySize.x, io.DisplaySize.y});
     ImGui::SetNextWindowPos({0, 0});
-    if (ImGui::IsKeyPressed(ImGuiKey_F1)) {
-        g_show_settings = !g_show_settings;
-    }
     if (ImGui::Begin(
             "Hitman Tracker",
             nullptr,
             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
                 | ImGuiWindowFlags_NoMove
         )) {
-        if (g_show_settings) {
+        if (ImGui::Button("Settings...")) {
+            ImGui::OpenPopup("Settings");
+        }
+        if (ImGui::BeginPopup("Settings")) {
             g_settings_changed = settings_gui(settings);
             if (g_settings_changed.any) {
                 settings::save(settings);
                 g_settings_changed.any = false;
             }
+            ImGui::EndPopup();
         }
         ImGui::Spacing();
         if (game && game->hook) {
@@ -170,7 +170,6 @@ static void Frame(UI& ui, settings::Settings& settings) {
 // Main code
 int gui_run(settings::Settings& settings) {
     logging::info("Running user interface");
-    g_show_settings = !settings.gui.hide_menu_on_start;
     ImGui_ImplWin32_EnableDpiAwareness();
     auto window = CreateWindowWin32(
         WndProc, settings.gui.font_size, settings.gui.topmost

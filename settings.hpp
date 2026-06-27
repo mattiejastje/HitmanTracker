@@ -32,7 +32,6 @@ struct HMA {
 
 struct Gui {
     bool topmost{false};
-    bool hide_menu_on_start{false};
     float font_size{20.0f};
     Color bg_color{0.0f, 0.0f, 0.0f};
     TextStyle title{"fonts/dejavu/DejaVuSansCondensed.ttf"};
