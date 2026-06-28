@@ -7,6 +7,7 @@
 void hitman_2016::register_game_info(const settings::Gui& settings) {
     auto& registry = get_game_info_registry();
     registry.emplace_back(
+        // Direct3D 11: retail/HITMAN.exe
         GameInfo{
             .name = GAME_NAME,
             .methods = GameMethods{
