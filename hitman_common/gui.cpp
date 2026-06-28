@@ -43,7 +43,7 @@ void hitman_common::gui(
                                 : stats.rating.status == Status::GREEN
                                     ? settings.rating_good.color
                                     : settings.rating_maybe.color;
-            auto rating_text = stats.rating.value;
+            auto& rating_text = stats.rating.value;
             text(rating_font, rating_color, rating_text.c_str());
             ImGui::Spacing();
             ImGui::BeginTable(
