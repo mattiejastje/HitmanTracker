@@ -71,6 +71,13 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     gui_group
         ->add_option("--bg-color", settings.gui.bg_color, "Background color")
         ->capture_default_str();
+    gui_group
+        ->add_option(
+            "--show-game-version",
+            settings.gui.show_game_version,
+            "Show game version (i.e. steam, gog, ...)"
+        )
+        ->capture_default_str();
     add_text_style_options(*gui_group, "title", "title", settings.gui.title);
     add_text_style_options(*gui_group, "map", "map", settings.gui.map);
     add_text_style_options(*gui_group, "time", "time", settings.gui.time);

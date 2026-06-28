@@ -51,6 +51,12 @@ SettingsChanged settings_gui(settings::Settings& settings) {
             changed,
             ImGui::Checkbox("Force topmost window", &settings.gui.topmost)
         );
+        mark_any(
+            changed,
+            ImGui::Checkbox(
+                "Show game version", &settings.gui.show_game_version
+            )
+        );
         mark_fonts(
             changed,
             slider_float(
