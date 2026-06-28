@@ -14,8 +14,16 @@ void hitman_absolution::register_game_info(
         GameInfo{
             .name = GAME_NAME,
             .methods
-            = GameMethods{gui(settings), hook, hook_ready, update_slow(hma), update_fast},
+            = GameMethods{gui(settings, "Steam"), hook, hook_ready, update_slow(hma), update_fast},
             .module_infos = {{"hma.exe", PeId{0x5149E0B4}}},
+        }
+    );
+    registry.emplace_back(
+        GameInfo{
+            .name = GAME_NAME,
+            .methods
+            = GameMethods{gui(settings, "GOG"), hook_nothing, hook_immediately_ready, stats_nothing_slow, stats_nothing_fast},
+            .module_infos = {{"hma.exe", PeId{0x5C9A0BF7}}},
         }
     );
 }

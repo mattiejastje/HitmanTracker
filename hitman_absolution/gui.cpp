@@ -2,6 +2,8 @@
 
 #include <imgui.h>
 
+#include <format>
+
 #include "../hitman_common/gui.hpp"
 #include "../imgui_utils.hpp"
 
@@ -84,14 +86,17 @@ const std::vector<std::string> map_names = {
     "#58 Crematorium",
 };
 
-GameGui hitman_absolution::gui(const settings::Gui& settings) {
-    return [&settings](const Fonts& fonts, const Stats& stats) {
+GameGui hitman_absolution::gui(
+    const settings::Gui& settings, const std::string& version
+) {
+    auto game_name = std::format("{} [{}]", GAME_NAME, version);
+    return [&settings, game_name](const Fonts& fonts, const Stats& stats) {
         hitman_common::gui(
             settings,
             fonts,
             1.0f,
             stats,
-            GAME_NAME,
+            game_name,
             stats.difficulty == 0   ? "Easy"
             : stats.difficulty == 1 ? "Normal"
             : stats.difficulty == 2 ? "Hard"

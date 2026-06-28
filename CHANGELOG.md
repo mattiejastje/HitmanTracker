@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- The GOG version of Hitman Absolution is now detected,
+  though tracking of the game not yet supported.
+
 ## [0.3.1] - 2026-06-28
 
 ### Fixed
