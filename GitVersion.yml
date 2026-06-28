@@ -1,0 +1,4 @@
+workflow: GitFlow/v1
+branches:
+  develop:
+    increment: Patch
