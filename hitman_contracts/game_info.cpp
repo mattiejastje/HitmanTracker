@@ -11,7 +11,7 @@ void hitman_contracts::register_game_info(const settings::Gui& settings) {
         GameInfo{
             .name = GAME_NAME,
             .methods
-            = GameMethods{gui(settings), hook_nothing, hook_immediately_ready, update_slow, update_fast},
+            = GameMethods{gui(settings, "Steam"), hook_nothing, hook_immediately_ready, update_slow, update_fast},
             .module_infos = {{"hitmancontracts.exe", PeId{0x52B2D458}}},
         }
     );

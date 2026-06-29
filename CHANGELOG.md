@@ -9,6 +9,8 @@
 
 - The GOG version of Hitman Absolution is now supported.
 
+- The game version (Steam, GOG, ...) is now shown for all games.
+
 ## [0.3.1] - 2026-06-28
 
 ### Fixed

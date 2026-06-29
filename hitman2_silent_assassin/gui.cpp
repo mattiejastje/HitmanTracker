@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 
+#include <format>
 #include <string>
 #include <vector>
 
@@ -32,7 +33,10 @@ const std::vector<std::string> map_names = {
     "#20 Redemption at Gontranno",     // 21
 };
 
-GameGui hitman2_silent_assassin::gui(const settings::Gui& settings) {
+GameGui hitman2_silent_assassin::gui(const settings::Gui& settings, const std::string& version) {
+    auto game_name = settings.show_game_version
+                         ? std::format("{} [{}]", GAME_NAME, version)
+                         : GAME_NAME;
     return [&settings](const Fonts& fonts, const Stats& stats) {
         hitman_common::gui(
         settings,

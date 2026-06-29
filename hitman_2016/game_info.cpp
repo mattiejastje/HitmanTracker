@@ -11,7 +11,7 @@ void hitman_2016::register_game_info(const settings::Gui& settings) {
         GameInfo{
             .name = GAME_NAME,
             .methods = GameMethods{
-                gui(settings),
+                gui(settings, "Steam"),
                 hook_nothing,
                 hook_immediately_ready,
                 stats_nothing_slow,

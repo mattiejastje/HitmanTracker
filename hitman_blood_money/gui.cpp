@@ -1,5 +1,7 @@
 #include "gui.hpp"
 
+#include <format>
+
 #include "../hitman_common/gui.hpp"
 #include "../imgui_utils.hpp"
 
@@ -21,15 +23,20 @@ const std::vector<std::string> map_names = {
 };
 
 GameGui hitman_blood_money::gui(
-    const settings::Gui& settings, const settings::HBM& hbm
+    const settings::Gui& settings,
+    const settings::HBM& hbm,
+    const std::string& version
 ) {
-    return [&settings, &hbm](const Fonts& fonts, const Stats& stats) {
+    auto game_name = settings.show_game_version
+                         ? std::format("{} [{}]", GAME_NAME, version)
+                         : GAME_NAME;
+    return [&settings, &hbm, game_name](const Fonts& fonts, const Stats& stats) {
         hitman_common::gui(
             settings,
             fonts,
             hbm.real_time ? (1000 / 1024.0f) : 1.0f,
             stats,
-            GAME_NAME,
+            game_name,
             stats.difficulty == 0   ? "Rookie"
             : stats.difficulty == 1 ? "Normal"
             : stats.difficulty == 2 ? "Expert"

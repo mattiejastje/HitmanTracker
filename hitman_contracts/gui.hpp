@@ -6,6 +6,6 @@ namespace hitman_contracts {
 
 inline constexpr auto GAME_NAME = "Hitman: Contracts";
 
-GameGui gui(const settings::Gui& settings);
+GameGui gui(const settings::Gui& settings, const std::string& version);
 
 }

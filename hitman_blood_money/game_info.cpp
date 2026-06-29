@@ -14,7 +14,7 @@ void hitman_blood_money::register_game_info(
         GameInfo{
         .name = GAME_NAME,
         .methods = GameMethods{
-            gui(settings, hbm),
+            gui(settings, hbm, "Steam"),
             hook,
             hook_immediately_ready,
             update_slow,

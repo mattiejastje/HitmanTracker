@@ -10,7 +10,7 @@ void hitman_codename_47::register_game_info(const settings::Gui& settings) {
     registry.emplace_back(GameInfo{
         .name = GAME_NAME,
         .methods = GameMethods{
-            gui(settings),
+            gui(settings, "Steam"),
             hook_nothing,
             hook_immediately_ready,
             update_slow,
