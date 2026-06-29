@@ -31,8 +31,8 @@ local function write_structs_txt(dir, descs)
   txt:close()
 end
 
-write_structs_txt("hitman_absolution", { hma.GameSteam, hma.GameGog })
-write_structs_cpp("hitman_absolution", { hma.GameSteam, hma.GameGog }, "hitman_absolution::structs")
+write_structs_txt("hitman_absolution", { hma.GameSteam, hma.GameGOG })
+write_structs_cpp("hitman_absolution", { hma.GameSteam, hma.GameGOG }, "hitman_absolution::structs")
 write_structs_txt("hitman_blood_money", { hbm.Game })
 write_structs_cpp("hitman_blood_money", { hbm.Game }, "hitman_blood_money::structs")
 write_structs_txt("hitman_codename_47", { hc47.HitmanDlc })

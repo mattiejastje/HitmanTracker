@@ -5,9 +5,15 @@ local d = require("mempeep.descriptors")
 local layout = {
   steam = {
     name = "Steam",
+    offset = {
+      global_data = 0xD58C60
+    },
   },
   gog = {
     name = "GOG",
+    offset = {
+      global_data = 0xCA0840,
+    }
   },
 }
 
@@ -301,7 +307,7 @@ local GlobalData = d.Struct("GlobalData", {
 local game = function(layout)
   return d.Struct(
     "Game" .. layout.name, {
-      d.Seek(0xD58C60 + 0x10),
+      d.Seek(layout.offset.global_data + 0x10),
       d.Field(GlobalData, "global_data"),
       d.Seek(0xD61620),
       d.Field(d.RawAddr(), "property_manager"),  -- possibly a property system
@@ -330,7 +336,7 @@ local game = function(layout)
 end
 
 M.GameSteam = game(layout.steam)
-M.GameGog = game(layout.gog)
+M.GameGOG = game(layout.gog)
 
 M.get_current_checkpoint_index = function(checkpoints)
   if checkpoints.current_key == 0 then
