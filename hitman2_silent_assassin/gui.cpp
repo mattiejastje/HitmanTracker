@@ -33,17 +33,19 @@ const std::vector<std::string> map_names = {
     "#20 Redemption at Gontranno",     // 21
 };
 
-GameGui hitman2_silent_assassin::gui(const settings::Gui& settings, const std::string& version) {
+GameGui hitman2_silent_assassin::gui(
+    const settings::Gui& settings, const std::string& version
+) {
     auto game_name = settings.show_game_version
                          ? std::format("{} [{}]", GAME_NAME, version)
                          : GAME_NAME;
-    return [&settings](const Fonts& fonts, const Stats& stats) {
+    return [&settings, game_name](const Fonts& fonts, const Stats& stats) {
         hitman_common::gui(
         settings,
         fonts,
         1.0f,
         stats,
-        GAME_NAME,
+        game_name,
         stats.difficulty == 1   ? "Normal"
         : stats.difficulty == 2 ? "Expert"
         : stats.difficulty == 3 ? "Professional"

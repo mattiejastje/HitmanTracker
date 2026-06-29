@@ -90,10 +90,10 @@ GameGui hitman_absolution::gui(
     const settings::Gui& settings, const std::string& version
 ) {
     // version may go out of scope so pass by copy
-    return [&settings, version](const Fonts& fonts, const Stats& stats) {
-        auto game_name = settings.show_game_version
-                             ? std::format("{} [{}]", GAME_NAME, version)
-                             : GAME_NAME;
+    auto game_name = settings.show_game_version
+                         ? std::format("{} [{}]", GAME_NAME, version)
+                         : GAME_NAME;
+    return [&settings, game_name](const Fonts& fonts, const Stats& stats) {
         hitman_common::gui(
             settings,
             fonts,
