@@ -14,7 +14,7 @@ void hitman_absolution::register_game_info(
         GameInfo{
             .name = GAME_NAME,
             .methods
-            = GameMethods{gui(settings, "Steam"), hook, hook_ready, update_slow(hma, GameVersion::Steam), update_fast},
+            = GameMethods{gui(settings, "Steam"), hook(Version::Steam), hook_ready(Version::Steam), update_slow(hma, Version::Steam), update_fast},
             .module_infos = {{"hma.exe", PeId{0x5149E0B4}}},
         }
     );

@@ -676,9 +676,9 @@ static hitman_absolution::structs::Game game{};
 static int64_t start_time = 0;
 
 GameStatsSlow hitman_absolution::update_slow(
-    const settings::HMA& hma, GameVersion game_version
+    const settings::HMA& hma, Version version
 ) {
-    return [&hma, game_version](
+    return [&hma, version](
                const std::filesystem::path& exe_path,
                void* handle,
                const BasePtrs& base_ptrs,
@@ -690,14 +690,14 @@ GameStatsSlow hitman_absolution::update_slow(
             MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS
         };
         const auto address = static_cast<uint32_t>(base_ptrs.at(0));
-        switch (game_version) {
-            case GameVersion::Steam:
+        switch (version) {
+            case Version::Steam:
                 if (!read_game<structs::TGameSteam>(
                         address, reader, tracer, game
                     ))
                     return false;
                 break;
-            case GameVersion::GOG:
+            case Version::GOG:
                 if (!read_game<structs::TGameGOG>(
                         address, reader, tracer, game
                     ))

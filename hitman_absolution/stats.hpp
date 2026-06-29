@@ -6,12 +6,11 @@
 #include "../game_info.hpp"
 #include "../label_ptrs.hpp"
 #include "../stats.hpp"
+#include "version.hpp"
 
 namespace hitman_absolution {
 
-enum class GameVersion { Steam, GOG };
-
-GameStatsSlow update_slow(const settings::HMA& hma, GameVersion game_version);
+GameStatsSlow update_slow(const settings::HMA& hma, Version version);
 
 bool update_fast(
     void* handle,
