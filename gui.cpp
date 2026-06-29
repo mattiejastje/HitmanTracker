@@ -92,7 +92,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                             }
                             logging::info("Game is now tracked");
                         } else {
-                            logging::info("Game not yet ready for tracking...");
+                            logging::debug("Game not yet ready for tracking...");
                         }
                     }
                     return 0;

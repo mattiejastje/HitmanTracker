@@ -68,28 +68,21 @@ static std::optional<std::vector<Module>> get_modules(
         const auto& exe_path = module->second.exe_path;
         auto pe_id = get_pe_id(exe_path);
         if (!pe_id) return {};
-        pe_ids.push_back(*pe_id);
+        if (pe_id->time_date_stamp != module_info.pe_id.time_date_stamp) {
+            logging::debug(
+                "{} time date stamp {:#x} does not match {:#x}",
+                module_info.name,
+                pe_id->time_date_stamp,
+                module_info.pe_id.time_date_stamp
+            );
+            return {};
+        }
         modules.push_back(module->second);
         logging::debug(
             "Found required module {} at {:#x}",
             module_info.name,
             module->second.base_ptr
         );
-    }
-    // check pe_ids only once all modules processed
-    // this prevents spurious hash errors for games with same exe
-    for (const auto& [module_info, pe_id] :
-         std::views::zip(module_infos, pe_ids)) {
-        if (pe_id.time_date_stamp != module_info.pe_id.time_date_stamp) {
-            logging::error(
-                "{} has time date stamp {:#x} but expected {:#x}; "
-                "perhaps not running steam version?",
-                module_info.name,
-                pe_id.time_date_stamp,
-                module_info.pe_id.time_date_stamp
-            );
-            return {};
-        }
     }
     return modules;
 }
