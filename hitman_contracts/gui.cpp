@@ -27,10 +27,10 @@ const std::vector<std::string> map_names = {
 GameGui hitman_contracts::gui(
     const settings::Gui& settings, const std::string& version
 ) {
-    auto game_name = settings.show_game_version
-                         ? std::format("{} [{}]", GAME_NAME, version)
-                         : GAME_NAME;
-    return [&settings, game_name](const Fonts& fonts, const Stats& stats) {
+    return [&settings, version](const Fonts& fonts, const Stats& stats) {
+        auto game_name = settings.show_game_version
+                             ? std::format("{} [{}]", GAME_NAME, version)
+                             : GAME_NAME;
         hitman_common::gui(
             settings,
             fonts,

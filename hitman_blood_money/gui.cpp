@@ -27,10 +27,10 @@ GameGui hitman_blood_money::gui(
     const settings::HBM& hbm,
     const std::string& version
 ) {
-    auto game_name = settings.show_game_version
-                         ? std::format("{} [{}]", GAME_NAME, version)
-                         : GAME_NAME;
-    return [&settings, &hbm, game_name](const Fonts& fonts, const Stats& stats) {
+    return [&settings, &hbm, version](const Fonts& fonts, const Stats& stats) {
+        auto game_name = settings.show_game_version
+                             ? std::format("{} [{}]", GAME_NAME, version)
+                             : GAME_NAME;
         hitman_common::gui(
             settings,
             fonts,
