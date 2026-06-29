@@ -9,7 +9,9 @@
 
 namespace hitman_absolution {
 
-GameStatsSlow update_slow(const settings::HMA& hma);
+enum class GameVersion { Steam, GOG };
+
+GameStatsSlow update_slow(const settings::HMA& hma, GameVersion game_version);
 
 bool update_fast(
     void* handle,
