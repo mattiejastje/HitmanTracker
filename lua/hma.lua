@@ -13,6 +13,8 @@ local layout = {
       game_data = 0xE212E0,
       level_manager = 0xE21310,
       level = 0xE21394,
+      checkpoints_manager = 0xE21580,
+      time_manager = 0xE24730,
     },
   },
   gog = {
@@ -25,6 +27,8 @@ local layout = {
       game_data = 0xD68EA0,
       level_manager = 0xD68ED0,
       level = 0xD68F54,
+      checkpoints_manager = 0xD69140,
+      time_manager = 0xC88580,
     }
   },
 }
@@ -332,9 +336,9 @@ local game = function(layout)
       d.Seek(layout.offset.level),
       -- level == -1 used by game when no level selected
       d.Field(d.Bounded(d.Int32, -1, NUM_LEVELS - 1), "level"), -- part of level manager?
-      d.Seek(0xE21580),
+      d.Seek(layout.offset.checkpoints_manager),
       d.Field(CheckpointsManager, "checkpoints_manager"),
-      d.Seek(0xE24730),
+      d.Seek(layout.offset.time_manager),
       d.Field(TimeManager, "time_manager"),
     },
     { native_name = "Game" }
