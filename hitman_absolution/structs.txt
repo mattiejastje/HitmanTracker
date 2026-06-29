@@ -104,9 +104,6 @@ struct ChallengeManager {
   ChallengeNode* challenges;  // offset 0x8
 };
 
-struct ActorManager {
-};
-
 struct EventManager {
   int32_t* events_per_kill_type_class_begin;  // offset 0x14
   int32_t* events_per_kill_type_class_end;    // offset 0x18
@@ -195,10 +192,8 @@ struct TimeManager {
 
 struct GameSteam {
   GlobalData global_data;  // offset 0xd58c70
-  void* property_manager;  // offset 0xd61620
   StatsManager stats_manager;  // offset 0xd61710
   ChallengeManager challenge_manager;  // offset 0xd617c0
-  ActorManager actor_manager;  // offset 0xdfde70
   EventManager event_manager;  // offset 0xe20e40
   GameData game_data;  // offset 0xe212e0
   LevelManager level_manager;  // offset 0xe21310
@@ -208,16 +203,14 @@ struct GameSteam {
 };
 
 struct GameGOG {
-  GlobalData global_data;  // offset 0xd58c70
-  void* property_manager;  // offset 0xd61620
-  StatsManager stats_manager;  // offset 0xd61710
-  ChallengeManager challenge_manager;  // offset 0xd617c0
-  ActorManager actor_manager;  // offset 0xdfde70
-  EventManager event_manager;  // offset 0xe20e40
-  GameData game_data;  // offset 0xe212e0
-  LevelManager level_manager;  // offset 0xe21310
-  int32_t level;  // offset 0xe21394
-  CheckpointsManager checkpoints_manager;  // offset 0xe21580
-  TimeManager time_manager;  // offset 0xe24730
+  GlobalData global_data;  // offset 0xca0850
+  StatsManager stats_manager;  // offset 0xca92d0
+  ChallengeManager challenge_manager;  // offset 0xca9380
+  EventManager event_manager;  // offset 0xd68a00
+  GameData game_data;  // offset 0xd68ea0
+  LevelManager level_manager;  // offset 0xd68ed0
+  int32_t level;  // offset 0xd68f54
+  CheckpointsManager checkpoints_manager;  // offset 0xd69140
+  TimeManager time_manager;  // offset 0xc88580
 };
 
