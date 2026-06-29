@@ -9,7 +9,9 @@ local layout = {
       global_data = 0xD58C60,
       stats_manager = 0xD61710,
       challenge_manager = 0xD617C0,
+      event_manager = 0xE20E40,
       game_data = 0xE212E0,
+      level = 0xE21394,
     },
   },
   gog = {
@@ -18,7 +20,9 @@ local layout = {
       global_data = 0xCA0840,
       stats_manager = 0xCA92D0,
       challenge_manager = 0xCA9380,
+      event_manager = 0xD68A00,
       game_data = 0xD68EA0,
+      level = 0xD68F54,
     }
   },
 }
@@ -317,13 +321,13 @@ local game = function(layout)
       d.Field(StatsManager, "stats_manager"),
       d.Seek(layout.offset.challenge_manager),
       d.Field(ChallengeManager, "challenge_manager"),
-      d.Seek(0xE20E40),
+      d.Seek(layout.offset.event_manager),
       d.Field(EventManager, "event_manager"),
       d.Seek(layout.offset.game_data),
       d.Field(GameData, "game_data"),
       d.Seek(0xE21310),
       d.Field(LevelManager, "level_manager"),
-      d.Seek(0xE21394),
+      d.Seek(layout.offset.level),
       -- level == -1 used by game when no level selected
       d.Field(d.Bounded(d.Int32, -1, NUM_LEVELS - 1), "level"), -- part of level manager?
       d.Seek(0xE21580),
