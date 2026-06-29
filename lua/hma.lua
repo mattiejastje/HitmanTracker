@@ -6,13 +6,15 @@ local layout = {
   steam = {
     name = "Steam",
     offset = {
-      global_data = 0xD58C60
+      global_data = 0xD58C60,
+      stats_manager = 0xD61710,
     },
   },
   gog = {
     name = "GOG",
     offset = {
       global_data = 0xCA0840,
+      stats_manager = 0xCA92D0,
     }
   },
 }
@@ -253,8 +255,6 @@ local ChallengeManager = d.Struct("ChallengeManager", {
   d.Field(d.List(ChallengeNode, "next_node", d.list_kind.CIRCULAR, MAX_CHALLENGES), "challenges"),
 })
 
-local ActorManager = d.Struct("ActorManager", {})
-
 local GlobalData = d.Struct("GlobalData", {
   d.Skip(0x94),
   d.Field(d.Bounded(d.Int32, 0, NUM_DIFFICULTIES - 1), "difficulty"),
@@ -309,14 +309,10 @@ local game = function(layout)
     "Game" .. layout.name, {
       d.Seek(layout.offset.global_data + 0x10),
       d.Field(GlobalData, "global_data"),
-      d.Seek(0xD61620),
-      d.Field(d.RawAddr(), "property_manager"),  -- possibly a property system
-      d.Seek(0xD61710),
+      d.Seek(layout.offset.stats_manager),
       d.Field(StatsManager, "stats_manager"),
       d.Seek(0xD617C0),
       d.Field(ChallengeManager, "challenge_manager"),
-      d.Seek(0xDFDE70),
-      d.Field(ActorManager, "actor_manager"),
       d.Seek(0xE20E40),
       d.Field(EventManager, "event_manager"),
       d.Seek(0xE212E0),
