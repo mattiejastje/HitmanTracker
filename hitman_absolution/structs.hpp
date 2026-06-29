@@ -401,7 +401,33 @@ struct Game {
     TimeManager time_manager;
 };
 
-using TGame = Struct<
+using TGameSteam = Struct<
+    Game,
+    Fields<
+        Seek<0xd58c70>,
+        Field<Primitive<GlobalData>, &Game::global_data>,
+        Seek<0xd61620>,
+        Field<RawAddr<uint32_t>, &Game::property_manager>,
+        Seek<0xd61710>,
+        Field<TStatsManager, &Game::stats_manager>,
+        Seek<0xd617c0>,
+        Field<TChallengeManager, &Game::challenge_manager>,
+        Seek<0xdfde70>,
+        Field<Primitive<ActorManager>, &Game::actor_manager>,
+        Seek<0xe20e40>,
+        Field<TEventManager, &Game::event_manager>,
+        Seek<0xe212e0>,
+        Field<TGameData, &Game::game_data>,
+        Seek<0xe21310>,
+        Field<TLevelManager, &Game::level_manager>,
+        Seek<0xe21394>,
+        Field<Bounded<Int32, -1, 25>, &Game::level>,
+        Seek<0xe21580>,
+        Field<TCheckpointsManager, &Game::checkpoints_manager>,
+        Seek<0xe24730>,
+        Field<Primitive<TimeManager>, &Game::time_manager>>>;
+
+using TGameGOG = Struct<
     Game,
     Fields<
         Seek<0xd58c70>,

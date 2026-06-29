@@ -193,7 +193,21 @@ struct TimeManager {
   int32_t frame_count;  // offset 0x6c
 };
 
-struct Game {
+struct GameSteam {
+  GlobalData global_data;  // offset 0xd58c70
+  void* property_manager;  // offset 0xd61620
+  StatsManager stats_manager;  // offset 0xd61710
+  ChallengeManager challenge_manager;  // offset 0xd617c0
+  ActorManager actor_manager;  // offset 0xdfde70
+  EventManager event_manager;  // offset 0xe20e40
+  GameData game_data;  // offset 0xe212e0
+  LevelManager level_manager;  // offset 0xe21310
+  int32_t level;  // offset 0xe21394
+  CheckpointsManager checkpoints_manager;  // offset 0xe21580
+  TimeManager time_manager;  // offset 0xe24730
+};
+
+struct GameGOG {
   GlobalData global_data;  // offset 0xd58c70
   void* property_manager;  // offset 0xd61620
   StatsManager stats_manager;  // offset 0xd61710

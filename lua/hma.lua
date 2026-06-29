@@ -2,6 +2,15 @@ local M = {}
 
 local d = require("mempeep.descriptors")
 
+local layout = {
+  steam = {
+    name = "Steam",
+  },
+  gog = {
+    name = "GOG",
+  },
+}
+
 local NUM_DIFFICULTIES = 5
 -- note: not all levels are used
 local NUM_LEVELS = 26
@@ -289,31 +298,39 @@ local GlobalData = d.Struct("GlobalData", {
   d.Field(d.Int32, "pigeons_killed"),
 })
 
-M.Game = d.Struct("Game", {
-  d.Seek(0xD58C60 + 0x10),
-  d.Field(GlobalData, "global_data"),
-  d.Seek(0xD61620),
-  d.Field(d.RawAddr(), "property_manager"),  -- possibly a property system
-  d.Seek(0xD61710),
-  d.Field(StatsManager, "stats_manager"),
-  d.Seek(0xD617C0),
-  d.Field(ChallengeManager, "challenge_manager"),
-  d.Seek(0xDFDE70),
-  d.Field(ActorManager, "actor_manager"),
-  d.Seek(0xE20E40),
-  d.Field(EventManager, "event_manager"),
-  d.Seek(0xE212E0),
-  d.Field(GameData, "game_data"),
-  d.Seek(0xE21310),
-  d.Field(LevelManager, "level_manager"),
-  d.Seek(0xE21394),
-  -- level == -1 used by game when no level selected
-  d.Field(d.Bounded(d.Int32, -1, NUM_LEVELS - 1), "level"), -- part of level manager?
-  d.Seek(0xE21580),
-  d.Field(CheckpointsManager, "checkpoints_manager"),
-  d.Seek(0xE24730),
-  d.Field(TimeManager, "time_manager"),
-})
+local game = function(layout)
+  return d.Struct(
+    "Game" .. layout.name, {
+      d.Seek(0xD58C60 + 0x10),
+      d.Field(GlobalData, "global_data"),
+      d.Seek(0xD61620),
+      d.Field(d.RawAddr(), "property_manager"),  -- possibly a property system
+      d.Seek(0xD61710),
+      d.Field(StatsManager, "stats_manager"),
+      d.Seek(0xD617C0),
+      d.Field(ChallengeManager, "challenge_manager"),
+      d.Seek(0xDFDE70),
+      d.Field(ActorManager, "actor_manager"),
+      d.Seek(0xE20E40),
+      d.Field(EventManager, "event_manager"),
+      d.Seek(0xE212E0),
+      d.Field(GameData, "game_data"),
+      d.Seek(0xE21310),
+      d.Field(LevelManager, "level_manager"),
+      d.Seek(0xE21394),
+      -- level == -1 used by game when no level selected
+      d.Field(d.Bounded(d.Int32, -1, NUM_LEVELS - 1), "level"), -- part of level manager?
+      d.Seek(0xE21580),
+      d.Field(CheckpointsManager, "checkpoints_manager"),
+      d.Seek(0xE24730),
+      d.Field(TimeManager, "time_manager"),
+    },
+    { native_name = "Game" }
+  )
+end
+
+M.GameSteam = game(layout.steam)
+M.GameGog = game(layout.gog)
 
 M.get_current_checkpoint_index = function(checkpoints)
   if checkpoints.current_key == 0 then
