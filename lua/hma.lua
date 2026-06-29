@@ -11,6 +11,7 @@ local layout = {
       challenge_manager = 0xD617C0,
       event_manager = 0xE20E40,
       game_data = 0xE212E0,
+      level_manager = 0xE21310,
       level = 0xE21394,
     },
   },
@@ -22,6 +23,7 @@ local layout = {
       challenge_manager = 0xCA9380,
       event_manager = 0xD68A00,
       game_data = 0xD68EA0,
+      level_manager = 0xD68ED0,
       level = 0xD68F54,
     }
   },
@@ -325,7 +327,7 @@ local game = function(layout)
       d.Field(EventManager, "event_manager"),
       d.Seek(layout.offset.game_data),
       d.Field(GameData, "game_data"),
-      d.Seek(0xE21310),
+      d.Seek(layout.offset.level_manager),
       d.Field(LevelManager, "level_manager"),
       d.Seek(layout.offset.level),
       -- level == -1 used by game when no level selected
