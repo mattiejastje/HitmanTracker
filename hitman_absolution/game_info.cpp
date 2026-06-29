@@ -14,7 +14,7 @@ void hitman_absolution::register_game_info(
         GameInfo{
             .name = GAME_NAME,
             .methods
-            = GameMethods{gui(settings, "Steam"), hook(Version::Steam), hook_ready(Version::Steam), update_slow(hma, Version::Steam), update_fast},
+            = GameMethods{gui(settings, "Steam"), hook(Version::Steam), hook_ready(Version::Steam), update_slow(hma, Version::Steam), update_fast(Version::Steam)},
             .module_infos = {{"hma.exe", PeId{0x5149E0B4}}},
         }
     );
@@ -22,7 +22,7 @@ void hitman_absolution::register_game_info(
         GameInfo{
             .name = GAME_NAME,
             .methods
-            = GameMethods{gui(settings, "GOG"), hook_nothing, hook_immediately_ready, stats_nothing_slow, stats_nothing_fast},
+            = GameMethods{gui(settings, "GOG"), hook(Version::GOG), hook_ready(Version::GOG), update_slow(hma, Version::GOG), update_fast(Version::GOG)},
             .module_infos = {{"hma.exe", PeId{0x5C9A0BF7}}},
         }
     );
