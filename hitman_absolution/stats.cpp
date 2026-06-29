@@ -659,26 +659,53 @@ static std::optional<int32_t> get_shadow_raw_score_threshold(
     return {};
 }
 
+template <typename T, IsMemoryReader Reader, IsTracer Tracer>
+bool read_game(
+    uint32_t address,
+    Reader& reader,
+    Tracer& tracer,
+    hitman_absolution::structs::Game& game
+) {
+    return mempeep::read(
+        RemoteValue<T, uint32_t>{address}, reader, tracer, game
+    );
+}
+
 // global to avoid allocating large object on stack
 static hitman_absolution::structs::Game game{};
 static int64_t start_time = 0;
 
-GameStatsSlow hitman_absolution::update_slow(const settings::HMA& hma) {
-    return [&hma](
+GameStatsSlow hitman_absolution::update_slow(
+    const settings::HMA& hma, Version version
+) {
+    return [&hma, version](
                const std::filesystem::path& exe_path,
                void* handle,
                const BasePtrs& base_ptrs,
                const LabelPtrs& label_ptrs,
                Stats& stats
            ) {
-        const RemoteValue<structs::TGame, uint32_t> remote_game{
-            static_cast<uint32_t>(base_ptrs.at(0))
-        };
         MemoryReader<uint32_t> reader{handle};
         auto tracer = mempeep::LogTracer{
             MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS
         };
-        if (!mempeep::read(remote_game, reader, tracer, game)) return false;
+        const auto address = static_cast<uint32_t>(base_ptrs.at(0));
+        switch (version) {
+            case Version::Steam:
+                if (!read_game<structs::TGameSteam>(
+                        address, reader, tracer, game
+                    ))
+                    return false;
+                break;
+            case Version::GOG:
+                if (!read_game<structs::TGameGOG>(
+                        address, reader, tracer, game
+                    ))
+                    return false;
+                break;
+            default:
+                return false;
+        }
         stats.difficulty = game.global_data.difficulty;
         // engine may set level to -1 if not in a mission
         // sadly it's not a reliable way to detect if we are in a mission
@@ -871,17 +898,22 @@ GameStatsSlow hitman_absolution::update_slow(const settings::HMA& hma) {
 
 constexpr float time_scale = 1.0f / (1024 * 1024);
 
-bool hitman_absolution::update_fast(
-    void* handle,
-    const BasePtrs& base_ptrs,
-    const LabelPtrs& label_ptrs,
-    Stats& stats
-) {
-    if (stats.map > 0) {
-        const auto& base_ptr = base_ptrs.at(0);
-        auto game_time = read<int64_t>(handle, base_ptr + 0xE24730 + 0x18);
-        if (game_time) stats.time = (*game_time - start_time) * time_scale;
-        return game_time.has_value();
-    }
-    return true;
+GameStatsFast hitman_absolution::update_fast(Version version) {
+    const uint32_t time_manager_offset
+        = version == Version::Steam ? 0xE24730 : 0xC88580;
+    return [time_manager_offset](
+               void* handle,
+               const BasePtrs& base_ptrs,
+               const LabelPtrs& label_ptrs,
+               Stats& stats
+           ) {
+        if (stats.map > 0) {
+            const auto& base_ptr = base_ptrs.at(0);
+            auto game_time
+                = read<int64_t>(handle, base_ptr + time_manager_offset + 0x18);
+            if (game_time) stats.time = (*game_time - start_time) * time_scale;
+            return game_time.has_value();
+        }
+        return true;
+    };
 }

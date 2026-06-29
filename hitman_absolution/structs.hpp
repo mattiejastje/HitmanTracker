@@ -228,8 +228,6 @@ using TChallengeManager = Struct<
                 0x12c>,
             &ChallengeManager::challenges>>>;
 
-struct ActorManager {};
-
 struct EventManager {
     std::vector<int32_t> events_per_kill_type_class;
     std::vector<int32_t> events_per_event_type;
@@ -389,10 +387,8 @@ struct TimeManager {
 
 struct Game {
     GlobalData global_data;
-    uint32_t property_manager;
     StatsManager stats_manager;
     ChallengeManager challenge_manager;
-    ActorManager actor_manager;
     EventManager event_manager;
     GameData game_data;
     LevelManager level_manager;
@@ -401,19 +397,15 @@ struct Game {
     TimeManager time_manager;
 };
 
-using TGame = Struct<
+using TGameSteam = Struct<
     Game,
     Fields<
         Seek<0xd58c70>,
         Field<Primitive<GlobalData>, &Game::global_data>,
-        Seek<0xd61620>,
-        Field<RawAddr<uint32_t>, &Game::property_manager>,
         Seek<0xd61710>,
         Field<TStatsManager, &Game::stats_manager>,
         Seek<0xd617c0>,
         Field<TChallengeManager, &Game::challenge_manager>,
-        Seek<0xdfde70>,
-        Field<Primitive<ActorManager>, &Game::actor_manager>,
         Seek<0xe20e40>,
         Field<TEventManager, &Game::event_manager>,
         Seek<0xe212e0>,
@@ -425,6 +417,28 @@ using TGame = Struct<
         Seek<0xe21580>,
         Field<TCheckpointsManager, &Game::checkpoints_manager>,
         Seek<0xe24730>,
+        Field<Primitive<TimeManager>, &Game::time_manager>>>;
+
+using TGameGOG = Struct<
+    Game,
+    Fields<
+        Seek<0xca0850>,
+        Field<Primitive<GlobalData>, &Game::global_data>,
+        Seek<0xca92d0>,
+        Field<TStatsManager, &Game::stats_manager>,
+        Seek<0xca9380>,
+        Field<TChallengeManager, &Game::challenge_manager>,
+        Seek<0xd68a00>,
+        Field<TEventManager, &Game::event_manager>,
+        Seek<0xd68ea0>,
+        Field<TGameData, &Game::game_data>,
+        Seek<0xd68ed0>,
+        Field<TLevelManager, &Game::level_manager>,
+        Seek<0xd68f54>,
+        Field<Bounded<Int32, -1, 25>, &Game::level>,
+        Seek<0xd69140>,
+        Field<TCheckpointsManager, &Game::checkpoints_manager>,
+        Seek<0xc88580>,
         Field<Primitive<TimeManager>, &Game::time_manager>>>;
 
 }  // namespace hitman_absolution::structs
