@@ -7,8 +7,7 @@
 - New setting to configure display of the game version
   (i.e. Steam, GOG, ...).
 
-- The GOG version of Hitman Absolution is now detected,
-  though tracking of this version is not yet supported.
+- The GOG version of Hitman Absolution is now supported.
 
 ## [0.3.1] - 2026-06-28
 

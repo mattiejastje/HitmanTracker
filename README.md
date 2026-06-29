@@ -2,8 +2,6 @@
 
 A statistics tracker for Hitman games.
 
-Note only Steam is supported.
-
 * Download: https://github.com/mattiejastje/HitmanTracker/releases
 * Report issues: https://github.com/mattiejastje/HitmanTracker/issues
 
@@ -28,9 +26,9 @@ All development takes place at https://github.com/mattiejastje/HitmanTracker
 
 ## Supported Games
 
-For now, only the steam versions are supported.
-
 ### Hitman: Codename 47
+
+For now, only the Steam version is supported.
 
 This game has no rating system, so no stats are tracked.
 However, there is basic support to track map name, internal game timer,
@@ -38,15 +36,15 @@ and difficulty.
 
 ### Hitman 2: Silent Assassin
 
-Fully supported.
+For now, only the Steam version is supported.
 
 ### Hitman: Contracts
 
-Fully supported.
+For now, only the Steam version is supported.
 
 ### Hitman: Blood Money
 
-Fully supported.
+For now, only the Steam version is supported.
 
 The game tracks time internally using 1024 ticks per second.
 However, the final mission screen shows time assuming 1000 ticks per second.
@@ -60,7 +58,7 @@ but obviously out of sync with the final mission screen.
 
 ### Hitman: Absolution
 
-Fully supported.
+Fully supported on both Steam and GOG.
 
 To make rating system more transparent,
 the tracker displays ratings differently from how the game shows it.
