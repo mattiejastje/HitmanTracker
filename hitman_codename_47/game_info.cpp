@@ -19,7 +19,6 @@ void hitman_codename_47::register_game_info(const settings::Gui& settings) {
         .module_infos = {
             {"hitman.exe", PeId{0x3A3E13DA}},
             {"hitmandlc.dlc", PeId{0x3A3E13D1}},
-            {"enginedata.dll", PeId{0x3A3E12F7}},
         },
     });
 }
