@@ -6,6 +6,7 @@
 #include "../imgui_utils.hpp"
 
 const std::vector<std::string> map_names = {
+    "",
     "Hideout",                      // 1
     "#1 Death of a Showman",        // 2
     "#2 A Vintage Year",            // 3
@@ -31,17 +32,25 @@ GameGui hitman_blood_money::gui(
         auto game_name = settings.show_game_version
                              ? std::format("{} [{}]", GAME_NAME, version)
                              : GAME_NAME;
-        hitman_common::gui(
+        hitman_common::gui_header(
             settings,
             fonts,
-            hbm.real_time ? (1000 / 1024.0f) : 1.0f,
-            stats,
             game_name,
             stats.difficulty == 0   ? "Rookie"
             : stats.difficulty == 1 ? "Normal"
             : stats.difficulty == 2 ? "Expert"
                                     : "Pro",
-            map_names,
+            map_names[stats.map],
+            stats.map,
+            stats.map_stage,
+            stats.time * (hbm.real_time ? (1000 / 1024.0f) : 1.0f)
+        );
+        hitman_common::gui_table(
+            settings,
+            fonts,
+            stats.rating,
+            stats.map,
+            stats.map_stage,
             {
                 {"Innocents Killed", stats.innocents_killed},
                 {"Innocents Wounded", stats.innocents_wounded},
@@ -61,7 +70,6 @@ GameGui hitman_blood_money::gui(
             }
         );
         if (stats.map_stage != MapStage::pre) {
-            ImGui::Spacing();
             ImGui::BeginTable(
                 "Extra",
                 2,

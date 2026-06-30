@@ -7,7 +7,13 @@
 - New setting to configure display of the game version
   (i.e. Steam, GOG, ...).
 
-- The GOG version of Hitman Absolution is now supported.
+- Hitman Absolution:
+
+  * The GOG version of Hitman Absolution is now supported.
+
+  * New tracking modes with presets for original game, max rating, silent assassin, and full tracking.
+
+  * Improved documentation.
 
 - The game version (Steam, GOG, ...) is now shown for all games.
 

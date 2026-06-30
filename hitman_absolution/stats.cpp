@@ -675,6 +675,12 @@ bool read_game(
 static hitman_absolution::structs::Game game{};
 static int64_t start_time = 0;
 
+static CheckpointType get_checkpoint_type(const MapInfo& info) {
+    return info.max_rating == AGENT ? CheckpointType::UNRATED
+           : info.num_targets == 0  ? CheckpointType::NO_TARGETS
+                                    : CheckpointType::TARGETS;
+}
+
 GameStatsSlow hitman_absolution::update_slow(
     const settings::HMA& hma, Version version
 ) {
@@ -749,11 +755,12 @@ GameStatsSlow hitman_absolution::update_slow(
         }
         stats.map = map_info.map;
         stats.map_stage = MapStage::main;  // always render stats
+        stats.checkpoint_type = get_checkpoint_type(map_info);
         if (stats.map > 0) {
             auto& stats_manager = game.stats_manager;
             auto& game_stats
                 = stats_manager.values[game.level][checkpoint_index];
-            if (map_info.max_rating == AGENT) {
+            if (stats.checkpoint_type == CheckpointType::UNRATED) {
                 // stats are always 0 for unrated maps so try and fix stats here
                 // event_manager.kills_per_npc_type?
                 // npc type 1 = civ, 2 = guard/cop, 3 = target: easy to count
@@ -771,15 +778,11 @@ GameStatsSlow hitman_absolution::update_slow(
                 if (!spotted) logging::warn("Unable to read spotted value");
                 game_stats[SPOTTED] = spotted.value_or(0);
             }
-            if (hma.always_track_sa || map_info.num_targets > 0) {
-                auto status = game_stats[NON_TARGET_CASUALTY] != 0
-                                      || game_stats[SPOTTED] != 0
-                                  ? Status::RED
-                                  : Status::GREEN;
-                stats.rating = {get_simple_rating_value(status), status};
-            } else {
-                stats.rating = {"No Targets", Status::GREEN};
-            }
+            auto status = game_stats[NON_TARGET_CASUALTY] != 0
+                                  || game_stats[SPOTTED] != 0
+                              ? Status::RED
+                              : Status::GREEN;
+            stats.rating = {get_simple_rating_value(status), status};
             auto score = get_raw_score(game_stats);
 #ifndef NDEBUG
             auto maybe_shadow_raw_score_threshold
@@ -808,12 +811,13 @@ GameStatsSlow hitman_absolution::update_slow(
             int32_t percent
                 = std::max(0, (100 * score) / shadow_raw_score_threshold);
             stats.score_total = score;
-            stats.score_rating = map_info.max_rating == AGENT ? "Unrated"
-                                 : percent < VETERAN          ? "Agent"
-                                 : percent < SPECIALIST       ? "Veteran"
-                                 : percent < PROFESSIONAL     ? "Specialist"
-                                 : percent < SHADOW           ? "Professional"
-                                                              : "Shadow";
+            stats.score_rating
+                = stats.checkpoint_type == CheckpointType::UNRATED ? "Unrated"
+                  : percent < VETERAN                              ? "Agent"
+                  : percent < SPECIALIST                           ? "Veteran"
+                  : percent < PROFESSIONAL ? "Specialist"
+                  : percent < SHADOW       ? "Professional"
+                                           : "Shadow";
             // major negative scores
             stats.score_civilian_casualty
                 = {STATS_MULTIPLIERS[CIVILIAN_CASUALTY]

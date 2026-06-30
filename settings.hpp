@@ -27,7 +27,13 @@ struct HBM {
 };
 
 struct HMA {
-    bool always_track_sa{false};
+    enum class RatingMode {
+        X, SA, SC, SA_PLUS_SC, SA_FALLBACK_SC
+    };
+
+    RatingMode rating_mode_unrated{RatingMode::X};
+    RatingMode rating_mode_no_targets{RatingMode::SC};
+    RatingMode rating_mode_targets{RatingMode::SA_FALLBACK_SC};
 };
 
 struct Gui {

@@ -8,6 +8,7 @@
 #include "../imgui_utils.hpp"
 
 const std::vector<std::string> map_names = {
+    "",
     // A Personal Contract
     "#1 Garden",
     "#2 Greenhouse",
@@ -86,99 +87,121 @@ const std::vector<std::string> map_names = {
     "#58 Crematorium",
 };
 
-GameGui hitman_absolution::gui(
-    const settings::Gui& settings, const std::string& version
+static settings::HMA::RatingMode get_rating_mode(
+    const settings::HMA& hma, CheckpointType checkpoint_type
 ) {
-    return [&settings, version](const Fonts& fonts, const Stats& stats) {
+    switch (checkpoint_type) {
+        case CheckpointType::NO_TARGETS:
+            return hma.rating_mode_no_targets;
+        case CheckpointType::TARGETS:
+            return hma.rating_mode_targets;
+        default:
+            return hma.rating_mode_unrated;
+    };
+}
+
+GameGui hitman_absolution::gui(
+    const settings::Gui& settings,
+    const settings::HMA& hma,
+    const std::string& version
+) {
+    return [&settings, &hma, version](const Fonts& fonts, const Stats& stats) {
         auto game_name = settings.show_game_version
                              ? std::format("{} [{}]", GAME_NAME, version)
                              : GAME_NAME;
-        hitman_common::gui(
+        hitman_common::gui_header(
             settings,
             fonts,
-            1.0f,
-            stats,
             game_name,
             stats.difficulty == 0   ? "Easy"
             : stats.difficulty == 1 ? "Normal"
             : stats.difficulty == 2 ? "Hard"
             : stats.difficulty == 3 ? "Expert"
                                     : "Purist",
-            map_names,
-            {
-                {"Non-Target Casualty", stats.score_non_target_casualty},
-                {"Spotted", stats.score_spotted},
-            }
+            map_names[stats.map],
+            stats.map,
+            stats.map_stage,
+            stats.time
         );
-        if (stats.map > 0) {
-            ImGui::Spacing();
-            auto is_max = stats.score_rating == "Unrated"
-                          || (stats.score_total >= stats.score_for_max_rating);
+        auto rating_mode = get_rating_mode(hma, stats.checkpoint_type);
+        auto is_silent_assassin = stats.rating.status == Status::GREEN;
+        auto is_sa_shown
+            = rating_mode == settings::HMA::RatingMode::SA
+              || rating_mode == settings::HMA::RatingMode::SA_PLUS_SC
+              || rating_mode == settings::HMA::RatingMode::SA_FALLBACK_SC;
+        auto is_sc_shown
+            = rating_mode == settings::HMA::RatingMode::SC
+              || rating_mode == settings::HMA::RatingMode::SA_PLUS_SC
+              || (rating_mode == settings::HMA::RatingMode::SA_FALLBACK_SC
+                  && !is_silent_assassin);
+        if (is_sa_shown) {
+            hitman_common::gui_table(
+                settings,
+                fonts,
+                stats.rating,
+                stats.map,
+                stats.map_stage,
+                {
+                    {"Non-Target Casualty", stats.score_non_target_casualty},
+                    {"Spotted", stats.score_spotted},
+                }
+            );
+        }
+        if (is_sc_shown) {
+            auto is_max = stats.score_total >= stats.score_for_max_rating;
             auto rating_status = is_max ? Status::GREEN : Status::YELLOW;
             auto rating_font = is_max ? fonts.rating_good : fonts.rating_maybe;
             auto rating_color = is_max ? settings.rating_good.color
                                        : settings.rating_maybe.color;
             std::string rating_text;
-            if (stats.score_rating == "Unrated") {
-                rating_text = stats.score_rating;
-            } else {
-                rating_text = std::format(
-                    "{} [{}/{}]",
-                    stats.score_rating,
-                    stats.score_total,
-                    stats.score_for_max_rating
+            rating_text = std::format(
+                "{} [{}/{}]",
+                stats.score_rating,
+                stats.score_total,
+                stats.score_for_max_rating
+            );
+            std::vector<hitman_common::TableRow> table_rows{};
+            if (!is_sa_shown) {
+                table_rows.emplace_back(
+                    "Non-Target Casualty", stats.score_non_target_casualty
+                );
+                table_rows.emplace_back("Spotted", stats.score_spotted);
+            }
+            table_rows.emplace_back(
+                "Civilian Casualty", stats.score_civilian_casualty
+            );
+            table_rows.emplace_back("Pacification", stats.score_pacification);
+            table_rows.emplace_back("Body Hidden", stats.score_body_hidden);
+            table_rows.emplace_back("Headshot", stats.score_headshot);
+            table_rows.emplace_back("Silent Kill", stats.score_silent_kill);
+            table_rows.emplace_back(
+                "Objective Complete", stats.score_objective_complete
+            );
+            // status on evidence removed not set on maps with no evidence
+            if (stats.score_evidence_removed.status) {
+                table_rows.emplace_back(
+                    "Evidence Removed", stats.score_evidence_removed
                 );
             }
-            text(rating_font, rating_color, rating_text.c_str());
-            if (stats.score_rating != "Unrated") {
-                ImGui::Spacing();
-                ImGui::BeginTable(
-                    "Statistics",
-                    2,
-                    ImGuiTableFlags_SizingFixedFit
-                        | ImGuiTableFlags_NoKeepColumnsVisible
-                        | ImGuiTableFlags_NoHostExtendX
+            // status on silent asssassin bonus is not set on maps with no
+            // targets
+            if (stats.score_silent_assassin_bonus.status) {
+                table_rows.emplace_back(
+                    "Signature Kill", stats.score_signature_kill
                 );
-                std::vector<hitman_common::TableRow> table_rows = {
-                    {"Civilian Casualty", stats.score_civilian_casualty},
-                    {"Pacification", stats.score_pacification},
-                    {"Body Hidden", stats.score_body_hidden},
-                    {"Headshot", stats.score_headshot},
-                    {"Silent Kill", stats.score_silent_kill},
-                    {"Objective Complete", stats.score_objective_complete},
-                };
-                // status on evidence removed not set on maps with no evidence
-                if (stats.score_evidence_removed.status) {
-                    table_rows.emplace_back(
-                        "Evidence Removed", stats.score_evidence_removed
-                    );
-                }
-                // status on silent asssassin bonus is not set on maps with no
-                // targets
-                if (stats.score_silent_assassin_bonus.status) {
-                    table_rows.emplace_back(
-                        "Signature Kill", stats.score_signature_kill
-                    );
-                    table_rows.emplace_back(
-                        "Target Kill", stats.score_target_kill
-                    );
-                    table_rows.emplace_back(
-                        "Silent Assassin Bonus",
-                        stats.score_silent_assassin_bonus
-                    );
-                }
-                for (auto& row : table_rows) {
-                    table_row(
-                        fonts,
-                        settings,
-                        row.stats_value.status,
-                        row.name.c_str(),
-                        "%d",
-                        row.stats_value.value
-                    );
-                }
-                ImGui::EndTable();
+                table_rows.emplace_back("Target Kill", stats.score_target_kill);
+                table_rows.emplace_back(
+                    "Silent Assassin Bonus", stats.score_silent_assassin_bonus
+                );
             }
+            hitman_common::gui_table(
+                settings,
+                fonts,
+                StatsValue{rating_text, rating_status},
+                stats.map,
+                stats.map_stage,
+                table_rows
+            );
         }
     };
 }

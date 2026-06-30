@@ -19,6 +19,27 @@ static void mark_topmost(SettingsChanged& changed, bool v) {
 static const char* LOG_LEVEL_NAMES[]
     = {"off", "critical", "error", "warn", "info", "debug", "trace"};
 
+static const char* RATING_MODES[]
+    = {"None", "SA", "Score", "SA & Score", "SA with Score fallback"};
+
+static bool combo_rating_mode(
+    SettingsChanged& changed,
+    const char* text,
+    settings::HMA::RatingMode& rating_mode,
+    bool is_score_allowed
+) {
+    auto rating_mode_int = static_cast<int>(rating_mode);
+    bool result = ImGui::Combo(
+        text,
+        &rating_mode_int,
+        RATING_MODES,
+        is_score_allowed ? IM_ARRAYSIZE(RATING_MODES) : 2
+    );
+    mark_any(changed, result);
+    rating_mode = static_cast<settings::HMA::RatingMode>(rating_mode_int);
+    return result;
+}
+
 static bool slider_float(
     const char* label, float* v, float lo, float hi, float step
 ) {
@@ -136,12 +157,62 @@ SettingsChanged settings_gui(settings::Settings& settings) {
         );
     }
     if (ImGui::CollapsingHeader("Absolution")) {
-        mark_any(
-            changed,
-            ImGui::Checkbox(
-                "Always track Silent Assassin", &settings.hma.always_track_sa
-            )
-        );
+        ImGui::PushID("Rating Mode");
+        if (ImGui::TreeNode("Rating Mode")) {
+            if (ImGui::Button("Original Game")) {
+                settings.hma.rating_mode_unrated = settings::HMA::RatingMode::X;
+                settings.hma.rating_mode_no_targets
+                    = settings::HMA::RatingMode::SC;
+                settings.hma.rating_mode_targets
+                    = settings::HMA::RatingMode::SA_FALLBACK_SC;
+            };
+            ImGui::SameLine();
+            if (ImGui::Button("Max Rating")) {
+                settings.hma.rating_mode_unrated = settings::HMA::RatingMode::X;
+                settings.hma.rating_mode_no_targets
+                    = settings::HMA::RatingMode::SA_PLUS_SC;
+                settings.hma.rating_mode_targets
+                    = settings::HMA::RatingMode::SA;
+            };
+            ImGui::SameLine();
+            if (ImGui::Button("SA")) {
+                settings.hma.rating_mode_unrated
+                    = settings::HMA::RatingMode::SA;
+                settings.hma.rating_mode_no_targets
+                    = settings::HMA::RatingMode::SA;
+                settings.hma.rating_mode_targets
+                    = settings::HMA::RatingMode::SA;
+            };
+            ImGui::SameLine();
+            if (ImGui::Button("Full Tracking")) {
+                settings.hma.rating_mode_unrated
+                    = settings::HMA::RatingMode::SA;
+                settings.hma.rating_mode_no_targets
+                    = settings::HMA::RatingMode::SA_PLUS_SC;
+                settings.hma.rating_mode_targets
+                    = settings::HMA::RatingMode::SA_PLUS_SC;
+            };
+            combo_rating_mode(
+                changed,
+                "Unrated checkpoints",
+                settings.hma.rating_mode_unrated,
+                false
+            );
+            combo_rating_mode(
+                changed,
+                "Checkpoints without targets",
+                settings.hma.rating_mode_no_targets,
+                true
+            );
+            combo_rating_mode(
+                changed,
+                "Checkpoints with targets",
+                settings.hma.rating_mode_targets,
+                true
+            );
+            ImGui::TreePop();
+        }
+        ImGui::PopID();
     }
     if (ImGui::CollapsingHeader("Logging")) {
         bool log_changed = false;

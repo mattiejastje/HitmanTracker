@@ -60,80 +60,117 @@ but obviously out of sync with the final mission screen.
 
 Fully supported on both Steam and GOG.
 
-To make rating system more transparent,
-the tracker displays ratings differently from how the game shows it.
-In the game, the final rating is determined in two distinct steps:
+#### How the game's rating system works
 
-- Condition-based rating.
-  The game first checks for specific playstyles based on how you played.
-  Examples include "Silent Assassin", "Piano Man", "Jinx", and so on.
-  The requirements for "Silent Assassin" are:
+Hitman: Absolution determines your final rating in two separate stages.
 
-  * No non-target kills.
-  * Never spotted.
-  * All targets eliminated.
+##### 1. Condition-based rating
 
-  **Issue: checkpoints without targets are never awarded "Silent Assassin".**
-  This is because the game never records that you have eliminated all targets.
+The game first checks whether you qualify for one of its predefined playstyles,
+such as **Silent Assassin**, **Piano Man**, **Jinx**, and so on.
 
-- Score-based rating.
-  If no condition-based rating can be awarded,
-  the game falls back to a rating based on score.
-  This is calculated by:
+For **Silent Assassin**, the requirements are:
 
-  * Taking your raw score (before difficulty/challenge modifiers).
-  * Dividing it by an internal "shadow score" for that checkpoint.
-  * Converting it to a percentage between 0 and 100 (rounded down).
+* No non-target kills.
+* Never spotted.
+* All targets eliminated.
 
-  A rating is then awarded as follows:
+If one of these condition-based ratings is awarded, the score-based system is ignored.
 
-  * 0% - 49%: Agent
-  * 50% - 79%: Veteran
-  * 80% - 89%: Specialist
-  * 90% - 99%: Professional
-  * 100%: Shadow
+**Limitation:** checkpoints without targets can never receive **Silent Assassin**,
+because the game never records that all targets have been eliminated.
 
-  **Issue: some checkpoints have a too high "shadow score".**
-  This can make Shadow (100%) impossible to achieve.
+##### 2. Score-based rating
 
-To fix these issues,
-the tracker displays both rating systems independently as follows:
+If no condition-based rating is awarded,
+the game falls back to a score-based rating.
 
-- Silent Assassin rating is awarded for maps with targets if:
+The calculation is:
 
-  * No non-target kills.
-  * Never spotted.
+1. Take your raw score (before difficulty and challenge modifiers).
+2. Divide it by the checkpoint's internal **Shadow Score**.
+3. Convert the result to a percentage (rounded down).
 
-  Additionally, there's an option in the settings to track Silent Assassin
-  even for maps that do not have targets.
-  If enabled, for maps without targets, instead of showing "No Targets",
-  the tracker will show "Silent Assassin" or "No Silent Assassin"
-  depending on your statistics.
-  This is a deviation from the game so it is not enabled by default.
-  However, it makes the Silent Assassin rating consistent across all maps,
-  and some players may prefer playing this way.
+The percentage determines the rating:
 
-  Beware that
-  *in a handful of missions, the game triggers a non-target kill if you do not first locate the target*
-  (e.g. King, Dom Osmond, Layla, Jade, possibly more).
-  This appears to be a bug in the game.
+|  Score | Rating       |
+| -----: | ------------ |
+|  0–49% | Agent        |
+| 50–79% | Veteran      |
+| 80–89% | Specialist   |
+| 90–99% | Professional |
+|   100% | Shadow       |
 
-- Score-based rating is awarded as follows, for rated maps:
+**Limitation:** some checkpoints have an incorrectly configured **Shadow Score**,
+making **Shadow (100%)** impossible to achieve.
 
-  * Calculate score-based rating regardless of Silent Assassin.
-  * Use the same percentage thresholds as the original system.
-  * Show the score required for the highest achievable rating
-    (e.g. 80% of the "shadow score" if Specialist is the highest achievable rating).
-  * Scores for evidence removed, objectives completed, target kill, and signature kill,
-    are color-coded: they show green only when they are at their maximum possible value
-    so can easily tell if you are still missing objectives, evidence, or targets.
+#### How the tracker improves this
 
-This better reflects player performance
-while remaining faithful to the rating system of the original game:
+The tracker separates the two systems and tracks them independently.
 
-* Makes Silent Assassin achievable for all checkpoints.
-* Decouples skill-based rating from score-based rating for rated checkpoints.
-* Provides full transparency on scoring thresholds.
+##### Silent Assassin tracking
+
+For checkpoints with targets, **Silent Assassin** is awarded when:
+
+* No non-target kills.
+* Never spotted.
+
+An optional setting also allows **Silent Assassin** to be tracked on checkpoints without targets.
+This behaviour intentionally differs from the original game and is disabled by default,
+but it provides consistent Silent Assassin tracking across every checkpoint.
+
+> **Note**
+>
+> A small number of missions appear to contain a bug where the game records a non-target kill unless you first locate the target.
+> Known examples include King, Dom Osmond, Layla and Jade.
+
+##### Score tracking
+
+For score-rated checkpoints, the tracker:
+
+* Calculates the score rating independently of Silent Assassin.
+* Uses the same percentage thresholds as the original game.
+* Displays the score required for the highest achievable rating
+  (for example, 80% of the Shadow Score if **Specialist** is the highest achievable rating).
+* Color-codes score categories such as evidence removed, objectives completed, target kills and signature kills.
+  A category is shown in green only when it has reached its maximum possible value,
+  making it easy to see what is still missing.
+
+This approach remains faithful to the original game while addressing its shortcomings:
+
+* Makes Silent Assassin attainable on every checkpoint.
+* Separates skill-based and score-based progression.
+* Makes scoring requirements fully transparent.
+
+#### Rating configuration
+
+Modes define what is tracked and how it is displayed.
+Presets are built from these modes and define common configurations per checkpoint type.
+
+##### Rating modes
+
+| Mode      | Description                                                                             |
+| --------- | --------------------------------------------------------------------------------------- |
+| **X**     | No tracking.                                                                            |
+| **SA**    | Track **Silent Assassin** only.                                                         |
+| **SC**    | Track **Score** only.                                                                   |
+| **SA+SC** | Track both **Silent Assassin** and **Score**.                                           |
+| **SA→SC** | Track **Silent Assassin**. Track **Score** only if **Silent Assassin** is not achieved. |
+
+Not every checkpoint supports every mode.
+
+* **Unrated** checkpoints support only **X** and **SA**.  
+  **SC** is not available on these checkpoints.
+* All other checkpoints (**No targets** and **Targets**) support every mode.
+
+#### Rating presets
+
+| Preset              | Unrated | No targets | Targets   |
+| ------------------- | ------- | ---------- | --------- |
+| **Original Game**   | **X**   | **SC**     | **SA→SC** |
+| **Maximum Rating**  | **X**   | **SA+SC**  | **SA**    |
+| **Silent Assassin** | **SA**  | **SA**     | **SA**    |
+| **Full Tracking**   | **SA**  | **SA+SC**  | **SA+SC** |
 
 ## Related projects
 

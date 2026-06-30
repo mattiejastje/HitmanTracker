@@ -6,6 +6,10 @@ namespace hitman_absolution {
 
 inline constexpr auto GAME_NAME = "Hitman: Absolution";
 
-GameGui gui(const settings::Gui& settings, const std::string& version);
+GameGui gui(
+    const settings::Gui& settings,
+    const settings::HMA& hma,
+    const std::string& version
+);
 
 }  // namespace hitman_absolution
