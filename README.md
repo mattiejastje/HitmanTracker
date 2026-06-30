@@ -144,8 +144,8 @@ This approach remains faithful to the original game while addressing its shortco
 
 #### Rating configuration
 
-Modes define what is tracked per checkpoint and how it is displayed.
-Presets provide common configurations built from these modes.
+Modes define what is tracked and how it is displayed.
+Presets are built from these modes and define common configurations per checkpoint type.
 
 ##### Rating modes
 
@@ -159,9 +159,9 @@ Presets provide common configurations built from these modes.
 
 Not every checkpoint supports every mode.
 
-* **Unrated checkpoints** support only **X** and **SA**.  
+* **Unrated** checkpoints support only **X** and **SA**.  
   **SC** is not available on these checkpoints.
-* **All other checkpoints** support every mode.
+* All other checkpoints (**No targets** and **Targets**) support every mode.
 
 #### Rating presets
 
