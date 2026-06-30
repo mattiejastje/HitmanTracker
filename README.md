@@ -60,8 +60,9 @@ but obviously out of sync with the final mission screen.
 
 Fully supported on both Steam and GOG.
 
-To make rating system more transparent,
-the tracker displays ratings differently from how the game shows it.
+#### The game's rating system explained
+
+The rating system is notoriously confusing.
 In the game, the final rating is determined in two distinct steps:
 
 - Condition-based rating.
@@ -97,7 +98,7 @@ In the game, the final rating is determined in two distinct steps:
   This can make Shadow (100%) impossible to achieve.
 
 To fix these issues,
-the tracker displays both rating systems independently as follows:
+the tracker tracks both rating systems independently as follows:
 
 - Silent Assassin rating is awarded for maps with targets if:
 
@@ -134,6 +135,51 @@ while remaining faithful to the rating system of the original game:
 * Makes Silent Assassin achievable for all checkpoints.
 * Decouples skill-based rating from score-based rating for rated checkpoints.
 * Provides full transparency on scoring thresholds.
+
+#### Rating Configuration
+
+Each map can be tracked in one of the following modes:
+
+* **X** – Do not track anything.
+* **SA** – Track **Silent Assassin** only.
+* **SC** – Track **Score** only.
+* **SA+SC** – Track both **Silent Assassin** and **Score** independently.
+* **SA→SC** – Track **Silent Assassin**, but fall back to displaying **Score** if Silent Assassin is not achieved.
+
+##### Map Support
+
+Not every map supports every tracking mode:
+
+* Unrated support only **X** and **SA**.
+* All other maps support every tracking mode.
+
+For maps with targets, **SC** is generally not very useful because achieving the Shadow score also requires Silent Assassin.
+
+##### Display Options
+
+Although the underlying tracking modes are flexible, exposing every possible combination would make the configuration unnecessarily complicated. Instead, the tracker presents two simple options that cover the common playstyles.
+
+1. Where should Silent Assassin be tracked? Choose whether Silent Assassin is tracked:
+
+   * **Only on maps with targets** (default, matching the game's behaviour), or
+   * **On all maps**.
+
+2. How should Score be displayed on maps where Silent Assassin is tracked? Choose one of the following:
+
+   * **Hide** (**SA**)
+   * **Show as fallback** (**SA→SC**, default) — display the score only if Silent Assassin was not achieved.
+   * **Always show** (**SA+SC**)
+
+The combination of these two settings determines the tracking mode used for each map type.
+
+| Track SA on all maps | Score display    | Unrated maps | Maps without targets | Maps with targets |
+| -------------------- | ---------------- | ------------ | -------------------- | ----------------- |
+| No                   | Hide             | **X**        | **SC**               | **SA**            |
+| No                   | Show as fallback | **X**        | **SC**               | **SA→SC**         |
+| No                   | Always show      | **X**        | **SC**               | **SA+SC**         |
+| Yes                  | Hide             | **SA**       | **SA**               | **SA**            |
+| Yes                  | Show as fallback | **SA**       | **SA→SC**            | **SA→SC**         |
+| Yes                  | Always show      | **SA**       | **SA+SC**            | **SA+SC**         |
 
 ## Related projects
 
