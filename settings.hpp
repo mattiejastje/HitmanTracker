@@ -32,8 +32,9 @@ struct HMA {
     };
 
     bool show_sa_details{true};
-    bool show_score_details{true};
+    bool show_max_score_rating_only{false};
     bool show_score_total{true};
+    bool show_score_details{true};
     RatingMode rating_mode_unrated{RatingMode::X};
     RatingMode rating_mode_no_targets{RatingMode::SC};
     RatingMode rating_mode_targets{RatingMode::SA_FALLBACK_SC};

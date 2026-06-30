@@ -128,9 +128,9 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
         ->capture_default_str();
     hma_group
         ->add_option(
-            "--hma-show-score-details",
-            settings.hma.show_score_details,
-            "Show Score rating details"
+            "--hma-show-max-rating-only",
+            settings.hma.show_max_score_rating_only,
+            "Show only if maximum Score rating was achieved or not"
         )
         ->capture_default_str();
     hma_group
@@ -138,6 +138,13 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
             "--hma-show-score-total",
             settings.hma.show_score_total,
             "Show Score rating total"
+        )
+        ->capture_default_str();
+    hma_group
+        ->add_option(
+            "--hma-show-score-details",
+            settings.hma.show_score_details,
+            "Show Score rating details"
         )
         ->capture_default_str();
     hma_group

@@ -11,6 +11,8 @@
 
   * The GOG version of Hitman Absolution is now supported.
 
+  * New options to configure how much detail is shown.
+
   * New tracking modes with presets for original game, max rating, silent assassin, and full tracking.
 
   * Improved documentation.

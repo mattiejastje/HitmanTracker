@@ -167,13 +167,23 @@ SettingsChanged settings_gui(settings::Settings& settings) {
         mark_any(
             changed,
             ImGui::Checkbox(
-                "Show Score rating details", &settings.hma.show_score_details
+                "Show max Score rating only",
+                &settings.hma.show_max_score_rating_only
             )
+        );
+        ImGui::SetItemTooltip(
+            "Only show Shadow / No Shadow etc."
         );
         mark_any(
             changed,
             ImGui::Checkbox(
                 "Show Score rating total", &settings.hma.show_score_total
+            )
+        );
+        mark_any(
+            changed,
+            ImGui::Checkbox(
+                "Show Score rating details", &settings.hma.show_score_details
             )
         );
         ImGui::PushID("Rating Mode");

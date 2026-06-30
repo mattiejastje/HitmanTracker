@@ -49,10 +49,8 @@ struct Stats {
     StatsValue<int32_t> suit_left;          // bm
     int32_t shots_hit;                      // bm
     int32_t accident_kills;                 // bm
-    CheckpointType checkpoint_type;         // hma: checkpoint type needed for display
-    int32_t score_for_max_rating;           // hma: score needed for max rating
-    int32_t score_total;                    // hma: actual score
-    std::string score_rating;               // hma: actual rating
+    CheckpointType checkpoint_type;  // hma: checkpoint type needed for display
+    StatsValue<std::string> score_rating;             // hma: actual rating
     StatsValue<int32_t> score_objective_complete;     // hma
     StatsValue<int32_t> score_target_kill;            // hma
     StatsValue<int32_t> score_spotted;                // hma

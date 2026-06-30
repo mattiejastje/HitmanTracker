@@ -804,20 +804,42 @@ GameStatsSlow hitman_absolution::update_slow(
                 );
             }
 #endif
-            auto shadow_raw_score_threshold
+            const auto shadow_raw_score_threshold
                 = map_info.shadow_raw_score_threshold;
-            stats.score_for_max_rating
+            const auto score_for_max_rating
                 = (map_info.max_rating * shadow_raw_score_threshold) / 100;
-            int32_t percent
+            const int32_t percent
                 = std::max(0, (100 * score) / shadow_raw_score_threshold);
-            stats.score_total = score;
-            stats.score_rating
+            const auto is_max = score >= score_for_max_rating;
+            const auto score_rating_status
+                = (is_max || stats.checkpoint_type == CheckpointType::UNRATED)
+                      ? Status::GREEN
+                      : Status::YELLOW;
+            const auto score_rating_text
                 = stats.checkpoint_type == CheckpointType::UNRATED ? "Unrated"
-                  : percent < VETERAN                              ? "Agent"
-                  : percent < SPECIALIST                           ? "Veteran"
-                  : percent < PROFESSIONAL ? "Specialist"
-                  : percent < SHADOW       ? "Professional"
-                                           : "Shadow";
+                  : hma.show_max_score_rating_only
+                      ? (map_info.max_rating < VETERAN
+                             ? (is_max ? "Agent" : "No Agent")
+                         : map_info.max_rating < SPECIALIST
+                             ? (is_max ? "Veteran" : "No Veteran")
+                         : map_info.max_rating < PROFESSIONAL
+                             ? (is_max ? "Specialist" : "No Specialist")
+                         : map_info.max_rating < SHADOW
+                             ? (is_max ? "Professional" : "No Professional")
+                             : (is_max ? "Shadow" : "No Shadow"))
+                      : (percent < VETERAN        ? "Agent"
+                         : percent < SPECIALIST   ? "Veteran"
+                         : percent < PROFESSIONAL ? "Specialist"
+                         : percent < SHADOW       ? "Professional"
+                                                  : "Shadow");
+            const auto score_rating_total
+                = hma.show_score_total
+                      ? std::format(" [{}/{}]", score, score_for_max_rating)
+                      : "";
+            stats.score_rating = {
+                std::format("{}{}", score_rating_text, score_rating_total),
+                score_rating_status,
+            };
             // major negative scores
             stats.score_civilian_casualty
                 = {STATS_MULTIPLIERS[CIVILIAN_CASUALTY]

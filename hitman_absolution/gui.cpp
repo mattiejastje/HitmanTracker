@@ -135,69 +135,70 @@ GameGui hitman_absolution::gui(
               || (rating_mode == settings::HMA::RatingMode::SA_FALLBACK_SC
                   && !is_silent_assassin);
         if (is_sa_shown) {
+            std::vector<hitman_common::TableRow> table_rows{};
+            if (hma.show_sa_details) {
+                table_rows.emplace_back(
+                    "Non-Target Casualty", stats.score_non_target_casualty
+                );
+                table_rows.emplace_back("Spotted", stats.score_spotted);
+            }
             hitman_common::gui_table(
                 settings,
                 fonts,
                 stats.rating,
                 stats.map,
                 stats.map_stage,
-                {
-                    {"Non-Target Casualty", stats.score_non_target_casualty},
-                    {"Spotted", stats.score_spotted},
-                }
+                table_rows
             );
         }
         if (is_sc_shown) {
-            auto is_max = stats.score_total >= stats.score_for_max_rating;
-            auto rating_status = is_max ? Status::GREEN : Status::YELLOW;
-            auto rating_font = is_max ? fonts.rating_good : fonts.rating_maybe;
-            auto rating_color = is_max ? settings.rating_good.color
-                                       : settings.rating_maybe.color;
             std::string rating_text;
-            rating_text = std::format(
-                "{} [{}/{}]",
-                stats.score_rating,
-                stats.score_total,
-                stats.score_for_max_rating
-            );
             std::vector<hitman_common::TableRow> table_rows{};
-            if (!is_sa_shown) {
+            if (hma.show_score_details
+                && (!is_sa_shown || !hma.show_sa_details)) {
                 table_rows.emplace_back(
                     "Non-Target Casualty", stats.score_non_target_casualty
                 );
                 table_rows.emplace_back("Spotted", stats.score_spotted);
             }
-            table_rows.emplace_back(
-                "Civilian Casualty", stats.score_civilian_casualty
-            );
-            table_rows.emplace_back("Pacification", stats.score_pacification);
-            table_rows.emplace_back("Body Hidden", stats.score_body_hidden);
-            table_rows.emplace_back("Headshot", stats.score_headshot);
-            table_rows.emplace_back("Silent Kill", stats.score_silent_kill);
-            table_rows.emplace_back(
-                "Objective Complete", stats.score_objective_complete
-            );
-            // status on evidence removed not set on maps with no evidence
-            if (stats.score_evidence_removed.status) {
+            if (hma.show_score_details) {
                 table_rows.emplace_back(
-                    "Evidence Removed", stats.score_evidence_removed
+                    "Civilian Casualty", stats.score_civilian_casualty
                 );
-            }
-            // status on silent asssassin bonus is not set on maps with no
-            // targets
-            if (stats.score_silent_assassin_bonus.status) {
                 table_rows.emplace_back(
-                    "Signature Kill", stats.score_signature_kill
+                    "Pacification", stats.score_pacification
                 );
-                table_rows.emplace_back("Target Kill", stats.score_target_kill);
+                table_rows.emplace_back("Body Hidden", stats.score_body_hidden);
+                table_rows.emplace_back("Headshot", stats.score_headshot);
+                table_rows.emplace_back("Silent Kill", stats.score_silent_kill);
                 table_rows.emplace_back(
-                    "Silent Assassin Bonus", stats.score_silent_assassin_bonus
+                    "Objective Complete", stats.score_objective_complete
                 );
+                // status on evidence removed not set on maps with no evidence
+                if (stats.score_evidence_removed.status) {
+                    table_rows.emplace_back(
+                        "Evidence Removed", stats.score_evidence_removed
+                    );
+                }
+                // status on silent asssassin bonus is not set on maps with no
+                // targets
+                if (stats.score_silent_assassin_bonus.status) {
+                    table_rows.emplace_back(
+                        "Signature Kill", stats.score_signature_kill
+                    );
+                    table_rows.emplace_back(
+                        "Target Kill", stats.score_target_kill
+                    );
+                    table_rows.emplace_back(
+                        "Silent Assassin Bonus",
+                        stats.score_silent_assassin_bonus
+                    );
+                }
             }
             hitman_common::gui_table(
                 settings,
                 fonts,
-                StatsValue{rating_text, rating_status},
+                stats.score_rating,
                 stats.map,
                 stats.map_stage,
                 table_rows
