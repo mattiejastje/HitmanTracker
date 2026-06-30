@@ -9,61 +9,70 @@
 #include "../format_duration.hpp"
 #include "../imgui_utils.hpp"
 
-void hitman_common::gui(
+void hitman_common::gui_header(
     const settings::Gui& settings,
     const Fonts& fonts,
-    float time_scale,
-    const Stats& stats,
     const std::string& game_name,
     const std::string& difficulty,
-    const std::vector<std::string>& map_names,
-    const std::vector<TableRow>& table_rows
+    const std::string& map_name,
+    int map,
+    MapStage map_stage,
+    float time
 ) {
     text(fonts.title, settings.title.color, game_name.c_str());
     text(fonts.difficulty, settings.difficulty.color, difficulty.c_str());
-    if (stats.map > 0) {
+    if (map > 0) {
         ImGui::PushTextWrapPos();
-        text(
-            fonts.map, settings.map.color, map_names.at(stats.map - 1).c_str()
-        );
+        text(fonts.map, settings.map.color, map_name.c_str());
         ImGui::PopTextWrapPos();
-        if (stats.map_stage != MapStage::pre) {
+        if (map_stage != MapStage::pre) {
             ImGui::Spacing();
             text(
-                fonts.time,
-                settings.time.color,
-                format_duration(time_scale * stats.time).c_str()
+                fonts.time, settings.time.color, format_duration(time).c_str()
             );
-            auto rating_font
-                = stats.rating.status == Status::RED     ? fonts.rating_bad
-                  : stats.rating.status == Status::GREEN ? fonts.rating_good
-                                                         : fonts.rating_maybe;
-            auto rating_color = stats.rating.status == Status::RED
-                                    ? settings.rating_bad.color
-                                : stats.rating.status == Status::GREEN
-                                    ? settings.rating_good.color
-                                    : settings.rating_maybe.color;
-            auto& rating_text = stats.rating.value;
-            text(rating_font, rating_color, rating_text.c_str());
-            ImGui::Spacing();
-            ImGui::BeginTable(
-                "Statistics",
-                2,
-                ImGuiTableFlags_SizingFixedFit
-                    | ImGuiTableFlags_NoKeepColumnsVisible
-                    | ImGuiTableFlags_NoHostExtendX
-            );
-            for (auto& row : table_rows) {
-                table_row(
-                    fonts,
-                    settings,
-                    row.stats_value.status,
-                    row.name.c_str(),
-                    "%d",
-                    row.stats_value.value
-                );
-            }
-            ImGui::EndTable();
         }
+    }
+    ImGui::Spacing();
+}
+
+void hitman_common::gui_table(
+    const settings::Gui& settings,
+    const Fonts& fonts,
+    const StatsValue<std::string>& rating,
+    int map,
+    MapStage map_stage,
+    const std::vector<TableRow>& table_rows
+) {
+    if (map > 0 && map_stage != MapStage::pre) {
+        auto rating_font = rating.status == Status::RED ? fonts.rating_bad
+                           : rating.status == Status::GREEN
+                               ? fonts.rating_good
+                               : fonts.rating_maybe;
+        auto rating_color
+            = rating.status == Status::RED     ? settings.rating_bad.color
+              : rating.status == Status::GREEN ? settings.rating_good.color
+                                               : settings.rating_maybe.color;
+        auto& rating_text = rating.value;
+        text(rating_font, rating_color, rating_text.c_str());
+        ImGui::Spacing();
+        ImGui::BeginTable(
+            "Statistics",
+            2,
+            ImGuiTableFlags_SizingFixedFit
+                | ImGuiTableFlags_NoKeepColumnsVisible
+                | ImGuiTableFlags_NoHostExtendX
+        );
+        for (auto& row : table_rows) {
+            table_row(
+                fonts,
+                settings,
+                row.stats_value.status,
+                row.name.c_str(),
+                "%d",
+                row.stats_value.value
+            );
+        }
+        ImGui::EndTable();
+        ImGui::Spacing();
     }
 }

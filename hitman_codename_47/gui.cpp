@@ -29,18 +29,18 @@ GameGui hitman_codename_47::gui(
         auto game_name = settings.show_game_version
                              ? std::format("{} [{}]", GAME_NAME, version)
                              : GAME_NAME;
-        hitman_common::gui(
+        hitman_common::gui_header(
             settings,
             fonts,
-            1.0f,
-            stats,
             game_name,
             stats.difficulty == 0   ? "Easy"
             : stats.difficulty == 1 ? "Normal"
             : stats.difficulty == 2 ? "Hard"
                                     : "",
-            map_names,
-            {}
+            map_names[stats.map],
+            stats.map,
+            stats.map_stage,
+            stats.time
         );
     };
 }

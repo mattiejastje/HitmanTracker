@@ -121,9 +121,23 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     );
     hma_group
         ->add_option(
-            "--hma-always-track-sa",
-            settings.hma.always_track_sa,
-            "Track Silent Assassin rating even on maps with no targets"
+            "--hma-rating-mode-unrated",
+            settings.hma.rating_mode_unrated,
+            "Rating mode for unrated checkpoints"
+        )
+        ->capture_default_str();
+    hma_group
+        ->add_option(
+            "--hma-rating-mode-no-targets",
+            settings.hma.rating_mode_no_targets,
+            "Rating mode for rated checkpoints without targets"
+        )
+        ->capture_default_str();
+    hma_group
+        ->add_option(
+            "--hma-rating-mode-targets",
+            settings.hma.rating_mode_targets,
+            "Rating mode for rated checkpoints with targets"
         )
         ->capture_default_str();
     return app;

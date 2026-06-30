@@ -40,31 +40,37 @@ GameGui hitman2_silent_assassin::gui(
         auto game_name = settings.show_game_version
                              ? std::format("{} [{}]", GAME_NAME, version)
                              : GAME_NAME;
-        hitman_common::gui(
-        settings,
-        fonts,
-        1.0f,
-        stats,
-        game_name,
-        stats.difficulty == 1   ? "Normal"
-        : stats.difficulty == 2 ? "Expert"
-        : stats.difficulty == 3 ? "Professional"
-                                : "",
-        map_names,
-        stats.map >= 2 ?
-        std::vector<hitman_common::TableRow>{
-            {"Close Encounters", stats.close_encounters},
-            {"Alerts", stats.alerts},
-            {"Shots Fired", stats.shots_fired},
-            {"Headshots", stats.headshots},
-            {"Enemies Killed", stats.enemies_killed},
-            {"Enemies Wounded", stats.enemies_wounded},
-            {"Innocents Killed", stats.innocents_killed},
-            {"Innocents Wounded", stats.innocents_wounded},
-        } : std::vector<hitman_common::TableRow>{}
-    );
+        hitman_common::gui_header(
+            settings,
+            fonts,
+            game_name,
+            stats.difficulty == 1   ? "Normal"
+            : stats.difficulty == 2 ? "Expert"
+            : stats.difficulty == 3 ? "Professional"
+                                    : "",
+            map_names[stats.map],
+            stats.map,
+            stats.map_stage,
+            stats.time
+        );
         if (stats.map >= 2) {
-            ImGui::Spacing();
+            hitman_common::gui_table(
+                settings,
+                fonts,
+                stats.rating,
+                stats.map,
+                stats.map_stage,
+                {
+                    {"Close Encounters", stats.close_encounters},
+                    {"Alerts", stats.alerts},
+                    {"Shots Fired", stats.shots_fired},
+                    {"Headshots", stats.headshots},
+                    {"Enemies Killed", stats.enemies_killed},
+                    {"Enemies Wounded", stats.enemies_wounded},
+                    {"Innocents Killed", stats.innocents_killed},
+                    {"Innocents Wounded", stats.innocents_wounded},
+                }
+            );
             ImGui::BeginTable(
                 "Statistics",
                 2,
