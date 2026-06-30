@@ -121,6 +121,27 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     );
     hma_group
         ->add_option(
+            "--hma-show-sa-details",
+            settings.hma.show_sa_details,
+            "Show Silent Assassin rating details"
+        )
+        ->capture_default_str();
+    hma_group
+        ->add_option(
+            "--hma-show-score-details",
+            settings.hma.show_score_details,
+            "Show Score rating details"
+        )
+        ->capture_default_str();
+    hma_group
+        ->add_option(
+            "--hma-show-score-total",
+            settings.hma.show_score_total,
+            "Show Score rating total"
+        )
+        ->capture_default_str();
+    hma_group
+        ->add_option(
             "--hma-rating-mode-unrated",
             settings.hma.rating_mode_unrated,
             "Rating mode for unrated checkpoints"

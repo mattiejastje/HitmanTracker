@@ -157,6 +157,25 @@ SettingsChanged settings_gui(settings::Settings& settings) {
         );
     }
     if (ImGui::CollapsingHeader("Absolution")) {
+        mark_any(
+            changed,
+            ImGui::Checkbox(
+                "Show Silent Assassin rating details",
+                &settings.hma.show_sa_details
+            )
+        );
+        mark_any(
+            changed,
+            ImGui::Checkbox(
+                "Show Score rating details", &settings.hma.show_score_details
+            )
+        );
+        mark_any(
+            changed,
+            ImGui::Checkbox(
+                "Show Score rating total", &settings.hma.show_score_total
+            )
+        );
         ImGui::PushID("Rating Mode");
         if (ImGui::TreeNode("Rating Mode")) {
             if (ImGui::Button("Original Game")) {
