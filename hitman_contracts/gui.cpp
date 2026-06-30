@@ -10,6 +10,7 @@
 #include "../imgui_utils.hpp"
 
 const std::vector<std::string> map_names = {
+    "",
     "#1 Asylum Aftermath",
     "#2 The Meat King's Party",
     "#3 The Bjarkhov Bomb",

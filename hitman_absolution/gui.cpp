@@ -8,6 +8,7 @@
 #include "../imgui_utils.hpp"
 
 const std::vector<std::string> map_names = {
+    "",
     // A Personal Contract
     "#1 Garden",
     "#2 Greenhouse",

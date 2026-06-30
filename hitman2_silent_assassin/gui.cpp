@@ -10,6 +10,7 @@
 #include "../imgui_utils.hpp"
 
 const std::vector<std::string> map_names = {
+    "",
     "The Gontranno Sanctuary",         // 1
     "#1 Anathema",                     // 2
     "#2 St. Petersburg Stakeout",      // 3

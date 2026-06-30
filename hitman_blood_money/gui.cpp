@@ -6,6 +6,7 @@
 #include "../imgui_utils.hpp"
 
 const std::vector<std::string> map_names = {
+    "",
     "Hideout",                      // 1
     "#1 Death of a Showman",        // 2
     "#2 A Vintage Year",            // 3

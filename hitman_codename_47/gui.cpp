@@ -7,6 +7,7 @@
 #include "../hitman_common/gui.hpp"
 
 const std::vector<std::string> map_names = {
+    "",
     "#1 Training",
     "#2 Kowloon Triads in Gang War",
     "#3 Ambush at the Wang Fou Restaurant",
