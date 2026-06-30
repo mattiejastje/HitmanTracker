@@ -128,8 +128,7 @@ GameGui hitman_absolution::gui(
         auto is_sa_shown
             = rating_mode == settings::HMA::RatingMode::SA
               || rating_mode == settings::HMA::RatingMode::SA_PLUS_SC
-              || (rating_mode == settings::HMA::RatingMode::SA_FALLBACK_SC
-                  && is_silent_assassin);
+              || rating_mode == settings::HMA::RatingMode::SA_FALLBACK_SC;
         auto is_sc_shown
             = rating_mode == settings::HMA::RatingMode::SC
               || rating_mode == settings::HMA::RatingMode::SA_PLUS_SC
