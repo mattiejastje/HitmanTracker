@@ -160,7 +160,7 @@ SettingsChanged settings_gui(settings::Settings& settings) {
         mark_any(
             changed,
             ImGui::Checkbox(
-                "Show Silent Assassin rating details",
+                "Show SA rating details",
                 &settings.hma.show_sa_details
             )
         );
