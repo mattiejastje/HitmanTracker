@@ -1,8 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [0.4.0] - 2026-06-30
 
 ### Added
+
+- The game version (Steam, GOG, ...) is now shown for all games.
 
 - New setting to configure display of the game version
   (i.e. Steam, GOG, ...).
@@ -16,8 +18,6 @@
   * New tracking modes with presets for original game, max rating, silent assassin, and full tracking.
 
   * Improved documentation.
-
-- The game version (Steam, GOG, ...) is now shown for all games.
 
 ## [0.3.1] - 2026-06-28
 
@@ -76,7 +76,7 @@
 
 Initial public release.
 
-[unreleased]: https://github.com/mattiejastje/HitmanTracker/compare/v0.3.1...HEAD
+[0.4.0]: https://github.com/mattiejastje/HitmanTracker/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/mattiejastje/HitmanTracker/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/mattiejastje/HitmanTracker/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/mattiejastje/HitmanTracker/compare/v0.1.0...v0.2.0
