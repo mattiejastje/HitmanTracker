@@ -1,5 +1,6 @@
 #pragma once
 
+#include <any>
 #include <filesystem>
 #include <functional>
 
@@ -10,7 +11,8 @@
 #include "pe.hpp"
 #include "stats.hpp"
 
-using GameGui = std::function<void(const Fonts &, const Stats &)>;
+using GameGui
+    = std::function<void(const Fonts &, const std::any & /* stats */)>;
 
 using GameHook
     = std::function<HookPtr(std::shared_ptr<void>, const BasePtrs &)>;
@@ -22,11 +24,12 @@ using GameStatsSlow = std::function<bool(
     void *,
     const BasePtrs &,
     const LabelPtrs &,
-    Stats &
+    std::any &, /* remote_state */
+    std::any &  /* stats */
 )>;
 
-using GameStatsFast
-    = std::function<bool(void *, const BasePtrs &, const LabelPtrs &, Stats &)>;
+using GameStatsFast = std::function<
+    bool(void *, const BasePtrs &, const LabelPtrs &, std::any & /* stats */)>;
 
 struct GameMethods {
     GameGui gui;                // called every frame for displaying stats
@@ -44,6 +47,8 @@ struct ModuleInfo {
 struct GameInfo {
     std::string name;
     GameMethods methods;
+    std::function<std::any()> make_remote_state;
+    std::function<std::any()> make_stats;
     // first module name is always exe name
     std::vector<ModuleInfo> module_infos;
 };
@@ -53,7 +58,8 @@ inline bool stats_nothing_slow(
     void *handle,
     const BasePtrs &base_ptrs,
     const LabelPtrs &label_ptrs,
-    Stats &stats
+    std::any &remote_state_any,
+    std::any &stats_any
 ) {
     return true;
 }
@@ -62,7 +68,7 @@ inline bool stats_nothing_fast(
     void *handle,
     const BasePtrs &base_ptrs,
     const LabelPtrs &label_ptrs,
-    Stats &stats
+    std::any &stats_any
 ) {
     return true;
 }

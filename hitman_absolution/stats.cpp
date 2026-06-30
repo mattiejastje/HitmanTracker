@@ -671,14 +671,15 @@ bool read_game(
     );
 }
 
-// global to avoid allocating large object on stack
-static hitman_absolution::structs::Game game{};
 static int64_t start_time = 0;
 
-static CheckpointType get_checkpoint_type(const MapInfo& info) {
-    return info.max_rating == AGENT ? CheckpointType::UNRATED
-           : info.num_targets == 0  ? CheckpointType::NO_TARGETS
-                                    : CheckpointType::TARGETS;
+static hitman_absolution::CheckpointType get_checkpoint_type(
+    const MapInfo& info
+) {
+    return info.max_rating == AGENT ? hitman_absolution::CheckpointType::UNRATED
+           : info.num_targets == 0
+               ? hitman_absolution::CheckpointType::NO_TARGETS
+               : hitman_absolution::CheckpointType::TARGETS;
 }
 
 GameStatsSlow hitman_absolution::update_slow(
@@ -689,8 +690,11 @@ GameStatsSlow hitman_absolution::update_slow(
                void* handle,
                const BasePtrs& base_ptrs,
                const LabelPtrs& label_ptrs,
-               Stats& stats
+               std::any& remote_state_any,
+               std::any& stats_any
            ) {
+        auto& game = std::any_cast<structs::Game&>(remote_state_any);
+        auto& stats = std::any_cast<Stats&>(stats_any);
         MemoryReader<uint32_t> reader{handle};
         auto tracer = mempeep::LogTracer{
             MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS
@@ -931,8 +935,9 @@ GameStatsFast hitman_absolution::update_fast(Version version) {
                void* handle,
                const BasePtrs& base_ptrs,
                const LabelPtrs& label_ptrs,
-               Stats& stats
+               std::any& stats_any
            ) {
+        auto& stats = std::any_cast<Stats&>(stats_any);
         if (stats.map > 0) {
             const auto& base_ptr = base_ptrs.at(0);
             auto game_time

@@ -176,7 +176,7 @@ static bool get_suit_left_on_level(
     }
 }
 
-static Status get_rating_status(const Stats& stats) {
+static Status get_rating_status(const hitman_blood_money::Stats& stats) {
     bool items_left_on_map
         = stats.difficulty > 2
           && (stats.cust_weapons_left.value != 0 || stats.suit_left.value != 0);
@@ -196,83 +196,86 @@ static Status get_rating_status(const Stats& stats) {
                : Status::GREEN;
 };
 
-// global to avoid allocating large object on stack
-static hitman_blood_money::structs::Game game{};
-
-bool hitman_blood_money::update_slow(
-    const std::filesystem::path& exe_path,
-    void* handle,
-    const BasePtrs& base_ptrs,
-    const LabelPtrs& label_ptrs,
-    Stats& stats
-) {
-    const RemoteValue<structs::TGame, uint32_t> remote_game{
-        static_cast<uint32_t>(base_ptrs.at(0))
+GameStatsSlow hitman_blood_money::update_slow(Version version) {
+    return [](const std::filesystem::path& exe_path,
+              void* handle,
+              const BasePtrs& base_ptrs,
+              const LabelPtrs& label_ptrs,
+              std::any& remote_state_any,
+              std::any& stats_any) {
+        auto& game = std::any_cast<structs::Game&>(remote_state_any);
+        auto& stats = std::any_cast<Stats&>(stats_any);
+        const RemoteValue<structs::TGame, uint32_t> remote_game{
+            static_cast<uint32_t>(base_ptrs.at(0))
+        };
+        MemoryReader<uint32_t> reader{handle};
+        auto tracer = mempeep::LogTracer{
+            MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS
+        };
+        if (!mempeep::read(remote_game, reader, tracer, game)) return false;
+        auto& settings = game.settings;
+        if (!settings) return true;  // game starting
+        stats.difficulty = settings->difficulty;
+        auto& sys_interface = game.sys_interface;
+        if (!sys_interface) return true;  // game starting
+        auto& scene_manager = sys_interface->scene_manager;
+        if (!scene_manager) return true;  // game starting
+        auto& scene = scene_manager->info.scene_name;
+        logging::trace("Scene {}", scene);
+        std::transform(scene.begin(), scene.end(), scene.begin(), [](char& c) {
+            if (c == '\\') return '/';
+            return static_cast<char>(std::tolower(c));
+        });
+        auto iter = scenes.find(scene);
+        if (iter != scenes.end()) {
+            stats.map = iter->second.map;
+            stats.map_stage = iter->second.map_stage;
+            logging::trace(
+                "Map {}, stage {}",
+                stats.map,
+                stats.map_stage == MapStage::pre    ? "pre"
+                : stats.map_stage == MapStage::main ? "main"
+                                                    : "post"
+            );
+        } else {
+            logging::error("No map registered for scene {}", scene);
+        }
+        if (stats.map > 0) {
+            // force values to zero at mission start
+            if (stats.time < 0.1f) game.stats = {0};
+            stats.innocents_killed = stats_value(game.stats[INNOCENTS_KILLED]);
+            stats.innocents_wounded
+                = stats_value(game.stats[INNOCENTS_WOUNDED]);
+            stats.enemies_killed = stats_value(game.stats[ENEMIES_KILLED]);
+            stats.enemies_wounded = stats_value(game.stats[ENEMIES_WOUNDED]);
+            stats.police_killed = stats_value(game.stats[POLICE_KILLED]);
+            stats.police_wounded = stats_value(game.stats[POLICE_WOUNDED]);
+            stats.frisk_failed = stats_value(game.stats[FRISK_FAILED]);
+            stats.cover_blown = stats_value(game.stats[COVER_BLOWN]);
+            stats.bodies_fnd = stats_value(game.stats[BODIES_FOUND]);
+            stats.target_bodies_fnd = stats_value(
+                game.stats[TARGET_BODIES_FOUND], stats.difficulty > 1
+            );
+            stats.uncon_bodies_fnd
+                = stats_value(game.stats[UNCONSCIOUS_BODIES_FOUND]);
+            stats.witnesses = stats_value(game.stats[WITNESSES]);
+            stats.on_camera
+                = stats_value(game.stats[CAMERA_CAUGHT] ? 1 : 0);  // 2 -> 1
+            stats.cust_weapons_left = stats_value(
+                game.stats[CUSTOM_WEAPONS_LEFT_ON_LEVEL], stats.difficulty > 2
+            );
+            stats.suit_left = stats_value(
+                get_suit_left_on_level(stats.map_stage, game),
+                stats.difficulty > 2
+            );
+            auto status = get_rating_status(stats);
+            stats.rating = {get_simple_rating_value(status), status};
+            // extra stats not affecting silent assassin
+            stats.shots_hit = game.stats[SHOTS_HIT];
+            stats.accident_kills = game.stats[ACCIDENT_KILLS];
+        }
+        return true;
     };
-    MemoryReader<uint32_t> reader{handle};
-    auto tracer
-        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
-    if (!mempeep::read(remote_game, reader, tracer, game)) return false;
-    auto& settings = game.settings;
-    if (!settings) return true;  // game starting
-    stats.difficulty = settings->difficulty;
-    auto& sys_interface = game.sys_interface;
-    if (!sys_interface) return true;  // game starting
-    auto& scene_manager = sys_interface->scene_manager;
-    if (!scene_manager) return true;  // game starting
-    auto& scene = scene_manager->info.scene_name;
-    logging::trace("Scene {}", scene);
-    std::transform(scene.begin(), scene.end(), scene.begin(), [](char& c) {
-        if (c == '\\') return '/';
-        return static_cast<char>(std::tolower(c));
-    });
-    auto iter = scenes.find(scene);
-    if (iter != scenes.end()) {
-        stats.map = iter->second.map;
-        stats.map_stage = iter->second.map_stage;
-        logging::trace(
-            "Map {}, stage {}",
-            stats.map,
-            stats.map_stage == MapStage::pre    ? "pre"
-            : stats.map_stage == MapStage::main ? "main"
-                                                : "post"
-        );
-    } else {
-        logging::error("No map registered for scene {}", scene);
-    }
-    if (stats.map > 0) {
-        // force values to zero at mission start
-        if (stats.time < 0.1f) game.stats = {0};
-        stats.innocents_killed = stats_value(game.stats[INNOCENTS_KILLED]);
-        stats.innocents_wounded = stats_value(game.stats[INNOCENTS_WOUNDED]);
-        stats.enemies_killed = stats_value(game.stats[ENEMIES_KILLED]);
-        stats.enemies_wounded = stats_value(game.stats[ENEMIES_WOUNDED]);
-        stats.police_killed = stats_value(game.stats[POLICE_KILLED]);
-        stats.police_wounded = stats_value(game.stats[POLICE_WOUNDED]);
-        stats.frisk_failed = stats_value(game.stats[FRISK_FAILED]);
-        stats.cover_blown = stats_value(game.stats[COVER_BLOWN]);
-        stats.bodies_fnd = stats_value(game.stats[BODIES_FOUND]);
-        stats.target_bodies_fnd = stats_value(
-            game.stats[TARGET_BODIES_FOUND], stats.difficulty > 1
-        );
-        stats.uncon_bodies_fnd
-            = stats_value(game.stats[UNCONSCIOUS_BODIES_FOUND]);
-        stats.witnesses = stats_value(game.stats[WITNESSES]);
-        stats.on_camera
-            = stats_value(game.stats[CAMERA_CAUGHT] ? 1 : 0);  // 2 -> 1
-        stats.cust_weapons_left = stats_value(
-            game.stats[CUSTOM_WEAPONS_LEFT_ON_LEVEL], stats.difficulty > 2
-        );
-        stats.suit_left = stats_value(
-            get_suit_left_on_level(stats.map_stage, game), stats.difficulty > 2
-        );
-        auto status = get_rating_status(stats);
-        stats.rating = {get_simple_rating_value(status), status};
-        // extra stats not affecting silent assassin
-        stats.shots_hit = game.stats[SHOTS_HIT];
-        stats.accident_kills = game.stats[ACCIDENT_KILLS];
-    }
-    return true;
 }
 
 // ticks are 1 / 1024 but final game screen shows 1 / 1000
@@ -281,17 +284,18 @@ bool hitman_blood_money::update_slow(
 // timer will run too fast but will be consistent with final mission screen
 constexpr float seconds_per_tick = 1.0f / 1000;
 
-bool hitman_blood_money::update_fast(
-    void* handle,
-    const BasePtrs& base_ptrs,
-    const LabelPtrs& label_ptrs,
-    Stats& stats
-) {
-    if (stats.map > 0) {
-        const auto& base_ptr = base_ptrs.at(0);
-        auto time = get_time(handle, base_ptr, stats.map_stage);
-        if (time) stats.time = time.value() * seconds_per_tick;
-        return time.has_value();
-    }
-    return true;
+GameStatsFast hitman_blood_money::update_fast(Version version) {
+    return [](void* handle,
+              const BasePtrs& base_ptrs,
+              const LabelPtrs& label_ptrs,
+              std::any& stats_any) {
+        auto& stats = std::any_cast<Stats&>(stats_any);
+        if (stats.map > 0) {
+            const auto& base_ptr = base_ptrs.at(0);
+            auto time = get_time(handle, base_ptr, stats.map_stage);
+            if (time) stats.time = time.value() * seconds_per_tick;
+            return time.has_value();
+        }
+        return true;
+    };
 }

@@ -5,6 +5,7 @@
 #include "gui.hpp"
 #include "hook.hpp"
 #include "stats.hpp"
+#include "structs.hpp"
 
 void hitman_blood_money::register_game_info(
     const settings::Gui& settings, const settings::HBM& hbm
@@ -17,9 +18,11 @@ void hitman_blood_money::register_game_info(
             gui(settings, hbm, "Steam"),
             hook,
             hook_immediately_ready,
-            update_slow,
-            update_fast,
+            update_slow(Version::Steam),
+            update_fast(Version::Steam),
         },
+        .make_remote_state = [] { return std::make_any<structs::Game>(); },
+        .make_stats = [] { return std::make_any<Stats>(); },
         .module_infos = {{"hitmanbloodmoney.exe", PeId{0x447EF98A}}},
     });
 }

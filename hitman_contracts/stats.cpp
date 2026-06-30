@@ -13,6 +13,8 @@
 #include "../mem/read_write.hpp"
 #include "structs.hpp"
 
+using namespace hitman_common;
+
 // unordered_map for fast lookup
 const std::unordered_map<std::string, int> scenes = {
     {R"(SCENES\C01-1\C01-1_MAIN.gms)", 1},
@@ -28,9 +30,6 @@ const std::unordered_map<std::string, int> scenes = {
     {R"(SCENES\C08-4\C08-4_MAIN.gms)", 11},
     {R"(SCENES\C09-1\C09-1_MAIN.gms)", 12},
 };
-
-// global to avoid allocating large object on stack
-static hitman_contracts::structs::HitmanContracts game{};
 
 static int32_t _measure_aggression(
     const StatsArray<int32_t>& stats, bool is_first_map
@@ -80,76 +79,82 @@ static int32_t measure_stealth(const StatsArray<int32_t>& stats) {
     return value;
 }
 
-bool hitman_contracts::update_slow(
-    const std::filesystem::path& exe_path,
-    void* handle,
-    const BasePtrs& base_ptrs,
-    const LabelPtrs& label_ptrs,
-    Stats& stats
-) {
-    const RemoteValue<structs::THitmanContracts, uint32_t> remote_game{
-        static_cast<uint32_t>(base_ptrs.at(0))
-    };
-    MemoryReader<uint32_t> reader{handle};
-    auto tracer
-        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
-    if (!mempeep::read(remote_game, reader, tracer, game)) return false;
-    const auto& scene = game.engine.scene_manager.scene_name.text;
-    logging::trace("Scene {}", scene);
-    auto iter = scenes.find(scene);
-    if (iter != scenes.end()) {
-        stats.map = iter->second;
-        stats.map_stage = MapStage::main;
-        logging::trace("Map {}", stats.map);
-    } else {
-        logging::trace("Unhandled scene {}", scene);
-        stats.map = 0;
-    }
-    stats.difficulty = read_lethed(
-                           game.property_manager.data,
-                           game.property_manager.data_used,
-                           reader,
-                           tracer
-    )
-                           .value_or(0);
-    if (stats.map >= 1) {
-        const auto& player_data = game.player.data;
-        const auto& player_stats = game.player.stats;
-        if (player_stats) {
-            StatsArray<int32_t> game_stats{};
-            game_stats[SHOTS_FIRED]
-                = player_data ? player_data->shots_fired : 0;
-            game_stats[HEADSHOTS] = player_stats->headshots;
-            game_stats[ENEMIES_WOUNDED] = player_stats->enemies_wounded;
-            game_stats[ENEMIES_KILLED] = player_stats->enemies_killed;
-            game_stats[INNOCENTS_WOUNDED] = player_stats->innocents_wounded;
-            game_stats[INNOCENTS_KILLED] = player_stats->innocents_killed;
-            game_stats[ALERTS] = player_stats->alerts;
-            game_stats[CLOSE_ENCOUNTERS] = player_stats->close_encounters;
-            StatsFunc measure_aggression
-                = stats.map == 1 ? measure_aggression_1 : measure_aggression_2;
-            process_common_game_stats(
-                measure_aggression, measure_stealth, game_stats, stats
-            );
+GameStatsSlow hitman_contracts::update_slow(Version version) {
+    return [](const std::filesystem::path& exe_path,
+              void* handle,
+              const BasePtrs& base_ptrs,
+              const LabelPtrs& label_ptrs,
+              std::any& remote_state_any,
+              std::any& stats_any) {
+        auto& game = std::any_cast<structs::HitmanContracts&>(remote_state_any);
+        auto& stats = std::any_cast<Stats&>(stats_any);
+        const RemoteValue<structs::THitmanContracts, uint32_t> remote_game{
+            static_cast<uint32_t>(base_ptrs.at(0))
         };
-    }
-    return true;
+        MemoryReader<uint32_t> reader{handle};
+        auto tracer = mempeep::LogTracer{
+            MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS
+        };
+        if (!mempeep::read(remote_game, reader, tracer, game)) return false;
+        const auto& scene = game.engine.scene_manager.scene_name.text;
+        logging::trace("Scene {}", scene);
+        auto iter = scenes.find(scene);
+        if (iter != scenes.end()) {
+            stats.map = iter->second;
+            stats.map_stage = MapStage::main;
+            logging::trace("Map {}", stats.map);
+        } else {
+            logging::trace("Unhandled scene {}", scene);
+            stats.map = 0;
+        }
+        stats.difficulty = read_lethed(
+                               game.property_manager.data,
+                               game.property_manager.data_used,
+                               reader,
+                               tracer
+        )
+                               .value_or(0);
+        if (stats.map >= 1) {
+            const auto& player_data = game.player.data;
+            const auto& player_stats = game.player.stats;
+            if (player_stats) {
+                StatsArray<int32_t> game_stats{};
+                game_stats[SHOTS_FIRED]
+                    = player_data ? player_data->shots_fired : 0;
+                game_stats[HEADSHOTS] = player_stats->headshots;
+                game_stats[ENEMIES_WOUNDED] = player_stats->enemies_wounded;
+                game_stats[ENEMIES_KILLED] = player_stats->enemies_killed;
+                game_stats[INNOCENTS_WOUNDED] = player_stats->innocents_wounded;
+                game_stats[INNOCENTS_KILLED] = player_stats->innocents_killed;
+                game_stats[ALERTS] = player_stats->alerts;
+                game_stats[CLOSE_ENCOUNTERS] = player_stats->close_encounters;
+                StatsFunc measure_aggression = stats.map == 1
+                                                   ? measure_aggression_1
+                                                   : measure_aggression_2;
+                process_game_stats(
+                    measure_aggression, measure_stealth, game_stats, stats
+                );
+            };
+        }
+        return true;
+    };
 }
 
 constexpr float seconds_per_tick = 1.0f / 1024;
 
-bool hitman_contracts::update_fast(
-    void* handle,
-    const BasePtrs& base_ptrs,
-    const LabelPtrs& label_ptrs,
-    Stats& stats
-) {
-    if (stats.map > 0) {
-        const auto& base_ptr = base_ptrs.at(0);
-        auto game_ticks
-            = read<int32_t>(handle, base_ptr + 0x39457C, {0x38}, INT32_MAX);
-        if (game_ticks) stats.time = game_ticks.value() * seconds_per_tick;
-        return game_ticks.has_value();
-    }
-    return true;
+GameStatsFast hitman_contracts::update_fast(Version version) {
+    return [](void* handle,
+              const BasePtrs& base_ptrs,
+              const LabelPtrs& label_ptrs,
+              std::any& stats_any) {
+        auto& stats = std::any_cast<Stats&>(stats_any);
+        if (stats.map > 0) {
+            const auto& base_ptr = base_ptrs.at(0);
+            auto game_ticks
+                = read<int32_t>(handle, base_ptr + 0x39457C, {0x38}, INT32_MAX);
+            if (game_ticks) stats.time = game_ticks.value() * seconds_per_tick;
+            return game_ticks.has_value();
+        }
+        return true;
+    };
 }

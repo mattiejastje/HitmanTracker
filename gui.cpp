@@ -29,7 +29,6 @@ static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 static RECT g_ChangeRect = {};
 static UINT g_ChangeDpi = 0;
 static std::optional<Game> game{};
-static Stats stats{0};
 static Signal frametime_signal{"fps", "frames per second"};
 static Signal error_slow{"slow update failure rate", "%", 50.0f};
 static Signal error_fast{"fast update failure rate", "%", 50.0f};
@@ -66,7 +65,6 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             return 0;
         case WM_DESTROY:
             game = {};
-            stats = {0};
             ::PostQuitMessage(0);
             return 0;
         case WM_TIMER:
@@ -75,7 +73,6 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                     // try find game if none found yet
                     if (!game
                         || (game && !is_process_running(game->handle.get()))) {
-                        stats = {0};
                         game = find_game();
                     };
                     // try install hook if none installed yet
@@ -92,7 +89,9 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                             }
                             logging::info("Game is now tracked");
                         } else {
-                            logging::debug("Game not yet ready for tracking...");
+                            logging::debug(
+                                "Game not yet ready for tracking..."
+                            );
                         }
                     }
                     return 0;
@@ -108,7 +107,8 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                             game->handle.get(),
                             game->base_ptrs,
                             game->hook->label_ptrs,
-                            stats
+                            game->remote_state,
+                            game->stats
                         );
                         error_slow.update(100.0f * static_cast<float>(!ok), dt);
                     }
@@ -155,10 +155,10 @@ static void Frame(UI& ui, settings::Settings& settings) {
                 game->handle.get(),
                 game->base_ptrs,
                 game->hook->label_ptrs,
-                stats
+                game->stats
             );
             error_fast.update(100.0f * static_cast<float>(!ok), dt);
-            game->methods.gui(ui.fonts, stats);
+            game->methods.gui(ui.fonts, game->stats);
         } else {
             text(ui.fonts.title, settings.gui.title.color, "No game running");
         }

@@ -5,6 +5,7 @@
 #include "gui.hpp"
 #include "hook.hpp"
 #include "stats.hpp"
+#include "structs.hpp"
 
 void hitman_absolution::register_game_info(
     const settings::Gui& settings, const settings::HMA& hma
@@ -15,6 +16,8 @@ void hitman_absolution::register_game_info(
             .name = GAME_NAME,
             .methods
             = GameMethods{gui(settings, hma, "Steam"), hook(Version::Steam), hook_ready(Version::Steam), update_slow(hma, Version::Steam), update_fast(Version::Steam)},
+            .make_remote_state = [] { return std::make_any<structs::Game>(); },
+            .make_stats = [] { return std::make_any<Stats>(); },
             .module_infos = {{"hma.exe", PeId{0x5149E0B4}}},
         }
     );

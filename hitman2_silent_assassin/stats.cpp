@@ -12,6 +12,8 @@
 #include "../mem/read_write.hpp"
 #include "structs.hpp"
 
+using namespace hitman_common;
+
 struct LevelInfo {
     int map;
     std::size_t level_control_code;
@@ -210,9 +212,6 @@ std::unordered_map<std::string, LevelInfo> level_infos{
     },
 };
 
-// global to avoid allocating large object on stack
-static hitman2_silent_assassin::structs::Game game{};
-
 // note: almost same as Hitman Contracts, move to common?
 static int32_t measure_aggression(const StatsArray<int32_t>& stats) {
     auto value = 3 * stats[INNOCENTS_WOUNDED] + 6 * stats[INNOCENTS_KILLED]
@@ -228,112 +227,121 @@ static int32_t measure_stealth(const StatsArray<int32_t>& stats) {
     return value;
 }
 
-bool hitman2_silent_assassin::update_slow(
-    const std::filesystem::path& exe_path,
-    void* handle,
-    const BasePtrs& base_ptrs,
-    const LabelPtrs& label_ptrs,
-    Stats& stats
-) {
-    const RemoteValue<structs::TGame, uint32_t> remote_game{
-        static_cast<uint32_t>(base_ptrs.at(0))
-    };
-    MemoryReader<uint32_t> reader{handle};
-    auto tracer
-        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
-    if (!mempeep::read(remote_game, reader, tracer, game)) return false;
-    const auto& scene = game.engine.scene_manager.scene_name.text;
-    auto iter = level_infos.find(scene);
-    if (iter == level_infos.end()) {
-        // no map loaded
-        stats.map = 0;
-        return true;
-    }
-    const auto& info = iter->second;
-    stats.map = info.map;
-    stats.map_stage = MapStage::main;  // always render stats
-    stats.difficulty = read_lethed(
-                           game.property_manager.data,
-                           game.property_manager.data_used,
-                           reader,
-                           tracer
-    )
-                           .value_or(0);
-    if (stats.map >= 2) {
-        structs::LevelControl level_control{};
-        // entities can be briefly null if mission is still loading
-        if (game.entity_manager.entities) {
-            uint32_t level_control_addr{};
-            if (!mempeep::read_at(
-                    *game.entity_manager.entities,
-                    info.level_control_code,
-                    reader,
-                    tracer,
-                    level_control_addr
-                ))
-                return false;
-            // address can be briefly zero if mission is still loading
-            if (level_control_addr != 0) {
-                const RemoteValue<Primitive<structs::LevelControl>, uint32_t>
-                    remote_level_control{level_control_addr};
-                if (!mempeep::read(
-                        remote_level_control, reader, tracer, level_control
-                    )) {
-                    logging::warn("Failed to read level control");
+GameStatsSlow hitman2_silent_assassin::update_slow(Version version) {
+    return [](const std::filesystem::path& exe_path,
+              void* handle,
+              const BasePtrs& base_ptrs,
+              const LabelPtrs& label_ptrs,
+              std::any& remote_state_any,
+              std::any& stats_any) {
+        auto& game = std::any_cast<structs::Game&>(remote_state_any);
+        auto& stats = std::any_cast<Stats&>(stats_any);
+        const RemoteValue<structs::TGame, uint32_t> remote_game{
+            static_cast<uint32_t>(base_ptrs.at(0))
+        };
+        MemoryReader<uint32_t> reader{handle};
+        auto tracer = mempeep::LogTracer{
+            MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS
+        };
+        if (!mempeep::read(remote_game, reader, tracer, game)) return false;
+        const auto& scene = game.engine.scene_manager.scene_name.text;
+        auto iter = level_infos.find(scene);
+        if (iter == level_infos.end()) {
+            // no map loaded
+            stats.map = 0;
+            return true;
+        }
+        const auto& info = iter->second;
+        stats.map = info.map;
+        stats.map_stage = MapStage::main;  // always render stats
+        stats.difficulty = read_lethed(
+                               game.property_manager.data,
+                               game.property_manager.data_used,
+                               reader,
+                               tracer
+        )
+                               .value_or(0);
+        if (stats.map >= 2) {
+            structs::LevelControl level_control{};
+            // entities can be briefly null if mission is still loading
+            if (game.entity_manager.entities) {
+                uint32_t level_control_addr{};
+                if (!mempeep::read_at(
+                        *game.entity_manager.entities,
+                        info.level_control_code,
+                        reader,
+                        tracer,
+                        level_control_addr
+                    ))
+                    return false;
+                // address can be briefly zero if mission is still loading
+                if (level_control_addr != 0) {
+                    const RemoteValue<
+                        Primitive<structs::LevelControl>,
+                        uint32_t>
+                        remote_level_control{level_control_addr};
+                    if (!mempeep::read(
+                            remote_level_control, reader, tracer, level_control
+                        )) {
+                        logging::warn("Failed to read level control");
+                        return false;
+                    }
+                }
+            }
+            structs::Player player{};
+            // gref_manager can be null if mission is still loading
+            if (game.engine.scene_manager.gref_manager) {
+                const RemoteValue<structs::TPlayer, uint32_t> remote_player{
+                    game.engine.scene_manager.gref_manager->pool.base
+                    + info.player_gref
+                };
+                if (!mempeep::read(remote_player, reader, tracer, player)) {
+                    logging::warn("Failed to read player");
+                    return false;
+                }
+                if (player.data.player_gref
+                    != (0x40000000 | info.player_gref)) {
+                    logging::warn("Player gref validation check failed");
                     return false;
                 }
             }
+            StatsArray<int32_t> game_stats{};
+            game_stats[SHOTS_FIRED] = player.data.shots_fired;
+            game_stats[HEADSHOTS] = level_control.headshots;
+            game_stats[ENEMIES_WOUNDED] = level_control.enemies_wounded;
+            game_stats[ENEMIES_KILLED] = level_control.enemies_killed;
+            game_stats[INNOCENTS_WOUNDED] = level_control.innocents_wounded;
+            game_stats[INNOCENTS_KILLED] = level_control.innocents_killed;
+            game_stats[ALERTS] = level_control.alerts;
+            game_stats[CLOSE_ENCOUNTERS] = level_control.close_encounters;
+            process_game_stats(
+                measure_aggression, measure_stealth, game_stats, stats
+            );
+        } else {
+            stats.rating = {"Unrated", Status::GREEN};
         }
-        structs::Player player{};
-        // gref_manager can be null if mission is still loading
-        if (game.engine.scene_manager.gref_manager) {
-            const RemoteValue<structs::TPlayer, uint32_t> remote_player{
-                game.engine.scene_manager.gref_manager->pool.base
-                + info.player_gref
-            };
-            if (!mempeep::read(remote_player, reader, tracer, player)) {
-                logging::warn("Failed to read player");
-                return false;
-            }
-            if (player.data.player_gref != (0x40000000 | info.player_gref)) {
-                logging::warn("Player gref validation check failed");
-                return false;
-            }
-        }
-        StatsArray<int32_t> game_stats{};
-        game_stats[SHOTS_FIRED] = player.data.shots_fired;
-        game_stats[HEADSHOTS] = level_control.headshots;
-        game_stats[ENEMIES_WOUNDED] = level_control.enemies_wounded;
-        game_stats[ENEMIES_KILLED] = level_control.enemies_killed;
-        game_stats[INNOCENTS_WOUNDED] = level_control.innocents_wounded;
-        game_stats[INNOCENTS_KILLED] = level_control.innocents_killed;
-        game_stats[ALERTS] = level_control.alerts;
-        game_stats[CLOSE_ENCOUNTERS] = level_control.close_encounters;
-        process_common_game_stats(
-            measure_aggression, measure_stealth, game_stats, stats
-        );
-    } else {
-        stats.rating = {"Unrated", Status::GREEN};
-    }
-    return true;
+        return true;
+    };
 }
 
-bool hitman2_silent_assassin::update_fast(
-    void* handle,
-    const BasePtrs& base_ptrs,
-    const LabelPtrs& label_ptrs,
-    Stats& stats
-) {
-    if (stats.map > 0) {
-        const auto& base_ptr = base_ptrs.at(0);
-        auto time = read<int32_t>(
-            handle,
-            base_ptr + 0x2A6C58,
-            {0x118, 0xB38, 0x8, 0x1084, 0x24},
-            INT32_MAX
-        );
-        if (time) stats.time = time.value() * 0.0166666666666666f;  // 1 / 60.0f
-        return time.has_value();
-    }
-    return true;
+GameStatsFast hitman2_silent_assassin::update_fast(Version version) {
+    return [](void* handle,
+              const BasePtrs& base_ptrs,
+              const LabelPtrs& label_ptrs,
+              std::any& stats_any) {
+        auto& stats = std::any_cast<Stats&>(stats_any);
+        if (stats.map > 0) {
+            const auto& base_ptr = base_ptrs.at(0);
+            auto time = read<int32_t>(
+                handle,
+                base_ptr + 0x2A6C58,
+                {0x118, 0xB38, 0x8, 0x1084, 0x24},
+                INT32_MAX
+            );
+            if (time)
+                stats.time = time.value() * 0.0166666666666666f;  // 1 / 60.0f
+            return time.has_value();
+        }
+        return true;
+    };
 }

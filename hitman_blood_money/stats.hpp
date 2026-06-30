@@ -1,26 +1,39 @@
 #pragma once
 
-#include <filesystem>
-
-#include "../base_ptrs.hpp"
-#include "../label_ptrs.hpp"
-#include "../stats.hpp"
+#include "../game.hpp"
+#include "version.hpp"
 
 namespace hitman_blood_money {
 
-bool update_slow(
-    const std::filesystem::path& exe_path,
-    void* handle,
-    const BasePtrs& base_ptrs,
-    const LabelPtrs& label_ptrs,
-    Stats& stats
-);
+struct Stats {
+    float time;
+    int map;
+    MapStage map_stage;
+    int32_t difficulty;
+    StatsValue<std::string> rating;
+    StatsValue<int32_t> shots_fired;
+    StatsValue<int32_t> headshots;
+    StatsValue<int32_t> enemies_killed;
+    StatsValue<int32_t> enemies_wounded;
+    StatsValue<int32_t> innocents_killed;
+    StatsValue<int32_t> innocents_wounded;
+    StatsValue<int32_t> police_killed;
+    StatsValue<int32_t> police_wounded;
+    StatsValue<int32_t> frisk_failed;
+    StatsValue<int32_t> cover_blown;
+    StatsValue<int32_t> bodies_fnd;
+    StatsValue<int32_t> target_bodies_fnd;
+    StatsValue<int32_t> uncon_bodies_fnd;
+    StatsValue<int32_t> witnesses;
+    StatsValue<int32_t> on_camera;
+    StatsValue<int32_t> cust_weapons_left;
+    StatsValue<int32_t> suit_left;
+    int32_t shots_hit;
+    int32_t accident_kills;
+};
 
-bool update_fast(
-    void* handle,
-    const BasePtrs& base_ptrs,
-    const LabelPtrs& label_ptrs,
-    Stats& stats
-);
+GameStatsSlow update_slow(Version version);
+
+GameStatsFast update_fast(Version version);
 
 }  // namespace hitman_blood_money

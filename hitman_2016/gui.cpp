@@ -7,7 +7,7 @@
 GameGui hitman_2016::gui(
     const settings::Gui& settings, const std::string& version
 ) {
-    return [&settings, version](const Fonts& fonts, const Stats& stats) {
+    return [&settings, version](const Fonts& fonts, const std::any& stats_any) {
         auto game_name = settings.show_game_version
                              ? std::format("{} [{}]", GAME_NAME, version)
                              : GAME_NAME;

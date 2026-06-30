@@ -6,6 +6,7 @@
 
 #include "../hitman_common/gui.hpp"
 #include "../imgui_utils.hpp"
+#include "stats.hpp"
 
 const std::vector<std::string> map_names = {
     "",
@@ -88,12 +89,12 @@ const std::vector<std::string> map_names = {
 };
 
 static settings::HMA::RatingMode get_rating_mode(
-    const settings::HMA& hma, CheckpointType checkpoint_type
+    const settings::HMA& hma, hitman_absolution::CheckpointType checkpoint_type
 ) {
     switch (checkpoint_type) {
-        case CheckpointType::NO_TARGETS:
+        case hitman_absolution::CheckpointType::NO_TARGETS:
             return hma.rating_mode_no_targets;
-        case CheckpointType::TARGETS:
+        case hitman_absolution::CheckpointType::TARGETS:
             return hma.rating_mode_targets;
         default:
             return hma.rating_mode_unrated;
@@ -105,7 +106,8 @@ GameGui hitman_absolution::gui(
     const settings::HMA& hma,
     const std::string& version
 ) {
-    return [&settings, &hma, version](const Fonts& fonts, const Stats& stats) {
+    return [&settings, &hma, version](const Fonts& fonts, const std::any& stats_any) {
+        const auto& stats = std::any_cast<const Stats&>(stats_any);
         auto game_name = settings.show_game_version
                              ? std::format("{} [{}]", GAME_NAME, version)
                              : GAME_NAME;

@@ -5,6 +5,7 @@
 #include <format>
 
 #include "../hitman_common/gui.hpp"
+#include "stats.hpp"
 
 const std::vector<std::string> map_names = {
     "",
@@ -26,7 +27,8 @@ const std::vector<std::string> map_names = {
 GameGui hitman_codename_47::gui(
     const settings::Gui& settings, const std::string& version
 ) {
-    return [&settings, version](const Fonts& fonts, const Stats& stats) {
+    return [&settings, version](const Fonts& fonts, const std::any& stats_any) {
+        const auto& stats = std::any_cast<const Stats&>(stats_any);
         auto game_name = settings.show_game_version
                              ? std::format("{} [{}]", GAME_NAME, version)
                              : GAME_NAME;

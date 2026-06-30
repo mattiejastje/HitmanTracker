@@ -117,6 +117,8 @@ static std::optional<Game> get_game_for_process(
             base_ptrs,
             info.methods,
             nullptr,  // installed later
+            info.make_remote_state(),
+            info.make_stats(),
         };
     }
     return {};

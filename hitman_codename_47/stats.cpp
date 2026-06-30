@@ -183,87 +183,90 @@ static std::optional<int32_t> read_difficulty_from_hitman_sav(
     return cached_difficulty;
 }
 
-// global to avoid allocating large object on stack
-static hitman_codename_47::structs::HitmanDlc game{};
-
-bool hitman_codename_47::update_slow(
-    const std::filesystem::path& exe_path,
-    void* handle,
-    const BasePtrs& base_ptrs,
-    const LabelPtrs& label_ptrs,
-    Stats& stats
-) {
-    // base_ptrs.at(1) is for hitmandlc.dlc
-    const RemoteValue<structs::THitmanDlc, uint32_t> remote_game{
-        static_cast<uint32_t>(base_ptrs.at(1))
-    };
-    MemoryReader<uint32_t> reader{handle};
-    auto tracer
-        = mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
-    if (!mempeep::read(remote_game, reader, tracer, game)) return false;
-    const auto hitman_sav = exe_path.parent_path() / "Hitman.sav";
-    stats.difficulty = read_difficulty_from_hitman_sav(hitman_sav).value_or(-1);
-    const auto& scene_container
-        = game.engine.engine_data.scene_manager.scene_container;
-    if (!scene_container) return false;
-    if (scene_container->scenes.empty()) return false;
-    // back = root scene (i.e. mission, main menu, options from main menu, ...)
-    // front = child scene (i.e. laptop, options from mission, ...)
-    logging::trace("scenes:");
-    for (const auto& _scene : scene_container->scenes) {
-        logging::trace(
-            "  {}", _scene.scene_name ? _scene.scene_name->text : "NULL"
-        );
-    }
-    const auto& root_scene = scene_container->scenes.back();
-    if (!root_scene.scene_name) return false;
-    const auto& scene = root_scene.scene_name->text;
-    if (scene.empty()) return false;
-    auto iter = scenes.find(scene);
-    if (iter != scenes.end()) {
-        stats.map = iter->second.map;
-        stats.map_stage = iter->second.map_stage;
-        logging::trace("Map {}", stats.map);
-    } else {
-        logging::error("No map registered for scene {}", scene);
-        return false;
-    }
-    return true;
-}
-
-bool hitman_codename_47::update_fast(
-    void* handle,
-    const BasePtrs& base_ptrs,
-    const LabelPtrs& label_ptrs,
-    Stats& stats
-) {
-    if (stats.map > 0) {
-        const auto& base_ptr = base_ptrs.at(1);  // hitmandlc.dlc
-        auto scene_head = read<int32_t>(
-            handle, base_ptr + 0x1F000C, {0, 0x59, 0x7E, 0x1C}, INT32_MAX
-        );
-        auto scene_tail = read<int32_t>(
-            handle, base_ptr + 0x1F000C, {0, 0x59, 0x7E, 0x20}, INT32_MAX
-        );
-        if (!scene_head || !scene_tail) return false;
-        std::optional<double> time = {};
-        if (scene_head == scene_tail) {
-            // main mission: use global game time
-            time = read<double>(
-                handle, base_ptr + 0x1F000C, {0, 0x37B5}, INT32_MAX
-            );
-        } else {
-            // paused in the options menu: use time options menu was created
-            time = read<double>(
-                handle,
-                base_ptr + 0x1F000C,
-                {0, 0x59, 0x7E, 0x1C, -0x32},
-                INT32_MAX
+GameStatsSlow hitman_codename_47::update_slow(Version version) {
+    return [](const std::filesystem::path& exe_path,
+              void* handle,
+              const BasePtrs& base_ptrs,
+              const LabelPtrs& label_ptrs,
+              std::any& remote_state_any,
+              std::any& stats_any) {
+        auto& game = std::any_cast<structs::HitmanDlc&>(remote_state_any);
+        auto& stats = std::any_cast<Stats&>(stats_any);
+        // base_ptrs.at(1) is for hitmandlc.dlc
+        const RemoteValue<structs::THitmanDlc, uint32_t> remote_game{
+            static_cast<uint32_t>(base_ptrs.at(1))
+        };
+        MemoryReader<uint32_t> reader{handle};
+        auto tracer = mempeep::LogTracer{
+            MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS
+        };
+        if (!mempeep::read(remote_game, reader, tracer, game)) return false;
+        const auto hitman_sav = exe_path.parent_path() / "Hitman.sav";
+        stats.difficulty
+            = read_difficulty_from_hitman_sav(hitman_sav).value_or(-1);
+        const auto& scene_container
+            = game.engine.engine_data.scene_manager.scene_container;
+        if (!scene_container) return false;
+        if (scene_container->scenes.empty()) return false;
+        // back = root scene (i.e. mission, main menu, options from main menu,
+        // ...) front = child scene (i.e. laptop, options from mission, ...)
+        logging::trace("scenes:");
+        for (const auto& _scene : scene_container->scenes) {
+            logging::trace(
+                "  {}", _scene.scene_name ? _scene.scene_name->text : "NULL"
             );
         }
-        if (!time) return false;
-        stats.time = time.value();
+        const auto& root_scene = scene_container->scenes.back();
+        if (!root_scene.scene_name) return false;
+        const auto& scene = root_scene.scene_name->text;
+        if (scene.empty()) return false;
+        auto iter = scenes.find(scene);
+        if (iter != scenes.end()) {
+            stats.map = iter->second.map;
+            stats.map_stage = iter->second.map_stage;
+            logging::trace("Map {}", stats.map);
+        } else {
+            logging::error("No map registered for scene {}", scene);
+            return false;
+        }
         return true;
-    }
-    return true;
+    };
+}
+
+GameStatsFast hitman_codename_47::update_fast(Version version) {
+    return [](void* handle,
+              const BasePtrs& base_ptrs,
+              const LabelPtrs& label_ptrs,
+              std::any& stats_any) {
+        auto& stats = std::any_cast<Stats&>(stats_any);
+        if (stats.map > 0) {
+            const auto& base_ptr = base_ptrs.at(1);  // hitmandlc.dlc
+            auto scene_head = read<int32_t>(
+                handle, base_ptr + 0x1F000C, {0, 0x59, 0x7E, 0x1C}, INT32_MAX
+            );
+            auto scene_tail = read<int32_t>(
+                handle, base_ptr + 0x1F000C, {0, 0x59, 0x7E, 0x20}, INT32_MAX
+            );
+            if (!scene_head || !scene_tail) return false;
+            std::optional<double> time = {};
+            if (scene_head == scene_tail) {
+                // main mission: use global game time
+                time = read<double>(
+                    handle, base_ptr + 0x1F000C, {0, 0x37B5}, INT32_MAX
+                );
+            } else {
+                // paused in the options menu: use time options menu was created
+                time = read<double>(
+                    handle,
+                    base_ptr + 0x1F000C,
+                    {0, 0x59, 0x7E, 0x1C, -0x32},
+                    INT32_MAX
+                );
+            }
+            if (!time) return false;
+            stats.time = time.value();
+            return true;
+        }
+        return true;
+    };
 }

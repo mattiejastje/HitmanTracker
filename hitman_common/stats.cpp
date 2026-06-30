@@ -8,6 +8,8 @@
 #include "../logging.hpp"
 #include "simple_rating.hpp"
 
+using namespace hitman_common;
+
 static bool is_at_risk(
     StatsFunc aggression,
     StatsFunc stealth,
@@ -60,7 +62,8 @@ static StatsArray<int32_t> find_nearest_safe_stats(
             }
         }
         if (best_index == -1) {
-            // should never happen, but catch just in case to prevent infinite loop
+            // should never happen, but catch just in case to prevent infinite
+            // loop
             logging::error("No best index found for nearest safe stats");
             break;
         };
@@ -90,7 +93,7 @@ static StatsArray<Status> find_common_stats_status(
     return status;
 }
 
-void process_common_game_stats(
+void hitman_common::process_game_stats(
     StatsFunc measure_aggression,
     StatsFunc measure_stealth,
     const StatsArray<int32_t> game_stats,
