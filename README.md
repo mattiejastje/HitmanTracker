@@ -60,126 +60,141 @@ but obviously out of sync with the final mission screen.
 
 Fully supported on both Steam and GOG.
 
-#### The game's rating system explained
+#### How the game's rating system works
 
-The rating system is notoriously confusing.
-In the game, the final rating is determined in two distinct steps:
+Hitman: Absolution determines your final rating in two separate stages.
 
-- Condition-based rating.
-  The game first checks for specific playstyles based on how you played.
-  Examples include "Silent Assassin", "Piano Man", "Jinx", and so on.
-  The requirements for "Silent Assassin" are:
+##### 1. Condition-based rating
 
-  * No non-target kills.
-  * Never spotted.
-  * All targets eliminated.
+The game first checks whether you qualify for one of its predefined playstyles,
+such as **Silent Assassin**, **Piano Man**, **Jinx**, and so on.
 
-  **Issue: checkpoints without targets are never awarded "Silent Assassin".**
-  This is because the game never records that you have eliminated all targets.
+For **Silent Assassin**, the requirements are:
 
-- Score-based rating.
-  If no condition-based rating can be awarded,
-  the game falls back to a rating based on score.
-  This is calculated by:
+* No non-target kills.
+* Never spotted.
+* All targets eliminated.
 
-  * Taking your raw score (before difficulty/challenge modifiers).
-  * Dividing it by an internal "shadow score" for that checkpoint.
-  * Converting it to a percentage between 0 and 100 (rounded down).
+If one of these condition-based ratings is awarded, the score-based system is ignored.
 
-  A rating is then awarded as follows:
+**Limitation:** checkpoints without targets can never receive **Silent Assassin**,
+because the game never records that all targets have been eliminated.
 
-  * 0% - 49%: Agent
-  * 50% - 79%: Veteran
-  * 80% - 89%: Specialist
-  * 90% - 99%: Professional
-  * 100%: Shadow
+##### 2. Score-based rating
 
-  **Issue: some checkpoints have a too high "shadow score".**
-  This can make Shadow (100%) impossible to achieve.
+If no condition-based rating is awarded,
+the game falls back to a score-based rating.
 
-To fix these issues,
-the tracker tracks both rating systems independently as follows:
+The calculation is:
 
-- Silent Assassin rating is awarded for maps with targets if:
+1. Take your raw score (before difficulty and challenge modifiers).
+2. Divide it by the checkpoint's internal **Shadow Score**.
+3. Convert the result to a percentage (rounded down).
 
-  * No non-target kills.
-  * Never spotted.
+The percentage determines the rating:
 
-  Additionally, there's an option in the settings to track Silent Assassin
-  even for maps that do not have targets.
-  If enabled, for maps without targets, instead of showing "No Targets",
-  the tracker will show "Silent Assassin" or "No Silent Assassin"
-  depending on your statistics.
-  This is a deviation from the game so it is not enabled by default.
-  However, it makes the Silent Assassin rating consistent across all maps,
-  and some players may prefer playing this way.
+|  Score | Rating       |
+| -----: | ------------ |
+|  0–49% | Agent        |
+| 50–79% | Veteran      |
+| 80–89% | Specialist   |
+| 90–99% | Professional |
+|   100% | Shadow       |
 
-  Beware that
-  *in a handful of missions, the game triggers a non-target kill if you do not first locate the target*
-  (e.g. King, Dom Osmond, Layla, Jade, possibly more).
-  This appears to be a bug in the game.
+**Limitation:** some checkpoints have an incorrectly configured **Shadow Score**,
+making **Shadow (100%)** impossible to achieve.
 
-- Score-based rating is awarded as follows, for rated maps:
+#### How the tracker improves this
 
-  * Calculate score-based rating regardless of Silent Assassin.
-  * Use the same percentage thresholds as the original system.
-  * Show the score required for the highest achievable rating
-    (e.g. 80% of the "shadow score" if Specialist is the highest achievable rating).
-  * Scores for evidence removed, objectives completed, target kill, and signature kill,
-    are color-coded: they show green only when they are at their maximum possible value
-    so can easily tell if you are still missing objectives, evidence, or targets.
+The tracker separates the two systems and tracks them independently.
 
-This better reflects player performance
-while remaining faithful to the rating system of the original game:
+##### Silent Assassin tracking
 
-* Makes Silent Assassin achievable for all checkpoints.
-* Decouples skill-based rating from score-based rating for rated checkpoints.
-* Provides full transparency on scoring thresholds.
+For checkpoints with targets, **Silent Assassin** is awarded when:
 
-#### Rating Configuration
+* No non-target kills.
+* Never spotted.
 
-Each map can be tracked in one of the following modes:
+An optional setting also allows **Silent Assassin** to be tracked on checkpoints without targets.
+This behaviour intentionally differs from the original game and is disabled by default,
+but it provides consistent Silent Assassin tracking across every checkpoint.
 
-* **X** – Do not track anything.
-* **SA** – Track **Silent Assassin** only.
-* **SC** – Track **Score** only.
-* **SA+SC** – Track both **Silent Assassin** and **Score** independently.
-* **SA→SC** – Track **Silent Assassin**, but fall back to displaying **Score** if Silent Assassin is not achieved.
+> **Note**
+>
+> A small number of missions appear to contain a bug where the game records a non-target kill unless you first locate the target.
+> Known examples include King, Dom Osmond, Layla and Jade.
 
-##### Map Support
+##### Score tracking
 
-Not every map supports every tracking mode:
+For score-rated checkpoints, the tracker:
 
-* Unrated support only **X** and **SA**.
-* All other maps support every tracking mode.
+* Calculates the score rating independently of Silent Assassin.
+* Uses the same percentage thresholds as the original game.
+* Displays the score required for the highest achievable rating
+  (for example, 80% of the Shadow Score if **Specialist** is the highest achievable rating).
+* Color-codes score categories such as evidence removed, objectives completed, target kills and signature kills.
+  A category is shown in green only when it has reached its maximum possible value,
+  making it easy to see what is still missing.
 
-For maps with targets, **SC** is generally not very useful because achieving the Shadow score also requires Silent Assassin.
+This approach remains faithful to the original game while addressing its shortcomings:
 
-##### Display Options
+* Makes Silent Assassin attainable on every checkpoint.
+* Separates skill-based and score-based progression.
+* Makes scoring requirements fully transparent.
 
-Although the underlying tracking modes are flexible, exposing every possible combination would make the configuration unnecessarily complicated. Instead, the tracker presents two simple options that cover the common playstyles.
+#### Rating configuration
 
-1. Where should Silent Assassin be tracked? Choose whether Silent Assassin is tracked:
+Each checkpoint can be tracked using one of the following modes:
 
-   * **Only on maps with targets** (default, matching the game's behaviour), or
-   * **On all maps**.
+| Mode      | Description                                                                              |
+| --------- | ---------------------------------------------------------------------------------------- |
+| **X**     | Do not track this checkpoint.                                                            |
+| **SA**    | Track **Silent Assassin** only.                                                          |
+| **SC**    | Track **Score** only.                                                                    |
+| **SA+SC** | Track **Silent Assassin** and **Score** independently.                                   |
+| **SA→SC** | Track **Silent Assassin** and display **Score** only if Silent Assassin is not achieved. |
 
-2. How should Score be displayed on maps where Silent Assassin is tracked? Choose one of the following:
+##### Supported modes
 
-   * **Hide** (**SA**)
-   * **Show as fallback** (**SA→SC**, default) — display the score only if Silent Assassin was not achieved.
-   * **Always show** (**SA+SC**)
+Not every checkpoint supports every tracking mode.
 
-The combination of these two settings determines the tracking mode used for each map type.
+* **Unrated checkpoints** support only **X** and **SA**.
+* **All other checkpoints** support every mode.
 
-| Track SA on all maps | Score display    | Unrated maps | Maps without targets | Maps with targets |
-| -------------------- | ---------------- | ------------ | -------------------- | ----------------- |
-| No                   | Hide             | **X**        | **SC**               | **SA**            |
-| No                   | Show as fallback | **X**        | **SC**               | **SA→SC**         |
-| No                   | Always show      | **X**        | **SC**               | **SA+SC**         |
-| Yes                  | Hide             | **SA**       | **SA**               | **SA**            |
-| Yes                  | Show as fallback | **SA**       | **SA→SC**            | **SA→SC**         |
-| Yes                  | Always show      | **SA**       | **SA+SC**            | **SA+SC**         |
+For checkpoints with targets, using **SC** by itself is generally of limited value,
+since achieving the maximum score also requires Silent Assassin.
+
+#### Display options
+
+Although the tracker supports several internal tracking modes,
+exposing every combination directly would make the settings unnecessarily complicated.
+Instead, two simple options cover the most common playstyles.
+
+##### 1. Where should Silent Assassin be tracked?
+
+Choose one of the following:
+
+* **Only on maps with targets** (default, matching the original game)
+* **On all maps**
+
+##### 2. How should Score be displayed when Silent Assassin is tracked?
+
+Choose one of the following:
+
+* **Hide** (**SA**)
+* **Show as fallback** (**SA→SC**, default) — display the score only if Silent Assassin was not achieved.
+* **Always show** (**SA+SC**)
+
+The combination of these settings determines the tracking mode used for each type of checkpoint.
+
+| Track SA on all maps | Score display    | Unrated | No targets | Has targets |
+| -------------------- | ---------------- | ------- | ---------- | ----------- |
+| No                   | Hide             | **X**   | **SC**     | **SA**      |
+| No                   | Show as fallback | **X**   | **SC**     | **SA→SC**   |
+| No                   | Always show      | **X**   | **SC**     | **SA+SC**   |
+| Yes                  | Hide             | **SA**  | **SA**     | **SA**      |
+| Yes                  | Show as fallback | **SA**  | **SA→SC**  | **SA→SC**   |
+| Yes                  | Always show      | **SA**  | **SA+SC**  | **SA+SC**   |
 
 ## Related projects
 
