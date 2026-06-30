@@ -64,45 +64,45 @@ Fully supported on both Steam and GOG.
 
 Hitman: Absolution determines your final rating in two separate stages.
 
-##### 1. Condition-based rating
+1. Condition-based rating
 
-The game first checks whether you qualify for one of its predefined playstyles,
-such as **Silent Assassin**, **Piano Man**, **Jinx**, and so on.
+   The game first checks whether you qualify for one of its predefined playstyles,
+   such as **Silent Assassin**, **Piano Man**, **Jinx**, and so on.
 
-For **Silent Assassin**, the requirements are:
+   For **Silent Assassin**, the requirements are:
 
-* No non-target kills.
-* Never spotted.
-* All targets eliminated.
+   * No non-target kills.
+   * Never spotted.
+   * All targets eliminated.
 
-If one of these condition-based ratings is awarded, the score-based system is ignored.
+   If one of these condition-based ratings is awarded, the score-based system is ignored.
 
-**Limitation:** checkpoints without targets can never receive **Silent Assassin**,
-because the game never records that all targets have been eliminated.
+   **Limitation:** checkpoints without targets can never receive **Silent Assassin**,
+   because the game never records that all targets have been eliminated.
 
-##### 2. Score-based rating
+2. Score-based rating
 
-If no condition-based rating is awarded,
-the game falls back to a score-based rating.
+   If no condition-based rating is awarded,
+   the game falls back to a score-based rating.
 
-The calculation is:
+   The calculation is:
 
-1. Take your raw score (before difficulty and challenge modifiers).
-2. Divide it by the checkpoint's internal **Shadow Score**.
-3. Convert the result to a percentage (rounded down).
+   1. Take your raw score (before difficulty and challenge modifiers).
+   2. Divide it by the checkpoint's internal **Shadow Score**.
+   3. Convert the result to a percentage (rounded down).
 
-The percentage determines the rating:
+   The percentage determines the rating:
 
-|  Score | Rating       |
-| -----: | ------------ |
-|  0–49% | Agent        |
-| 50–79% | Veteran      |
-| 80–89% | Specialist   |
-| 90–99% | Professional |
-|   100% | Shadow       |
+   |  Score | Rating       |
+   | -----: | ------------ |
+   |  0–49% | Agent        |
+   | 50–79% | Veteran      |
+   | 80–89% | Specialist   |
+   | 90–99% | Professional |
+   |   100% | Shadow       |
 
-**Limitation:** some checkpoints have an incorrectly configured **Shadow Score**,
-making **Shadow (100%)** impossible to achieve.
+   **Limitation:** some checkpoints have an incorrectly configured **Shadow Score**,
+   making **Shadow (100%)** impossible to achieve.
 
 #### How the tracker improves this
 
