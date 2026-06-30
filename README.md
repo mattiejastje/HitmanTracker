@@ -144,57 +144,33 @@ This approach remains faithful to the original game while addressing its shortco
 
 #### Rating configuration
 
-Each checkpoint can be tracked using one of the following modes:
+Modes define what is tracked per checkpoint and how it is displayed.
+Presets provide common configurations built from these modes.
 
-| Mode      | Description                                                                              |
-| --------- | ---------------------------------------------------------------------------------------- |
-| **X**     | Do not track this checkpoint.                                                            |
-| **SA**    | Track **Silent Assassin** only.                                                          |
-| **SC**    | Track **Score** only.                                                                    |
-| **SA+SC** | Track **Silent Assassin** and **Score** independently.                                   |
-| **SA→SC** | Track **Silent Assassin** and display **Score** only if Silent Assassin is not achieved. |
+##### Rating modes
 
-##### Supported modes
+| Mode      | Description                                                                             |
+| --------- | --------------------------------------------------------------------------------------- |
+| **X**     | No tracking.                                                                            |
+| **SA**    | Track **Silent Assassin** only.                                                         |
+| **SC**    | Track **Score** only.                                                                   |
+| **SA+SC** | Track both **Silent Assassin** and **Score**.                                           |
+| **SA→SC** | Track **Silent Assassin**. Track **Score** only if **Silent Assassin** is not achieved. |
 
 Not every checkpoint supports every tracking mode.
 
 * **Unrated checkpoints** support only **X** and **SA**.
+  **SC** is not available on these checkpoints.
 * **All other checkpoints** support every mode.
 
-For checkpoints with targets, using **SC** by itself is generally of limited value,
-since achieving the maximum score also requires Silent Assassin.
+#### Rating presets
 
-#### Display options
-
-Although the tracker supports several internal tracking modes,
-exposing every combination directly would make the settings unnecessarily complicated.
-Instead, two simple options cover the most common playstyles.
-
-##### 1. Where should Silent Assassin be tracked?
-
-Choose one of the following:
-
-* **Only on maps with targets** (default, matching the original game)
-* **On all maps**
-
-##### 2. How should Score be displayed when Silent Assassin is tracked?
-
-Choose one of the following:
-
-* **Hide** (**SA**)
-* **Show as fallback** (**SA→SC**, default) — display the score only if Silent Assassin was not achieved.
-* **Always show** (**SA+SC**)
-
-The combination of these settings determines the tracking mode used for each type of checkpoint.
-
-| Track SA on all maps | Score display    | Unrated | No targets | Has targets |
-| -------------------- | ---------------- | ------- | ---------- | ----------- |
-| No                   | Hide             | **X**   | **SC**     | **SA**      |
-| No                   | Show as fallback | **X**   | **SC**     | **SA→SC**   |
-| No                   | Always show      | **X**   | **SC**     | **SA+SC**   |
-| Yes                  | Hide             | **SA**  | **SA**     | **SA**      |
-| Yes                  | Show as fallback | **SA**  | **SA→SC**  | **SA→SC**   |
-| Yes                  | Always show      | **SA**  | **SA+SC**  | **SA+SC**   |
+| Preset              | Unrated | No targets | Targets   |
+| ------------------- | ------- | ---------- | --------- |
+| **Original Game**   | **X**   | **SC**     | **SA→SC** |
+| **Maximum Rating**  | **X**   | **SA+SC**  | **SA**    |
+| **Silent Assassin** | **SA**  | **SA**     | **SA**    |
+| **Full Tracking**   | **SA**  | **SA+SC**  | **SA+SC** |
 
 ## Related projects
 
