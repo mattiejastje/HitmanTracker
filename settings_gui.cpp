@@ -165,6 +165,7 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                     = settings::HMA::RatingMode::SC;
                 settings.hma.rating_mode_targets
                     = settings::HMA::RatingMode::SA_FALLBACK_SC;
+                changed.any |= true;
             };
             ImGui::SameLine();
             if (ImGui::Button("Max Rating")) {
@@ -173,6 +174,7 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                     = settings::HMA::RatingMode::SA_PLUS_SC;
                 settings.hma.rating_mode_targets
                     = settings::HMA::RatingMode::SA;
+                changed.any |= true;
             };
             ImGui::SameLine();
             if (ImGui::Button("SA")) {
@@ -182,6 +184,7 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                     = settings::HMA::RatingMode::SA;
                 settings.hma.rating_mode_targets
                     = settings::HMA::RatingMode::SA;
+                changed.any |= true;
             };
             ImGui::SameLine();
             if (ImGui::Button("Full Tracking")) {
@@ -191,6 +194,7 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                     = settings::HMA::RatingMode::SA_PLUS_SC;
                 settings.hma.rating_mode_targets
                     = settings::HMA::RatingMode::SA_PLUS_SC;
+                changed.any |= true;
             };
             combo_rating_mode(
                 changed,
