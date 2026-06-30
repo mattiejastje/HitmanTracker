@@ -157,9 +157,9 @@ Presets provide common configurations built from these modes.
 | **SA+SC** | Track both **Silent Assassin** and **Score**.                                           |
 | **SA→SC** | Track **Silent Assassin**. Track **Score** only if **Silent Assassin** is not achieved. |
 
-Not every checkpoint supports every tracking mode.
+Not every checkpoint supports every mode.
 
-* **Unrated checkpoints** support only **X** and **SA**.
+* **Unrated checkpoints** support only **X** and **SA**.  
   **SC** is not available on these checkpoints.
 * **All other checkpoints** support every mode.
 
