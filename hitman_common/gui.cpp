@@ -75,16 +75,14 @@ void hitman_common::gui_table(
                         ImGui::TableNextRow();
                         ImGui::TableNextColumn();
                         ImGui::TableNextColumn();
-                    } else if constexpr (std::is_same_v<
-                                             decltype(sv.value),
-                                             int32_t>) {
+                    } else if constexpr (std::is_same_v<T, Double>) {
                         table_row(
                             fonts,
                             settings,
-                            sv.status,
+                            sv.stats_value.status,
                             row.name.c_str(),
-                            "%d",
-                            sv.value
+                            sv.format,
+                            sv.stats_value.value
                         );
                     } else {
                         table_row(
@@ -92,7 +90,7 @@ void hitman_common::gui_table(
                             settings,
                             sv.status,
                             row.name.c_str(),
-                            "%.3g",
+                            "%d",
                             sv.value
                         );
                     }

@@ -47,26 +47,26 @@ GameGui hitman_contracts::gui(
             stats.time
         );
         if (stats.map > 0) {
-            std::vector<hitman_common::TableRow> table_rows = {
-                {"Close Encounters", stats.close_encounters},
-                {"Alerts", stats.alerts},
-                {"Shots Fired", stats.shots_fired},
-                {"Headshots", stats.headshots},
-                {"Enemies Killed", stats.enemies_killed},
-                {"Enemies Wounded", stats.enemies_wounded},
-                {"Innocents Killed", stats.innocents_killed},
-                {"Innocents Wounded", stats.innocents_wounded},
-                {},
-                {"Stealth", stats.stealth},
-                {"Aggression", stats.aggression},
-            };
             hitman_common::gui_table(
                 settings,
                 fonts,
                 stats.rating,
                 stats.map,
                 stats.map_stage,
-                table_rows
+                {
+                    {"Close Encounters", stats.close_encounters},
+                    {"Alerts", stats.alerts},
+                    {"Shots Fired", stats.shots_fired},
+                    {"Headshots", stats.headshots},
+                    {"Enemies Killed", stats.enemies_killed},
+                    {"Enemies Wounded", stats.enemies_wounded},
+                    {"Innocents Killed", stats.innocents_killed},
+                    {"Innocents Wounded", stats.innocents_wounded},
+                    {},
+                    {"Stealth", hitman_common::Double{stats.stealth, "%.3g"}},
+                    {"Aggression",
+                     hitman_common::Double{stats.aggression, "%.3g"}},
+                }
             );
         }
     };
