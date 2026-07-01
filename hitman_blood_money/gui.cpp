@@ -47,60 +47,38 @@ GameGui hitman_blood_money::gui(
             stats.map_stage,
             stats.time * (hbm.real_time ? (1000 / 1024.0f) : 1.0f)
         );
+        std::vector<hitman_common::TableRow> table_rows = {
+            {"Innocents Killed", stats.innocents_killed},
+            {"Innocents Wounded", stats.innocents_wounded},
+            {"Enemies Killed", stats.enemies_killed},
+            {"Enemies Wounded", stats.enemies_wounded},
+            {"Police Killed", stats.police_killed},
+            {"Police Wounded", stats.police_wounded},
+            {"Frisk Failed", stats.frisk_failed},
+            {"Cover Blown", stats.cover_blown},
+            {"Bodies Found", stats.bodies_fnd},
+            {"Target Bodies Found", stats.target_bodies_fnd},
+            {"Unconscious Bodies Found", stats.uncon_bodies_fnd},
+            {"Witnesses", stats.witnesses},
+            {"On Camera", stats.on_camera},
+            {"Custom Weapons Left", stats.cust_weapons_left},
+            {"Suit Left", stats.suit_left},
+        };
+        if (hbm.show_accident_kills) {
+            table_rows.emplace_back(
+                "Accident Kills", StatsValue{stats.accident_kills}
+            );
+        }
+        if (hbm.show_shots_hit) {
+            table_rows.emplace_back("Shots Hit", StatsValue{stats.shots_hit});
+        }
         hitman_common::gui_table(
             settings,
             fonts,
             stats.rating,
             stats.map,
             stats.map_stage,
-            {
-                {"Innocents Killed", stats.innocents_killed},
-                {"Innocents Wounded", stats.innocents_wounded},
-                {"Enemies Killed", stats.enemies_killed},
-                {"Enemies Wounded", stats.enemies_wounded},
-                {"Police Killed", stats.police_killed},
-                {"Police Wounded", stats.police_wounded},
-                {"Frisk Failed", stats.frisk_failed},
-                {"Cover Blown", stats.cover_blown},
-                {"Bodies Found", stats.bodies_fnd},
-                {"Target Bodies Found", stats.target_bodies_fnd},
-                {"Unconscious Bodies Found", stats.uncon_bodies_fnd},
-                {"Witnesses", stats.witnesses},
-                {"On Camera", stats.on_camera},
-                {"Custom Weapons Left", stats.cust_weapons_left},
-                {"Suit Left", stats.suit_left},
-            }
+            table_rows
         );
-        if (stats.map_stage != MapStage::pre) {
-            ImGui::BeginTable(
-                "Extra",
-                2,
-                ImGuiTableFlags_SizingFixedFit
-                    | ImGuiTableFlags_NoKeepColumnsVisible
-                    | ImGuiTableFlags_NoHostExtendX
-            );
-            std::vector<hitman_common::TableRow> table_rows = {};
-            if (hbm.show_accident_kills) {
-                table_rows.emplace_back(
-                    "Accident Kills", StatsValue{stats.accident_kills}
-                );
-            }
-            if (hbm.show_shots_hit) {
-                table_rows.emplace_back(
-                    "Shots Hit", StatsValue{stats.shots_hit}
-                );
-            }
-            for (auto& row : table_rows) {
-                table_row(
-                    fonts,
-                    settings,
-                    row.stats_value.status,
-                    row.name.c_str(),
-                    "%d",
-                    row.stats_value.value
-                );
-            }
-            ImGui::EndTable();
-        }
     };
 }

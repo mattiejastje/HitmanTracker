@@ -1,12 +1,15 @@
 #pragma once
 
+#include <variant>
+
 #include "../game.hpp"
 
 namespace hitman_common {
 
 struct TableRow {
     std::string name;
-    StatsValue<int32_t> stats_value;
+    std::variant<StatsValue<int32_t>, StatsValue<double>, std::monostate>
+        stats_value;
 };
 
 void gui_header(

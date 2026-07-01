@@ -47,45 +47,27 @@ GameGui hitman_contracts::gui(
             stats.time
         );
         if (stats.map > 0) {
+            std::vector<hitman_common::TableRow> table_rows = {
+                {"Close Encounters", stats.close_encounters},
+                {"Alerts", stats.alerts},
+                {"Shots Fired", stats.shots_fired},
+                {"Headshots", stats.headshots},
+                {"Enemies Killed", stats.enemies_killed},
+                {"Enemies Wounded", stats.enemies_wounded},
+                {"Innocents Killed", stats.innocents_killed},
+                {"Innocents Wounded", stats.innocents_wounded},
+                {},
+                {"Stealth", stats.stealth},
+                {"Aggression", stats.aggression},
+            };
             hitman_common::gui_table(
                 settings,
                 fonts,
                 stats.rating,
                 stats.map,
                 stats.map_stage,
-                {
-                    {"Close Encounters", stats.close_encounters},
-                    {"Alerts", stats.alerts},
-                    {"Shots Fired", stats.shots_fired},
-                    {"Headshots", stats.headshots},
-                    {"Enemies Killed", stats.enemies_killed},
-                    {"Enemies Wounded", stats.enemies_wounded},
-                    {"Innocents Killed", stats.innocents_killed},
-                    {"Innocents Wounded", stats.innocents_wounded},
-                }
+                table_rows
             );
-            ImGui::BeginTable(
-                "Statistics",
-                2,
-                ImGuiTableFlags_SizingFixedFit
-                    | ImGuiTableFlags_NoKeepColumnsVisible
-                    | ImGuiTableFlags_NoHostExtendX
-            );
-            std::vector<hitman_common::TableRow> table_rows = {
-                {"Stealth", stats.stealth},
-                {"Aggression", stats.aggression},
-            };
-            for (auto& row : table_rows) {
-                table_row(
-                    fonts,
-                    settings,
-                    row.stats_value.status,
-                    row.name.c_str(),
-                    "%.3g",
-                    row.stats_value.value / 10.0
-                );
-            }
-            ImGui::EndTable();
         }
     };
 }

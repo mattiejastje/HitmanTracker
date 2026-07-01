@@ -67,13 +67,37 @@ void hitman_common::gui_table(
                 | ImGuiTableFlags_NoHostExtendX
         );
         for (auto& row : table_rows) {
-            table_row(
-                fonts,
-                settings,
-                row.stats_value.status,
-                row.name.c_str(),
-                "%d",
-                row.stats_value.value
+            std::visit(
+                [&](auto&& sv) {
+                    using T = std::decay_t<decltype(sv)>;
+                    if constexpr (std::is_same_v<T, std::monostate>) {
+                        // empty row, just for spacing
+                        ImGui::TableNextRow();
+                        ImGui::TableNextColumn();
+                        ImGui::TableNextColumn();
+                    } else if constexpr (std::is_same_v<
+                                             decltype(sv.value),
+                                             int32_t>) {
+                        table_row(
+                            fonts,
+                            settings,
+                            sv.status,
+                            row.name.c_str(),
+                            "%d",
+                            sv.value
+                        );
+                    } else {
+                        table_row(
+                            fonts,
+                            settings,
+                            sv.status,
+                            row.name.c_str(),
+                            "%.3g",
+                            sv.value
+                        );
+                    }
+                },
+                row.stats_value
             );
         }
         ImGui::EndTable();

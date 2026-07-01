@@ -71,30 +71,11 @@ GameGui hitman2_silent_assassin::gui(
                     {"Enemies Wounded", stats.enemies_wounded},
                     {"Innocents Killed", stats.innocents_killed},
                     {"Innocents Wounded", stats.innocents_wounded},
+                    {},
+                    {"Stealth", stats.stealth},
+                    {"Aggression", stats.aggression},
                 }
             );
-            ImGui::BeginTable(
-                "Statistics",
-                2,
-                ImGuiTableFlags_SizingFixedFit
-                    | ImGuiTableFlags_NoKeepColumnsVisible
-                    | ImGuiTableFlags_NoHostExtendX
-            );
-            std::vector<hitman_common::TableRow> table_rows = {
-                {"Stealth", stats.stealth},
-                {"Aggression", stats.aggression},
-            };
-            for (auto& row : table_rows) {
-                table_row(
-                    fonts,
-                    settings,
-                    row.stats_value.status,
-                    row.name.c_str(),
-                    "%.3g",
-                    row.stats_value.value / 10.0
-                );
-            }
-            ImGui::EndTable();
         }
     };
 }
