@@ -784,7 +784,7 @@ GameStatsSlow hitman_absolution::update_slow(
             stats.map_stage = MapStage::pre;  // most likely still in cutscene
         }
         if (stats.map > 0 && stats.map_stage == MapStage::pre
-            && (game.movie_manager.data.state_flags & 0x4) == 0) {
+            && (game.movie_manager.data.info.planes[0][0].is_allocated) == 0) {
             logging::debug("Checkpoint started");
             stats.start_time = game.time_manager.game_time;
             stats.map_stage = MapStage::main;
