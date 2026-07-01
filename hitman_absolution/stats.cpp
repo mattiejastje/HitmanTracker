@@ -752,11 +752,13 @@ GameStatsSlow hitman_absolution::update_slow(
         logging::trace("Map {}", map_info.map);
         if (stats.map != map_info.map) {
             // map changed: reset "spotted" and start_time
+            logging::debug("Checkpoint changed");
             write<int32_t>(handle, label_ptrs.at(150), 0);
             stats.map_stage = MapStage::pre;  // most likely still in cutscene
         }
         if (stats.map > 0 && stats.map_stage == MapStage::pre
-            && game.movie_manager.data.state_flags == 0) {
+            && (game.movie_manager.data.state_flags & 0x4) == 0) {
+            logging::debug("Checkpoint started");
             stats.start_time = game.time_manager.game_time;
             stats.map_stage = MapStage::main;
         }
@@ -944,7 +946,10 @@ GameStatsFast hitman_absolution::update_fast(Version version) {
             const auto& base_ptr = base_ptrs.at(0);
             auto game_time
                 = read<int64_t>(handle, base_ptr + time_manager_offset + 0x18);
-            if (game_time)
+            // game_time < stats.start_time means mission ended
+            // but update_slow has not run yet
+            // this check avoids the timer briefly glitching out
+            if (game_time && game_time >= stats.start_time)
                 stats.time = (*game_time - stats.start_time) * time_scale;
             return game_time.has_value();
         }

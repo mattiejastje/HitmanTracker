@@ -351,8 +351,8 @@ local MovieManagerData = d.Struct("MovieManagerData", {
   d.Field(d.Int32, "unk_11c"),
   d.Field(d.Int32, "unk_120"),
   d.Seek(0x12C),
-  -- 0x01, 0x04, and 0x08 confirmed
-  -- this byte is non-zero when a movie is playing (cutscene, menu background, ...)
+  -- bits 0x1, 0x4, and 0x8 confirmed
+  -- bit 0x4 is set when movie is playing
   d.Field(d.Int8, "state_flags"),
   d.Field(d.Int8, "unk_flags_12d"),
 })
