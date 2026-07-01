@@ -671,8 +671,6 @@ bool read_game(
     );
 }
 
-static int64_t start_time = 0;
-
 static hitman_absolution::CheckpointType get_checkpoint_type(
     const MapInfo& info
 ) {
@@ -755,12 +753,16 @@ GameStatsSlow hitman_absolution::update_slow(
         if (stats.map != map_info.map) {
             // map changed: reset "spotted" and start_time
             write<int32_t>(handle, label_ptrs.at(150), 0);
-            start_time = game.time_manager.game_time;
+            stats.map_stage = MapStage::pre;  // most likely still in cutscene
+        }
+        if (stats.map > 0 && stats.map_stage == MapStage::pre
+            && game.movie_manager.data.state_flags == 0) {
+            stats.start_time = game.time_manager.game_time;
+            stats.map_stage = MapStage::main;
         }
         stats.map = map_info.map;
-        stats.map_stage = MapStage::main;  // always render stats
         stats.checkpoint_type = get_checkpoint_type(map_info);
-        if (stats.map > 0) {
+        if (stats.map > 0 && stats.map_stage == MapStage::main) {
             auto& stats_manager = game.stats_manager;
             auto& game_stats
                 = stats_manager.values[game.level][checkpoint_index];
@@ -942,7 +944,8 @@ GameStatsFast hitman_absolution::update_fast(Version version) {
             const auto& base_ptr = base_ptrs.at(0);
             auto game_time
                 = read<int64_t>(handle, base_ptr + time_manager_offset + 0x18);
-            if (game_time) stats.time = (*game_time - start_time) * time_scale;
+            if (game_time)
+                stats.time = (*game_time - stats.start_time) * time_scale;
             return game_time.has_value();
         }
         return true;

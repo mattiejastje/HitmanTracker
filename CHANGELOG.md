@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- In Hitman Absolution, mission timers now only start
+  when movie cutscenes (shown during mission load) are finished playing.
+  This should more closely match livesplit.
+
 ## [0.4.0] - 2026-06-30
 
 ### Added

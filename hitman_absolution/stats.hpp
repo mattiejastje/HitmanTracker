@@ -11,6 +11,7 @@ namespace hitman_absolution {
 enum class CheckpointType { UNRATED, NO_TARGETS, TARGETS };
 
 struct Stats {
+    int64_t start_time;  // start of mission in game ticks
     float time;
     int map;
     MapStage map_stage;
