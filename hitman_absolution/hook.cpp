@@ -20,8 +20,7 @@ GameHookReady hitman_absolution::hook_ready(Version version) {
 GameHook hitman_absolution::hook(Version version) {
     return [version](std::shared_ptr<void> handle, const BasePtrs& base_ptrs) {
         const auto& base_ptr = base_ptrs.at(0);
-        const int32_t offset
-            = (version == Version::Steam ? 0x559B87 : 0x51E8C7);
+        const int32_t offset = version == Version::Steam ? 0x559B87 : 0x51E8C7;
         // mov [ebp-28],00000002 (steam)
         // mov [ebp-20],00000002 (gog)
         const uint8_t ebp_arg = (version == Version::Steam ? 0xD8 : 0xE0);
