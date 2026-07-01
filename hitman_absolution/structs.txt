@@ -190,6 +190,36 @@ struct TimeManager {
   int32_t frame_count;  // offset 0x6c
 };
 
+struct MovieInfoBuffer {
+  int32_t is_allocated;  // offset 0x0
+  void* buffer;  // offset 0x4
+  int32_t unk_maybe_width;  // offset 0x8
+};
+
+struct MovieInfo {
+  int32_t num_allocated_planes;  // offset 0x0
+  int32_t width;  // offset 0x4
+  int32_t height;  // offset 0x8
+  int32_t chroma_width;  // offset 0xc
+  int32_t chroma_height;  // offset 0x10
+  int32_t unk_14;  // offset 0x14
+  std::array<std::array<MovieInfoBuffer, 0x4>, 0x3> planes;  // offset 0x18
+  int32_t unk_a8;  // offset 0xa8
+};
+
+struct MovieManagerData {
+  MovieInfo info;  // offset 0x8
+  void* unk_bink_handle;  // offset 0xd8
+  int32_t unk_11c;  // offset 0x11c
+  int32_t unk_120;  // offset 0x120
+  int8_t state_flags;  // offset 0x12c
+  int8_t unk_flags_12d;  // offset 0x12d
+};
+
+struct MovieManager {
+  MovieManagerData* data;  // offset 0x84
+};
+
 struct GameSteam {
   GlobalData global_data;  // offset 0xd58c70
   StatsManager stats_manager;  // offset 0xd61710
@@ -200,6 +230,8 @@ struct GameSteam {
   int32_t level;  // offset 0xe21394
   CheckpointsManager checkpoints_manager;  // offset 0xe21580
   TimeManager time_manager;  // offset 0xe24730
+  MovieManager movie_manager;  // offset 0xe31b80
+  std::array<int8_t, 0x8> movie_slots;  // offset 0xe37e90
 };
 
 struct GameGOG {
@@ -212,5 +244,7 @@ struct GameGOG {
   int32_t level;  // offset 0xd68f54
   CheckpointsManager checkpoints_manager;  // offset 0xd69140
   TimeManager time_manager;  // offset 0xc88580
+  MovieManager movie_manager;  // offset 0xc87c00
+  std::array<int8_t, 0x8> movie_slots;  // offset 0xc8f774
 };
 

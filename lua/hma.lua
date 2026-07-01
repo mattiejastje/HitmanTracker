@@ -15,6 +15,8 @@ local layout = {
       level = 0xE21394,
       checkpoints_manager = 0xE21580,
       time_manager = 0xE24730,
+      movie_manager = 0xE31B80,
+      movie_slots = 0xE37E90,
     },
   },
   gog = {
@@ -29,6 +31,8 @@ local layout = {
       level = 0xD68F54,
       checkpoints_manager = 0xD69140,
       time_manager = 0xC88580,
+      movie_manager = 0xC87C00,
+      movie_slots = 0xC8F774,
     }
   },
 }
@@ -318,6 +322,46 @@ local GlobalData = d.Struct("GlobalData", {
   d.Field(d.Int32, "pigeons_killed"),
 })
 
+local MovieInfoBuffer = d.Struct("MovieInfoBuffer", {
+  d.Field(d.Int32, "is_allocated"),
+  d.Field(d.RawAddr(), "buffer"),
+  d.Field(d.Int32, "unk_maybe_width"),
+})
+
+local MovieInfo = d.Struct("MovieInfo", {
+  d.Field(d.Bounded(d.Int32, 0, 3), "num_allocated_planes"),
+  d.Field(d.Int32, "width"),
+  d.Field(d.Int32, "height"),
+  d.Field(d.Int32, "chroma_width"),
+  d.Field(d.Int32, "chroma_height"),
+  d.Field(d.Int32, "unk_14"),
+  -- each plane consists of 4 buffers
+  -- number of planes actually in use is num_allocated_planes
+  -- data may be invalid for unused entries
+  d.Field(d.Array(d.Array(MovieInfoBuffer, 0x4), 0x3), "planes"),
+  d.Field(d.Int32, "unk_a8"),
+})
+
+local MovieManagerData = d.Struct("MovieManagerData", {
+  d.Skip(0x8),
+  d.Field(MovieInfo, "info"),
+  d.Seek(0xD8),
+  d.Field(d.RawAddr(), "unk_bink_handle"),
+  d.Seek(0x11C),
+  d.Field(d.Int32, "unk_11c"),
+  d.Field(d.Int32, "unk_120"),
+  d.Seek(0x12C),
+  -- 0x01, 0x04, and 0x08 confirmed
+  -- this byte is non-zero when a movie is playing (cutscene, menu background, ...)
+  d.Field(d.Int8, "state_flags"),
+  d.Field(d.Int8, "unk_flags_12d"),
+})
+
+local MovieManager = d.Struct("MovieManager", {
+  d.Seek(0x84),
+  d.Field(d.Ref(MovieManagerData), "data"),
+})
+
 local game = function(layout)
   return d.Struct(
     "Game" .. layout.name, {
@@ -340,6 +384,10 @@ local game = function(layout)
       d.Field(CheckpointsManager, "checkpoints_manager"),
       d.Seek(layout.offset.time_manager),
       d.Field(TimeManager, "time_manager"),
+      d.Seek(layout.offset.movie_manager),
+      d.Field(MovieManager, "movie_manager"),
+      d.Seek(layout.offset.movie_slots),
+      d.Field(d.Array(d.Int8, 8), "movie_slots"),
     },
     { native_name = "Game" }
   )

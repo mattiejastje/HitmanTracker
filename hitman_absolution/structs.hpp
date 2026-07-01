@@ -385,6 +385,54 @@ struct TimeManager {
     int32_t frame_count;
 };
 
+struct MovieInfoBuffer {
+    int32_t is_allocated;
+    uint32_t buffer;
+    int32_t unk_maybe_width;
+};
+
+struct MovieInfo {
+    int32_t num_allocated_planes;
+    int32_t width;
+    int32_t height;
+    int32_t chroma_width;
+    int32_t chroma_height;
+    int32_t unk_14;
+    std::array<std::array<MovieInfoBuffer, 0x4>, 0x3> planes;
+    int32_t unk_a8;
+};
+
+struct MovieManagerData {
+    MovieInfo info;
+    uint32_t unk_bink_handle;
+    int32_t unk_11c;
+    int32_t unk_120;
+    int8_t state_flags;
+    int8_t unk_flags_12d;
+};
+
+using TMovieManagerData = Struct<
+    MovieManagerData,
+    Fields<
+        Skip<0x8>,
+        Field<Primitive<MovieInfo>, &MovieManagerData::info>,
+        Seek<0xd8>,
+        Field<RawAddr<uint32_t>, &MovieManagerData::unk_bink_handle>,
+        Seek<0x11c>,
+        Field<Int32, &MovieManagerData::unk_11c>,
+        Field<Int32, &MovieManagerData::unk_120>,
+        Seek<0x12c>,
+        Field<Int8, &MovieManagerData::state_flags>,
+        Field<Int8, &MovieManagerData::unk_flags_12d>>>;
+
+struct MovieManager {
+    MovieManagerData data;
+};
+
+using TMovieManager = Struct<
+    MovieManager,
+    Fields<Seek<0x84>, Field<Ref<TMovieManagerData>, &MovieManager::data>>>;
+
 struct Game {
     GlobalData global_data;
     StatsManager stats_manager;
@@ -395,6 +443,8 @@ struct Game {
     int32_t level;
     CheckpointsManager checkpoints_manager;
     TimeManager time_manager;
+    MovieManager movie_manager;
+    std::array<int8_t, 0x8> movie_slots;
 };
 
 using TGameSteam = Struct<
@@ -417,7 +467,11 @@ using TGameSteam = Struct<
         Seek<0xe21580>,
         Field<TCheckpointsManager, &Game::checkpoints_manager>,
         Seek<0xe24730>,
-        Field<Primitive<TimeManager>, &Game::time_manager>>>;
+        Field<Primitive<TimeManager>, &Game::time_manager>,
+        Seek<0xe31b80>,
+        Field<TMovieManager, &Game::movie_manager>,
+        Seek<0xe37e90>,
+        Field<Primitive<std::array<int8_t, 0x8>>, &Game::movie_slots>>>;
 
 using TGameGOG = Struct<
     Game,
@@ -439,6 +493,10 @@ using TGameGOG = Struct<
         Seek<0xd69140>,
         Field<TCheckpointsManager, &Game::checkpoints_manager>,
         Seek<0xc88580>,
-        Field<Primitive<TimeManager>, &Game::time_manager>>>;
+        Field<Primitive<TimeManager>, &Game::time_manager>,
+        Seek<0xc87c00>,
+        Field<TMovieManager, &Game::movie_manager>,
+        Seek<0xc8f774>,
+        Field<Primitive<std::array<int8_t, 0x8>>, &Game::movie_slots>>>;
 
 }  // namespace hitman_absolution::structs
