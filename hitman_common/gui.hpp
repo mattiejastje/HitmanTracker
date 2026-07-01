@@ -13,7 +13,11 @@ struct Double {
 
 struct TableRow {
     std::string name;
-    std::variant<std::monostate, StatsValue<int32_t>, Double> stats_value;
+    std::variant<
+        std::monostate,
+        StatsValue<int32_t>,
+        StatsValue<std::string>>
+        value;
 };
 
 void gui_header(

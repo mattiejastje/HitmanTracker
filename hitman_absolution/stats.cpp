@@ -659,6 +659,33 @@ static std::optional<int32_t> get_shadow_raw_score_threshold(
     return {};
 }
 
+static int32_t get_num_challenges_completed(
+    const std::vector<hitman_absolution::structs::ChallengeNode>& challenges
+) {
+    int32_t count = 0;
+    for (const auto& challenge : challenges) {
+        const auto& data = challenge.data;
+        if (data && data->completed != 0) count++;
+    }
+    return count;
+}
+
+static double get_score_modifier(
+    int32_t difficulty, int32_t num_challenges_completed
+) {
+    const double modifier_1 = difficulty == 0   ? 1.0
+                              : difficulty == 1 ? 1.25
+                              : difficulty == 2 ? 1.5
+                              : difficulty == 3 ? 2.0
+                                                : 2.5;
+    const double modifier_2 = 0.05 * num_challenges_completed;
+    return modifier_1 + modifier_2;
+}
+
+static std::string get_scaled_score(double modifier, int32_t raw_score) {
+    return std::format("{:.7g}", raw_score * modifier);
+};
+
 template <typename T, IsMemoryReader Reader, IsTracer Tracer>
 bool read_game(
     uint32_t address,
@@ -840,9 +867,21 @@ GameStatsSlow hitman_absolution::update_slow(
                          : percent < PROFESSIONAL ? "Specialist"
                          : percent < SHADOW       ? "Professional"
                                                   : "Shadow");
+            const double modifier
+                = hma.apply_bonus ? get_score_modifier(
+                                        stats.difficulty,
+                                        get_num_challenges_completed(
+                                            game.challenge_manager.challenges
+                                        )
+                                    )
+                                  : 1.0;
             const auto score_rating_total
                 = hma.show_score_total
-                      ? std::format(" [{}/{}]", score, score_for_max_rating)
+                      ? std::format(
+                            " [{}/{}]",
+                            get_scaled_score(modifier, score),
+                            get_scaled_score(modifier, score_for_max_rating)
+                        )
                       : "";
             stats.score_rating = {
                 std::format("{}{}", score_rating_text, score_rating_total),
@@ -850,66 +889,104 @@ GameStatsSlow hitman_absolution::update_slow(
             };
             // major negative scores
             stats.score_civilian_casualty
-                = {STATS_MULTIPLIERS[CIVILIAN_CASUALTY]
-                       * game_stats[CIVILIAN_CASUALTY],
+                = {get_scaled_score(
+                       modifier,
+                       STATS_MULTIPLIERS[CIVILIAN_CASUALTY]
+                           * game_stats[CIVILIAN_CASUALTY]
+                   ),
                    game_stats[CIVILIAN_CASUALTY] ? Status::RED
                                                  : Status::YELLOW};
             stats.score_non_target_casualty
-                = {STATS_MULTIPLIERS[NON_TARGET_CASUALTY]
-                       * game_stats[NON_TARGET_CASUALTY],
+                = {get_scaled_score(
+                       modifier,
+                       STATS_MULTIPLIERS[NON_TARGET_CASUALTY]
+                           * game_stats[NON_TARGET_CASUALTY]
+                   ),
                    game_stats[NON_TARGET_CASUALTY] ? Status::RED
                                                    : Status::YELLOW};
-            stats.score_spotted
-                = {STATS_MULTIPLIERS[SPOTTED] * game_stats[SPOTTED],
-                   game_stats[SPOTTED] ? Status::RED : Status::YELLOW};
+            stats.score_spotted = {
+                get_scaled_score(
+                    modifier, STATS_MULTIPLIERS[SPOTTED] * game_stats[SPOTTED]
+                ),
+                game_stats[SPOTTED] ? Status::RED : Status::YELLOW
+            };
             // minor negative or positive scores
-            stats.score_pacification
-                = {STATS_MULTIPLIERS[PACIFICATION] * game_stats[PACIFICATION],
-                   game_stats[PACIFICATION] ? Status::RED : Status::YELLOW};
+            stats.score_pacification = {
+                get_scaled_score(
+                    modifier,
+                    STATS_MULTIPLIERS[PACIFICATION] * game_stats[PACIFICATION]
+                ),
+                game_stats[PACIFICATION] ? Status::RED : Status::YELLOW
+            };
             stats.score_body_hidden
-                = {STATS_MULTIPLIERS[BODY_HIDDEN] * game_stats[BODY_HIDDEN],
+                = {get_scaled_score(
+                       modifier,
+                       STATS_MULTIPLIERS[BODY_HIDDEN] * game_stats[BODY_HIDDEN]
+                   ),
                    game_stats[BODY_HIDDEN] ? Status::GREEN : Status::YELLOW};
-            stats.score_headshot
-                = {STATS_MULTIPLIERS[HEADSHOT] * game_stats[HEADSHOT],
-                   game_stats[HEADSHOT] ? Status::GREEN : Status::YELLOW};
+            stats.score_headshot = {
+                get_scaled_score(
+                    modifier, STATS_MULTIPLIERS[HEADSHOT] * game_stats[HEADSHOT]
+                ),
+                game_stats[HEADSHOT] ? Status::GREEN : Status::YELLOW
+            };
             stats.score_silent_kill
-                = {STATS_MULTIPLIERS[SILENT_KILL] * game_stats[SILENT_KILL],
+                = {get_scaled_score(
+                       modifier,
+                       STATS_MULTIPLIERS[SILENT_KILL] * game_stats[SILENT_KILL]
+                   ),
                    game_stats[SILENT_KILL] ? Status::GREEN : Status::YELLOW};
             // major positive scores
             if (map_info.num_evidence > 0) {
                 stats.score_evidence_removed
-                    = {STATS_MULTIPLIERS[EVIDENCE_REMOVED]
-                           * game_stats[EVIDENCE_REMOVED],
+                    = {get_scaled_score(
+                           modifier,
+                           STATS_MULTIPLIERS[EVIDENCE_REMOVED]
+                               * game_stats[EVIDENCE_REMOVED]
+                       ),
                        game_stats[EVIDENCE_REMOVED] < map_info.num_evidence
                            ? Status::YELLOW
                            : Status::GREEN};
             } else {
                 if (game_stats[EVIDENCE_REMOVED] != 0)
                     logging::warn("no evidence but evidence removed not zero");
-                stats.score_evidence_removed = {0};
+                stats.score_evidence_removed = {"0"};
             }
             stats.score_objective_complete
-                = {STATS_MULTIPLIERS[OBJECTIVE_COMPLETE]
-                       * game_stats[OBJECTIVE_COMPLETE],
+                = {get_scaled_score(
+                       modifier,
+                       STATS_MULTIPLIERS[OBJECTIVE_COMPLETE]
+                           * game_stats[OBJECTIVE_COMPLETE]
+                   ),
                    game_stats[OBJECTIVE_COMPLETE] < map_info.num_objectives
                        ? Status::YELLOW
                        : Status::GREEN};
             // major positive scores for maps with targets
             if (map_info.num_targets > 0) {
                 stats.score_signature_kill
-                    = {STATS_MULTIPLIERS[SIGNATURE_KILL]
-                           * game_stats[SIGNATURE_KILL],
+                    = {get_scaled_score(
+                           modifier,
+                           STATS_MULTIPLIERS[SIGNATURE_KILL]
+                               * game_stats[SIGNATURE_KILL]
+                       ),
                        game_stats[SIGNATURE_KILL] < map_info.num_targets
                            ? Status::YELLOW
                            : Status::GREEN};
-                stats.score_target_kill
-                    = {STATS_MULTIPLIERS[TARGET_KILL] * game_stats[TARGET_KILL],
-                       game_stats[TARGET_KILL] < map_info.num_targets
-                           ? Status::YELLOW
-                           : Status::GREEN};
+                stats.score_target_kill = {
+                    get_scaled_score(
+                        modifier,
+                        STATS_MULTIPLIERS[TARGET_KILL] * game_stats[TARGET_KILL]
+                    ),
+                    game_stats[TARGET_KILL] < map_info.num_targets
+                        ? Status::YELLOW
+                        : Status::GREEN
+                };
                 stats.score_silent_assassin_bonus
-                    = {STATS_MULTIPLIERS[SILENT_ASSASSIN_BONUS]
-                           * game_stats[SILENT_ASSASSIN_BONUS],
+                    = {get_scaled_score(
+                           modifier,
+                           STATS_MULTIPLIERS[SILENT_ASSASSIN_BONUS]
+                               * game_stats[SILENT_ASSASSIN_BONUS]
+                       ),
                        game_stats[SILENT_ASSASSIN_BONUS] == 0 ? Status::YELLOW
                                                               : Status::GREEN};
             } else {
@@ -921,9 +998,9 @@ GameStatsSlow hitman_absolution::update_slow(
                     logging::warn(
                         "no targets but silent assassin bonus not zero"
                     );
-                stats.score_signature_kill = {0};
-                stats.score_target_kill = {0};
-                stats.score_silent_assassin_bonus = {0};
+                stats.score_signature_kill = {"0"};
+                stats.score_target_kill = {"0"};
+                stats.score_silent_assassin_bonus = {"0"};
             }
         }
         return true;

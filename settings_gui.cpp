@@ -186,6 +186,12 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                 "Show Score rating details", &settings.hma.show_score_details
             )
         );
+        mark_any(
+            changed,
+            ImGui::Checkbox(
+                "Apply difficulty/challenge bonus", &settings.hma.apply_bonus
+            )
+        );
         ImGui::PushID("Rating Mode");
         if (ImGui::TreeNode("Rating Mode")) {
             if (ImGui::Button("Original Game")) {

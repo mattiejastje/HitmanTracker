@@ -36,8 +36,8 @@ struct Stats {
     StatsValue<int32_t> innocents_wounded;
     StatsValue<int32_t> close_encounters;
     StatsValue<int32_t> alerts;
-    StatsValue<double> stealth;
-    StatsValue<double> aggression;
+    StatsValue<std::string> stealth;
+    StatsValue<std::string> aggression;
 };
 
 void process_game_stats(

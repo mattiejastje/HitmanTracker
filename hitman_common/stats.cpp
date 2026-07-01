@@ -117,13 +117,13 @@ void hitman_common::process_game_stats(
         = {game_stats[INNOCENTS_WOUNDED], game_status[INNOCENTS_WOUNDED]};
     auto stealth = measure_stealth(game_stats);
     stats.stealth
-        = {100 * std::pow(0.9, stealth),
+        = {std::format("{:.3g}", 100 * std::pow(0.9, stealth)),
            stealth == 0   ? Status::GREEN
            : stealth == 1 ? Status::YELLOW
                           : Status::RED};
     auto aggression = measure_aggression(game_stats);
     stats.aggression
-        = {100 * std::tanh(0.005 * aggression),
+        = {std::format("{:.3g}", 100 * std::tanh(0.005 * aggression)),
            aggression <= 5   ? Status::GREEN
            : aggression == 6 ? Status::YELLOW
                              : Status::RED};

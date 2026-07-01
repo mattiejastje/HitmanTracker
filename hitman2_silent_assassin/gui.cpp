@@ -72,9 +72,8 @@ GameGui hitman2_silent_assassin::gui(
                     {"Innocents Killed", stats.innocents_killed},
                     {"Innocents Wounded", stats.innocents_wounded},
                     {},
-                    {"Stealth", hitman_common::Double{stats.stealth, "%.3g"}},
-                    {"Aggression",
-                     hitman_common::Double{stats.aggression, "%.3g"}},
+                    {"Stealth", stats.stealth},
+                    {"Aggression", stats.aggression},
                 }
             );
         }

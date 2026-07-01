@@ -18,19 +18,20 @@ struct Stats {
     int32_t difficulty;
     CheckpointType checkpoint_type;
     StatsValue<std::string> rating;
+    // store scores as strings since formatting is expensive
     StatsValue<std::string> score_rating;
-    StatsValue<int32_t> score_objective_complete;
-    StatsValue<int32_t> score_target_kill;
-    StatsValue<int32_t> score_spotted;
-    StatsValue<int32_t> score_evidence_removed;
-    StatsValue<int32_t> score_silent_assassin_bonus;
-    StatsValue<int32_t> score_signature_kill;
-    StatsValue<int32_t> score_silent_kill;
-    StatsValue<int32_t> score_headshot;
-    StatsValue<int32_t> score_body_hidden;
-    StatsValue<int32_t> score_civilian_casualty;
-    StatsValue<int32_t> score_non_target_casualty;
-    StatsValue<int32_t> score_pacification;
+    StatsValue<std::string> score_objective_complete;
+    StatsValue<std::string> score_target_kill;
+    StatsValue<std::string> score_spotted;
+    StatsValue<std::string> score_evidence_removed;
+    StatsValue<std::string> score_silent_assassin_bonus;
+    StatsValue<std::string> score_signature_kill;
+    StatsValue<std::string> score_silent_kill;
+    StatsValue<std::string> score_headshot;
+    StatsValue<std::string> score_body_hidden;
+    StatsValue<std::string> score_civilian_casualty;
+    StatsValue<std::string> score_non_target_casualty;
+    StatsValue<std::string> score_pacification;
 };
 
 GameStatsSlow update_slow(const settings::HMA& hma, Version version);

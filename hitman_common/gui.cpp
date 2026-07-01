@@ -68,8 +68,8 @@ void hitman_common::gui_table(
         );
         for (auto& row : table_rows) {
             std::visit(
-                [&](auto&& sv) {
-                    using T = std::decay_t<decltype(sv)>;
+                [&](auto&& val) {
+                    using T = std::decay_t<decltype(val)>;
                     if constexpr (std::is_same_v<T, std::monostate>) {
                         // empty row, just for spacing
                         ImGui::TableNextRow();
@@ -79,23 +79,31 @@ void hitman_common::gui_table(
                         table_row(
                             fonts,
                             settings,
-                            sv.stats_value.status,
+                            val.stats_value.status,
                             row.name.c_str(),
-                            sv.format,
-                            sv.stats_value.value
+                            val.format,
+                            val.stats_value.value
+                        );
+                    } else if constexpr (std::is_same_v<T, StatsValue<std::string>>) {
+                        table_row(
+                            fonts,
+                            settings,
+                            val.status,
+                            row.name.c_str(),
+                            val.value.c_str()
                         );
                     } else {
                         table_row(
                             fonts,
                             settings,
-                            sv.status,
+                            val.status,
                             row.name.c_str(),
                             "%d",
-                            sv.value
+                            val.value
                         );
                     }
                 },
-                row.stats_value
+                row.value
             );
         }
         ImGui::EndTable();

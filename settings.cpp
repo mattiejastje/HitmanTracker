@@ -149,6 +149,13 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
         ->capture_default_str();
     hma_group
         ->add_option(
+            "--hma-apply-bonus",
+            settings.hma.apply_bonus,
+            "Apply score bonus based on difficulty and challenges completed"
+        )
+        ->capture_default_str();
+    hma_group
+        ->add_option(
             "--hma-rating-mode-unrated",
             settings.hma.rating_mode_unrated,
             "Rating mode for unrated checkpoints"
