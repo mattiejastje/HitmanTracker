@@ -106,15 +106,15 @@ GameGui hitman_absolution::gui(
     const settings::HMA& hma,
     const std::string& version
 ) {
-    return [&settings, &hma, version](const Fonts& fonts, const std::any& stats_any) {
+    return [&settings,
+            &hma,
+            version](const Fonts& fonts, const std::any& stats_any) {
         const auto& stats = std::any_cast<const Stats&>(stats_any);
-        auto game_name = settings.show_game_version
-                             ? std::format("{} [{}]", GAME_NAME, version)
-                             : GAME_NAME;
         hitman_common::gui_header(
             settings,
             fonts,
-            game_name,
+            GAME_NAME,
+            version,
             stats.difficulty == 0   ? "Easy"
             : stats.difficulty == 1 ? "Normal"
             : stats.difficulty == 2 ? "Hard"

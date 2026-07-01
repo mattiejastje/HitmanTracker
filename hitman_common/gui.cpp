@@ -13,13 +13,17 @@ void hitman_common::gui_header(
     const settings::Gui& settings,
     const Fonts& fonts,
     const std::string& game_name,
+    const std::string& version,
     const std::string& difficulty,
     const std::string& map_name,
     int map,
     MapStage map_stage,
     float time
 ) {
-    text(fonts.title, settings.title.color, game_name.c_str());
+    const auto title = settings.show_game_version
+                           ? std::format("{} [{}]", game_name, version)
+                           : game_name;
+    text(fonts.title, settings.title.color, title.c_str());
     text(fonts.difficulty, settings.difficulty.color, difficulty.c_str());
     if (map > 0) {
         ImGui::PushTextWrapPos();

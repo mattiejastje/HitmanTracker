@@ -13,6 +13,7 @@ void gui_header(
     const settings::Gui& settings,
     const Fonts& fonts,
     const std::string& game_name,
+    const std::string& version,
     const std::string& difficulty,
     const std::string& map_name,
     int map,
