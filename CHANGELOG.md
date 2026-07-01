@@ -9,7 +9,7 @@
 - Hitman Absolution:
 
   * Mission timers now only start when movie cutscenes (shown during mission load)
-	are finished playing. This should more closely match livesplit.
+    are finished playing. This should more closely match livesplit.
 
 ### Added
 
