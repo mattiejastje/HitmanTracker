@@ -26,6 +26,8 @@ void hitman_absolution::register_game_info(
             .name = GAME_NAME,
             .methods
             = GameMethods{gui(settings, hma, "GOG"), hook(Version::GOG), hook_ready(Version::GOG), update_slow(hma, Version::GOG), update_fast(Version::GOG)},
+            .make_remote_state = [] { return std::make_any<structs::Game>(); },
+            .make_stats = [] { return std::make_any<Stats>(); },
             .module_infos = {{"hma.exe", PeId{0x5C9A0BF7}}},
         }
     );

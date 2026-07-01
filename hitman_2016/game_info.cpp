@@ -35,6 +35,8 @@ void hitman_2016::register_game_info(const settings::Gui& settings) {
                 stats_nothing_slow,
                 stats_nothing_fast,
             },
+            .make_remote_state = [] { return std::any{}; },
+            .make_stats = [] { return std::any{}; },
             .module_infos = {
                 {"hitman.exe", PeId{0x5F8ED8D0}},
             },
