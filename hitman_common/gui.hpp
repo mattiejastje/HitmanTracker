@@ -6,11 +6,6 @@
 
 namespace hitman_common {
 
-struct Double {
-    StatsValue<double> stats_value;
-    const char* format = "%.3g";
-};
-
 struct TableRow {
     std::string name;
     std::variant<
