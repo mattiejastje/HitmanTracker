@@ -61,3 +61,6 @@ target_link_libraries(HitmanTracker PRIVATE CLI11::CLI11)
 target_link_libraries(HitmanTracker PRIVATE imgui::imgui)
 target_link_libraries(HitmanTracker PRIVATE spdlog::spdlog_header_only)
 target_link_libraries(HitmanTracker PRIVATE mempeep)
+
+add_executable(MultiViewportTest "_multi_viewport_test.cpp")
+target_link_libraries(MultiViewportTest PRIVATE imgui::imgui)
