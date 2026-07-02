@@ -18,7 +18,7 @@ inline std::optional<uint32_t> read_lethed(
     uint32_t index = 0;  // to avoid infinite loop
     while (offset < data_used) {
         if (index++ > 0x200) {
-            logging::warn("Too many properties");
+            spdlog::warn("Too many properties");
             break;
         }
         mempeep::RemoteValue<
@@ -27,28 +27,28 @@ inline std::optional<uint32_t> read_lethed(
             remote_record{data + offset};
         hitman2_silent_assassin::structs::PropertyManagerRecord record{};
         if (!mempeep::read(remote_record, reader, tracer, record)) {
-            logging::warn("Unable to read property manager record");
+            spdlog::warn("Unable to read property manager record");
             return {};
         }
         if (record.record_size <= 0x11) {
-            logging::warn("Invalid property record size");
+            spdlog::warn("Invalid property record size");
             return {};
         }
         // "lethed" property has record size 0x1C so filter on that first
         if (record.is_active && record.record_size == 0x1C) {
             hitman2_silent_assassin::structs::Property property{};
             if (!mempeep::read(record.property, reader, tracer, property)) {
-                logging::warn("Unable to read property");
+                spdlog::warn("Unable to read property");
                 return {};
             }
             if (property.key == "lethed") {
                 if (property.size != 4) {
-                    logging::warn("Property \"lethed\" has wrong size");
+                    spdlog::warn("Property \"lethed\" has wrong size");
                     return {};
                 }
                 int32_t lethed;
                 if (!reader(data + offset + 0x18, 4, &lethed)) {
-                    logging::warn("Unable to read property \"lethed\" value");
+                    spdlog::warn("Unable to read property \"lethed\" value");
                     return {};
                 }
                 return lethed;

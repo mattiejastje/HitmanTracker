@@ -1,8 +1,8 @@
 #include "signal.hpp"
 
-#include <cmath>
+#include <spdlog/spdlog.h>
 
-#include "logging.hpp"
+#include <cmath>
 
 void Signal::update(float sample, float dt) {
     float alpha = std::min(dt * inv_tau, 1.0f);
@@ -10,9 +10,9 @@ void Signal::update(float sample, float dt) {
     now += dt;
     if (now > interval) {
         if (high && (value > *high)) {
-            logging::error("{} = {:g} {} (too high)", name, value, unit);
+            spdlog::error("{} = {:g} {} (too high)", name, value, unit);
         } else {
-            logging::debug("{} = {:g} {}", name, value, unit);
+            spdlog::debug("{} = {:g} {}", name, value, unit);
         }
         now -= interval;
     }

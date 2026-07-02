@@ -1,5 +1,7 @@
 #include "stats.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <cstdint>
 #include <mempeep/read.hpp>
 #include <mempeep/tracers/log_tracer.hpp>
@@ -8,7 +10,6 @@
 
 #include "../hitman_common/read_lethed.hpp"
 #include "../hitman_common/stats.hpp"
-#include "../logging.hpp"
 #include "../mem/read_write.hpp"
 #include "structs.hpp"
 
@@ -283,7 +284,7 @@ GameStatsSlow hitman2_silent_assassin::update_slow(Version version) {
                     if (!mempeep::read(
                             remote_level_control, reader, tracer, level_control
                         )) {
-                        logging::warn("Failed to read level control");
+                        spdlog::warn("Failed to read level control");
                         return false;
                     }
                 }
@@ -296,12 +297,12 @@ GameStatsSlow hitman2_silent_assassin::update_slow(Version version) {
                     + info.player_gref
                 };
                 if (!mempeep::read(remote_player, reader, tracer, player)) {
-                    logging::warn("Failed to read player");
+                    spdlog::warn("Failed to read player");
                     return false;
                 }
                 if (player.data.player_gref
                     != (0x40000000 | info.player_gref)) {
-                    logging::warn("Player gref validation check failed");
+                    spdlog::warn("Player gref validation check failed");
                     return false;
                 }
             }

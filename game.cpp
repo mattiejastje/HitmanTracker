@@ -1,5 +1,6 @@
 #include "game.hpp"
 
+#include <spdlog/spdlog.h>
 #include <synchapi.h>
 #include <tlhelp32.h>
 
@@ -13,11 +14,10 @@
 #include <unordered_map>
 
 #include "base_ptrs.hpp"
-#include "pe.hpp"
 #include "game_info_registry.hpp"
-#include "logging.hpp"
 #include "mem/handle.hpp"
 #include "mem/read_write.hpp"
+#include "pe.hpp"
 
 struct Module {
     intptr_t base_ptr{};
@@ -27,7 +27,7 @@ struct Module {
 static std::unordered_map<std::string, Module> get_all_modules(
     HANDLE process_handle, DWORD process_id
 ) {
-    logging::debug("Finding modules of process id {:#x}", process_id);
+    spdlog::debug("Finding modules of process id {:#x}", process_id);
     std::unordered_map<std::string, Module> modules{};
     auto snapshot_handle = open_snapshot_handle(
         TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, process_id
@@ -45,7 +45,7 @@ static std::unordered_map<std::string, Module> get_all_modules(
                 );
                 auto base_ptr
                     = reinterpret_cast<intptr_t>(module_entry.modBaseAddr);
-                logging::trace("Found module {} at {:#x}", name, base_ptr);
+                spdlog::trace("Found module {} at {:#x}", name, base_ptr);
                 modules[name] = {base_ptr, module_entry.szExePath};
             } while (Module32Next(snapshot_handle.get(), &module_entry));
         }
@@ -62,14 +62,14 @@ static std::optional<std::vector<Module>> get_modules(
     for (const auto& module_info : module_infos) {
         auto module = all_modules.find(module_info.name);
         if (module == all_modules.end()) {
-            logging::debug("Cannot find module {}", module_info.name);
+            spdlog::debug("Cannot find module {}", module_info.name);
             return {};
         }
         const auto& exe_path = module->second.exe_path;
         auto pe_id = get_pe_id(exe_path);
         if (!pe_id) return {};
         if (pe_id->time_date_stamp != module_info.pe_id.time_date_stamp) {
-            logging::debug(
+            spdlog::debug(
                 "{} time date stamp {:#x} does not match {:#x}",
                 module_info.name,
                 pe_id->time_date_stamp,
@@ -78,7 +78,7 @@ static std::optional<std::vector<Module>> get_modules(
             return {};
         }
         modules.push_back(module->second);
-        logging::debug(
+        spdlog::debug(
             "Found required module {} at {:#x}",
             module_info.name,
             module->second.base_ptr
@@ -98,7 +98,7 @@ static BasePtrs get_base_ptrs(const std::vector<Module>& modules) {
 static std::optional<Game> get_game_for_process(
     const char* exe_file, DWORD process_id
 ) {
-    logging::trace("Inspecting process {} with id {:#x}", exe_file, process_id);
+    spdlog::trace("Inspecting process {} with id {:#x}", exe_file, process_id);
     for (auto& info : get_game_info_registry()) {
         if (stricmp(info.module_infos.at(0).name.c_str(), exe_file) != 0)
             continue;
@@ -110,7 +110,7 @@ static std::optional<Game> get_game_for_process(
         if (!modules) continue;
         std::shared_ptr<void> handle = std::move(process_handle);
         auto base_ptrs = get_base_ptrs(*modules);
-        logging::info("Found process for {}", info.name);
+        spdlog::info("Found process for {}", info.name);
         return Game{
             (*modules)[0].exe_path,
             handle,
@@ -125,7 +125,7 @@ static std::optional<Game> get_game_for_process(
 }
 
 std::optional<Game> find_game() {
-    logging::debug("Inspecting all processes");
+    spdlog::debug("Inspecting all processes");
     std::optional<Game> game{};
     auto snapshot_handle = open_snapshot_handle(TH32CS_SNAPPROCESS, 0);
     if (snapshot_handle) {

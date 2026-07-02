@@ -1,5 +1,7 @@
 #include "stats.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <bit>  // std::rotl, std::rotr
 #include <cstdint>
 #include <filesystem>
@@ -10,7 +12,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "../logging.hpp"
 #include "../mem/read_write.hpp"
 #include "structs.hpp"
 
@@ -99,22 +100,22 @@ static std::optional<std::string> read_hitman_sav(
 ) {
     std::ifstream f(path, std::ios::binary | std::ios::ate);
     if (!f) {
-        logging::error("Failed to open save file: {}", path.string());
+        spdlog::error("Failed to open save file: {}", path.string());
         return {};
     }
     long file_size = f.tellg();
     f.seekg(0);
     if (file_size < 12) {
-        logging::error("File too small to be a valid save");
+        spdlog::error("File too small to be a valid save");
         return {};
     }
     std::vector<uint8_t> raw(file_size);
     if (!f.read(reinterpret_cast<char*>(raw.data()), file_size)) {
-        logging::error("Failed to read save file");
+        spdlog::error("Failed to read save file");
         return {};
     }
     if (memcmp(raw.data(), "JPMH", 4) != 0) {
-        logging::error("Bad magic: not a Hitman save file");
+        spdlog::error("Bad magic: not a Hitman save file");
         return {};
     }
     uint32_t stored_checksum;
@@ -142,7 +143,7 @@ static std::optional<std::string> read_hitman_sav(
     }
     uint32_t calculated_checksum = checksum(payload.data(), payload_size);
     if (calculated_checksum != stored_checksum) {
-        logging::error("Checksum mismatch: save file may be corrupt");
+        spdlog::error("Checksum mismatch: save file may be corrupt");
         return {};
     }
     return payload;
@@ -152,7 +153,7 @@ static std::optional<int32_t> find_difficulty(const std::string& payload) {
     std::regex re(" Difficulty=\"(\\d+)\" Current=\"1\"");
     std::smatch match;
     if (!std::regex_search(payload, match, re)) {
-        logging::warn("Difficulty could not be identified from save file");
+        spdlog::warn("Difficulty could not be identified from save file");
         return {};
     }
     return std::stoi(match[1]);
@@ -166,7 +167,7 @@ static std::optional<int32_t> read_difficulty_from_hitman_sav(
     std::error_code ec;
     auto mtime = std::filesystem::last_write_time(path, ec);
     if (ec) {
-        logging::error(
+        spdlog::error(
             "Unable to check last write time of {}: {}",
             path.string(),
             ec.message()
@@ -174,11 +175,11 @@ static std::optional<int32_t> read_difficulty_from_hitman_sav(
         return {};
     }
     if (mtime == cached_mtime) return cached_difficulty;
-    logging::debug("Reading Hitman.sav");
+    spdlog::debug("Reading Hitman.sav");
     cached_mtime = mtime;
     auto payload = read_hitman_sav(path);
     if (!payload) return {};
-    logging::trace("Hitman.sav:\n{}", *payload);
+    spdlog::trace("Hitman.sav:\n{}", *payload);
     cached_difficulty = find_difficulty(*payload);
     return cached_difficulty;
 }
@@ -210,9 +211,9 @@ GameStatsSlow hitman_codename_47::update_slow(Version version) {
         if (scene_container->scenes.empty()) return false;
         // back = root scene (i.e. mission, main menu, options from main menu,
         // ...) front = child scene (i.e. laptop, options from mission, ...)
-        logging::trace("scenes:");
+        spdlog::trace("scenes:");
         for (const auto& _scene : scene_container->scenes) {
-            logging::trace(
+            spdlog::trace(
                 "  {}", _scene.scene_name ? _scene.scene_name->text : "NULL"
             );
         }
@@ -224,9 +225,9 @@ GameStatsSlow hitman_codename_47::update_slow(Version version) {
         if (iter != scenes.end()) {
             stats.map = iter->second.map;
             stats.map_stage = iter->second.map_stage;
-            logging::trace("Map {}", stats.map);
+            spdlog::trace("Map {}", stats.map);
         } else {
-            logging::error("No map registered for scene {}", scene);
+            spdlog::error("No map registered for scene {}", scene);
             return false;
         }
         return true;

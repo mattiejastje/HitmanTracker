@@ -2,13 +2,13 @@
 
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
+#include <spdlog/spdlog.h>
 
 #include <filesystem>
 #include <map>
 #include <tuple>
 
 #include "../imgui_utils.hpp"
-#include "../logging.hpp"
 #include "deviced3d.hpp"
 #include "window.hpp"
 
@@ -20,9 +20,9 @@ static ImFont* load_font(
               ? io.Fonts->AddFontFromFileTTF(file.string().c_str(), size)
               : nullptr;
     if (im_font) {
-        logging::debug("Font {} (size {}) loaded", file.string(), size);
+        spdlog::debug("Font {} (size {}) loaded", file.string(), size);
     } else {
-        logging::error(
+        spdlog::error(
             "Font {} (size {}) could not be loaded", file.string(), size
         );
     }
@@ -51,7 +51,7 @@ static FontKey get_font_key(float font_size, const settings::TextStyle& style) {
 
 void UIDeleter::operator()(UI* ui) const {
     if (ui) {
-        logging::debug("Shutting down ImGui...");
+        spdlog::debug("Shutting down ImGui...");
         ImGui_ImplDX9_Shutdown();
         ImGui_ImplWin32_Shutdown();
         if (ui->imgui_context) ImGui::DestroyContext(ui->imgui_context);
@@ -61,7 +61,7 @@ void UIDeleter::operator()(UI* ui) const {
 std::unique_ptr<UI, UIDeleter> CreateUI(
     const settings::Gui& settings, Window* window, DeviceD3D* dev
 ) {
-    logging::debug("Initializing ImGui...");
+    spdlog::debug("Initializing ImGui...");
     auto ui = std::unique_ptr<UI, UIDeleter>(new UI());
     if (!IMGUI_CHECKVERSION()) return nullptr;
     ui->imgui_context = ImGui::CreateContext();
@@ -80,7 +80,7 @@ std::unique_ptr<UI, UIDeleter> CreateUI(
 }
 
 bool UpdateUIScaling(UI& ui, float dpiscale, const settings::Gui& settings) {
-    logging::debug("Updating UI for dpi scale {}...", dpiscale);
+    spdlog::debug("Updating UI for dpi scale {}...", dpiscale);
     ImGuiIO& io = ImGui::GetIO();
     ImGui_ImplDX9_InvalidateDeviceObjects();
 

@@ -1,11 +1,12 @@
 #include "stats.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <array>
 #include <cassert>
 #include <set>
 #include <vector>
 
-#include "../logging.hpp"
 #include "simple_rating.hpp"
 
 using namespace hitman_common;
@@ -64,19 +65,19 @@ static StatsArray<int32_t> find_nearest_safe_stats(
         if (best_index == -1) {
             // should never happen, but catch just in case to prevent infinite
             // loop
-            logging::error("No best index found for nearest safe stats");
+            spdlog::error("No best index found for nearest safe stats");
             break;
         };
         nearest[best_index]--;
     }
-    logging::trace("safe shots_fired       = {}", nearest[SHOTS_FIRED]);
-    logging::trace("safe close_encounters  = {}", nearest[CLOSE_ENCOUNTERS]);
-    logging::trace("safe headshots         = {}", nearest[HEADSHOTS]);
-    logging::trace("safe alerts            = {}", nearest[ALERTS]);
-    logging::trace("safe enemies_killed    = {}", nearest[ENEMIES_KILLED]);
-    logging::trace("safe enemies_wounded   = {}", nearest[ENEMIES_WOUNDED]);
-    logging::trace("safe innocents_killed  = {}", nearest[INNOCENTS_KILLED]);
-    logging::trace("safe innocents_wounded = {}", nearest[INNOCENTS_WOUNDED]);
+    spdlog::trace("safe shots_fired       = {}", nearest[SHOTS_FIRED]);
+    spdlog::trace("safe close_encounters  = {}", nearest[CLOSE_ENCOUNTERS]);
+    spdlog::trace("safe headshots         = {}", nearest[HEADSHOTS]);
+    spdlog::trace("safe alerts            = {}", nearest[ALERTS]);
+    spdlog::trace("safe enemies_killed    = {}", nearest[ENEMIES_KILLED]);
+    spdlog::trace("safe enemies_wounded   = {}", nearest[ENEMIES_WOUNDED]);
+    spdlog::trace("safe innocents_killed  = {}", nearest[INNOCENTS_KILLED]);
+    spdlog::trace("safe innocents_wounded = {}", nearest[INNOCENTS_WOUNDED]);
     return nearest;
 }
 

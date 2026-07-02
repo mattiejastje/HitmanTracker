@@ -21,11 +21,11 @@ bool read_bytes(void* handle, intptr_t ptr, void* buffer, intptr_t size) {
         if (read_process_memory(
                 handle, reinterpret_cast<void*>(ptr), buffer, size
             )) {
-            logging::trace("Read {} bytes at {:#x}", size, ptr);
+            spdlog::trace("Read {} bytes at {:#x}", size, ptr);
             return true;
         }
     }
-    logging::trace("Failed to read {} bytes at {:#x}", size, ptr);
+    spdlog::trace("Failed to read {} bytes at {:#x}", size, ptr);
     return false;
 }
 
@@ -34,11 +34,11 @@ bool write_bytes(void* handle, intptr_t ptr, void* buffer, intptr_t size) {
         if (write_process_memory(
                 handle, reinterpret_cast<void*>(ptr), buffer, size
             )) {
-            logging::trace("Written {} bytes at {:#x}", size, ptr);
+            spdlog::trace("Written {} bytes at {:#x}", size, ptr);
             return true;
         }
     }
-    logging::trace("Failed to write {} bytes at {:#x}", size, ptr);
+    spdlog::trace("Failed to write {} bytes at {:#x}", size, ptr);
     return false;
 }
 
@@ -48,7 +48,7 @@ std::optional<std::string> read_string(
     auto value = std::make_unique<char[]>(size);
     if (read_bytes(handle, ptr, value.get(), size)) {
         auto result = std::string(value.get(), strnlen(value.get(), size));
-        logging::trace("Read string {}", result);
+        spdlog::trace("Read string {}", result);
         return result;
     }
     return {};

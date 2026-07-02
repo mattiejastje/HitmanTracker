@@ -9,7 +9,7 @@
 
 #include "../hitman_common/read_lethed.hpp"
 #include "../hitman_common/stats.hpp"
-#include "../logging.hpp"
+#include <spdlog/spdlog.h>
 #include "../mem/read_write.hpp"
 #include "structs.hpp"
 
@@ -97,14 +97,14 @@ GameStatsSlow hitman_contracts::update_slow(Version version) {
         };
         if (!mempeep::read(remote_game, reader, tracer, game)) return false;
         const auto& scene = game.engine.scene_manager.scene_name.text;
-        logging::trace("Scene {}", scene);
+        spdlog::trace("Scene {}", scene);
         auto iter = scenes.find(scene);
         if (iter != scenes.end()) {
             stats.map = iter->second;
             stats.map_stage = MapStage::main;
-            logging::trace("Map {}", stats.map);
+            spdlog::trace("Map {}", stats.map);
         } else {
-            logging::trace("Unhandled scene {}", scene);
+            spdlog::trace("Unhandled scene {}", scene);
             stats.map = 0;
         }
         stats.difficulty = read_lethed(

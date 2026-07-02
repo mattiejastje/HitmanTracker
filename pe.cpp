@@ -1,13 +1,13 @@
 #include "pe.hpp"
 
-#include <fstream>
+#include <spdlog/spdlog.h>
 
-#include "logging.hpp"
+#include <fstream>
 
 std::optional<PeId> get_pe_id(const std::filesystem::path& path) {
     std::ifstream f(path, std::ios::binary);
     if (!f) {
-        logging::error("Failed to open {}", path.string());
+        spdlog::error("Failed to open {}", path.string());
         return {};
     }
     f.seekg(0x3C);
@@ -17,10 +17,10 @@ std::optional<PeId> get_pe_id(const std::filesystem::path& path) {
     uint32_t time_date_stamp{};
     f.read(reinterpret_cast<char*>(&time_date_stamp), sizeof(time_date_stamp));
     if (!f) {
-        logging::error("Failed to read PE header of {}", path.string());
+        spdlog::error("Failed to read PE header of {}", path.string());
         return {};
     }
-    logging::debug(
+    spdlog::debug(
         "PE id for {}: timestamp={:#x}", path.string(), time_date_stamp
     );
     return PeId{time_date_stamp};

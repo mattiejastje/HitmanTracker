@@ -2,11 +2,11 @@
 
 #include <imgui_impl_win32.h>
 
-#include "../logging.hpp"
+#include <spdlog/spdlog.h>
 
 void WindowDeleter::operator()(Window* window) const {
     if (window) {
-        logging::debug("Destroying application window...");
+        spdlog::debug("Destroying application window...");
         if (window->handle) ::DestroyWindow(window->handle);
         if (window->atom != 0)
             ::UnregisterClassW(
@@ -18,7 +18,7 @@ void WindowDeleter::operator()(Window* window) const {
 std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
     WNDPROC WndProc, float font_size, bool topmost
 ) {
-    logging::debug("Creating application window...");
+    spdlog::debug("Creating application window...");
     auto window = std::unique_ptr<Window, WindowDeleter>(new Window{
         .cls
         = {sizeof(WNDCLASSEXW),

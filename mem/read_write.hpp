@@ -1,5 +1,7 @@
 #pragma once
 
+#include <spdlog/spdlog.h>
+
 #include <cassert>
 #include <concepts>
 #include <cstdint>
@@ -8,8 +10,6 @@
 #include <optional>
 #include <string>
 #include <vector>
-
-#include "../logging.hpp"
 
 bool read_bytes(void *handle, intptr_t ptr, void *buffer, intptr_t size);
 
@@ -37,24 +37,24 @@ std::optional<intptr_t> find_pointer(
     void *handle, intptr_t ptr, const std::vector<intptr_t> &offsets, P ptr_max
 ) {
     for (auto offset : offsets) {
-        logging::trace("Finding [{:#x}]+{:#x}", ptr, offset);
+        spdlog::trace("Finding [{:#x}]+{:#x}", ptr, offset);
         auto next_ptr = read<P>(handle, ptr);
         if (!next_ptr) return {};
         ptr = next_ptr.value();
         if (ptr <= 0) {
-            logging::trace("Pointer zero or negative");
+            spdlog::trace("Pointer zero or negative");
             return {};
         }
         if (offset >= 0 && ptr > (ptr_max - offset)) {
-            logging::trace("Pointer offset overflow");
+            spdlog::trace("Pointer offset overflow");
             return {};
         }
         if (offset < 0 && ptr + offset <= 0) {
-            logging::trace("Pointer offset underflow");
+            spdlog::trace("Pointer offset underflow");
             return {};
         }
         ptr += offset;
-        logging::trace("Found {:#x}", ptr);
+        spdlog::trace("Found {:#x}", ptr);
     }
     return ptr;
 };
@@ -109,9 +109,9 @@ struct MempeepOnLogEntry {
     template <typename T>
     void operator()(const mempeep::LogEntry<T> &entry) const {
         if constexpr (std::same_as<T, mempeep::Error>) {
-            logging::warn("{}", entry);
+            spdlog::warn("{}", entry);
         } else {
-            logging::trace("{}", entry);
+            spdlog::trace("{}", entry);
         }
     }
 };

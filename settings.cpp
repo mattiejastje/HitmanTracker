@@ -1,9 +1,9 @@
 #include "settings.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <CLI/CLI.hpp>
 #include <format>
-
-#include "logging.hpp"
 
 using namespace settings;
 
@@ -183,7 +183,7 @@ static void _save(const CLI::App& app) {
     try {
         content = app.config_to_str(true, true);
     } catch (const CLI::Error& e) {
-        logging::error(
+        spdlog::error(
             "Failed to save configuration ({}: {})", e.get_name(), e.what()
         );
         return;
@@ -193,9 +193,9 @@ static void _save(const CLI::App& app) {
         out.exceptions(std::ofstream::failbit | std::ofstream::badbit);
         out << content;
         out.close();
-        logging::debug("Configuration saved");
+        spdlog::debug("Configuration saved");
     } catch (const std::exception& e) {
-        logging::warn("Failed to save configuration: {}", e.what());
+        spdlog::warn("Failed to save configuration: {}", e.what());
     }
 }
 
@@ -209,14 +209,14 @@ std::optional<Settings> settings::load(int argc, char** argv) {
         std::cout << app->help();
         return {};
     } catch (const CLI::ParseError& e) {
-        logging::error("Settings error ({}: {})", e.get_name(), e.what());
-        logging::warn("Fix HitmanTracker.ini or delete it to recreate.");
-        logging::warn("Falling back on default settings for now.");
+        spdlog::error("Settings error ({}: {})", e.get_name(), e.what());
+        spdlog::warn("Fix HitmanTracker.ini or delete it to recreate.");
+        spdlog::warn("Falling back on default settings for now.");
         return Settings{};
     }
     std::filesystem::path ini_file{"HitmanTracker.ini"};
     if (!std::filesystem::exists(ini_file)) {
-        logging::info("Creating HitmanTracker.ini");
+        spdlog::info("Creating HitmanTracker.ini");
         _save(*app);
     }
     return settings;

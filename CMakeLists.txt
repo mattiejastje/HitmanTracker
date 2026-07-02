@@ -5,12 +5,13 @@ find_package(CLI11 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
+# spdlog backend needs mempeep to use fmtlib
+set(MEMPEEP_USE_FMTLIB ON CACHE BOOL "" FORCE)
 add_subdirectory("mempeep")
 
 add_executable (HitmanTracker
 	"HitmanTracker.cpp"
 	"gui.cpp"
-	"logging.cpp"
 	"settings.cpp"
 	"game_info_registry.cpp"
 	"game.cpp"
@@ -24,7 +25,6 @@ add_executable (HitmanTracker
 	"mem/alloc.cpp"
 	"mem/handle.cpp"
 	"mem/read_write.cpp"
-	
 	"hitman2_silent_assassin/game_info.cpp"
 	"hitman2_silent_assassin/gui.cpp"
 	"hitman2_silent_assassin/stats.cpp"

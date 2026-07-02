@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
+#include <spdlog/spdlog.h>
 #include <tchar.h>
 
 #include <CLI/CLI.hpp>
@@ -16,7 +17,6 @@
 #include "gui/ui.hpp"
 #include "gui/window.hpp"
 #include "imgui_utils.hpp"
-#include "logging.hpp"
 #include "mem/handle.hpp"
 #include "settings_gui.hpp"
 #include "signal.hpp"
@@ -87,11 +87,9 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                                 // skip hooking, use stub...
                                 game->hook = HookPtr{new Hook{}};
                             }
-                            logging::info("Game is now tracked");
+                            spdlog::info("Game is now tracked");
                         } else {
-                            logging::debug(
-                                "Game not yet ready for tracking..."
-                            );
+                            spdlog::debug("Game not yet ready for tracking...");
                         }
                     }
                     return 0;
@@ -119,7 +117,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 }
 
 static void Frame(UI& ui, settings::Settings& settings) {
-    logging::trace("New frame...");
+    spdlog::trace("New frame...");
     static auto last_now = std::chrono::steady_clock::now();
     auto now = std::chrono::steady_clock::now();
     float dt = std::chrono::duration<float>(now - last_now).count();
@@ -169,7 +167,7 @@ static void Frame(UI& ui, settings::Settings& settings) {
 
 // Main code
 int gui_run(settings::Settings& settings) {
-    logging::info("Running user interface");
+    spdlog::info("Running user interface");
     ImGui_ImplWin32_EnableDpiAwareness();
     auto window = CreateWindowWin32(
         WndProc, settings.gui.font_size, settings.gui.topmost
@@ -178,7 +176,7 @@ int gui_run(settings::Settings& settings) {
     auto dev = CreateDeviceD3D(window->handle);
     if (!dev) return 1;
 
-    logging::debug("Showing window...");
+    spdlog::debug("Showing window...");
     ::ShowWindow(window->handle, SW_SHOWDEFAULT);
     ::UpdateWindow(window->handle);
 
@@ -190,7 +188,7 @@ int gui_run(settings::Settings& settings) {
     SetTimer(window->handle, TIMER_UPDATE_STATS, 100, nullptr);
 
     // Main loop
-    logging::debug("Starting main loop...");
+    spdlog::debug("Starting main loop...");
     bool done = false;
     while (!done) {
         // Poll and handle messages (inputs, window resize, etc.)
@@ -205,20 +203,20 @@ int gui_run(settings::Settings& settings) {
         if (done) break;
 
         if (g_DeviceLost) {
-            logging::debug("Handling lost D3D device");
+            spdlog::debug("Handling lost D3D device");
             HRESULT hr = dev->d3d_device->TestCooperativeLevel();
             if (hr == D3DERR_DEVICELOST) {
-                logging::debug("Device still lost");
+                spdlog::debug("Device still lost");
                 ::Sleep(10);
                 continue;
             }
             if (hr == D3DERR_DEVICENOTRESET) ResetDevice(dev.get());
-            logging::debug("Device recovered");
+            spdlog::debug("Device recovered");
             g_DeviceLost = false;
         }
 
         if (g_ResizeWidth != 0 && g_ResizeHeight != 0) {
-            logging::debug("Handling window resize");
+            spdlog::debug("Handling window resize");
             dev->d3d_present_parameters.BackBufferWidth = g_ResizeWidth;
             dev->d3d_present_parameters.BackBufferHeight = g_ResizeHeight;
             g_ResizeWidth = g_ResizeHeight = 0;
@@ -226,7 +224,7 @@ int gui_run(settings::Settings& settings) {
         }
 
         if (g_ChangeDpi != 0) {
-            logging::debug("Handling dpi change");
+            spdlog::debug("Handling dpi change");
             ::SetWindowPos(
                 window->handle,
                 NULL,
@@ -249,7 +247,7 @@ int gui_run(settings::Settings& settings) {
         }
 
         if (g_settings_changed.topmost) {
-            logging::debug("Topmost is {}", settings.gui.topmost);
+            spdlog::debug("Topmost is {}", settings.gui.topmost);
             SetWindowPos(
                 window->handle,
                 settings.gui.topmost ? HWND_TOPMOST : HWND_NOTOPMOST,
@@ -266,8 +264,8 @@ int gui_run(settings::Settings& settings) {
         HRESULT result = RenderAndPresent(dev.get());
         if (result == D3DERR_DEVICELOST) g_DeviceLost = true;
     }
-    logging::info("Closing user interface");
-    logging::debug("Cleanup...");
+    spdlog::info("Closing user interface");
+    spdlog::debug("Cleanup...");
     KillTimer(window->handle, TIMER_UPDATE_STATS);
     KillTimer(window->handle, TIMER_FIND_GAME);
     game.reset();

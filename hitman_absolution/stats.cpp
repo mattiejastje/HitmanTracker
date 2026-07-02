@@ -1,5 +1,7 @@
 #include "stats.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <format>
 #include <iostream>  // std::cout
 #include <mempeep/read.hpp>
@@ -7,7 +9,6 @@
 
 #include "../hitman_common/simple_rating.hpp"
 #include "../hitman_common/stats.hpp"
-#include "../logging.hpp"
 #include "../mem/read_write.hpp"
 #include "structs.hpp"
 
@@ -608,7 +609,7 @@ static int32_t get_current_checkpoint_index(
 ) {
     if (checkpoints.current_key == 0) {
         // level is loading but we have not started yet
-        logging::trace("Current checkpoint key is null");
+        spdlog::trace("Current checkpoint key is null");
         return -1;
     }
     int32_t index = 0;
@@ -616,7 +617,7 @@ static int32_t get_current_checkpoint_index(
         if (checkpoints.current_key == checkpoint.key) return index;
         index++;
     }
-    logging::error("Unable to find current checkpoint key");
+    spdlog::error("Unable to find current checkpoint key");
     return -1;
 }
 
@@ -750,7 +751,7 @@ GameStatsSlow hitman_absolution::update_slow(
         }
         if (!game.checkpoints_manager.checkpoints) {
             // in main menu and haven't loaded level yet
-            logging::trace("Checkpoints pointer is null");
+            spdlog::trace("Checkpoints pointer is null");
             return true;
         }
         auto& checkpoints = *game.checkpoints_manager.checkpoints;
@@ -759,16 +760,16 @@ GameStatsSlow hitman_absolution::update_slow(
             stats.map = 0;
             return true;
         }
-        logging::trace(
+        spdlog::trace(
             "Level {} at checkpoint {}", game.level, checkpoint_index
         );
         if (game.level >= scenes.size()) {
-            logging::error("No map registered for level {}", game.level);
+            spdlog::error("No map registered for level {}", game.level);
             return false;
         }
         auto& map_infos = scenes.at(game.level);
         if (checkpoint_index >= map_infos.size()) {
-            logging::error(
+            spdlog::error(
                 "No map registered for level {}, checkpoint {}",
                 game.level,
                 checkpoint_index
@@ -776,16 +777,16 @@ GameStatsSlow hitman_absolution::update_slow(
             return false;
         }
         auto& map_info = map_infos.at(checkpoint_index);
-        logging::trace("Map {}", map_info.map);
+        spdlog::trace("Map {}", map_info.map);
         if (stats.map != map_info.map) {
             // map changed: reset "spotted" and start_time
-            logging::debug("Checkpoint changed");
+            spdlog::debug("Checkpoint changed");
             write<int32_t>(handle, label_ptrs.at(150), 0);
             stats.map_stage = MapStage::pre;  // most likely still in cutscene
         }
         if (stats.map > 0 && stats.map_stage == MapStage::pre
             && (game.movie_manager.data.info.planes[0][0].is_allocated) == 0) {
-            logging::debug("Checkpoint started");
+            spdlog::debug("Checkpoint started");
             stats.start_time = game.time_manager.game_time;
             stats.map_stage = MapStage::main;
         }
@@ -810,7 +811,7 @@ GameStatsSlow hitman_absolution::update_slow(
                 // event_manager.events_per_event_type_2[0x23] gets stuck once
                 // set... so we use a code hook
                 auto spotted = read<int32_t>(handle, label_ptrs.at(150));
-                if (!spotted) logging::warn("Unable to read spotted value");
+                if (!spotted) spdlog::warn("Unable to read spotted value");
                 game_stats[SPOTTED] = spotted.value_or(0);
             }
             auto status = game_stats[NON_TARGET_CASUALTY] != 0
@@ -825,12 +826,12 @@ GameStatsSlow hitman_absolution::update_slow(
                     game.game_data.level_infos, game.level, checkpoint_index
                 );
             if (!maybe_shadow_raw_score_threshold) {
-                logging::error("Unable to read shadow score");
+                spdlog::error("Unable to read shadow score");
                 return false;
             }
             if (maybe_shadow_raw_score_threshold.value()
                 != map_info.shadow_raw_score_threshold) {
-                logging::error(
+                spdlog::error(
                     "Wrong shadow score for level {} checkpoint {}: {} -> {}",
                     game.level,
                     checkpoint_index,
@@ -949,7 +950,7 @@ GameStatsSlow hitman_absolution::update_slow(
                            : Status::GREEN};
             } else {
                 if (game_stats[EVIDENCE_REMOVED] != 0)
-                    logging::warn("no evidence but evidence removed not zero");
+                    spdlog::warn("no evidence but evidence removed not zero");
                 stats.score_evidence_removed = {"0"};
             }
             stats.score_objective_complete
@@ -991,11 +992,11 @@ GameStatsSlow hitman_absolution::update_slow(
                                                               : Status::GREEN};
             } else {
                 if (game_stats[SIGNATURE_KILL] != 0)
-                    logging::warn("no targets but signature kills not zero");
+                    spdlog::warn("no targets but signature kills not zero");
                 if (game_stats[TARGET_KILL] != 0)
-                    logging::warn("no targets but target kills not zero");
+                    spdlog::warn("no targets but target kills not zero");
                 if (game_stats[SILENT_ASSASSIN_BONUS] != 0)
-                    logging::warn(
+                    spdlog::warn(
                         "no targets but silent assassin bonus not zero"
                     );
                 stats.score_signature_kill = {"0"};

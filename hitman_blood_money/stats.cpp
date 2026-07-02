@@ -1,5 +1,7 @@
 #include "stats.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <cstdint>
 #include <mempeep/read.hpp>
 #include <mempeep/tracers/log_tracer.hpp>
@@ -7,7 +9,6 @@
 #include <unordered_map>
 
 #include "../hitman_common/simple_rating.hpp"
-#include "../logging.hpp"
 #include "../mem/read_write.hpp"
 #include "structs.hpp"
 
@@ -221,7 +222,7 @@ GameStatsSlow hitman_blood_money::update_slow(Version version) {
         auto& scene_manager = sys_interface->scene_manager;
         if (!scene_manager) return true;  // game starting
         auto& scene = scene_manager->info.scene_name;
-        logging::trace("Scene {}", scene);
+        spdlog::trace("Scene {}", scene);
         std::transform(scene.begin(), scene.end(), scene.begin(), [](char& c) {
             if (c == '\\') return '/';
             return static_cast<char>(std::tolower(c));
@@ -230,7 +231,7 @@ GameStatsSlow hitman_blood_money::update_slow(Version version) {
         if (iter != scenes.end()) {
             stats.map = iter->second.map;
             stats.map_stage = iter->second.map_stage;
-            logging::trace(
+            spdlog::trace(
                 "Map {}, stage {}",
                 stats.map,
                 stats.map_stage == MapStage::pre    ? "pre"
@@ -238,7 +239,7 @@ GameStatsSlow hitman_blood_money::update_slow(Version version) {
                                                     : "post"
             );
         } else {
-            logging::error("No map registered for scene {}", scene);
+            spdlog::error("No map registered for scene {}", scene);
         }
         if (stats.map > 0) {
             // force values to zero at mission start
