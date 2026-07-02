@@ -2,22 +2,22 @@
 
 ## [Unreleased]
 
+### Added
+
+- The GOG version of Hitman Codename 47 is now supported.
+
 ## [0.5.0] - 2026-07-01
 
 ### Fixed
 
-- Hitman Absolution:
-
-  * Mission timers now only start when movie cutscenes (shown during mission load)
-    are finished playing. This should more closely match livesplit.
+- Hitman Absolution's mission timers now only start when movie cutscenes (shown during mission load)
+  are finished playing. This should more closely match livesplit.
 
 ### Added
 
-- Hitman Absolution:
-
-  * New option to apply difficulty and challenge bonus on scores.
-    This is enabled by default, so scores will match the score board by default.
-    Note the game shows rounded values, whereas the tracker shows true values.
+- Hitman Absolution has a new option to apply difficulty and challenge bonus on scores.
+  This is enabled by default, so scores will match the score board by default.
+  Note the game shows rounded values, whereas the tracker shows true values.
 
 ### Changed
 

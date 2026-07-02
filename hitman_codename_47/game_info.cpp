@@ -14,14 +14,30 @@ void hitman_codename_47::register_game_info(const settings::Gui& settings) {
             gui(settings, "Steam"),
             hook_nothing,
             hook_immediately_ready,
-            update_slow(Version::Steam),
-            update_fast(Version::Steam),
+            update_slow(Version::SteamOrGOG),
+            update_fast(Version::SteamOrGOG),
         },
         .make_remote_state = [] { return std::make_any<structs::HitmanDlc>(); },
         .make_stats = [] { return std::make_any<Stats>(); },
         .module_infos = {
             {"hitman.exe", PeId{0x3A3E13DA}},
             {"hitmandlc.dlc", PeId{0x3A3E13D1}},
+        },
+    });
+    registry.emplace_back(GameInfo {
+        .name = GAME_NAME,
+        .methods = GameMethods{
+            gui(settings, "GOG"),
+            hook_nothing,
+            hook_immediately_ready,
+            update_slow(Version::SteamOrGOG),
+            update_fast(Version::SteamOrGOG),
+        },
+        .make_remote_state = [] { return std::make_any<structs::HitmanDlc>(); },
+        .make_stats = [] { return std::make_any<Stats>(); },
+        .module_infos = {
+            {"hitman.exe", PeId{0x73655965}},
+            {"hitmandlc.dlc", PeId{0x3A27B1FA}},
         },
     });
 }

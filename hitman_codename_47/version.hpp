@@ -2,6 +2,6 @@
 
 namespace hitman_codename_47 {
 
-enum class Version { Steam };
+enum class Version { SteamOrGOG };
 
 }
