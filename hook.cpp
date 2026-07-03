@@ -1,8 +1,9 @@
 #include "hook.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <cassert>
 
-#include <spdlog/spdlog.h>
 #include "mem/read_write.hpp"
 
 static Code get_code_i8(intptr_t value) {
@@ -27,148 +28,122 @@ static Code add_code(const Code& code1, const Code& code2) {
 }
 
 static intptr_t get_align_size(intptr_t current_ptr, intptr_t size) {
-    auto ptr = size * ((current_ptr + size - 1) / size);
-    intptr_t final_size = ptr - current_ptr;
+    const auto ptr = size * ((current_ptr + size - 1) / size);
+    const intptr_t final_size = ptr - current_ptr;
     assert(final_size >= 0);
-    assert(final_size <= size);
+    assert(final_size < size);
     assert(ptr % size == 0);
+    assert(current_ptr != 1 || final_size == size - 1);
     return final_size;
 }
 
-struct GetCodeSizeUpperBoundVisitor {
-    intptr_t operator()(const Code& code) { return code.size(); }
-
-    intptr_t operator()(const Jump& jump) { return jump.code.size() + 4; }
-
-    intptr_t operator()(const JumpShort& jump) { return jump.code.size() + 1; }
-
-    intptr_t operator()(const Ptr& ptr) { return 4; }
-
-    intptr_t operator()(const Fill& fill) { return fill.size; }
-
-    intptr_t operator()(const Align& align) {
-        return align.size - 1;  // upper bound
-    }
-
-    intptr_t operator()(const Label& label) { return 0; }
+template <typename... Ts>
+struct overloaded : Ts... {
+    using Ts::operator()...;
 };
 
-struct GetLabelPtrsVisitor {
-    intptr_t current_ptr;
-    LabelPtrs& label_ptrs;
-
-    void operator()(const Code& code) { current_ptr += code.size(); }
-
-    void operator()(const Jump& jump) { current_ptr += jump.code.size() + 4; };
-
-    void operator()(const JumpShort& jump) {
-        current_ptr += jump.code.size() + 1;
-    }
-
-    void operator()(const Ptr& ptr) { current_ptr += 4; }
-
-    void operator()(const Fill& fill) { current_ptr += fill.size; }
-
-    void operator()(const Align& align) {
-        auto size = get_align_size(current_ptr, align.size);
-        current_ptr += size;
-    }
-
-    void operator()(const Label& label) {
-        spdlog::debug(
-            "Hook: label {} points to {:#x}", label.index, current_ptr
-        );
-        auto result = label_ptrs.insert({label.index, current_ptr});
-        assert(result.second);  // ensure no duplicate labels
-    }
-};
-
-struct GetPtrVisitor {
-    const LabelPtrs& label_ptrs;
-
-    intptr_t operator()(const Label& label) const {
-        return label_ptrs.at(label.index);
-    }
-
-    intptr_t operator()(intptr_t ptr) const { return ptr; }
-};
-
-struct GetCodeVisitor {
-    intptr_t current_ptr;
-    const LabelPtrs& label_ptrs;
-
-    Code operator()(const Code& code) {
-        current_ptr += code.size();
-        return code;
-    }
-
-    Code operator()(const Jump& jump) {
-        current_ptr += jump.code.size() + 4;
-        auto offset
-            = std::visit(GetPtrVisitor{label_ptrs}, jump.ptr.ptr) - current_ptr;
-        return add_code(jump.code, get_code_i32(offset));
-    };
-
-    Code operator()(const JumpShort& jump) {
-        current_ptr += jump.code.size() + 1;
-        auto offset
-            = std::visit(GetPtrVisitor{label_ptrs}, jump.ptr.ptr) - current_ptr;
-        return add_code(jump.code, get_code_i8(offset));
-    };
-
-    Code operator()(const Ptr& ptr) {
-        current_ptr += 4;
-        return get_code_i32(std::visit(GetPtrVisitor{label_ptrs}, ptr.ptr));
-    }
-
-    Code operator()(const Fill& fill) {
-        current_ptr += fill.size;
-        return Code(fill.size, fill.filler);
-    }
-
-    Code operator()(const Align& align) {
-        auto size = get_align_size(current_ptr, align.size);
-        current_ptr += size;
-        return Code(size, align.filler);
-    }
-
-    Code operator()(const Label& label) {
-        assert(
-            label_ptrs.find(label.index) != label_ptrs.cend()
-        );  // ensure label found
-        return Code{};
-    }
-};
-
-static intptr_t get_code_size_upper_bound(const AssemblyCode& assembly) {
-    intptr_t result{0};
-    GetCodeSizeUpperBoundVisitor get_code_size_upper_bound_visitor{};
-    for (auto& item : assembly)
-        result += std::visit(get_code_size_upper_bound_visitor, item);
-    return result;
+static intptr_t get_code_size(const Assembly& item, intptr_t current_ptr) {
+    return std::visit(
+        overloaded{
+            [current_ptr](const Align& a) {
+                return get_align_size(current_ptr, a.size);
+            },
+            [](const Code& c) { return static_cast<intptr_t>(c.size()); },
+            [](const Fill& f) { return f.size; },
+            [](const Jump& j) {
+                return static_cast<intptr_t>(j.code.size()) + 4;
+            },
+            [](const JumpShort& j) {
+                return static_cast<intptr_t>(j.code.size()) + 1;
+            },
+            [](const Label&) { return intptr_t{0}; },
+            [](const Ptr&) { return intptr_t{4}; },
+        },
+        item
+    );
 }
 
-// Find all labels in assembly and add them to label_ptrs.
-static void get_label_ptrs(
-    intptr_t current_ptr, const AssemblyCode& assembly, LabelPtrs& label_ptrs
-) {
-    spdlog::debug(
-        "Hook: calculating label pointers for {:#x}...", current_ptr
+static intptr_t get_code_size_upper_bound(const AssemblyCode& assembly) {
+    return std::ranges::fold_left(
+        assembly, intptr_t{0}, [](intptr_t acc, const Assembly& item) {
+            // current_ptr 1 gives worst case size
+            return acc + get_code_size(item, 1);
+        }
     );
-    GetLabelPtrsVisitor find_labels_visitor{current_ptr, label_ptrs};
-    for (auto& item : assembly) std::visit(find_labels_visitor, item);
+}
+
+static intptr_t resolve_ptr(const Ptr& ptr, const LabelPtrs& label_ptrs) {
+    return std::visit(
+        overloaded{
+            [&label_ptrs](const Label& l) { return label_ptrs.at(l.index); },
+            [](intptr_t p) { return p; },
+        },
+        ptr.ptr
+    );
 }
 
 static Code get_code(
-    intptr_t current_ptr,
+    const Assembly& item, intptr_t current_ptr, const LabelPtrs& label_ptrs
+) {
+    const auto size = get_code_size(item, current_ptr);
+    const auto next_ptr = current_ptr + size;
+    const auto code = std::visit(
+        overloaded{
+            [&size](const Align& a) { return Code(size, a.filler); },
+            [](const Code& c) { return c; },
+            [](const Fill& f) { return Code(f.size, f.filler); },
+            [&label_ptrs, &next_ptr](const Jump& j) {
+                auto offset = resolve_ptr(j.ptr, label_ptrs) - next_ptr;
+                return add_code(j.code, get_code_i32(offset));
+            },
+            [&label_ptrs, &next_ptr](const JumpShort& j) {
+                auto offset = resolve_ptr(j.ptr, label_ptrs) - next_ptr;
+                return add_code(j.code, get_code_i8(offset));
+            },
+            [&label_ptrs](const Label& l) {
+                assert(label_ptrs.contains(l.index));
+                return Code{};
+            },
+            [&label_ptrs](const Ptr& p) {
+                return get_code_i32(resolve_ptr(p, label_ptrs));
+            },
+        },
+        item
+    );
+    assert(code.size() == size);  // critical!
+    return code;
+}
+
+// Pass 1: Find all labels in assembly.
+static void insert_label_ptrs(
+    intptr_t start_ptr, const AssemblyCode& assembly, LabelPtrs& label_ptrs
+) {
+    spdlog::debug("Hook: calculating label pointers for {:#x}...", start_ptr);
+    auto ptr = start_ptr;
+    for (const auto& item : assembly) {
+        if (auto* label = std::get_if<Label>(&item)) {
+            label_ptrs[label->index] = ptr;
+            spdlog::debug("Hook: label {} points to {:#x}", label->index, ptr);
+        }
+        ptr += get_code_size(item, ptr);
+    }
+}
+
+// Pass 2: Emit assembly code (all labels known, so jumps can be resolved).
+static Code get_code(
+    intptr_t start_ptr,
     const LabelPtrs& label_ptrs,
     const AssemblyCode& assembly
 ) {
+    spdlog::debug("Hook: emitting assembly code for {:#x}...", start_ptr);
+    auto ptr = start_ptr;
     Code code{};
-    GetCodeVisitor get_code_visitor{current_ptr, label_ptrs};
-    for (auto& item : assembly) {
-        auto part = std::visit(get_code_visitor, item);
+    for (const auto& item : assembly) {
+        const auto part = get_code(item, ptr, label_ptrs);
         code.insert(code.end(), part.begin(), part.end());
+        ptr += part.size();
+        // extra check here for safety
+        assert(part.size() == get_code_size(item, ptr));
     }
     return code;
 }
@@ -244,7 +219,7 @@ static bool hook_install_target_code(
 ) {
     // assemble target code
     auto target_code = get_code(target_alloc->ptr, label_ptrs, target_asm);
-    assert(target_code.size() <= get_code_size_upper_bound(target_asm));
+    assert(target_code.size() <= target_alloc->size);
     // install target code
     spdlog::debug("Hook: writing target code at {:#x}", target_alloc->ptr);
     if (!write_bytes(
@@ -302,8 +277,8 @@ HookPtr install_hook(
     // calculate label pointers
     LabelPtrs label_ptrs{};
     for (const auto& source : sources)
-        get_label_ptrs(source.ptr, source.new_asm, label_ptrs);
-    get_label_ptrs(target_alloc->ptr, target_asm, label_ptrs);
+        insert_label_ptrs(source.ptr, source.new_asm, label_ptrs);
+    insert_label_ptrs(target_alloc->ptr, target_asm, label_ptrs);
     // install target code
     if (!hook_install_target_code(target_alloc, label_ptrs, target_asm))
         return {};

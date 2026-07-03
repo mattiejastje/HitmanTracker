@@ -22,9 +22,9 @@ AllocPtr virtual_alloc_ex(std::shared_ptr<void> handle, intptr_t size) {
         PAGE_EXECUTE_READWRITE
     );
     if (ptr) {
-        auto alloc_ptr = reinterpret_cast<intptr_t>(ptr);
+        const auto alloc_ptr = reinterpret_cast<intptr_t>(ptr);
         spdlog::debug("Allocated {} bytes at {:#x}", size, alloc_ptr);
-        return AllocPtr{new Alloc{handle, alloc_ptr}};
+        return AllocPtr{new Alloc{handle, alloc_ptr, size}};
     };
     spdlog::error("Failed to allocate {} bytes", size);
     return {};

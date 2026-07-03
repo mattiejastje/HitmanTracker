@@ -6,7 +6,8 @@
 
 struct Alloc {
     std::shared_ptr<void> handle;
-    intptr_t ptr;
+    const intptr_t ptr;
+    const intptr_t size;
 };
 
 struct AllocDeleter {
