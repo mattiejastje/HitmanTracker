@@ -59,5 +59,5 @@ target_link_options(HitmanTracker PRIVATE
 add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
 target_link_libraries(HitmanTracker PRIVATE CLI11::CLI11)
 target_link_libraries(HitmanTracker PRIVATE imgui::imgui)
-target_link_libraries(HitmanTracker PRIVATE spdlog::spdlog_header_only)
+target_link_libraries(HitmanTracker PRIVATE spdlog::spdlog)
 target_link_libraries(HitmanTracker PRIVATE mempeep)
