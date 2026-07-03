@@ -216,12 +216,7 @@ static bool hook_install_target_code(
 ) {
     // assemble target code
     auto target_code = get_code(target_alloc->ptr, label_ptrs, target_asm);
-    APP_REQUIRE(
-        target_code.size() <= target_alloc->size,
-        "target code size {} exceeds allocated size {}",
-        target_code.size(),
-        target_alloc->size
-    );
+    APP_REQUIRE(target_code.size() <= target_alloc->size);
     // install target code
     spdlog::debug("Hook: writing target code at {:#x}", target_alloc->ptr);
     if (!write_bytes(
