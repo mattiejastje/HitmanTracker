@@ -172,6 +172,7 @@ int gui_run(settings::Settings& settings) {
     auto window = CreateWindowWin32(
         WndProc,
         L"Hitman Tracker",
+        WS_OVERLAPPEDWINDOW,
         settings.gui.topmost ? WS_EX_TOPMOST : 0,
         15 * settings.gui.font_size,
         30 * settings.gui.font_size

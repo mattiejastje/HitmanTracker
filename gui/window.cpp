@@ -18,6 +18,7 @@ void WindowDeleter::operator()(Window* window) const {
 std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
     WNDPROC wnd_proc,
     const wchar_t* title,
+    DWORD dw_style,
     DWORD dw_ex_style,
     int logical_width,
     int logical_height
@@ -47,7 +48,7 @@ std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
         dw_ex_style,
         window->cls.lpszClassName,
         title,
-        WS_OVERLAPPEDWINDOW,
+        dw_style,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
         logical_width * dpiscale,
