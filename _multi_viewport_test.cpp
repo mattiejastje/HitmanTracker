@@ -7,75 +7,30 @@
 // folder).
 // - Introduction, links and more at the top of imgui.cpp
 
-#pragma comment(lib, "d3d9.lib")
+#include <imgui.h>
+#include <imgui_impl_dx9.h>
+#include <imgui_impl_win32.h>
 
-#include <d3d9.h>
-#include <tchar.h>
+#include "gui/deviced3d.hpp"
+#include "gui/window.hpp"
 
-#include "imgui.h"
-#include "imgui_impl_dx9.h"
-#include "imgui_impl_win32.h"
-
-// Data
-static LPDIRECT3D9 g_pD3D = nullptr;
-static LPDIRECT3DDEVICE9 g_pd3dDevice = nullptr;
 static bool g_DeviceLost = false;
 static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
-static D3DPRESENT_PARAMETERS g_d3dpp = {};
 
-// Forward declarations of helper functions
-bool CreateDeviceD3D(HWND hWnd);
-void CleanupDeviceD3D();
-void ResetDevice();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // Main code
-int main(int, char**) {
-    // Make process DPI aware and obtain main monitor scale
+int main(int argc, char** argv) {
+    // Make process DPI aware
     ImGui_ImplWin32_EnableDpiAwareness();
-    float main_scale = ImGui_ImplWin32_GetDpiScaleForMonitor(
-        ::MonitorFromPoint(POINT{0, 0}, MONITOR_DEFAULTTOPRIMARY)
-    );
-
-    // Create application window
-    WNDCLASSEXW wc
-        = {sizeof(wc),
-           CS_CLASSDC,
-           WndProc,
-           0L,
-           0L,
-           GetModuleHandle(nullptr),
-           nullptr,
-           nullptr,
-           nullptr,
-           nullptr,
-           L"ImGui Example",
-           nullptr};
-    ::RegisterClassExW(&wc);
-    HWND hwnd = ::CreateWindowW(
-        wc.lpszClassName,
-        L"Dear ImGui DirectX9 Example",
-        WS_OVERLAPPEDWINDOW,
-        100,
-        100,
-        (int)(1280 * main_scale),
-        (int)(800 * main_scale),
-        nullptr,
-        nullptr,
-        wc.hInstance,
-        nullptr
-    );
-
-    // Initialize Direct3D
-    if (!CreateDeviceD3D(hwnd)) {
-        CleanupDeviceD3D();
-        ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
-        return 1;
-    }
+    auto window = CreateWindowWin32(WndProc, 10, false);
+    if (!window) return 1;
+    auto dev = CreateDeviceD3D(window->handle);
+    if (!dev) return 1;
 
     // Show the window
-    ::ShowWindow(hwnd, SW_SHOWDEFAULT);
-    ::UpdateWindow(hwnd);
+    ::ShowWindow(window->handle, SW_SHOWDEFAULT);
+    ::UpdateWindow(window->handle);
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -93,19 +48,11 @@ int main(int, char**) {
 
     // Setup scaling
     ImGuiStyle& style = ImGui::GetStyle();
-    style.ScaleAllSizes(
-        main_scale
-    );  // Bake a fixed style scale. (until we have a solution for dynamic style
-        // scaling, changing this requires resetting Style + calling this again)
-    style.FontScaleDpi
-        = main_scale;  // Set initial font scale. (in docking branch: using
-                       // io.ConfigDpiScaleFonts=true automatically overrides
-                       // this for every window depending on the current
-                       // monitor)
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplWin32_Init(hwnd);
-    ImGui_ImplDX9_Init(g_pd3dDevice);
+    float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(window->handle);
+    style.ScaleAllSizes(dpiscale);
+    style.FontScaleDpi = dpiscale;
+    if (!ImGui_ImplWin32_Init(window->handle)) return 0;
+    if (!ImGui_ImplDX9_Init(dev->d3d_device)) return 0;
 
     // Load Fonts
     // - If fonts are not explicitly loaded, Dear ImGui will select an embedded
@@ -154,22 +101,22 @@ int main(int, char**) {
 
         // Handle lost D3D9 device
         if (g_DeviceLost) {
-            HRESULT hr = g_pd3dDevice->TestCooperativeLevel();
+            HRESULT hr = dev->d3d_device->TestCooperativeLevel();
             if (hr == D3DERR_DEVICELOST) {
                 ::Sleep(10);
                 continue;
             }
-            if (hr == D3DERR_DEVICENOTRESET) ResetDevice();
+            if (hr == D3DERR_DEVICENOTRESET) ResetDevice(dev.get());
             g_DeviceLost = false;
         }
 
         // Handle window resize (we don't resize directly in the WM_SIZE
         // handler)
         if (g_ResizeWidth != 0 && g_ResizeHeight != 0) {
-            g_d3dpp.BackBufferWidth = g_ResizeWidth;
-            g_d3dpp.BackBufferHeight = g_ResizeHeight;
+            dev->d3d_present_parameters.BackBufferWidth = g_ResizeWidth;
+            dev->d3d_present_parameters.BackBufferHeight = g_ResizeHeight;
             g_ResizeWidth = g_ResizeHeight = 0;
-            ResetDevice();
+            ResetDevice(dev.get());
         }
 
         // Start the Dear ImGui frame
@@ -236,16 +183,16 @@ int main(int, char**) {
 
         // Rendering
         ImGui::EndFrame();
-        g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
-        g_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-        g_pd3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+        dev->d3d_device->SetRenderState(D3DRS_ZENABLE, FALSE);
+        dev->d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+        dev->d3d_device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
         D3DCOLOR clear_col_dx = D3DCOLOR_RGBA(
             (int)(clear_color.x * clear_color.w * 255.0f),
             (int)(clear_color.y * clear_color.w * 255.0f),
             (int)(clear_color.z * clear_color.w * 255.0f),
             (int)(clear_color.w * 255.0f)
         );
-        g_pd3dDevice->Clear(
+        dev->d3d_device->Clear(
             0,
             nullptr,
             D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
@@ -253,13 +200,13 @@ int main(int, char**) {
             1.0f,
             0
         );
-        if (g_pd3dDevice->BeginScene() >= 0) {
+        if (dev->d3d_device->BeginScene() >= 0) {
             ImGui::Render();
             ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-            g_pd3dDevice->EndScene();
+            dev->d3d_device->EndScene();
         }
         HRESULT result
-            = g_pd3dDevice->Present(nullptr, nullptr, nullptr, nullptr);
+            = dev->d3d_device->Present(nullptr, nullptr, nullptr, nullptr);
         if (result == D3DERR_DEVICELOST) g_DeviceLost = true;
     }
 
@@ -268,61 +215,7 @@ int main(int, char**) {
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
 
-    CleanupDeviceD3D();
-    ::DestroyWindow(hwnd);
-    ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
-
     return 0;
-}
-
-// Helper functions
-
-bool CreateDeviceD3D(HWND hWnd) {
-    if ((g_pD3D = Direct3DCreate9(D3D_SDK_VERSION)) == nullptr) return false;
-
-    // Create the D3DDevice
-    ZeroMemory(&g_d3dpp, sizeof(g_d3dpp));
-    g_d3dpp.Windowed = TRUE;
-    g_d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    g_d3dpp.BackBufferFormat
-        = D3DFMT_UNKNOWN;  // Need to use an explicit format with alpha if
-                           // needing per-pixel alpha composition.
-    g_d3dpp.EnableAutoDepthStencil = TRUE;
-    g_d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
-    g_d3dpp.PresentationInterval
-        = D3DPRESENT_INTERVAL_ONE;  // Present with vsync
-    // g_d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;   //
-    // Present without vsync, maximum unthrottled framerate
-    if (g_pD3D->CreateDevice(
-            D3DADAPTER_DEFAULT,
-            D3DDEVTYPE_HAL,
-            hWnd,
-            D3DCREATE_HARDWARE_VERTEXPROCESSING,
-            &g_d3dpp,
-            &g_pd3dDevice
-        )
-        < 0)
-        return false;
-
-    return true;
-}
-
-void CleanupDeviceD3D() {
-    if (g_pd3dDevice) {
-        g_pd3dDevice->Release();
-        g_pd3dDevice = nullptr;
-    }
-    if (g_pD3D) {
-        g_pD3D->Release();
-        g_pD3D = nullptr;
-    }
-}
-
-void ResetDevice() {
-    ImGui_ImplDX9_InvalidateDeviceObjects();
-    HRESULT hr = g_pd3dDevice->Reset(&g_d3dpp);
-    if (hr == D3DERR_INVALIDCALL) IM_ASSERT(0);
-    ImGui_ImplDX9_CreateDeviceObjects();
 }
 
 // Forward declare message handler from imgui_impl_win32.cpp

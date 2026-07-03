@@ -62,5 +62,13 @@ target_link_libraries(HitmanTracker PRIVATE imgui::imgui)
 target_link_libraries(HitmanTracker PRIVATE spdlog::spdlog_header_only)
 target_link_libraries(HitmanTracker PRIVATE mempeep)
 
-add_executable(MultiViewportTest "_multi_viewport_test.cpp")
+add_executable(MultiViewportTest
+    "_multi_viewport_test.cpp"
+	"imgui_utils.cpp"
+	"gui/deviced3d.cpp"
+	"gui/ui.cpp"
+	"gui/window.cpp"
+)
+set_property(TARGET MultiViewportTest PROPERTY CXX_STANDARD 23)
 target_link_libraries(MultiViewportTest PRIVATE imgui::imgui)
+target_link_libraries(MultiViewportTest PRIVATE spdlog::spdlog)
