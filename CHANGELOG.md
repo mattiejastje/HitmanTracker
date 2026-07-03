@@ -6,6 +6,12 @@
 
 - The GOG version of Hitman Codename 47 is now supported.
 
+### Changed
+
+- Minor refactoring of hooking code.
+
+- Various hooking errors will now also be caught in release builds.
+
 ## [0.5.0] - 2026-07-01
 
 ### Fixed
