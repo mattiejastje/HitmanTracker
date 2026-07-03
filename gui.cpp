@@ -170,7 +170,11 @@ int gui_run(settings::Settings& settings) {
     spdlog::info("Running user interface");
     ImGui_ImplWin32_EnableDpiAwareness();
     auto window = CreateWindowWin32(
-        WndProc, settings.gui.font_size, settings.gui.topmost
+        WndProc,
+        L"Hitman Tracker",
+        settings.gui.topmost ? WS_EX_TOPMOST : 0,
+        15 * settings.gui.font_size,
+        30 * settings.gui.font_size
     );
     if (!window) return 1;
     auto dev = CreateDeviceD3D(window->handle);

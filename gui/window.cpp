@@ -16,14 +16,18 @@ void WindowDeleter::operator()(Window* window) const {
 }
 
 std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
-    WNDPROC WndProc, float font_size, bool topmost
+    WNDPROC wnd_proc,
+    const wchar_t* title,
+    DWORD dw_ex_style,
+    int logical_width,
+    int logical_height
 ) {
     spdlog::debug("Creating application window...");
     auto window = std::unique_ptr<Window, WindowDeleter>(new Window{
         .cls
         = {sizeof(WNDCLASSEXW),
            CS_CLASSDC,
-           WndProc,
+           wnd_proc,
            0L,
            0L,
            GetModuleHandle(nullptr),
@@ -31,7 +35,7 @@ std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
            nullptr,
            nullptr,
            nullptr,
-           L"Hitman Tracker",
+           title,
            nullptr}
     });
     window->atom = ::RegisterClassExW(&window->cls);
@@ -40,14 +44,14 @@ std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
         ::MonitorFromPoint(POINT{0, 0}, MONITOR_DEFAULTTOPRIMARY)
     );
     window->handle = ::CreateWindowExW(
-        topmost ? WS_EX_TOPMOST : 0,
+        dw_ex_style,
         window->cls.lpszClassName,
-        L"Hitman Tracker",
+        title,
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        15 * font_size * dpiscale,
-        30 * font_size * dpiscale,
+        logical_width * dpiscale,
+        logical_height * dpiscale,
         nullptr,
         nullptr,
         window->cls.hInstance,
