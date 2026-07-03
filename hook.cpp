@@ -2,17 +2,16 @@
 
 #include <spdlog/spdlog.h>
 
-#include <cassert>
-
+#include "contract.hpp"
 #include "mem/read_write.hpp"
 
 static Code get_code_i8(intptr_t value) {
-    assert((INT8_MIN <= value) && (value <= INT8_MAX));
+    APP_CHECK((INT8_MIN <= value) && (value <= INT8_MAX));
     return {static_cast<uint8_t>(value)};
 }
 
 static Code get_code_i32(intptr_t value) {
-    assert((INT32_MIN <= value) && (value <= INT32_MAX));
+    APP_CHECK((INT32_MIN <= value) && (value <= INT32_MAX));
     return {
         static_cast<uint8_t>(value),
         static_cast<uint8_t>(static_cast<uint32_t>(value) >> 8),
@@ -30,10 +29,10 @@ static Code add_code(const Code& code1, const Code& code2) {
 static intptr_t get_align_size(intptr_t current_ptr, intptr_t size) {
     const auto ptr = size * ((current_ptr + size - 1) / size);
     const intptr_t final_size = ptr - current_ptr;
-    assert(final_size >= 0);
-    assert(final_size < size);
-    assert(ptr % size == 0);
-    assert(current_ptr != 1 || final_size == size - 1);
+    APP_REQUIRE(final_size >= 0);
+    APP_REQUIRE(final_size < size);
+    APP_REQUIRE(ptr % size == 0);
+    APP_REQUIRE(current_ptr != 1 || final_size == size - 1);
     return final_size;
 }
 
@@ -101,7 +100,7 @@ static Code get_code(
                 return add_code(j.code, get_code_i8(offset));
             },
             [&label_ptrs](const Label& l) {
-                assert(label_ptrs.contains(l.index));
+                APP_CHECK(label_ptrs.contains(l.index));
                 return Code{};
             },
             [&label_ptrs](const Ptr& p) {
@@ -110,7 +109,7 @@ static Code get_code(
         },
         item
     );
-    assert(code.size() == size);  // critical!
+    APP_REQUIRE(code.size() == size);
     return code;
 }
 
@@ -141,9 +140,7 @@ static Code get_code(
     for (const auto& item : assembly) {
         const auto part = get_code(item, ptr, label_ptrs);
         code.insert(code.end(), part.begin(), part.end());
-        ptr += part.size();
-        // extra check here for safety
-        assert(part.size() == get_code_size(item, ptr));
+        ptr += part.size();  // part.size() == get_code_size(item, ptr)
     }
     return code;
 }
@@ -219,7 +216,12 @@ static bool hook_install_target_code(
 ) {
     // assemble target code
     auto target_code = get_code(target_alloc->ptr, label_ptrs, target_asm);
-    assert(target_code.size() <= target_alloc->size);
+    APP_REQUIRE(
+        target_code.size() <= target_alloc->size,
+        "target code size {} exceeds allocated size {}",
+        target_code.size(),
+        target_alloc->size
+    );
     // install target code
     spdlog::debug("Hook: writing target code at {:#x}", target_alloc->ptr);
     if (!write_bytes(
