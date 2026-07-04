@@ -2,37 +2,31 @@
 
 #include <imgui.h>
 
-#include <memory>
+#include <span>
 
-#include "../settings.hpp"
 #include "deviced3d.hpp"
+#include "fonts.hpp"
 #include "window.hpp"
-
-// imgui font for each text style in settings::Gui
-struct Fonts {
-    ImFont* settings;
-    ImFont* title;
-    ImFont* difficulty;
-    ImFont* map;
-    ImFont* time;
-    ImFont* rating_bad;
-    ImFont* rating_good;
-    ImFont* rating_maybe;
-    ImFont* label;
-    ImFont* value;
-};
 
 struct UI {
     ImGuiContext* imgui_context;
-    Fonts fonts;
+    std::vector<ImFont*> fonts;
 };
 
 struct UIDeleter {
     void operator()(UI* ui) const;
 };
 
-std::unique_ptr<UI, UIDeleter> CreateUI(
-    const settings::Gui& settings, Window* window, DeviceD3D* dev
+[[nodiscard]] std::unique_ptr<UI, UIDeleter> CreateUI(
+    Window* window,
+    DeviceD3D* dev,
+    ImVec4 bg_color,
+    std::span<const FontSpec> fonts
 );
 
-bool UpdateUIScaling(UI& ui, float dpiscale, const settings::Gui& settings);
+bool UpdateUIScaling(
+    UI& ui,
+    ImVec4 bg_color,
+    float dpiscale,
+    std::span<const FontSpec> font_specs
+);

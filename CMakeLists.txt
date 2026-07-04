@@ -19,6 +19,7 @@ add_executable (HitmanTracker
 	"imgui_utils.cpp"
 	"format_duration.cpp"
 	"gui/deviced3d.cpp"
+	"gui/fonts.cpp"
 	"gui/ui.cpp"
 	"gui/window.cpp"
 	"spdlog.cpp"
@@ -51,7 +52,7 @@ add_executable (HitmanTracker
 	"signal.cpp"
 	"stats.cpp"
 )
-set_property(TARGET HitmanTracker PROPERTY CXX_STANDARD 23)
+set_property(TARGET HitmanTracker PROPERTY CXX_STANDARD 26)
 target_link_options(HitmanTracker PRIVATE
     $<$<NOT:$<CONFIG:Debug>>:/SUBSYSTEM:WINDOWS>
     $<$<NOT:$<CONFIG:Debug>>:/ENTRY:mainCRTStartup>

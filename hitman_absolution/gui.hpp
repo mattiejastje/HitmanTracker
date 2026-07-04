@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../game.hpp"
+#include "../settings.hpp"
 
 namespace hitman_absolution {
 

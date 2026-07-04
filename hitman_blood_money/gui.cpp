@@ -31,7 +31,7 @@ GameGui hitman_blood_money::gui(
 ) {
     return [&settings,
             &hbm,
-            version](const Fonts& fonts, const std::any& stats_any) {
+            version](std::span<ImFont*> fonts, const std::any& stats_any) {
         const auto& stats = std::any_cast<const Stats&>(stats_any);
         hitman_common::gui_header(
             settings,

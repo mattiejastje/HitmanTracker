@@ -38,7 +38,9 @@ const std::vector<std::string> map_names = {
 GameGui hitman2_silent_assassin::gui(
     const settings::Gui& settings, const std::string& version
 ) {
-    return [&settings, version](const Fonts& fonts, const std::any& stats_any) {
+    return [&settings, version](
+               std::span<ImFont*> fonts, const std::any& stats_any
+           ) {
         const auto& stats
             = std::any_cast<const hitman_common::Stats&>(stats_any);
         hitman_common::gui_header(

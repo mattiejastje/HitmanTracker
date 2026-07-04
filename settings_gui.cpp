@@ -1,7 +1,5 @@
 #include "settings_gui.hpp"
 
-#include <imgui.h>
-
 #include "spdlog.hpp"
 
 static void mark_any(SettingsChanged& changed, bool v) { changed.any |= v; }
@@ -160,8 +158,7 @@ SettingsChanged settings_gui(settings::Settings& settings) {
         mark_any(
             changed,
             ImGui::Checkbox(
-                "Show SA rating details",
-                &settings.hma.show_sa_details
+                "Show SA rating details", &settings.hma.show_sa_details
             )
         );
         mark_any(
@@ -171,9 +168,7 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                 &settings.hma.show_max_score_rating_only
             )
         );
-        ImGui::SetItemTooltip(
-            "Only show Shadow / No Shadow etc."
-        );
+        ImGui::SetItemTooltip("Only show Shadow / No Shadow etc.");
         mark_any(
             changed,
             ImGui::Checkbox(

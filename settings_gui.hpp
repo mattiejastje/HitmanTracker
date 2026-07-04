@@ -1,4 +1,9 @@
 #pragma once
+
+#include <imgui.h>
+
+#include <span>
+
 #include "settings.hpp"
 
 struct SettingsChanged {
@@ -7,5 +12,4 @@ struct SettingsChanged {
     bool topmost{false};
 };
 
-// returns true if any setting changed this frame
 SettingsChanged settings_gui(settings::Settings& settings);

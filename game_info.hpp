@@ -3,6 +3,7 @@
 #include <any>
 #include <filesystem>
 #include <functional>
+#include <span>
 
 #include "base_ptrs.hpp"
 #include "gui/ui.hpp"
@@ -12,7 +13,7 @@
 #include "stats.hpp"
 
 using GameGui
-    = std::function<void(const Fonts &, const std::any & /* stats */)>;
+    = std::function<void(std::span<ImFont *>, const std::any & /* stats */)>;
 
 using GameHook
     = std::function<HookPtr(std::shared_ptr<void>, const BasePtrs &)>;

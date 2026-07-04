@@ -16,6 +16,7 @@
 #include "gui/deviced3d.hpp"
 #include "gui/ui.hpp"
 #include "gui/window.hpp"
+#include "hitman_common/gui.hpp"
 #include "imgui_utils.hpp"
 #include "mem/handle.hpp"
 #include "settings_gui.hpp"
@@ -135,6 +136,7 @@ static void Frame(UI& ui, settings::Settings& settings) {
             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
                 | ImGuiWindowFlags_NoMove
         )) {
+        ImGui::PushFont(ui.fonts[hitman_common::FontIndex::Settings]);
         if (ImGui::Button("Settings...")) {
             ImGui::OpenPopup("Settings");
         }
@@ -146,6 +148,7 @@ static void Frame(UI& ui, settings::Settings& settings) {
             }
             ImGui::EndPopup();
         }
+        ImGui::PopFont();
         ImGui::Spacing();
         if (game && game->hook) {
             auto scoped_fast = ScopedProfiler{profiler_fast, dt};
@@ -158,7 +161,11 @@ static void Frame(UI& ui, settings::Settings& settings) {
             error_fast.update(100.0f * static_cast<float>(!ok), dt);
             game->methods.gui(ui.fonts, game->stats);
         } else {
-            text(ui.fonts.title, settings.gui.title.color, "No game running");
+            text(
+                ui.fonts[hitman_common::FontIndex::Title],
+                settings.gui.title.color,
+                "No game running"
+            );
         }
     }
     ImGui::End();
@@ -185,7 +192,12 @@ int gui_run(settings::Settings& settings) {
     ::ShowWindow(window->handle, SW_SHOWDEFAULT);
     ::UpdateWindow(window->handle);
 
-    auto ui = CreateUI(settings.gui, window.get(), dev.get());
+    auto ui = CreateUI(
+        window.get(),
+        dev.get(),
+        im_vec4(settings.gui.bg_color),
+        hitman_common::make_font_specs(settings.gui)
+    );
     if (!ui) return 1;
 
     // Set timer
@@ -242,12 +254,22 @@ int gui_run(settings::Settings& settings) {
             float dpiscale
                 = (float)g_ChangeDpi / (float)USER_DEFAULT_SCREEN_DPI;
             g_ChangeDpi = 0;
-            UpdateUIScaling(*ui, dpiscale, settings.gui);
+            UpdateUIScaling(
+                *ui,
+                im_vec4(settings.gui.bg_color),
+                dpiscale,
+                hitman_common::make_font_specs(settings.gui)
+            );
         }
 
         if (g_settings_changed.fonts) {
             float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(window->handle);
-            UpdateUIScaling(*ui, dpiscale, settings.gui);
+            UpdateUIScaling(
+                *ui,
+                im_vec4(settings.gui.bg_color),
+                dpiscale,
+                hitman_common::make_font_specs(settings.gui)
+            );
             g_settings_changed.fonts = false;
         }
 
