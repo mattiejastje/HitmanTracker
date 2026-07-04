@@ -5,6 +5,7 @@
 
 #include "../game.hpp"
 #include "../imgui_utils.hpp"
+#include "../settings.hpp"
 
 namespace hitman_common {
 

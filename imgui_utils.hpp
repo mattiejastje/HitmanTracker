@@ -3,10 +3,6 @@
 #include <imgui.h>
 
 #include <array>
-#include <optional>
-
-#include "game.hpp"
-#include "settings.hpp"
 
 ImVec4 im_vec4(const std::array<float, 3>& color);
 
