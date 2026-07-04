@@ -8,6 +8,8 @@
 #include "fonts.hpp"
 #include "window.hpp"
 
+namespace imgui_app {
+
 struct UI {
     ImGuiContext* imgui_context;
     std::vector<ImFont*> fonts;
@@ -30,3 +32,5 @@ bool UpdateUIScaling(
     float dpiscale,
     std::span<const FontSpec> font_specs
 );
+
+}  // namespace imgui_app

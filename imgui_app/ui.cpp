@@ -12,7 +12,7 @@
 #include "deviced3d.hpp"
 #include "window.hpp"
 
-void UIDeleter::operator()(UI* ui) const {
+void imgui_app::UIDeleter::operator()(UI* ui) const {
     if (ui) {
         spdlog::debug("Shutting down ImGui...");
         ImGui_ImplDX9_Shutdown();
@@ -21,7 +21,8 @@ void UIDeleter::operator()(UI* ui) const {
     }
 }
 
-[[nodiscard]] std::unique_ptr<UI, UIDeleter> CreateUI(
+[[nodiscard]] std::unique_ptr<imgui_app::UI, imgui_app::UIDeleter>
+imgui_app::CreateUI(
     Window* window,
     DeviceD3D* dev,
     ImVec4 bg_color,
@@ -45,7 +46,7 @@ void UIDeleter::operator()(UI* ui) const {
     return ui;
 }
 
-bool UpdateUIScaling(
+bool imgui_app::UpdateUIScaling(
     UI& ui,
     ImVec4 bg_color,
     float dpiscale,

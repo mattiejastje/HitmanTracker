@@ -117,7 +117,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return ::DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-static void Frame(UI& ui, settings::Settings& settings) {
+static void Frame(imgui_app::UI& ui, settings::Settings& settings) {
     spdlog::trace("New frame...");
     static auto last_now = std::chrono::steady_clock::now();
     auto now = std::chrono::steady_clock::now();
@@ -185,14 +185,14 @@ int gui_run(settings::Settings& settings) {
         30 * settings.gui.font_size
     );
     if (!window) return 1;
-    auto dev = CreateDeviceD3D(window->handle);
+    auto dev = imgui_app::CreateDeviceD3D(window->handle);
     if (!dev) return 1;
 
     spdlog::debug("Showing window...");
     ::ShowWindow(window->handle, SW_SHOWDEFAULT);
     ::UpdateWindow(window->handle);
 
-    auto ui = CreateUI(
+    auto ui = imgui_app::CreateUI(
         window.get(),
         dev.get(),
         im_vec4(settings.gui.bg_color),
@@ -227,7 +227,7 @@ int gui_run(settings::Settings& settings) {
                 ::Sleep(10);
                 continue;
             }
-            if (hr == D3DERR_DEVICENOTRESET) ResetDevice(dev.get());
+            if (hr == D3DERR_DEVICENOTRESET) imgui_app::ResetDevice(dev.get());
             spdlog::debug("Device recovered");
             g_DeviceLost = false;
         }
@@ -237,7 +237,7 @@ int gui_run(settings::Settings& settings) {
             dev->d3d_present_parameters.BackBufferWidth = g_ResizeWidth;
             dev->d3d_present_parameters.BackBufferHeight = g_ResizeHeight;
             g_ResizeWidth = g_ResizeHeight = 0;
-            ResetDevice(dev.get());
+            imgui_app::ResetDevice(dev.get());
         }
 
         if (g_ChangeDpi != 0) {
@@ -288,7 +288,7 @@ int gui_run(settings::Settings& settings) {
         }
 
         Frame(*ui, settings);
-        HRESULT result = RenderAndPresent(dev.get());
+        HRESULT result = imgui_app::RenderAndPresent(dev.get());
         if (result == D3DERR_DEVICELOST) g_DeviceLost = true;
     }
     spdlog::info("Closing user interface");

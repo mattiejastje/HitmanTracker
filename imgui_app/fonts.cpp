@@ -23,11 +23,14 @@
     return im_font;
 }
 
-using FontRegistry = std::map<FontSpec, ImFont*>;
+using FontRegistry = std::map<imgui_app::FontSpec, ImFont*>;
 
 // load with deduplication from registry
 [[nodiscard]] static ImFont* load_font(
-    ImGuiIO& io, FontRegistry& registry, const FontSpec& font, float dpiscale
+    ImGuiIO& io,
+    FontRegistry& registry,
+    const imgui_app::FontSpec& font,
+    float dpiscale
 ) {
     auto iter = registry.find(font);
     if (iter != registry.end()) {
@@ -39,7 +42,7 @@ using FontRegistry = std::map<FontSpec, ImFont*>;
     }
 }
 
-[[nodiscard]] std::vector<ImFont*> load_fonts(
+[[nodiscard]] std::vector<ImFont*> imgui_app::load_fonts(
     ImGuiIO& io, float dpiscale, std::span<const FontSpec> font_specs
 ) {
     io.Fonts->Clear();

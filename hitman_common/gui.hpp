@@ -23,7 +23,7 @@ enum FontIndex {
     Count
 };
 
-std::array<FontSpec, FontIndex::Count> make_font_specs(
+std::array<imgui_app::FontSpec, FontIndex::Count> make_font_specs(
     const settings::Gui& settings
 );
 
