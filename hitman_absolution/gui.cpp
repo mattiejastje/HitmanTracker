@@ -4,8 +4,8 @@
 
 #include <format>
 
+#include "../gui/text.hpp"
 #include "../hitman_common/gui.hpp"
-#include "../imgui_utils.hpp"
 #include "stats.hpp"
 
 const std::vector<std::string> map_names = {

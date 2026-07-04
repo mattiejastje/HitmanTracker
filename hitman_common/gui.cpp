@@ -7,11 +7,10 @@
 #include <vector>
 
 #include "../format_duration.hpp"
-#include "../imgui_utils.hpp"
+#include "../gui/text.hpp"
 
-std::array<FontSpec, hitman_common::FontIndex::Count> hitman_common::make_font_specs(
-    const settings::Gui& settings
-) {
+std::array<FontSpec, hitman_common::FontIndex::Count>
+hitman_common::make_font_specs(const settings::Gui& settings) {
     return {{
         {settings.title.file, settings.font_size * settings.title.scale},
         {settings.difficulty.file,
