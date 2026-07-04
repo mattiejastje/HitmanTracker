@@ -11,13 +11,13 @@ add_subdirectory("mempeep")
 
 add_executable (HitmanTracker
 	"HitmanTracker.cpp"
+	"color.cpp"
 	"gui.cpp"
 	"settings.cpp"
 	"game_info_registry.cpp"
 	"game.cpp"
 	"hook.cpp"
 	"format_duration.cpp"
-	"imgui_app/app.cpp"
 	"imgui_app/deviced3d.cpp"
 	"imgui_app/fonts.cpp"
 	"imgui_app/text.cpp"

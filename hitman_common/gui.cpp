@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "../color.hpp"
 #include "../format_duration.hpp"
 #include "../imgui_app/text.hpp"
 
@@ -43,21 +44,21 @@ void hitman_common::gui_header(
     const auto title = settings.show_game_version
                            ? std::format("{} [{}]", game_name, version)
                            : game_name;
-    text(fonts[FontIndex::Title], settings.title.color, title.c_str());
+    text(fonts[FontIndex::Title], im_vec4(settings.title.color), title.c_str());
     text(
         fonts[FontIndex::Difficulty],
-        settings.difficulty.color,
+        im_vec4(settings.difficulty.color),
         difficulty.c_str()
     );
     if (map > 0) {
         ImGui::PushTextWrapPos();
-        text(fonts[FontIndex::Map], settings.map.color, map_name.c_str());
+        text(fonts[FontIndex::Map], im_vec4(settings.map.color), map_name.c_str());
         ImGui::PopTextWrapPos();
         if (map_stage != MapStage::pre) {
             ImGui::Spacing();
             text(
                 fonts[FontIndex::Time],
-                settings.time.color,
+                im_vec4(settings.time.color),
                 format_duration(time).c_str()
             );
         }
@@ -83,7 +84,7 @@ void hitman_common::gui_table(
               : rating.status == Status::GREEN ? settings.rating_good.color
                                                : settings.rating_maybe.color;
         auto& rating_text = rating.value;
-        text(rating_font, rating_color, rating_text.c_str());
+        text(rating_font, im_vec4(rating_color), rating_text.c_str());
         ImGui::Spacing();
         ImGui::BeginTable(
             "Statistics",

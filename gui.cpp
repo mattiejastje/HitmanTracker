@@ -12,6 +12,7 @@
 #include <map>
 #include <tuple>
 
+#include "color.hpp"
 #include "game.hpp"
 #include "hitman_common/gui.hpp"
 #include "imgui_app/deviced3d.hpp"
@@ -163,7 +164,7 @@ static void Frame(imgui_app::UI& ui, settings::Settings& settings) {
         } else {
             text(
                 ui.fonts[hitman_common::FontIndex::Title],
-                settings.gui.title.color,
+                im_vec4(settings.gui.title.color),
                 "No game running"
             );
         }

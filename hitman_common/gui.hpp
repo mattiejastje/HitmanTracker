@@ -3,6 +3,7 @@
 #include <span>
 #include <variant>
 
+#include "../color.hpp"
 #include "../game.hpp"
 #include "../imgui_app/text.hpp"
 #include "../settings.hpp"
@@ -36,9 +37,9 @@ struct TableRow {
 template <typename... Args>
 void table_row(
     ImFont* label_font,
-    std::array<float, 3> label_color,
+    const ImVec4& label_color,
     ImFont* value_font,
-    std::array<float, 3> value_color,
+    const ImVec4& value_color,
     const char* label,
     const char* value,
     Args... args
@@ -66,9 +67,9 @@ void table_row(
                                             : settings.rating_maybe.color;
     table_row(
         fonts[FontIndex::Label],
-        settings.label.color,
+        im_vec4(settings.label.color),
         fonts[FontIndex::Value],
-        value_color,
+        im_vec4(value_color),
         label,
         value,
         args...
