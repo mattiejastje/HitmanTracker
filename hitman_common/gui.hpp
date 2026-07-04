@@ -4,7 +4,7 @@
 #include <variant>
 
 #include "../game.hpp"
-#include "../gui/text.hpp"
+#include "../imgui_app/text.hpp"
 #include "../settings.hpp"
 
 namespace hitman_common {

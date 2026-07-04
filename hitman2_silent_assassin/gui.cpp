@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
-#include "../gui/text.hpp"
 #include "../hitman_common/gui.hpp"
 #include "../hitman_common/stats.hpp"
+#include "../imgui_app/text.hpp"
 
 const std::vector<std::string> map_names = {
     "",

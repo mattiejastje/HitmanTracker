@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "../format_duration.hpp"
-#include "../gui/text.hpp"
+#include "../imgui_app/text.hpp"
 
 std::array<FontSpec, hitman_common::FontIndex::Count>
 hitman_common::make_font_specs(const settings::Gui& settings) {

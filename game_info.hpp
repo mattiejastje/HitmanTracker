@@ -6,7 +6,7 @@
 #include <span>
 
 #include "base_ptrs.hpp"
-#include "gui/ui.hpp"
+#include "imgui_app/ui.hpp"
 #include "hook.hpp"
 #include "label_ptrs.hpp"
 #include "pe.hpp"

@@ -4,7 +4,7 @@
 
 #include <format>
 
-#include "../gui/text.hpp"
+#include "../imgui_app/text.hpp"
 #include "../hitman_common/gui.hpp"
 #include "stats.hpp"
 

@@ -13,11 +13,11 @@
 #include <tuple>
 
 #include "game.hpp"
-#include "gui/deviced3d.hpp"
-#include "gui/text.hpp"
-#include "gui/ui.hpp"
-#include "gui/window.hpp"
 #include "hitman_common/gui.hpp"
+#include "imgui_app/deviced3d.hpp"
+#include "imgui_app/text.hpp"
+#include "imgui_app/ui.hpp"
+#include "imgui_app/window.hpp"
 #include "mem/handle.hpp"
 #include "settings_gui.hpp"
 #include "signal.hpp"
