@@ -203,7 +203,7 @@ int gui_run(settings::Settings& settings) {
         }
         if (done) break;
 
-        if (dev->is_lost) {
+        if (dev->state.is_lost) {
             spdlog::debug("Handling lost D3D device");
             HRESULT hr = dev->d3d_device->TestCooperativeLevel();
             if (hr == D3DERR_DEVICELOST) {
@@ -213,13 +213,13 @@ int gui_run(settings::Settings& settings) {
             }
             if (hr == D3DERR_DEVICENOTRESET) imgui_app::ResetDevice(dev.get());
             spdlog::debug("Device recovered");
-            dev->is_lost = false;
+            dev->state.is_lost = false;
         }
 
         if (g_ResizeWidth != 0 && g_ResizeHeight != 0) {
             spdlog::debug("Handling window resize");
-            dev->d3d_present_parameters.BackBufferWidth = g_ResizeWidth;
-            dev->d3d_present_parameters.BackBufferHeight = g_ResizeHeight;
+            dev->state.present_parameters.BackBufferWidth = g_ResizeWidth;
+            dev->state.present_parameters.BackBufferHeight = g_ResizeHeight;
             g_ResizeWidth = g_ResizeHeight = 0;
             imgui_app::ResetDevice(dev.get());
         }

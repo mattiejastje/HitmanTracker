@@ -20,23 +20,23 @@ imgui_app::CreateDeviceD3D(HWND window_handle) {
     dev->d3d = Direct3DCreate9(D3D_SDK_VERSION);
     if (!dev->d3d) return nullptr;
     ZeroMemory(
-        &dev->d3d_present_parameters, sizeof(dev->d3d_present_parameters)
+        &dev->state.present_parameters, sizeof(dev->state.present_parameters)
     );
-    dev->d3d_present_parameters.Windowed = TRUE;
-    dev->d3d_present_parameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    dev->d3d_present_parameters.BackBufferFormat
+    dev->state.present_parameters.Windowed = TRUE;
+    dev->state.present_parameters.SwapEffect = D3DSWAPEFFECT_DISCARD;
+    dev->state.present_parameters.BackBufferFormat
         = D3DFMT_UNKNOWN;  // Need to use an explicit format with alpha if
                            // needing per-pixel alpha composition.
-    dev->d3d_present_parameters.EnableAutoDepthStencil = TRUE;
-    dev->d3d_present_parameters.AutoDepthStencilFormat = D3DFMT_D16;
-    dev->d3d_present_parameters.PresentationInterval
+    dev->state.present_parameters.EnableAutoDepthStencil = TRUE;
+    dev->state.present_parameters.AutoDepthStencilFormat = D3DFMT_D16;
+    dev->state.present_parameters.PresentationInterval
         = D3DPRESENT_INTERVAL_ONE;  // Present with vsync
     if (dev->d3d->CreateDevice(
             D3DADAPTER_DEFAULT,
             D3DDEVTYPE_HAL,
             window_handle,
             D3DCREATE_HARDWARE_VERTEXPROCESSING,
-            &dev->d3d_present_parameters,
+            &dev->state.present_parameters,
             &dev->d3d_device
         )
         < 0)
@@ -48,10 +48,10 @@ imgui_app::CreateDeviceD3D(HWND window_handle) {
 void imgui_app::ResetDevice(DeviceD3D* dev) {
     spdlog::debug("Resetting Direct3D device...");
     ImGui_ImplDX9_InvalidateDeviceObjects();
-    HRESULT hr = dev->d3d_device->Reset(&dev->d3d_present_parameters);
+    HRESULT hr = dev->d3d_device->Reset(&dev->state.present_parameters);
     assert(hr != D3DERR_INVALIDCALL);
     ImGui_ImplDX9_CreateDeviceObjects();
-    dev->is_lost = false;
+    dev->state.is_lost = false;
 }
 
 HRESULT imgui_app::RenderAndPresent(DeviceD3D* dev) {
@@ -66,6 +66,6 @@ HRESULT imgui_app::RenderAndPresent(DeviceD3D* dev) {
     }
     HRESULT result
         = dev->d3d_device->Present(nullptr, nullptr, nullptr, nullptr);
-    if (result == D3DERR_DEVICELOST) dev->is_lost = true;
+    if (result == D3DERR_DEVICELOST) dev->state.is_lost = true;
     return result;
 }

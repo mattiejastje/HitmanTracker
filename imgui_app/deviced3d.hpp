@@ -10,11 +10,14 @@
 namespace imgui_app {
 
 struct DeviceD3D {
+    struct State {
+        D3DPRESENT_PARAMETERS present_parameters = {};
+        bool is_lost = false;
+    };
+
     LPDIRECT3D9 d3d = nullptr;
     LPDIRECT3DDEVICE9 d3d_device = nullptr;
-    D3DPRESENT_PARAMETERS d3d_present_parameters = {};
-    // set when Present() reports D3DERR_DEVICELOST
-    bool is_lost = false;
+    State state{};
 };
 
 struct DeviceD3DDeleter {
