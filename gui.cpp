@@ -192,9 +192,6 @@ int gui_run(settings::Settings& settings) {
     spdlog::debug("Starting main loop...");
     bool done = false;
     while (!done) {
-        // Poll and handle messages (inputs, window resize, etc.)
-        // See the WndProc() function below for our to dispatch events to the
-        // Win32 backend.
         MSG msg;
         while (::PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE)) {
             ::TranslateMessage(&msg);
@@ -260,7 +257,7 @@ int gui_run(settings::Settings& settings) {
         }
 
         Frame(*ui, settings);
-        HRESULT result = imgui_app::RenderAndPresent(*dev);
+        imgui_app::RenderAndPresent(*dev);
     }
     spdlog::info("Closing user interface");
     spdlog::debug("Cleanup...");
