@@ -5,8 +5,8 @@
 void imgui_app::draw_key_value_table(
     const char* table_id,
     Header header,
-    ImFont* label_font,
-    const ImVec4& label_color,
+    ImFont* key_font,
+    const ImVec4& key_color,
     ImFont* value_font,
     std::span<const TableEntry> entries
 ) {
@@ -25,7 +25,7 @@ void imgui_app::draw_key_value_table(
             ImGui::TableNextColumn();
             if (row) text(value_font, row->value_color, row->value.c_str());
             ImGui::TableNextColumn();
-            if (row) text(label_font, label_color, row->label.c_str());
+            if (row) text(key_font, key_color, row->key.c_str());
         }
         ImGui::EndTable();
     }
