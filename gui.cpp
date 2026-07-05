@@ -165,8 +165,10 @@ static void Frame(imgui_app::UI& ui, settings::Settings& settings) {
 int gui_run(settings::Settings& settings) {
     spdlog::info("Running user interface");
     ImGui_ImplWin32_EnableDpiAwareness();
-    auto window = CreateWindowWin32(
-        WndProc,
+    auto window_class = imgui_app::CreateWindowClass(WndProc, L"HitmanTrackerWindow");
+    if (!window_class) return 1;
+    auto window = imgui_app::CreateAppWindow(
+        window_class,
         L"Hitman Tracker",
         WS_OVERLAPPEDWINDOW,
         settings.gui.topmost ? WS_EX_TOPMOST : 0,

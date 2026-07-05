@@ -10,6 +10,9 @@
       ]
     },
     "nameof",
-    "spdlog"
+    {
+      "name": "spdlog",
+      "features": [ "wchar" ]
+    }
   ]
 }

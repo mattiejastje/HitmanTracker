@@ -23,6 +23,7 @@ add_executable (HitmanTracker
 	"imgui_app/key_value_table.cpp"
 	"imgui_app/ui.cpp"
 	"imgui_app/window.cpp"
+	"imgui_app/window_class.cpp"
 	"spdlog.cpp"
 	"mem/alloc.cpp"
 	"mem/handle.cpp"

@@ -1,62 +1,53 @@
 #include "window.hpp"
 
 #include <imgui_impl_win32.h>
-
 #include <spdlog/spdlog.h>
 
-void WindowDeleter::operator()(Window* window) const {
+#include "window_class.hpp"
+
+void imgui_app::WindowDeleter::operator()(Window* window) const {
     if (window) {
-        spdlog::debug("Destroying application window...");
+        spdlog::debug(L"Destroying window {}...", window->title);
         if (window->handle) ::DestroyWindow(window->handle);
-        if (window->atom != 0)
-            ::UnregisterClassW(
-                window->cls.lpszClassName, window->cls.hInstance
-            );
     }
 }
 
-std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
-    WNDPROC wnd_proc,
-    const wchar_t* title,
+std::unique_ptr<imgui_app::Window, imgui_app::WindowDeleter>
+imgui_app::CreateAppWindow(
+    std::shared_ptr<WindowClass> window_class,
+    std::wstring_view title,
     DWORD dw_style,
     DWORD dw_ex_style,
     int logical_width,
-    int logical_height
+    int logical_height,
+    std::optional<POINT> pos
 ) {
-    spdlog::debug("Creating application window...");
-    auto window = std::unique_ptr<Window, WindowDeleter>(new Window{
-        .cls
-        = {sizeof(WNDCLASSEXW),
-           CS_CLASSDC,
-           wnd_proc,
-           0L,
-           0L,
-           GetModuleHandle(nullptr),
-           nullptr,
-           nullptr,
-           nullptr,
-           nullptr,
-           title,
-           nullptr}
-    });
-    window->atom = ::RegisterClassExW(&window->cls);
-    if (window->atom == 0) return nullptr;
+    spdlog::debug(L"Creating window {}...", title);
+    if (!window_class) return nullptr;
     float dpiscale = ImGui_ImplWin32_GetDpiScaleForMonitor(
-        ::MonitorFromPoint(POINT{0, 0}, MONITOR_DEFAULTTOPRIMARY)
+        ::MonitorFromPoint(pos.value_or(POINT{0, 0}), MONITOR_DEFAULTTOPRIMARY)
     );
+    auto window = std::unique_ptr<Window, WindowDeleter>(new Window{});
+    window->title = title;
+    auto pos_cw = pos.value_or(POINT{CW_USEDEFAULT, CW_USEDEFAULT});
     window->handle = ::CreateWindowExW(
         dw_ex_style,
-        window->cls.lpszClassName,
-        title,
+        window_class->cls.lpszClassName,
+        window->title.c_str(),
         dw_style,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
+        pos_cw.x,
+        pos_cw.y,
         logical_width * dpiscale,
         logical_height * dpiscale,
         nullptr,
         nullptr,
-        window->cls.hInstance,
+        window_class->cls.hInstance,
         nullptr
     );
-    return window->handle ? std::move(window) : nullptr;
+    if (!window->handle) {
+        spdlog::critical(L"Failed to create window {}", title);
+        return nullptr;
+    }
+
+    return window;
 }
