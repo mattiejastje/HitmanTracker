@@ -48,7 +48,6 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
 static LRESULT WINAPI
 WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam)) return true;
-    static auto last_now = std::chrono::steady_clock::now();
     switch (msg) {
         case WM_SIZE:
             if (wParam == SIZE_MINIMIZED) return 0;
