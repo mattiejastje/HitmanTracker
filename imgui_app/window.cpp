@@ -48,6 +48,5 @@ imgui_app::CreateAppWindow(
         spdlog::critical(L"Failed to create window {}", title);
         return nullptr;
     }
-
     return window;
 }
