@@ -27,7 +27,6 @@
 // Data
 static timer::PeriodicTimer timer_find_game{1.0};
 static timer::PeriodicTimer timer_update_stats{0.1};
-static bool g_DeviceLost = false;
 static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 static RECT g_ChangeRect = {};
 static UINT g_ChangeDpi = 0;
@@ -204,7 +203,7 @@ int gui_run(settings::Settings& settings) {
         }
         if (done) break;
 
-        if (g_DeviceLost) {
+        if (dev->is_lost) {
             spdlog::debug("Handling lost D3D device");
             HRESULT hr = dev->d3d_device->TestCooperativeLevel();
             if (hr == D3DERR_DEVICELOST) {
@@ -214,7 +213,7 @@ int gui_run(settings::Settings& settings) {
             }
             if (hr == D3DERR_DEVICENOTRESET) imgui_app::ResetDevice(dev.get());
             spdlog::debug("Device recovered");
-            g_DeviceLost = false;
+            dev->is_lost = false;
         }
 
         if (g_ResizeWidth != 0 && g_ResizeHeight != 0) {
@@ -274,7 +273,6 @@ int gui_run(settings::Settings& settings) {
 
         Frame(*ui, settings);
         HRESULT result = imgui_app::RenderAndPresent(dev.get());
-        if (result == D3DERR_DEVICELOST) g_DeviceLost = true;
     }
     spdlog::info("Closing user interface");
     spdlog::debug("Cleanup...");

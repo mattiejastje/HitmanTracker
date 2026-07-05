@@ -51,6 +51,7 @@ void imgui_app::ResetDevice(DeviceD3D* dev) {
     HRESULT hr = dev->d3d_device->Reset(&dev->d3d_present_parameters);
     assert(hr != D3DERR_INVALIDCALL);
     ImGui_ImplDX9_CreateDeviceObjects();
+    dev->is_lost = false;
 }
 
 HRESULT imgui_app::RenderAndPresent(DeviceD3D* dev) {
@@ -63,5 +64,8 @@ HRESULT imgui_app::RenderAndPresent(DeviceD3D* dev) {
         ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
         dev->d3d_device->EndScene();
     }
-    return dev->d3d_device->Present(nullptr, nullptr, nullptr, nullptr);
+    HRESULT result
+        = dev->d3d_device->Present(nullptr, nullptr, nullptr, nullptr);
+    if (result == D3DERR_DEVICELOST) dev->is_lost = true;
+    return result;
 }
