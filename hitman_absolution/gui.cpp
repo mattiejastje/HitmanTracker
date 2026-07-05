@@ -147,6 +147,7 @@ GameGui hitman_absolution::gui(
             hitman_common::gui_table(
                 settings,
                 fonts,
+                "sa_rating",
                 stats.rating,
                 stats.map,
                 stats.map_stage,
@@ -200,6 +201,7 @@ GameGui hitman_absolution::gui(
             hitman_common::gui_table(
                 settings,
                 fonts,
+                "sc_rating",
                 stats.score_rating,
                 stats.map,
                 stats.map_stage,

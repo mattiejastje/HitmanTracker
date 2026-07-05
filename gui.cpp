@@ -162,7 +162,7 @@ static void Frame(imgui_app::UI& ui, settings::Settings& settings) {
             error_fast.update(100.0f * static_cast<float>(!ok), dt);
             game->methods.gui(ui.fonts, game->stats);
         } else {
-            text(
+            imgui_app::text(
                 ui.fonts[hitman_common::FontIndex::Title],
                 im_vec4(settings.gui.title.color),
                 "No game running"

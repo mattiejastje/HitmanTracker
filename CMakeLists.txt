@@ -20,7 +20,7 @@ add_executable (HitmanTracker
 	"format_duration.cpp"
 	"imgui_app/deviced3d.cpp"
 	"imgui_app/fonts.cpp"
-	"imgui_app/text.cpp"
+	"imgui_app/key_value_table.cpp"
 	"imgui_app/ui.cpp"
 	"imgui_app/window.cpp"
 	"spdlog.cpp"

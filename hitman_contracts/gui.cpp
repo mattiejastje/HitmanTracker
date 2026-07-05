@@ -51,6 +51,7 @@ GameGui hitman_contracts::gui(
             hitman_common::gui_table(
                 settings,
                 fonts,
+                "sa_rating",
                 stats.rating,
                 stats.map,
                 stats.map_stage,

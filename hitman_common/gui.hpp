@@ -46,9 +46,9 @@ void table_row(
 ) {
     ImGui::TableNextRow();
     ImGui::TableNextColumn();
-    text(value_font, value_color, value, args...);
+    imgui_app::text(value_font, value_color, value, args...);
     ImGui::TableNextColumn();
-    text(label_font, label_color, label);
+    imgui_app::text(label_font, label_color, label);
 }
 
 template <typename... Args>
@@ -91,6 +91,7 @@ void gui_header(
 void gui_table(
     const settings::Gui& settings,
     std::span<ImFont*> fonts,
+    const char* table_id,
     const StatsValue<std::string>& rating,
     int map,
     MapStage map_stage,
