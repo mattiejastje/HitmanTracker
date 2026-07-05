@@ -20,9 +20,9 @@
 #include "imgui_app/ui.hpp"
 #include "imgui_app/window.hpp"
 #include "mem/handle.hpp"
-#include "timer.hpp"
 #include "settings_gui.hpp"
 #include "signal.hpp"
+#include "timer.hpp"
 
 // Data
 static timer::PeriodicTimer timer_find_game{1.0};
@@ -51,22 +51,19 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_SIZE:
             if (wParam == SIZE_MINIMIZED) return 0;
-            g_ResizeWidth = (UINT)LOWORD(lParam);  // Queue resize
+            g_ResizeWidth = (UINT)LOWORD(lParam);
             g_ResizeHeight = (UINT)HIWORD(lParam);
             return 0;
         case WM_SYSCOMMAND:
-            if ((wParam & 0xfff0)
-                == SC_KEYMENU)  // Disable ALT application menu
-                return 0;
+            // Disable ALT application menu
+            if ((wParam & 0xfff0) == SC_KEYMENU) return 0;
             break;
         case WM_DPICHANGED:
-            // Queue scaling update
             assert(LOWORD(wParam) == HIWORD(wParam));
             CopyMemory(&g_ChangeRect, (RECT*)lParam, sizeof(RECT));
             g_ChangeDpi = LOWORD(wParam);
             return 0;
         case WM_DESTROY:
-            game = {};
             ::PostQuitMessage(0);
             return 0;
     }
@@ -165,7 +162,8 @@ static void Frame(imgui_app::UI& ui, settings::Settings& settings) {
 int gui_run(settings::Settings& settings) {
     spdlog::info("Running user interface");
     ImGui_ImplWin32_EnableDpiAwareness();
-    auto window_class = imgui_app::CreateWindowClass(WndProc, L"HitmanTrackerWindow");
+    auto window_class
+        = imgui_app::CreateWindowClass(WndProc, L"HitmanTrackerWindow");
     if (!window_class) return 1;
     auto window = imgui_app::CreateAppWindow(
         window_class,
