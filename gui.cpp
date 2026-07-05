@@ -202,20 +202,8 @@ int gui_run(settings::Settings& settings) {
             if (msg.message == WM_QUIT) done = true;
         }
         if (done) break;
-
-        if (dev->state.is_lost) {
-            spdlog::debug("Handling lost D3D device");
-            HRESULT hr = dev->d3d_device->TestCooperativeLevel();
-            if (hr == D3DERR_DEVICELOST) {
-                spdlog::debug("Device still lost");
-                ::Sleep(10);
-                continue;
-            }
-            if (hr == D3DERR_DEVICENOTRESET) imgui_app::ResetDevice(*dev);
-            spdlog::debug("Device recovered");
-            dev->state.is_lost = false;
-        }
-
+        // skip render if device still lost
+        if (imgui_app::HandleDeviceLost(*dev)) continue;
         if (g_ResizeWidth != 0 && g_ResizeHeight != 0) {
             spdlog::debug("Handling window resize");
             dev->state.present_parameters.BackBufferWidth = g_ResizeWidth;

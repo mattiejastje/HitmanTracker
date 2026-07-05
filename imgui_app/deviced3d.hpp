@@ -29,5 +29,6 @@ std::unique_ptr<DeviceD3D, DeviceD3DDeleter> CreateDeviceD3D(
 );
 void ResetDevice(DeviceD3D& dev);
 HRESULT RenderAndPresent(DeviceD3D& dev);
+bool HandleDeviceLost(DeviceD3D& dev);
 
 }  // namespace imgui_app

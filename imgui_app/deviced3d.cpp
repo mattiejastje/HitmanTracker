@@ -71,3 +71,18 @@ HRESULT imgui_app::RenderAndPresent(DeviceD3D& dev) {
     if (result == D3DERR_DEVICELOST) dev.state.is_lost = true;
     return result;
 }
+
+bool imgui_app::HandleDeviceLost(DeviceD3D& dev) {
+    if (!dev.state.is_lost) return false;
+    spdlog::debug("Handling lost D3D device");
+    HRESULT hr = dev.d3d_device->TestCooperativeLevel();
+    if (hr == D3DERR_DEVICELOST) {
+        spdlog::debug("Device still lost");
+        ::Sleep(10);
+        return true;
+    }
+    if (hr == D3DERR_DEVICENOTRESET) imgui_app::ResetDevice(dev);
+    spdlog::debug("Device recovered");
+    dev.state.is_lost = false;
+    return false;
+}
