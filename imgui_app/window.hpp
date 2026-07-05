@@ -19,7 +19,7 @@ struct WindowDeleter {
 };
 
 // windows.h defines CreateWindow as a macro...
-[[nodiscard]] std::unique_ptr<Window, WindowDeleter> CreateAppWindow(
+[[nodiscard]] std::unique_ptr<Window, WindowDeleter> CreateNativeWindow(
     std::shared_ptr<WindowClass> window_class,
     std::wstring_view title,
     DWORD dw_style,

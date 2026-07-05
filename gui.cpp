@@ -165,7 +165,7 @@ int gui_run(settings::Settings& settings) {
     auto window_class
         = imgui_app::CreateWindowClass(WndProc, L"HitmanTrackerWindow");
     if (!window_class) return 1;
-    auto window = imgui_app::CreateAppWindow(
+    auto window = imgui_app::CreateNativeWindow(
         window_class,
         L"Hitman Tracker",
         WS_OVERLAPPEDWINDOW,

@@ -13,7 +13,7 @@ void imgui_app::WindowDeleter::operator()(Window* window) const {
 }
 
 std::unique_ptr<imgui_app::Window, imgui_app::WindowDeleter>
-imgui_app::CreateAppWindow(
+imgui_app::CreateNativeWindow(
     std::shared_ptr<WindowClass> window_class,
     std::wstring_view title,
     DWORD dw_style,
