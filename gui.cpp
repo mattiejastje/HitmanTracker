@@ -181,8 +181,8 @@ int gui_run(settings::Settings& settings) {
     ::UpdateWindow(window->handle);
 
     auto ui = imgui_app::CreateUI(
-        window.get(),
-        dev.get(),
+        *window,
+        *dev,
         im_vec4(settings.gui.bg_color),
         hitman_common::make_font_specs(settings.gui)
     );
@@ -211,7 +211,7 @@ int gui_run(settings::Settings& settings) {
                 ::Sleep(10);
                 continue;
             }
-            if (hr == D3DERR_DEVICENOTRESET) imgui_app::ResetDevice(dev.get());
+            if (hr == D3DERR_DEVICENOTRESET) imgui_app::ResetDevice(*dev);
             spdlog::debug("Device recovered");
             dev->state.is_lost = false;
         }
@@ -221,7 +221,7 @@ int gui_run(settings::Settings& settings) {
             dev->state.present_parameters.BackBufferWidth = g_ResizeWidth;
             dev->state.present_parameters.BackBufferHeight = g_ResizeHeight;
             g_ResizeWidth = g_ResizeHeight = 0;
-            imgui_app::ResetDevice(dev.get());
+            imgui_app::ResetDevice(*dev);
         }
 
         if (g_ChangeDpi != 0) {
@@ -272,7 +272,7 @@ int gui_run(settings::Settings& settings) {
         }
 
         Frame(*ui, settings);
-        HRESULT result = imgui_app::RenderAndPresent(dev.get());
+        HRESULT result = imgui_app::RenderAndPresent(*dev);
     }
     spdlog::info("Closing user interface");
     spdlog::debug("Cleanup...");

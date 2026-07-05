@@ -23,8 +23,8 @@ void imgui_app::UIDeleter::operator()(UI* ui) const {
 
 std::unique_ptr<imgui_app::UI, imgui_app::UIDeleter>
 imgui_app::CreateUI(
-    Window* window,
-    DeviceD3D* dev,
+    Window& window,
+    DeviceD3D& dev,
     ImVec4 bg_color,
     std::span<const FontSpec> font_specs
 ) {
@@ -38,10 +38,10 @@ imgui_app::CreateUI(
     io.LogFilename = nullptr;
 
     // Setup Platform/Renderer backends
-    if (!ImGui_ImplWin32_Init(window->handle)) return nullptr;
-    if (!ImGui_ImplDX9_Init(dev->d3d_device)) return nullptr;
+    if (!ImGui_ImplWin32_Init(window.handle)) return nullptr;
+    if (!ImGui_ImplDX9_Init(dev.d3d_device)) return nullptr;
 
-    float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(window->handle);
+    float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(window.handle);
     if (!UpdateUIScaling(*ui, bg_color, dpiscale, font_specs)) return nullptr;
     return ui;
 }

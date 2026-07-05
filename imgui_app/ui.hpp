@@ -20,8 +20,8 @@ struct UIDeleter {
 };
 
 [[nodiscard]] std::unique_ptr<UI, UIDeleter> CreateUI(
-    Window* window,
-    DeviceD3D* dev,
+    Window& window,
+    DeviceD3D& dev,
     ImVec4 bg_color,
     std::span<const FontSpec> fonts
 );

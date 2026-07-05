@@ -5,11 +5,13 @@
 
 void imgui_app::DeviceD3DDeleter::operator()(DeviceD3D* dev) const {
     spdlog::debug("Releasing Direct3D...");
-    if (dev->d3d_device) {
-        dev->d3d_device->Release();
-    }
-    if (dev->d3d) {
-        dev->d3d->Release();
+    if (dev) {
+        if (dev->d3d_device) {
+            dev->d3d_device->Release();
+        }
+        if (dev->d3d) {
+            dev->d3d->Release();
+        }
     }
 }
 
@@ -45,27 +47,27 @@ imgui_app::CreateDeviceD3D(HWND window_handle) {
     return dev;
 }
 
-void imgui_app::ResetDevice(DeviceD3D* dev) {
+void imgui_app::ResetDevice(DeviceD3D& dev) {
     spdlog::debug("Resetting Direct3D device...");
     ImGui_ImplDX9_InvalidateDeviceObjects();
-    HRESULT hr = dev->d3d_device->Reset(&dev->state.present_parameters);
+    HRESULT hr = dev.d3d_device->Reset(&dev.state.present_parameters);
     assert(hr != D3DERR_INVALIDCALL);
     ImGui_ImplDX9_CreateDeviceObjects();
-    dev->state.is_lost = false;
+    dev.state.is_lost = false;
 }
 
-HRESULT imgui_app::RenderAndPresent(DeviceD3D* dev) {
+HRESULT imgui_app::RenderAndPresent(DeviceD3D& dev) {
     spdlog::trace("Rendering...");
-    dev->d3d_device->SetRenderState(D3DRS_ZENABLE, FALSE);
-    dev->d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-    dev->d3d_device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
-    if (dev->d3d_device->BeginScene() >= 0) {
+    dev.d3d_device->SetRenderState(D3DRS_ZENABLE, FALSE);
+    dev.d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+    dev.d3d_device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+    if (dev.d3d_device->BeginScene() >= 0) {
         ImGui::Render();
         ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-        dev->d3d_device->EndScene();
+        dev.d3d_device->EndScene();
     }
     HRESULT result
-        = dev->d3d_device->Present(nullptr, nullptr, nullptr, nullptr);
-    if (result == D3DERR_DEVICELOST) dev->state.is_lost = true;
+        = dev.d3d_device->Present(nullptr, nullptr, nullptr, nullptr);
+    if (result == D3DERR_DEVICELOST) dev.state.is_lost = true;
     return result;
 }
