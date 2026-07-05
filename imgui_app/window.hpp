@@ -14,7 +14,7 @@ struct WindowDeleter {
     void operator()(Window* window) const;
 };
 
-std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
+[[nodiscard]] std::unique_ptr<Window, WindowDeleter> CreateWindowWin32(
     WNDPROC wnd_proc,
     const wchar_t* title,
     DWORD dw_style,
