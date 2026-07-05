@@ -21,7 +21,7 @@ void imgui_app::UIDeleter::operator()(UI* ui) const {
     }
 }
 
-[[nodiscard]] std::unique_ptr<imgui_app::UI, imgui_app::UIDeleter>
+std::unique_ptr<imgui_app::UI, imgui_app::UIDeleter>
 imgui_app::CreateUI(
     Window* window,
     DeviceD3D* dev,
