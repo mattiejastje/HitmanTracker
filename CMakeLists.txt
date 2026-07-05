@@ -52,6 +52,7 @@ add_executable (HitmanTracker
 	"settings_gui.cpp"
 	"signal.cpp"
 	"stats.cpp"
+	"timer.cpp"
 )
 set_property(TARGET HitmanTracker PROPERTY CXX_STANDARD 26)
 target_link_options(HitmanTracker PRIVATE

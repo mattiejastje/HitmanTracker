@@ -20,12 +20,13 @@
 #include "imgui_app/ui.hpp"
 #include "imgui_app/window.hpp"
 #include "mem/handle.hpp"
+#include "timer.hpp"
 #include "settings_gui.hpp"
 #include "signal.hpp"
 
 // Data
-constexpr auto TIMER_FIND_GAME = 1;
-constexpr auto TIMER_UPDATE_STATS = 2;
+static timer::PeriodicTimer timer_find_game{1.0};
+static timer::PeriodicTimer timer_update_stats{0.1};
 static bool g_DeviceLost = false;
 static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
 static RECT g_ChangeRect = {};
@@ -69,51 +70,6 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             game = {};
             ::PostQuitMessage(0);
             return 0;
-        case WM_TIMER:
-            switch (wParam) {
-                case TIMER_FIND_GAME:
-                    // try find game if none found yet
-                    if (!game
-                        || (game && !is_process_running(game->handle.get()))) {
-                        game = find_game();
-                    };
-                    // try install hook if none installed yet
-                    if (game && !game->hook) {
-                        if (game->methods.hook_ready(
-                                game->handle.get(), game->base_ptrs
-                            )) {
-                            game->hook = game->methods.hook(
-                                game->handle, game->base_ptrs
-                            );
-                            if (!game->hook) {
-                                // skip hooking, use stub...
-                                game->hook = HookPtr{new Hook{}};
-                            }
-                            spdlog::info("Game is now tracked");
-                        } else {
-                            spdlog::debug("Game not yet ready for tracking...");
-                        }
-                    }
-                    return 0;
-                case TIMER_UPDATE_STATS:
-                    if (game && game->hook) {
-                        auto now = std::chrono::steady_clock::now();
-                        float dt = std::chrono::duration<float>(now - last_now)
-                                       .count();
-                        last_now = now;
-                        auto scoped_slow = ScopedProfiler{profiler_slow, dt};
-                        auto ok = game->methods.update_slow(
-                            game->exe_path,
-                            game->handle.get(),
-                            game->base_ptrs,
-                            game->hook->label_ptrs,
-                            game->remote_state,
-                            game->stats
-                        );
-                        error_slow.update(100.0f * static_cast<float>(!ok), dt);
-                    }
-                    return 0;
-            }
     }
     return ::DefWindowProcW(hWnd, msg, wParam, lParam);
 }
@@ -125,6 +81,39 @@ static void Frame(imgui_app::UI& ui, settings::Settings& settings) {
     float dt = std::chrono::duration<float>(now - last_now).count();
     last_now = now;
     frametime_signal.update(1 / dt, dt);
+    if (timer_find_game.tick(dt)) {
+        // try find game if none found yet
+        if (!game || (game && !is_process_running(game->handle.get()))) {
+            game = find_game();
+        };
+        // try install hook if none installed yet
+        if (game && !game->hook) {
+            if (game->methods.hook_ready(game->handle.get(), game->base_ptrs)) {
+                game->hook = game->methods.hook(game->handle, game->base_ptrs);
+                if (!game->hook) {
+                    // skip hooking, use stub...
+                    game->hook = HookPtr{new Hook{}};
+                }
+                spdlog::info("Game is now tracked");
+            } else {
+                spdlog::debug("Game not yet ready for tracking...");
+            }
+        }
+    }
+    if (timer_update_stats.tick(dt)) {
+        if (game && game->hook) {
+            auto scoped_slow = ScopedProfiler{profiler_slow, dt};
+            auto ok = game->methods.update_slow(
+                game->exe_path,
+                game->handle.get(),
+                game->base_ptrs,
+                game->hook->label_ptrs,
+                game->remote_state,
+                game->stats
+            );
+            error_slow.update(100.0f * static_cast<float>(!ok), dt);
+        }
+    }
     ImGui_ImplDX9_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
@@ -200,10 +189,6 @@ int gui_run(settings::Settings& settings) {
         hitman_common::make_font_specs(settings.gui)
     );
     if (!ui) return 1;
-
-    // Set timer
-    SetTimer(window->handle, TIMER_FIND_GAME, 1000, nullptr);
-    SetTimer(window->handle, TIMER_UPDATE_STATS, 100, nullptr);
 
     // Main loop
     spdlog::debug("Starting main loop...");
@@ -294,8 +279,6 @@ int gui_run(settings::Settings& settings) {
     }
     spdlog::info("Closing user interface");
     spdlog::debug("Cleanup...");
-    KillTimer(window->handle, TIMER_UPDATE_STATS);
-    KillTimer(window->handle, TIMER_FIND_GAME);
     game.reset();
 
     return 0;
