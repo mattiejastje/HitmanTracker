@@ -149,8 +149,7 @@ int gui_run(settings::Settings& settings) {
             imgui_app::AppWindowSpec{
                 .title = L"Hitman Tracker",
                 .style = WS_OVERLAPPEDWINDOW,
-                .ex_style
-                = static_cast<DWORD>(settings.gui.topmost ? WS_EX_TOPMOST : 0),
+                .ex_style = settings.gui.topmost ? WS_EX_TOPMOST : 0U,
                 .character_width = 15,
                 .character_height = 30,
                 .pos = std::nullopt,
