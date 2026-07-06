@@ -8,6 +8,7 @@
 #include <fstream>
 #include <mempeep/read.hpp>
 #include <mempeep/tracers/log_tracer.hpp>
+#include <mutex>
 #include <regex>
 #include <string>
 #include <unordered_map>
@@ -162,8 +163,10 @@ static std::optional<int32_t> find_difficulty(const std::string& payload) {
 static std::optional<int32_t> read_difficulty_from_hitman_sav(
     const std::filesystem::path& path
 ) {
+    static std::mutex m;
     static std::filesystem::file_time_type cached_mtime{};
     static std::optional<int32_t> cached_difficulty{};
+    std::lock_guard lock(m);
     std::error_code ec;
     auto mtime = std::filesystem::last_write_time(path, ec);
     if (ec) {
