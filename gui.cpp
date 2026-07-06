@@ -148,24 +148,22 @@ int gui_run(settings::Settings& settings) {
     ImGui_ImplWin32_EnableDpiAwareness();
     std::shared_ptr<imgui_app::WindowClass> window_class
         = imgui_app::create_window_class();
-    auto aws = std::vector<imgui_app::AppWindowPtr>{};
-    aws.emplace_back(
-        imgui_app::create_app_window(
-            window_class,
-            imgui_app::AppWindowSpec{
-                .title = L"Hitman Tracker",
-                .style = WS_OVERLAPPEDWINDOW,
-                .ex_style = settings.gui.topmost ? WS_EX_TOPMOST : 0U,
-                .character_width = 15,
-                .character_height = 30,
-                .pos = std::nullopt,
-            },
-            settings.gui.font_size,
-            im_vec4(settings.gui.bg_color),
-            hitman_common::make_font_specs(settings.gui),
-            draw
-        )
+    auto overlay = imgui_app::create_app_window(
+        window_class,
+        imgui_app::AppWindowSpec{
+            .title = L"Hitman Tracker",
+            .style = WS_OVERLAPPEDWINDOW,
+            .ex_style = settings.gui.topmost ? WS_EX_TOPMOST : 0U,
+            .character_width = 15,
+            .character_height = 30,
+            .pos = std::nullopt,
+        },
+        settings.gui.font_size,
+        im_vec4(settings.gui.bg_color),
+        hitman_common::make_font_specs(settings.gui),
+        draw
     );
+    std::vector<imgui_app::AppWindow*> aws{overlay.get()};
     imgui_app::run(aws);
     spdlog::debug("Cleanup...");
     return 0;

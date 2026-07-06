@@ -52,6 +52,6 @@ AppWindowPtr create_app_window(
     DrawFunc draw
 );
 
-void run(std::span<AppWindowPtr> app_windows);
+void run(std::span<AppWindow*> app_windows);
 
 }  // namespace imgui_app

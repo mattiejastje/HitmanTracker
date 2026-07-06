@@ -45,7 +45,7 @@ imgui_app::AppWindowPtr imgui_app::create_app_window(
     }};
 }
 
-void imgui_app::run(std::span<AppWindowPtr> app_windows) {
+void imgui_app::run(std::span<AppWindow*> app_windows) {
     spdlog::debug("Starting main loop...");
     auto last_now = std::chrono::steady_clock::now();
     bool quit = false;
