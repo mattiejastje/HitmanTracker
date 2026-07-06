@@ -34,7 +34,6 @@ static Signal error_slow{"slow update failure rate", "%", 50.0f};
 static Signal error_fast{"fast update failure rate", "%", 50.0f};
 static Profiler profiler_slow{{"slow update time", "seconds"}};
 static Profiler profiler_fast{{"fast update time", "seconds"}};
-static SettingsChanged g_settings_changed{};
 
 // Main code
 int gui_run(settings::Settings& settings) {
@@ -42,26 +41,6 @@ int gui_run(settings::Settings& settings) {
                                    HWND handle, imgui_app::UI& ui, float dt
                                ) {
         auto pending_rescale = false;
-        if (g_settings_changed.fonts) {
-            ui.bg_color = im_vec4(settings.gui.bg_color);
-            ui.font_specs = hitman_common::make_font_specs(settings.gui);
-            pending_rescale = true;
-            g_settings_changed.fonts = false;
-        }
-
-        if (g_settings_changed.topmost) {
-            spdlog::debug("Topmost is {}", settings.gui.topmost);
-            SetWindowPos(
-                handle,
-                settings.gui.topmost ? HWND_TOPMOST : HWND_NOTOPMOST,
-                0,
-                0,
-                0,
-                0,
-                SWP_NOMOVE | SWP_NOSIZE
-            );
-            g_settings_changed.topmost = false;
-        }
         frametime_signal.update(1 / dt, dt);
         if (timer_find_game.tick(dt)) {
             // try find game if none found yet
@@ -113,10 +92,25 @@ int gui_run(settings::Settings& settings) {
                 ImGui::OpenPopup("Settings");
             }
             if (ImGui::BeginPopup("Settings")) {
-                g_settings_changed = settings_gui(settings);
-                if (g_settings_changed.any) {
-                    settings::save(settings);
-                    g_settings_changed.any = false;
+                auto changed = settings_gui(settings);
+                if (changed.any) settings::save(settings);
+                if (changed.fonts) {
+                    ui.bg_color = im_vec4(settings.gui.bg_color);
+                    ui.font_specs
+                        = hitman_common::make_font_specs(settings.gui);
+                    pending_rescale = true;
+                }
+                if (changed.topmost) {
+                    spdlog::debug("Topmost is {}", settings.gui.topmost);
+                    SetWindowPos(
+                        handle,
+                        settings.gui.topmost ? HWND_TOPMOST : HWND_NOTOPMOST,
+                        0,
+                        0,
+                        0,
+                        0,
+                        SWP_NOMOVE | SWP_NOSIZE
+                    );
                 }
                 ImGui::EndPopup();
             }
