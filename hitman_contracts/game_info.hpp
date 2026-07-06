@@ -1,9 +1,14 @@
 #pragma once
 
+#include <vector>
+
+#include "../game_info.hpp"
 #include "../settings.hpp"
 
 namespace hitman_contracts {
 
-void register_game_info(const settings::Gui& settings);
+void register_game_info(
+    std::vector<GameInfo>& registry, const settings::Gui& settings
+);
 
 }

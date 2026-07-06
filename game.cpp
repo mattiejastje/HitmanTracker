@@ -14,7 +14,6 @@
 #include <unordered_map>
 
 #include "base_ptrs.hpp"
-#include "game_info_registry.hpp"
 #include "mem/handle.hpp"
 #include "mem/read_write.hpp"
 #include "pe.hpp"
@@ -96,10 +95,10 @@ static BasePtrs get_base_ptrs(const std::vector<Module>& modules) {
 }
 
 static std::optional<Game> get_game_for_process(
-    const char* exe_file, DWORD process_id
+    const std::vector<GameInfo>& registry, const char* exe_file, DWORD process_id
 ) {
     spdlog::trace("Inspecting process {} with id {:#x}", exe_file, process_id);
-    for (auto& info : get_game_info_registry()) {
+    for (auto& info : registry) {
         if (stricmp(info.module_infos.at(0).name.c_str(), exe_file) != 0)
             continue;
         auto process_handle = open_process_handle(process_id);
@@ -124,7 +123,7 @@ static std::optional<Game> get_game_for_process(
     return {};
 }
 
-std::optional<Game> find_game() {
+std::optional<Game> find_game(const std::vector<GameInfo>& registry) {
     spdlog::debug("Inspecting all processes");
     std::optional<Game> game{};
     auto snapshot_handle = open_snapshot_handle(TH32CS_SNAPPROCESS, 0);
@@ -134,7 +133,7 @@ std::optional<Game> find_game() {
         if (Process32First(snapshot_handle.get(), &process_entry)) {
             do {
                 game = get_game_for_process(
-                    process_entry.szExeFile, process_entry.th32ProcessID
+                    registry, process_entry.szExeFile, process_entry.th32ProcessID
                 );
                 if (game) break;
             } while (Process32Next(snapshot_handle.get(), &process_entry));

@@ -14,7 +14,7 @@ add_executable (HitmanTracker
 	"color.cpp"
 	"gui.cpp"
 	"settings.cpp"
-	"game_info_registry.cpp"
+	
 	"game.cpp"
 	"hook.cpp"
 	"format_duration.cpp"

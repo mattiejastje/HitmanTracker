@@ -17,13 +17,14 @@ int main(int argc, char** argv) {
     auto settings = settings::load(argc, argv);
     if (settings) {
         spdlog_set_level(settings->log.level, settings->log.flush_level);
-        hitman_codename_47::register_game_info(settings->gui);
-        hitman2_silent_assassin::register_game_info(settings->gui);
-        hitman_contracts::register_game_info(settings->gui);
-        hitman_blood_money::register_game_info(settings->gui, settings->hbm);
-        hitman_absolution::register_game_info(settings->gui, settings->hma);
-        hitman_2016::register_game_info(settings->gui);
-        gui_run(*settings);
+        std::vector<GameInfo> registry;
+        hitman_codename_47::register_game_info(registry, settings->gui);
+        hitman2_silent_assassin::register_game_info(registry, settings->gui);
+        hitman_contracts::register_game_info(registry, settings->gui);
+        hitman_blood_money::register_game_info(registry, settings->gui, settings->hbm);
+        hitman_absolution::register_game_info(registry, settings->gui, settings->hma);
+        hitman_2016::register_game_info(registry, settings->gui);
+        gui_run(registry, *settings);
     }
     return 0;
 }

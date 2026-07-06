@@ -25,7 +25,9 @@
 #include "signal.hpp"
 #include "timer.hpp"
 
-int gui_run(settings::Settings& settings) {
+int gui_run(
+    const std::vector<GameInfo>& registry, settings::Settings& settings
+) {
     timer::PeriodicTimer timer_find_game{1.0};
     timer::PeriodicTimer timer_update_stats{0.1};
     std::optional<Game> game{};
@@ -35,7 +37,8 @@ int gui_run(settings::Settings& settings) {
     Profiler profiler_slow{{"slow update time", "seconds"}};
     Profiler profiler_fast{{"fast update time", "seconds"}};
 
-    imgui_app::DrawFunc draw = [&settings,
+    imgui_app::DrawFunc draw = [&registry,
+                                &settings,
                                 &timer_find_game,
                                 &timer_update_stats,
                                 &game,
@@ -51,7 +54,7 @@ int gui_run(settings::Settings& settings) {
         if (timer_find_game.tick(dt)) {
             // try find game if none found yet
             if (!game || (game && !is_process_running(game->handle.get()))) {
-                game = find_game();
+                game = find_game(registry);
             };
             // try install hook if none installed yet
             if (game && !game->hook) {

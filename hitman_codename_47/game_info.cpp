@@ -1,13 +1,12 @@
 #include "game_info.hpp"
 
-#include "../game_info.hpp"
-#include "../game_info_registry.hpp"
 #include "gui.hpp"
 #include "stats.hpp"
 #include "structs.hpp"
 
-void hitman_codename_47::register_game_info(const settings::Gui& settings) {
-    auto& registry = get_game_info_registry();
+void hitman_codename_47::register_game_info(
+    std::vector<GameInfo>& registry, const settings::Gui& settings
+) {
     registry.emplace_back(GameInfo {
         .name = GAME_NAME,
         .methods = GameMethods{

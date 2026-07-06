@@ -19,4 +19,4 @@ struct Game {
     std::any stats;
 };
 
-std::optional<Game> find_game();
+std::optional<Game> find_game(const std::vector<GameInfo>& registry);
