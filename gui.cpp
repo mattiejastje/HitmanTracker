@@ -53,7 +53,7 @@ int gui_run(
         frametime_signal.update(1 / dt, dt);
         if (timer_find_game.tick(dt)) {
             // try find game if none found yet
-            if (!game || (game && !is_process_running(game->handle.get()))) {
+            if (!game || !is_process_running(game->handle.get())) {
                 game = find_game(registry);
             };
             // try install hook if none installed yet
