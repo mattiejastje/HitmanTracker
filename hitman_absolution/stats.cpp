@@ -708,6 +708,13 @@ static hitman_absolution::CheckpointType get_checkpoint_type(
                : hitman_absolution::CheckpointType::TARGETS;
 }
 
+static std::optional<intptr_t> get_spotted_ptr(const LabelPtrs& label_ptrs) {
+    auto spotted_ptr = label_ptrs.find(150);
+    return spotted_ptr != label_ptrs.end()
+               ? std::make_optional(spotted_ptr->second)
+               : std::nullopt;
+}
+
 GameStatsSlow hitman_absolution::update_slow(
     const settings::HMA& hma, Version version
 ) {
@@ -781,7 +788,8 @@ GameStatsSlow hitman_absolution::update_slow(
         if (stats.map != map_info.map) {
             // map changed: reset "spotted" and start_time
             spdlog::debug("Checkpoint changed");
-            write<int32_t>(handle, label_ptrs.at(150), 0);
+            auto spotted_ptr = get_spotted_ptr(label_ptrs);
+            if (spotted_ptr) write<int32_t>(handle, *spotted_ptr, 0);
             stats.map_stage = MapStage::pre;  // most likely still in cutscene
         }
         if (stats.map > 0 && stats.map_stage == MapStage::pre
@@ -810,9 +818,12 @@ GameStatsSlow hitman_absolution::update_slow(
                 // event_type_2 0x23 = spotted
                 // event_manager.events_per_event_type_2[0x23] gets stuck once
                 // set... so we use a code hook
-                auto spotted = read<int32_t>(handle, label_ptrs.at(150));
-                if (!spotted) spdlog::warn("Unable to read spotted value");
-                game_stats[SPOTTED] = spotted.value_or(0);
+                auto spotted_ptr = get_spotted_ptr(label_ptrs);
+                if (spotted_ptr) {
+                    auto spotted = read<int32_t>(handle, *spotted_ptr);
+                    if (!spotted) spdlog::warn("Unable to read spotted value");
+                    game_stats[SPOTTED] = spotted.value_or(0);
+                }
             }
             auto status = game_stats[NON_TARGET_CASUALTY] != 0
                                   || game_stats[SPOTTED] != 0
