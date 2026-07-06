@@ -95,17 +95,17 @@ void imgui_app::run(std::span<AppWindowPtr> app_windows) {
                 if (!UpdateUIScaling(ui, dpiscale)) return;
                 state.dpi_changed = false;
             }
-            if (aw->pending_rescale) {
-                float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(window.handle);
-                if (!UpdateUIScaling(ui, dpiscale)) return;
-                aw->pending_rescale = false;
-            }
             ImGui_ImplDX9_NewFrame();
             ImGui_ImplWin32_NewFrame();
             ImGui::NewFrame();
-            aw->draw(window.handle, ui, aw->pending_rescale, dt);
+            auto draw_result = aw->draw(window.handle, ui, dt);
             ImGui::EndFrame();
             imgui_app::RenderAndPresent(device);
+            if (draw_result.pending_rescale) {
+                float dpiscale
+                    = ImGui_ImplWin32_GetDpiScaleForHwnd(window.handle);
+                if (!UpdateUIScaling(ui, dpiscale)) return;
+            }
         }
     }
     spdlog::info("Stopping main loop");

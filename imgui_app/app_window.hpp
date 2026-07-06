@@ -23,7 +23,11 @@ struct AppWindowSpec {
     std::optional<POINT> pos;
 };
 
-using DrawFunc = std::function<void(HWND, UI&, bool&, float)>;
+struct DrawResult {
+    bool pending_rescale;
+};
+
+using DrawFunc = std::function<DrawResult(HWND, UI&, float)>;
 
 struct AppWindow {
     std::shared_ptr<WindowClass> window_class;
@@ -31,7 +35,6 @@ struct AppWindow {
     DeviceD3DPtr device;
     UIPtr ui;
     DrawFunc draw;
-    bool pending_rescale = false;
 };
 
 struct AppWindowDeleter {

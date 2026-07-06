@@ -39,10 +39,10 @@ static SettingsChanged g_settings_changed{};
 // Main code
 int gui_run(settings::Settings& settings) {
     imgui_app::DrawFunc draw = [&settings](
-                                   HWND handle, imgui_app::UI& ui, bool& pending_rescale, float dt
+                                   HWND handle, imgui_app::UI& ui, float dt
                                ) {
+        auto pending_rescale = false;
         if (g_settings_changed.fonts) {
-            
             ui.bg_color = im_vec4(settings.gui.bg_color);
             ui.font_specs = hitman_common::make_font_specs(settings.gui);
             pending_rescale = true;
@@ -141,6 +141,7 @@ int gui_run(settings::Settings& settings) {
             }
         }
         ImGui::End();
+        return imgui_app::DrawResult{pending_rescale};
     };
 
     spdlog::info("Running user interface");
