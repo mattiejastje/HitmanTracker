@@ -802,8 +802,19 @@ GameStatsSlow hitman_absolution::update_slow(
         stats.checkpoint_type = get_checkpoint_type(map_info);
         if (stats.map > 0 && stats.map_stage == MapStage::main) {
             auto& stats_manager = game.stats_manager;
-            auto& game_stats
-                = stats_manager.values[game.level][checkpoint_index];
+            // calculate address for partial values read
+            mempeep::RemoteValue<
+                mempeep::Primitive<std::array<int16_t, 0x64>>,
+                uint32_t>
+                stats_values_addr{
+                    stats_manager.values.address
+                    + 200 * (checkpoint_index + game.level * 0xd)
+                };
+            std::array<int16_t, 100> game_stats{};
+            if (!mempeep::read(stats_values_addr, reader, tracer, game_stats)) {
+                spdlog::warn("Unable to read stats values");
+                return false;
+            };
             if (stats.checkpoint_type == CheckpointType::UNRATED) {
                 // stats are always 0 for unrated maps so try and fix stats here
                 // event_manager.kills_per_npc_type?

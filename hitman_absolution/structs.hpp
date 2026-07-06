@@ -160,7 +160,10 @@ struct StatsDifficulties {
 struct StatsManager {
     std::vector<StatsScoring> scorings;
     std::vector<StatsPlaystyle> playstyles;
-    std::array<std::array<std::array<int16_t, 0x64>, 0xd>, 0x1a> values;
+    RemoteValue<
+        Primitive<std::array<std::array<std::array<int16_t, 0x64>, 0xd>, 0x1a>>,
+        uint32_t>
+        values;
     std::array<int8_t, 0x64> achieved_playstyles;
     int32_t last_achieved_playstyle;
     int32_t scaled_score;
@@ -176,8 +179,11 @@ using TStatsManager = Struct<
         Field<Vector<TStatsPlaystyle, 0x1a>, &StatsManager::playstyles>,
         Skip<0x10>,
         Field<
-            Ref<Primitive<
-                std::array<std::array<std::array<int16_t, 0x64>, 0xd>, 0x1a>>>,
+            Ref<RemoteAddr<
+                Primitive<std::array<
+                    std::array<std::array<int16_t, 0x64>, 0xd>,
+                    0x1a>>,
+                uint32_t>>,
             &StatsManager::values>,
         Skip<0x8>,
         Field<

@@ -204,7 +204,7 @@ local StatsManager = d.Struct("StatsManager", {
   d.Skip(0x04),
   d.Field(d.Vector(StatsPlaystyle, NUM_PLAYSTYLES), "playstyles"),
   d.Skip(0x10),
-  d.Field(d.Ref(d.Array(d.Array(d.Array(d.Int16, NUM_STATS_VALUES), NUM_CHECKPOINTS_PER_LEVEL), NUM_LEVELS)), "values"),
+  d.Field(d.Ref(d.RemoteAddr(d.Array(d.Array(d.Array(d.Int16, NUM_STATS_VALUES), NUM_CHECKPOINTS_PER_LEVEL), NUM_LEVELS))), "values"),
   d.Skip(0x08),
   d.Field(d.Ref(d.Array(d.Int8, 100)), "achieved_playstyles"), -- across all gaming sessions
   d.Skip(0x2C),
