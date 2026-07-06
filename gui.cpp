@@ -25,19 +25,25 @@
 #include "signal.hpp"
 #include "timer.hpp"
 
-// Data
-static timer::PeriodicTimer timer_find_game{1.0};
-static timer::PeriodicTimer timer_update_stats{0.1};
-static std::optional<Game> game{};
-static Signal frametime_signal{"fps", "frames per second"};
-static Signal error_slow{"slow update failure rate", "%", 50.0f};
-static Signal error_fast{"fast update failure rate", "%", 50.0f};
-static Profiler profiler_slow{{"slow update time", "seconds"}};
-static Profiler profiler_fast{{"fast update time", "seconds"}};
-
-// Main code
 int gui_run(settings::Settings& settings) {
-    imgui_app::DrawFunc draw = [&settings](
+    timer::PeriodicTimer timer_find_game{1.0};
+    timer::PeriodicTimer timer_update_stats{0.1};
+    std::optional<Game> game{};
+    Signal frametime_signal{"fps", "frames per second"};
+    Signal error_slow{"slow update failure rate", "%", 50.0f};
+    Signal error_fast{"fast update failure rate", "%", 50.0f};
+    Profiler profiler_slow{{"slow update time", "seconds"}};
+    Profiler profiler_fast{{"fast update time", "seconds"}};
+
+    imgui_app::DrawFunc draw = [&settings,
+                                &timer_find_game,
+                                &timer_update_stats,
+                                &game,
+                                &frametime_signal,
+                                &error_slow,
+                                &error_fast,
+                                &profiler_slow,
+                                &profiler_fast](
                                    HWND handle, imgui_app::UI& ui, float dt
                                ) {
         auto pending_rescale = false;
