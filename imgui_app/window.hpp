@@ -23,6 +23,7 @@ struct Window {
         ImGuiContext* imgui_context = nullptr;
     };
 
+    std::shared_ptr<WindowClass> window_class;
     std::wstring title;
     HWND handle = nullptr;
     // unique_ptr ensures stable pointer

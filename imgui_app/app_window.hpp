@@ -30,7 +30,6 @@ struct DrawResult {
 using DrawFunc = std::function<DrawResult(HWND, UI&, float)>;
 
 struct AppWindow {
-    std::shared_ptr<WindowClass> window_class;
     WindowPtr window;
     DeviceD3DPtr device;
     UIPtr ui;

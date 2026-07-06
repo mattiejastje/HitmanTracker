@@ -83,6 +83,7 @@ imgui_app::WindowPtr imgui_app::create_window(
         ::MonitorFromPoint(pos.value_or(POINT{0, 0}), MONITOR_DEFAULTTOPRIMARY)
     );
     auto window = std::unique_ptr<Window, WindowDeleter>(new Window{});
+    window->window_class = window_class;
     window->title = title;
     window->state = std::make_unique<Window::State>();
     auto pos_cw = pos.value_or(POINT{CW_USEDEFAULT, CW_USEDEFAULT});

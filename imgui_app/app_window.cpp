@@ -10,6 +10,9 @@ void imgui_app::AppWindowDeleter::operator()(AppWindow* app_window) const {
         // imgui_context pointer must be deleted first
         // otherwise WndProc might use dangling pointer
         app_window->window->state->imgui_context = nullptr;
+        app_window->ui.reset();
+        app_window->device.reset();
+        app_window->window.reset();
         delete app_window;
     }
 }
@@ -41,7 +44,7 @@ imgui_app::AppWindowPtr imgui_app::create_app_window(
     if (!ui) return nullptr;
     window->state->imgui_context = ui->imgui_context;
     return AppWindowPtr{new AppWindow{
-        window_class, std::move(window), std::move(dev), std::move(ui), draw
+        std::move(window), std::move(dev), std::move(ui), draw
     }};
 }
 
