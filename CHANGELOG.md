@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Various minor bugs fixed.
+
 ### Added
 
 - The GOG version of Hitman Codename 47 is now supported.
@@ -11,6 +15,8 @@
 - Minor refactoring of hooking code.
 
 - Various hooking errors will now also be caught in release builds.
+
+- Large internal refactoring to allow the tracker to open multiple windows in future releases.
 
 ## [0.5.0] - 2026-07-01
 
