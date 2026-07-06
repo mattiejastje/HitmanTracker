@@ -98,6 +98,7 @@ void imgui_app::run(std::span<AppWindowPtr> app_windows) {
             if (aw->pending_rescale) {
                 float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(window.handle);
                 UpdateUIScaling(ui, dpiscale);
+                aw->pending_rescale = false;
             }
             ImGui_ImplDX9_NewFrame();
             ImGui_ImplWin32_NewFrame();
