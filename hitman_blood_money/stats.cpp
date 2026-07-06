@@ -283,7 +283,7 @@ GameStatsSlow hitman_blood_money::update_slow(Version version) {
 // this seems to be a bug in the game
 // here we use the mission time as shown by the game
 // timer will run too fast but will be consistent with final mission screen
-constexpr float seconds_per_tick = 1.0f / 1000;
+constexpr float game_display_seconds_per_tick = 1.0f / 1000;
 
 GameStatsFast hitman_blood_money::update_fast(Version version) {
     return [](void* handle,
@@ -294,7 +294,7 @@ GameStatsFast hitman_blood_money::update_fast(Version version) {
         if (stats.map > 0) {
             const auto& base_ptr = base_ptrs.at(0);
             auto time = get_time(handle, base_ptr, stats.map_stage);
-            if (time) stats.time = time.value() * seconds_per_tick;
+            if (time) stats.time = time.value() * game_display_seconds_per_tick;
             return time.has_value();
         }
         return true;
