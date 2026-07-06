@@ -32,7 +32,9 @@ imgui_app::UIPtr imgui_app::CreateUI(
     std::span<const FontSpec> font_specs
 ) {
     spdlog::debug("Initializing ImGui...");
-    auto ui = UIPtr{new UI()};
+    auto ui = UIPtr{new UI{}};
+    ui->bg_color = bg_color;
+    ui->font_specs.assign(font_specs.begin(), font_specs.end());
     if (!IMGUI_CHECKVERSION()) return nullptr;
     ui->imgui_context = ImGui::CreateContext();
     if (!ui->imgui_context) return nullptr;
@@ -40,28 +42,18 @@ imgui_app::UIPtr imgui_app::CreateUI(
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;
     io.LogFilename = nullptr;
-
-    // Setup Platform/Renderer backends
     if (!ImGui_ImplWin32_Init(window.handle)) return nullptr;
     if (!ImGui_ImplDX9_Init(dev.d3d_device)) return nullptr;
-
     float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(window.handle);
-    if (!UpdateUIScaling(*ui, bg_color, dpiscale, font_specs)) return nullptr;
+    if (!UpdateUIScaling(*ui, dpiscale)) return nullptr;
     return ui;
 }
 
-bool imgui_app::UpdateUIScaling(
-    UI& ui,
-    ImVec4 bg_color,
-    float dpiscale,
-    std::span<const FontSpec> font_specs
-) {
+bool imgui_app::UpdateUIScaling(UI& ui, float dpiscale) {
     spdlog::debug("Updating UI for dpi scale {}...", dpiscale);
     ImGui::SetCurrentContext(ui.imgui_context);
     ImGuiIO& io = ImGui::GetIO();
     ImGui_ImplDX9_InvalidateDeviceObjects();
-
-    // Setup style
     auto style = ImGuiStyle();
     style.WindowBorderSize = 0.0f;
     style.ChildBorderSize = 0.0f;
@@ -77,8 +69,8 @@ bool imgui_app::UpdateUIScaling(
     style.TabRounding = 0.0f;
     style.ScaleAllSizes(dpiscale);
     ImGui::StyleColorsDark(&style);
-    style.Colors[ImGuiCol_WindowBg] = bg_color;
+    style.Colors[ImGuiCol_WindowBg] = ui.bg_color;
     CopyMemory(&ImGui::GetStyle(), &style, sizeof(ImGuiStyle));
-    ui.fonts = load_fonts(io, dpiscale, font_specs);
+    ui.fonts = load_fonts(io, dpiscale, ui.font_specs);
     return ImGui_ImplDX9_CreateDeviceObjects();
 };

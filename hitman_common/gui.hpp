@@ -24,9 +24,7 @@ enum FontIndex {
     Count
 };
 
-std::array<imgui_app::FontSpec, FontIndex::Count> make_font_specs(
-    const settings::Gui& settings
-);
+std::vector<imgui_app::FontSpec> make_font_specs(const settings::Gui& settings);
 
 struct TableRow {
     std::string name;

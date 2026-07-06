@@ -16,8 +16,7 @@ void imgui_app::DeviceD3DDeleter::operator()(DeviceD3D* dev) const {
     }
 }
 
-std::unique_ptr<imgui_app::DeviceD3D, imgui_app::DeviceD3DDeleter>
-imgui_app::CreateDeviceD3D(HWND window_handle) {
+imgui_app::DeviceD3DPtr imgui_app::CreateDeviceD3D(HWND window_handle) {
     spdlog::debug("Initializing Direct3D...");
     auto dev = std::unique_ptr<DeviceD3D, DeviceD3DDeleter>(new DeviceD3D);
     dev->d3d = Direct3DCreate9(D3D_SDK_VERSION);

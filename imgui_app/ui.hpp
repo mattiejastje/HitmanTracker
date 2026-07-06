@@ -13,6 +13,9 @@ namespace imgui_app {
 struct UI {
     ImGuiContext* imgui_context;
     std::vector<ImFont*> fonts;
+    // stored here so can be easily recalled by UpdateUIScaling
+    ImVec4 bg_color;
+    std::vector<FontSpec> font_specs;
 };
 
 struct UIDeleter {
@@ -28,11 +31,6 @@ using UIPtr = std::unique_ptr<UI, UIDeleter>;
     std::span<const FontSpec> fonts
 );
 
-bool UpdateUIScaling(
-    UI& ui,
-    ImVec4 bg_color,
-    float dpiscale,
-    std::span<const FontSpec> font_specs
-);
+bool UpdateUIScaling(UI& ui, float dpiscale);
 
 }  // namespace imgui_app

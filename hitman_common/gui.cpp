@@ -12,7 +12,7 @@
 #include "../imgui_app/key_value_table.hpp"
 #include "../imgui_app/text.hpp"
 
-std::array<imgui_app::FontSpec, hitman_common::FontIndex::Count>
+std::vector<imgui_app::FontSpec>
 hitman_common::make_font_specs(const settings::Gui& settings) {
     return {{
         {settings.title.file, settings.font_size * settings.title.scale},

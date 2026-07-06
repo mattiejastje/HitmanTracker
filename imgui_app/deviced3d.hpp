@@ -24,9 +24,9 @@ struct DeviceD3DDeleter {
     void operator()(DeviceD3D* dev) const;
 };
 
-std::unique_ptr<DeviceD3D, DeviceD3DDeleter> CreateDeviceD3D(
-    HWND window_handle
-);
+using DeviceD3DPtr = std::unique_ptr<DeviceD3D, DeviceD3DDeleter>;
+
+DeviceD3DPtr CreateDeviceD3D(HWND window_handle);
 void ResetDevice(DeviceD3D& dev);
 HRESULT RenderAndPresent(DeviceD3D& dev);
 bool HandleDeviceLost(DeviceD3D& dev);
