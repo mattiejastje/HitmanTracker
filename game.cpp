@@ -99,7 +99,7 @@ static std::optional<Game> get_game_for_process(
 ) {
     spdlog::trace("Inspecting process {} with id {:#x}", exe_file, process_id);
     for (auto& info : registry) {
-        if (stricmp(info.module_infos.at(0).name.c_str(), exe_file) != 0)
+        if (_stricmp(info.module_infos.at(0).name.c_str(), exe_file) != 0)
             continue;
         auto process_handle = open_process_handle(process_id);
         if (!process_handle) continue;
