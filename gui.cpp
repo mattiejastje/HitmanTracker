@@ -27,9 +27,6 @@
 // Data
 static timer::PeriodicTimer timer_find_game{1.0};
 static timer::PeriodicTimer timer_update_stats{0.1};
-static UINT g_ResizeWidth = 0, g_ResizeHeight = 0;
-static RECT g_ChangeRect = {};
-static UINT g_ChangeDpi = 0;
 static std::optional<Game> game{};
 static Signal frametime_signal{"fps", "frames per second"};
 static Signal error_slow{"slow update failure rate", "%", 50.0f};
@@ -37,37 +34,6 @@ static Signal error_fast{"fast update failure rate", "%", 50.0f};
 static Profiler profiler_slow{{"slow update time", "seconds"}};
 static Profiler profiler_fast{{"fast update time", "seconds"}};
 static SettingsChanged g_settings_changed{};
-
-// Forward declare message handler from imgui_impl_win32.cpp
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
-    HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam
-);
-
-// Win32 message handler
-static LRESULT WINAPI
-WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam)) return true;
-    switch (msg) {
-        case WM_SIZE:
-            if (wParam == SIZE_MINIMIZED) return 0;
-            g_ResizeWidth = (UINT)LOWORD(lParam);
-            g_ResizeHeight = (UINT)HIWORD(lParam);
-            return 0;
-        case WM_SYSCOMMAND:
-            // Disable ALT application menu
-            if ((wParam & 0xfff0) == SC_KEYMENU) return 0;
-            break;
-        case WM_DPICHANGED:
-            assert(LOWORD(wParam) == HIWORD(wParam));
-            CopyMemory(&g_ChangeRect, (RECT*)lParam, sizeof(RECT));
-            g_ChangeDpi = LOWORD(wParam);
-            return 0;
-        case WM_DESTROY:
-            ::PostQuitMessage(0);
-            return 0;
-    }
-    return ::DefWindowProcW(hWnd, msg, wParam, lParam);
-}
 
 static void Frame(imgui_app::UI& ui, settings::Settings& settings) {
     spdlog::trace("New frame...");
@@ -161,10 +127,10 @@ static void Frame(imgui_app::UI& ui, settings::Settings& settings) {
 int gui_run(settings::Settings& settings) {
     spdlog::info("Running user interface");
     ImGui_ImplWin32_EnableDpiAwareness();
-    auto window_class
-        = imgui_app::CreateWindowClass(WndProc, L"HitmanTrackerWindow");
+    std::shared_ptr<imgui_app::WindowClass> window_class
+        = imgui_app::create_window_class();
     if (!window_class) return 1;
-    auto window = imgui_app::CreateNativeWindow(
+    auto window = imgui_app::create_window(
         window_class,
         L"Hitman Tracker",
         WS_OVERLAPPEDWINDOW,
@@ -187,6 +153,7 @@ int gui_run(settings::Settings& settings) {
         hitman_common::make_font_specs(settings.gui)
     );
     if (!ui) return 1;
+    window->state->imgui_context = ui->imgui_context;
 
     // Main loop
     spdlog::debug("Starting main loop...");
@@ -201,34 +168,35 @@ int gui_run(settings::Settings& settings) {
         if (done) break;
         // skip render if device still lost
         if (imgui_app::HandleDeviceLost(*dev)) continue;
-        if (g_ResizeWidth != 0 && g_ResizeHeight != 0) {
+        if (window->state && window->state->resized) {
             spdlog::debug("Handling window resize");
-            dev->state.present_parameters.BackBufferWidth = g_ResizeWidth;
-            dev->state.present_parameters.BackBufferHeight = g_ResizeHeight;
-            g_ResizeWidth = g_ResizeHeight = 0;
+            dev->state.present_parameters.BackBufferWidth = window->state->resize_width;
+            dev->state.present_parameters.BackBufferHeight = window->state->resize_height;
             imgui_app::ResetDevice(*dev);
+            window->state->resized = false;
         }
 
-        if (g_ChangeDpi != 0) {
+        if (window->state && window->state->dpi_changed) {
             spdlog::debug("Handling dpi change");
+            const auto& dpi_rect = window->state->dpi_rect;
             ::SetWindowPos(
                 window->handle,
                 NULL,
-                g_ChangeRect.left,
-                g_ChangeRect.top,
-                g_ChangeRect.right - g_ChangeRect.left,
-                g_ChangeRect.bottom - g_ChangeRect.top,
+                dpi_rect.left,
+                dpi_rect.top,
+                dpi_rect.right - dpi_rect.left,
+                dpi_rect.bottom - dpi_rect.top,
                 SWP_NOZORDER
             );
             float dpiscale
-                = (float)g_ChangeDpi / (float)USER_DEFAULT_SCREEN_DPI;
-            g_ChangeDpi = 0;
+                = (float)window->state->dpi / (float)USER_DEFAULT_SCREEN_DPI;
             UpdateUIScaling(
                 *ui,
                 im_vec4(settings.gui.bg_color),
                 dpiscale,
                 hitman_common::make_font_specs(settings.gui)
             );
+            window->state->dpi_changed = false;
         }
 
         if (g_settings_changed.fonts) {
@@ -259,6 +227,8 @@ int gui_run(settings::Settings& settings) {
         Frame(*ui, settings);
         imgui_app::RenderAndPresent(*dev);
     }
+    // make sure wnd_proc does not get dangling pointer
+    window->state->imgui_context = nullptr;
     spdlog::info("Closing user interface");
     spdlog::debug("Cleanup...");
     game.reset();

@@ -17,8 +17,14 @@ struct WindowClassDeleter {
     void operator()(WindowClass* window_class) const;
 };
 
-[[nodiscard]] std::shared_ptr<WindowClass> CreateWindowClass(
-    WNDPROC wnd_proc, std::wstring_view class_name
-);
+using WindowClassPtr = std::unique_ptr<WindowClass, WindowClassDeleter>;
 
 }  // namespace imgui_app
+
+namespace imgui_app::detail {
+
+[[nodiscard]] WindowClassPtr create_window_class(
+    std::wstring_view class_name, UINT style, WNDPROC wnd_proc
+);
+
+}

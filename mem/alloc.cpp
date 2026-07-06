@@ -11,6 +11,7 @@ void AllocDeleter::operator()(Alloc *alloc) const {
             spdlog::error("Failed to free memory at {:#x}", alloc->ptr);
         }
     }
+    if (alloc) delete alloc;
 };
 
 AllocPtr virtual_alloc_ex(std::shared_ptr<void> handle, intptr_t size) {

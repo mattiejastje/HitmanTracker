@@ -191,6 +191,7 @@ void SourceHookDeleter::operator()(SourceHook* source) const {
                 "Hook: failed to restore source code at {:#x}", source->ptr
             );
         }
+        delete source;
     }
 };
 

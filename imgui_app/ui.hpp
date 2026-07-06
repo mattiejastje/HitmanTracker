@@ -19,7 +19,9 @@ struct UIDeleter {
     void operator()(UI* ui) const;
 };
 
-[[nodiscard]] std::unique_ptr<UI, UIDeleter> CreateUI(
+using UIPtr = std::unique_ptr<UI, UIDeleter>;
+
+[[nodiscard]] UIPtr CreateUI(
     Window& window,
     DeviceD3D& dev,
     ImVec4 bg_color,

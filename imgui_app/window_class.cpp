@@ -11,19 +11,19 @@ void imgui_app::WindowClassDeleter::operator()(
             ::UnregisterClassW(
                 window_class->cls.lpszClassName, window_class->cls.hInstance
             );
+        delete window_class;
     }
 }
 
-std::shared_ptr<imgui_app::WindowClass> imgui_app::CreateWindowClass(
-    WNDPROC wnd_proc, std::wstring_view class_name
+imgui_app::WindowClassPtr imgui_app::detail::create_window_class(
+    std::wstring_view class_name, UINT style, WNDPROC wnd_proc
 ) {
     spdlog::debug(L"Registering window class {}...", class_name);
-    auto window_class
-        = std::shared_ptr<WindowClass>(new WindowClass{}, WindowClassDeleter{});
+    auto window_class = WindowClassPtr(new WindowClass{});
     window_class->name = class_name;
     window_class->cls = WNDCLASSEXW{
         sizeof(WNDCLASSEXW),
-        CS_CLASSDC,
+        style,
         wnd_proc,
         0L,
         0L,

@@ -12,6 +12,7 @@ void imgui_app::DeviceD3DDeleter::operator()(DeviceD3D* dev) const {
         if (dev->d3d) {
             dev->d3d->Release();
         }
+        delete dev;
     }
 }
 

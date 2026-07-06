@@ -15,24 +15,28 @@
 void imgui_app::UIDeleter::operator()(UI* ui) const {
     if (ui) {
         spdlog::debug("Shutting down ImGui...");
-        ImGui_ImplDX9_Shutdown();
-        ImGui_ImplWin32_Shutdown();
-        if (ui->imgui_context) ImGui::DestroyContext(ui->imgui_context);
+        if (ui->imgui_context) {
+            ImGui::SetCurrentContext(ui->imgui_context);
+            ImGui_ImplDX9_Shutdown();
+            ImGui_ImplWin32_Shutdown();
+            ImGui::DestroyContext(ui->imgui_context);
+        }
+        delete ui;
     }
 }
 
-std::unique_ptr<imgui_app::UI, imgui_app::UIDeleter>
-imgui_app::CreateUI(
+imgui_app::UIPtr imgui_app::CreateUI(
     Window& window,
     DeviceD3D& dev,
     ImVec4 bg_color,
     std::span<const FontSpec> font_specs
 ) {
     spdlog::debug("Initializing ImGui...");
-    auto ui = std::unique_ptr<UI, UIDeleter>(new UI());
+    auto ui = UIPtr{new UI()};
     if (!IMGUI_CHECKVERSION()) return nullptr;
     ui->imgui_context = ImGui::CreateContext();
     if (!ui->imgui_context) return nullptr;
+    ImGui::SetCurrentContext(ui->imgui_context);
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;
     io.LogFilename = nullptr;
@@ -53,6 +57,7 @@ bool imgui_app::UpdateUIScaling(
     std::span<const FontSpec> font_specs
 ) {
     spdlog::debug("Updating UI for dpi scale {}...", dpiscale);
+    ImGui::SetCurrentContext(ui.imgui_context);
     ImGuiIO& io = ImGui::GetIO();
     ImGui_ImplDX9_InvalidateDeviceObjects();
 
