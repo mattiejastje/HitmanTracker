@@ -4,6 +4,7 @@
 
 #include <array>
 #include <cassert>
+#include <cmath>
 #include <format>
 #include <set>
 #include <vector>
