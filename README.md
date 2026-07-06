@@ -28,7 +28,7 @@ All development takes place at https://github.com/mattiejastje/HitmanTracker
 
 ### Hitman: Codename 47
 
-For now, only the Steam version is supported.
+Fully supported on both Steam and GOG.
 
 This game has no rating system, so no stats are tracked.
 However, there is basic support to track map name, internal game timer,
