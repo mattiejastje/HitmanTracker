@@ -168,7 +168,5 @@ int gui_run(settings::Settings& settings) {
     );
     imgui_app::run(aws);
     spdlog::debug("Cleanup...");
-    game.reset();
-
     return 0;
 }
