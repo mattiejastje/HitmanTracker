@@ -49,7 +49,7 @@ imgui_app::UIPtr imgui_app::CreateUI(
     return ui;
 }
 
-bool imgui_app::UpdateUIScaling(UI& ui, float dpiscale) {
+[[nodiscard]] bool imgui_app::UpdateUIScaling(UI& ui, float dpiscale) {
     spdlog::debug("Updating UI for dpi scale {}...", dpiscale);
     ImGui::SetCurrentContext(ui.imgui_context);
     ImGuiIO& io = ImGui::GetIO();
@@ -72,5 +72,7 @@ bool imgui_app::UpdateUIScaling(UI& ui, float dpiscale) {
     style.Colors[ImGuiCol_WindowBg] = ui.bg_color;
     CopyMemory(&ImGui::GetStyle(), &style, sizeof(ImGuiStyle));
     ui.fonts = load_fonts(io, dpiscale, ui.font_specs);
-    return ImGui_ImplDX9_CreateDeviceObjects();
+    auto ok = ImGui_ImplDX9_CreateDeviceObjects();
+    if (!ok) spdlog::critical("Failed to create device objects");
+    return ok;
 };
