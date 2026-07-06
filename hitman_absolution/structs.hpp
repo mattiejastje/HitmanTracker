@@ -14,189 +14,26 @@ namespace hitman_absolution::structs {
 struct GlobalData {
     uint8_t _pad0[0x94];
     int32_t difficulty;
-    uint8_t _pad1[0xa4];
-    int32_t bodies_hidden;
-    int32_t disguises_picked_up;
-    int32_t containers_entered;
-    int32_t fuse_boxes_disabled;
-    int32_t successful_blend_ins;
-    int32_t caught_dragging_body;
-    int32_t caught_trespassing;
-    int32_t disguises_blown;
-    int32_t knockouts_by_hand;
-    int32_t knockouts_by_improvised_weapons;
-    int32_t npcs_killed;
-    int32_t headshots;
-    int32_t fiber_wires;
-    int32_t deadly_throws;
-    int32_t kills_with_improvised_weapons;
-    int32_t pull_off_ledges;
-    int32_t push_over_railings;
-    int32_t point_shooting_kills;
-    int32_t kill_shots_from_cover;
-    int32_t action_kills_triggered;
-    int32_t kill_shots_pistol;
-    int32_t kill_shots_sniper;
-    int32_t kill_shots_smg;
-    int32_t kill_shots_shotgun;
-    int32_t kill_shots_assault_rifle;
-    int32_t kill_shots_revolver;
-    int32_t civilians_killed;
-    int32_t cops_killed;
-    int32_t pigs_blown_up;
-    int32_t pigeons_killed;
-};
-
-struct String {
-    int32_t length;
-    std::string text;
-};
-
-using TString = Struct<
-    String,
-    Fields<
-        Field<Int32, &String::length>,
-        Field<Ref<ZString<0x40>>, &String::text>>>;
-
-struct StatsScoringData {
-    String title;
-    float _unused;
-    int32_t index;
-    int32_t multiplier;
-};
-
-using TStatsScoringData = Struct<
-    StatsScoringData,
-    Fields<
-        Skip<0x8>,
-        Field<TString, &StatsScoringData::title>,
-        Skip<0x18>,
-        Field<Float, &StatsScoringData::_unused>,
-        Skip<0x8>,
-        Field<Int32, &StatsScoringData::index>,
-        Skip<0x4>,
-        Field<Int32, &StatsScoringData::multiplier>>>;
-
-struct StatsScoring {
-    StatsScoringData data;
-};
-
-using TStatsScoring = Struct<
-    StatsScoring,
-    Fields<Skip<0x4>, Field<Ref<TStatsScoringData>, &StatsScoring::data>>>;
-
-struct PlaystyleConditionData {
-    String title;
-    int32_t index;
-    int32_t threshold;
-};
-
-using TPlaystyleConditionData = Struct<
-    PlaystyleConditionData,
-    Fields<
-        Skip<0x8>,
-        Field<TString, &PlaystyleConditionData::title>,
-        Skip<0x24>,
-        Field<Int32, &PlaystyleConditionData::index>,
-        Field<Int32, &PlaystyleConditionData::threshold>>>;
-
-struct PlaystyleCondition {
-    PlaystyleConditionData data;
-};
-
-using TPlaystyleCondition = Struct<
-    PlaystyleCondition,
-    Fields<
-        Skip<0x4>,
-        Field<Ref<TPlaystyleConditionData>, &PlaystyleCondition::data>>>;
-
-struct StatsPlaystyleData {
-    std::vector<PlaystyleCondition> condition_min;
-    std::vector<PlaystyleCondition> condition_max;
-    String title;
-    int8_t is_unlockable;
-    int32_t priority;
-    int32_t percentage_min;
-    int32_t percentage_max;
-    int8_t is_achieved;
-};
-
-using TStatsPlaystyleData = Struct<
-    StatsPlaystyleData,
-    Fields<
-        Skip<0x8>,
-        Field<
-            Vector<TPlaystyleCondition, 0xa>,
-            &StatsPlaystyleData::condition_min>,
-        Skip<0x4>,
-        Field<
-            Vector<TPlaystyleCondition, 0xa>,
-            &StatsPlaystyleData::condition_max>,
-        Skip<0x4>,
-        Field<TString, &StatsPlaystyleData::title>,
-        Skip<0xc>,
-        Field<Int8, &StatsPlaystyleData::is_unlockable>,
-        Skip<0x3>,
-        Field<Int32, &StatsPlaystyleData::priority>,
-        Field<Int32, &StatsPlaystyleData::percentage_min>,
-        Field<Int32, &StatsPlaystyleData::percentage_max>,
-        Skip<0xc>,
-        Field<Int8, &StatsPlaystyleData::is_achieved>,
-        Skip<0x3>>>;
-
-struct StatsPlaystyle {
-    StatsPlaystyleData data;
-};
-
-using TStatsPlaystyle = Struct<
-    StatsPlaystyle,
-    Fields<Skip<0x4>, Field<Ref<TStatsPlaystyleData>, &StatsPlaystyle::data>>>;
-
-struct StatsDifficulties {
-    uint8_t _pad0[0x8];
-    std::array<float, 0x5> scales;
 };
 
 struct StatsManager {
-    std::vector<StatsScoring> scorings;
-    std::vector<StatsPlaystyle> playstyles;
     RemoteValue<
         Primitive<std::array<std::array<std::array<int16_t, 0x64>, 0xd>, 0x1a>>,
         uint32_t>
         values;
-    std::array<int8_t, 0x64> achieved_playstyles;
-    int32_t last_achieved_playstyle;
-    int32_t scaled_score;
-    std::optional<StatsDifficulties> difficulties;
 };
 
 using TStatsManager = Struct<
     StatsManager,
     Fields<
-        Skip<0x4>,
-        Field<Vector<TStatsScoring, 0x64>, &StatsManager::scorings>,
-        Skip<0x4>,
-        Field<Vector<TStatsPlaystyle, 0x1a>, &StatsManager::playstyles>,
-        Skip<0x10>,
+        Seek<0x28>,
         Field<
             Ref<RemoteAddr<
                 Primitive<std::array<
                     std::array<std::array<int16_t, 0x64>, 0xd>,
                     0x1a>>,
                 uint32_t>>,
-            &StatsManager::values>,
-        Skip<0x8>,
-        Field<
-            Ref<Primitive<std::array<int8_t, 0x64>>>,
-            &StatsManager::achieved_playstyles>,
-        Skip<0x2c>,
-        Field<Int32, &StatsManager::last_achieved_playstyle>,
-        Skip<0x18>,
-        Field<Int32, &StatsManager::scaled_score>,
-        Skip<0x18>,
-        Field<
-            NullableRef<Primitive<StatsDifficulties>>,
-            &StatsManager::difficulties>>>;
+            &StatsManager::values>>>;
 
 struct ChallengeData {
     int8_t completed;
@@ -235,43 +72,12 @@ using TChallengeManager = Struct<
             &ChallengeManager::challenges>>>;
 
 struct EventManager {
-    std::vector<int32_t> events_per_kill_type_class;
-    std::vector<int32_t> events_per_event_type;
-    std::vector<int32_t> events_per_unknown;
-    std::vector<int32_t> kills_per_npc_type;
-    std::vector<int32_t> events_per_event_type_2;
     int32_t npcs_killed;
-    int8_t trespass;
-    int64_t trespass_time;
-    std::vector<int32_t> listeners;
-    int8_t is_total_count_enabled;
-    int32_t total_count;
 };
 
 using TEventManager = Struct<
     EventManager,
-    Fields<
-        Seek<0x14>,
-        Field<Vector<Int32, 0x5>, &EventManager::events_per_kill_type_class>,
-        Seek<0x20>,
-        Field<Vector<Int32, 0x539>, &EventManager::events_per_event_type>,
-        Seek<0x2c>,
-        Field<Vector<Int32, 0xb>, &EventManager::events_per_unknown>,
-        Seek<0x38>,
-        Field<Vector<Int32, 0x4>, &EventManager::kills_per_npc_type>,
-        Seek<0x5c>,
-        Field<Vector<Int32, 0x33>, &EventManager::events_per_event_type_2>,
-        Seek<0xfc>,
-        Field<Int32, &EventManager::npcs_killed>,
-        Seek<0x148>,
-        Field<Int8, &EventManager::trespass>,
-        Skip<0x7>,
-        Field<Int64, &EventManager::trespass_time>,
-        Field<Vector<Int32, 0x1000>, &EventManager::listeners>,
-        Seek<0x364>,
-        Field<Int8, &EventManager::is_total_count_enabled>,
-        Skip<0x3>,
-        Field<Int32, &EventManager::total_count>>>;
+    Fields<Seek<0xfc>, Field<Int32, &EventManager::npcs_killed>>>;
 
 struct LevelData {
     uint8_t _pad0[0x8];
@@ -329,6 +135,17 @@ using TGameData = Struct<
         Skip<0x20>,
         Field<Vector<TGameDataLevelInfo, 0x1a>, &GameData::level_infos>>>;
 
+struct String {
+    int32_t length;
+    std::string text;
+};
+
+using TString = Struct<
+    String,
+    Fields<
+        Field<Int32, &String::length>,
+        Field<Ref<ZString<0x40>>, &String::text>>>;
+
 struct LevelManager {
     String scene;
     int32_t game_mode;
@@ -377,18 +194,6 @@ struct TimeManager {
     int64_t ticks_per_second;
     int64_t last_time_ticks;
     int64_t game_time;
-    int64_t game_time_previous;
-    int64_t game_time_delta;
-    int64_t real_time;
-    int64_t real_time_previous;
-    int64_t real_time_delta;
-    float game_time_multiplier;
-    float debug_time_multiplier;
-    int64_t frame_wait;
-    int64_t frame_step;
-    int64_t frame_remain;
-    int32_t paused;
-    int32_t frame_count;
 };
 
 struct MovieInfoBuffer {
@@ -409,27 +214,9 @@ struct MovieInfo {
 };
 
 struct MovieManagerData {
+    uint8_t _pad0[0x8];
     MovieInfo info;
-    uint32_t unk_bink_handle;
-    int32_t unk_11c;
-    int32_t unk_120;
-    int8_t state_flags;
-    int8_t unk_flags_12d;
 };
-
-using TMovieManagerData = Struct<
-    MovieManagerData,
-    Fields<
-        Skip<0x8>,
-        Field<Primitive<MovieInfo>, &MovieManagerData::info>,
-        Seek<0xd8>,
-        Field<RawAddr<uint32_t>, &MovieManagerData::unk_bink_handle>,
-        Seek<0x11c>,
-        Field<Int32, &MovieManagerData::unk_11c>,
-        Field<Int32, &MovieManagerData::unk_120>,
-        Seek<0x12c>,
-        Field<Int8, &MovieManagerData::state_flags>,
-        Field<Int8, &MovieManagerData::unk_flags_12d>>>;
 
 struct MovieManager {
     MovieManagerData data;
@@ -437,7 +224,9 @@ struct MovieManager {
 
 using TMovieManager = Struct<
     MovieManager,
-    Fields<Seek<0x84>, Field<Ref<TMovieManagerData>, &MovieManager::data>>>;
+    Fields<
+        Seek<0x84>,
+        Field<Ref<Primitive<MovieManagerData>>, &MovieManager::data>>>;
 
 struct Game {
     GlobalData global_data;
@@ -450,7 +239,6 @@ struct Game {
     CheckpointsManager checkpoints_manager;
     TimeManager time_manager;
     MovieManager movie_manager;
-    std::array<int8_t, 0x8> movie_slots;
 };
 
 using TGameSteam = Struct<
@@ -475,9 +263,7 @@ using TGameSteam = Struct<
         Seek<0xe24730>,
         Field<Primitive<TimeManager>, &Game::time_manager>,
         Seek<0xe31b80>,
-        Field<TMovieManager, &Game::movie_manager>,
-        Seek<0xe37e90>,
-        Field<Primitive<std::array<int8_t, 0x8>>, &Game::movie_slots>>>;
+        Field<TMovieManager, &Game::movie_manager>>>;
 
 using TGameGOG = Struct<
     Game,
@@ -501,8 +287,6 @@ using TGameGOG = Struct<
         Seek<0xc88580>,
         Field<Primitive<TimeManager>, &Game::time_manager>,
         Seek<0xc87c00>,
-        Field<TMovieManager, &Game::movie_manager>,
-        Seek<0xc8f774>,
-        Field<Primitive<std::array<int8_t, 0x8>>, &Game::movie_slots>>>;
+        Field<TMovieManager, &Game::movie_manager>>>;
 
 }  // namespace hitman_absolution::structs

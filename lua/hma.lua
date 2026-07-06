@@ -125,6 +125,7 @@ local TimeManager = d.Struct("TimeManager", {
   -- 0xE24748
   d.Field(d.Int64, "game_time"), -- divide by (1024 * 1024) to get seconds
   -- 0xE24750
+  --[[
   d.Field(d.Int64, "game_time_previous"),
   d.Field(d.Int64, "game_time_delta"),
   d.Field(d.Int64, "real_time"),
@@ -137,6 +138,7 @@ local TimeManager = d.Struct("TimeManager", {
   d.Field(d.Int64, "frame_remain"),
   d.Field(d.Int32, "paused"),
   d.Field(d.Int32, "frame_count"),
+  ]]
 })
 
 local StatsScoringData = d.Struct("StatsScoringData", {
@@ -199,12 +201,16 @@ local StatsDifficulties = d.Struct("StatsDifficulties", {
 })
 
 local StatsManager = d.Struct("StatsManager", {
+  --[[
   d.Skip(0x04),
   d.Field(d.Vector(StatsScoring, NUM_STATS_VALUES), "scorings"),
   d.Skip(0x04),
   d.Field(d.Vector(StatsPlaystyle, NUM_PLAYSTYLES), "playstyles"),
   d.Skip(0x10),
+  ]]
+  d.Seek(0x28),
   d.Field(d.Ref(d.RemoteAddr(d.Array(d.Array(d.Array(d.Int16, NUM_STATS_VALUES), NUM_CHECKPOINTS_PER_LEVEL), NUM_LEVELS))), "values"),
+  --[[
   d.Skip(0x08),
   d.Field(d.Ref(d.Array(d.Int8, 100)), "achieved_playstyles"), -- across all gaming sessions
   d.Skip(0x2C),
@@ -214,9 +220,11 @@ local StatsManager = d.Struct("StatsManager", {
   d.Field(d.Int32, "scaled_score"),
   d.Skip(0x18),
   d.Field(d.NullableRef(StatsDifficulties), "difficulties"), -- 1.0, 1.25, 1.5, 2.0, 2.5; see DIFFICULTY_SCALE below
+  ]]
 })
 
 local EventManager = d.Struct("EventManager", {
+    --[[
     d.Seek(0x14),
     -- index 0 = regular kill
     -- index 1 = headshot kill (includes thrown weapon at head)
@@ -241,8 +249,10 @@ local EventManager = d.Struct("EventManager", {
     d.Seek(0x5C),
     -- index 0x23 = spotted
     d.Field(d.Vector(d.Int32, 51), "events_per_event_type_2"),
+    ]]
     d.Seek(0xFC),
     d.Field(d.Int32, "npcs_killed"),  -- includes targets too
+    --[[
     d.Seek(0x148),
     -- trespass = when exclamation mark shows
     -- happens also when holding a gun as civilian, etc.
@@ -255,6 +265,7 @@ local EventManager = d.Struct("EventManager", {
     d.Field(d.Int8, "is_total_count_enabled"),
     d.Skip(0x3),
     d.Field(d.Int32, "total_count"),
+    ]]
 })
 
 local ChallengeData = d.Struct("ChallengeData", {
@@ -276,6 +287,7 @@ local ChallengeManager = d.Struct("ChallengeManager", {
 local GlobalData = d.Struct("GlobalData", {
   d.Skip(0x94),
   d.Field(d.Bounded(d.Int32, 0, NUM_DIFFICULTIES - 1), "difficulty"),
+  --[[
   d.Skip(0xA4),
   -- unlocks -> statistics -> stealth
   -- 0x13C
@@ -320,6 +332,7 @@ local GlobalData = d.Struct("GlobalData", {
   d.Field(d.Int32, "pigs_blown_up"),
   -- 0x1B0
   d.Field(d.Int32, "pigeons_killed"),
+  ]]
 })
 
 local MovieInfoBuffer = d.Struct("MovieInfoBuffer", {
@@ -345,6 +358,7 @@ local MovieInfo = d.Struct("MovieInfo", {
 local MovieManagerData = d.Struct("MovieManagerData", {
   d.Skip(0x8),
   d.Field(MovieInfo, "info"),
+  --[[
   d.Seek(0xD8),
   d.Field(d.RawAddr(), "unk_bink_handle"),
   d.Seek(0x11C),
@@ -355,6 +369,7 @@ local MovieManagerData = d.Struct("MovieManagerData", {
   -- bit 0x4 is set when movie is playing
   d.Field(d.Int8, "state_flags"),
   d.Field(d.Int8, "unk_flags_12d"),
+  ]]
 })
 
 local MovieManager = d.Struct("MovieManager", {
@@ -386,8 +401,10 @@ local game = function(layout)
       d.Field(TimeManager, "time_manager"),
       d.Seek(layout.offset.movie_manager),
       d.Field(MovieManager, "movie_manager"),
+      --[[
       d.Seek(layout.offset.movie_slots),
       d.Field(d.Array(d.Int8, 8), "movie_slots"),
+      ]]
     },
     { native_name = "Game" }
   )

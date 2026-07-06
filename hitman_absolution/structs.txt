@@ -1,94 +1,9 @@
 struct GlobalData {
   int32_t difficulty;  // offset 0x94
-  int32_t bodies_hidden;  // offset 0x13c
-  int32_t disguises_picked_up;  // offset 0x140
-  int32_t containers_entered;  // offset 0x144
-  int32_t fuse_boxes_disabled;  // offset 0x148
-  int32_t successful_blend_ins;  // offset 0x14c
-  int32_t caught_dragging_body;  // offset 0x150
-  int32_t caught_trespassing;  // offset 0x154
-  int32_t disguises_blown;  // offset 0x158
-  int32_t knockouts_by_hand;  // offset 0x15c
-  int32_t knockouts_by_improvised_weapons;  // offset 0x160
-  int32_t npcs_killed;  // offset 0x164
-  int32_t headshots;  // offset 0x168
-  int32_t fiber_wires;  // offset 0x16c
-  int32_t deadly_throws;  // offset 0x170
-  int32_t kills_with_improvised_weapons;  // offset 0x174
-  int32_t pull_off_ledges;  // offset 0x178
-  int32_t push_over_railings;  // offset 0x17c
-  int32_t point_shooting_kills;  // offset 0x180
-  int32_t kill_shots_from_cover;  // offset 0x184
-  int32_t action_kills_triggered;  // offset 0x188
-  int32_t kill_shots_pistol;  // offset 0x18c
-  int32_t kill_shots_sniper;  // offset 0x190
-  int32_t kill_shots_smg;  // offset 0x194
-  int32_t kill_shots_shotgun;  // offset 0x198
-  int32_t kill_shots_assault_rifle;  // offset 0x19c
-  int32_t kill_shots_revolver;  // offset 0x1a0
-  int32_t civilians_killed;  // offset 0x1a4
-  int32_t cops_killed;  // offset 0x1a8
-  int32_t pigs_blown_up;  // offset 0x1ac
-  int32_t pigeons_killed;  // offset 0x1b0
-};
-
-struct String {
-  int32_t length;  // offset 0x0
-  char* text;  // offset 0x4
-};
-
-struct StatsScoringData {
-  String title;  // offset 0x8
-  float _unused;  // offset 0x28
-  int32_t index;  // offset 0x34
-  int32_t multiplier;  // offset 0x3c
-};
-
-struct StatsScoring {
-  StatsScoringData* data;  // offset 0x4
-};
-
-struct PlaystyleConditionData {
-  String title;  // offset 0x8
-  int32_t index;  // offset 0x34
-  int32_t threshold;  // offset 0x38
-};
-
-struct PlaystyleCondition {
-  PlaystyleConditionData* data;  // offset 0x4
-};
-
-struct StatsPlaystyleData {
-  PlaystyleCondition* condition_min_begin;  // offset 0x8
-  PlaystyleCondition* condition_min_end;    // offset 0xc
-  PlaystyleCondition* condition_max_begin;  // offset 0x14
-  PlaystyleCondition* condition_max_end;    // offset 0x18
-  String title;  // offset 0x20
-  int8_t is_unlockable;  // offset 0x34
-  int32_t priority;  // offset 0x38
-  int32_t percentage_min;  // offset 0x3c
-  int32_t percentage_max;  // offset 0x40
-  int8_t is_achieved;  // offset 0x50
-};
-
-struct StatsPlaystyle {
-  StatsPlaystyleData* data;  // offset 0x4
-};
-
-struct StatsDifficulties {
-  std::array<float, 0x5> scales;  // offset 0x8
 };
 
 struct StatsManager {
-  StatsScoring* scorings_begin;  // offset 0x4
-  StatsScoring* scorings_end;    // offset 0x8
-  StatsPlaystyle* playstyles_begin;  // offset 0x10
-  StatsPlaystyle* playstyles_end;    // offset 0x14
   std::array<std::array<std::array<int16_t, 0x64>, 0xd>, 0x1a>* values;  // offset 0x28
-  std::array<int8_t, 0x64>* achieved_playstyles;  // offset 0x34
-  int32_t last_achieved_playstyle;  // offset 0x64
-  int32_t scaled_score;  // offset 0x80
-  StatsDifficulties* difficulties;  // offset 0x9c
 };
 
 struct ChallengeData {
@@ -105,23 +20,7 @@ struct ChallengeManager {
 };
 
 struct EventManager {
-  int32_t* events_per_kill_type_class_begin;  // offset 0x14
-  int32_t* events_per_kill_type_class_end;    // offset 0x18
-  int32_t* events_per_event_type_begin;  // offset 0x20
-  int32_t* events_per_event_type_end;    // offset 0x24
-  int32_t* events_per_unknown_begin;  // offset 0x2c
-  int32_t* events_per_unknown_end;    // offset 0x30
-  int32_t* kills_per_npc_type_begin;  // offset 0x38
-  int32_t* kills_per_npc_type_end;    // offset 0x3c
-  int32_t* events_per_event_type_2_begin;  // offset 0x5c
-  int32_t* events_per_event_type_2_end;    // offset 0x60
   int32_t npcs_killed;  // offset 0xfc
-  int8_t trespass;  // offset 0x148
-  int64_t trespass_time;  // offset 0x150
-  int32_t* listeners_begin;  // offset 0x158
-  int32_t* listeners_end;    // offset 0x15c
-  int8_t is_total_count_enabled;  // offset 0x364
-  int32_t total_count;  // offset 0x368
 };
 
 struct LevelData {
@@ -151,6 +50,11 @@ struct GameData {
   GameDataLevelInfo* level_infos_end;    // offset 0x24
 };
 
+struct String {
+  int32_t length;  // offset 0x0
+  char* text;  // offset 0x4
+};
+
 struct LevelManager {
   String scene;  // offset 0x4
   int32_t game_mode;  // offset 0xc
@@ -176,18 +80,6 @@ struct TimeManager {
   int64_t ticks_per_second;  // offset 0x8
   int64_t last_time_ticks;  // offset 0x10
   int64_t game_time;  // offset 0x18
-  int64_t game_time_previous;  // offset 0x20
-  int64_t game_time_delta;  // offset 0x28
-  int64_t real_time;  // offset 0x30
-  int64_t real_time_previous;  // offset 0x38
-  int64_t real_time_delta;  // offset 0x40
-  float game_time_multiplier;  // offset 0x48
-  float debug_time_multiplier;  // offset 0x4c
-  int64_t frame_wait;  // offset 0x50
-  int64_t frame_step;  // offset 0x58
-  int64_t frame_remain;  // offset 0x60
-  int32_t paused;  // offset 0x68
-  int32_t frame_count;  // offset 0x6c
 };
 
 struct MovieInfoBuffer {
@@ -209,11 +101,6 @@ struct MovieInfo {
 
 struct MovieManagerData {
   MovieInfo info;  // offset 0x8
-  void* unk_bink_handle;  // offset 0xd8
-  int32_t unk_11c;  // offset 0x11c
-  int32_t unk_120;  // offset 0x120
-  int8_t state_flags;  // offset 0x12c
-  int8_t unk_flags_12d;  // offset 0x12d
 };
 
 struct MovieManager {
@@ -231,7 +118,6 @@ struct GameSteam {
   CheckpointsManager checkpoints_manager;  // offset 0xe21580
   TimeManager time_manager;  // offset 0xe24730
   MovieManager movie_manager;  // offset 0xe31b80
-  std::array<int8_t, 0x8> movie_slots;  // offset 0xe37e90
 };
 
 struct GameGOG {
@@ -245,6 +131,5 @@ struct GameGOG {
   CheckpointsManager checkpoints_manager;  // offset 0xd69140
   TimeManager time_manager;  // offset 0xc88580
   MovieManager movie_manager;  // offset 0xc87c00
-  std::array<int8_t, 0x8> movie_slots;  // offset 0xc8f774
 };
 
