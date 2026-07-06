@@ -6,6 +6,8 @@
 
 - Various minor bugs fixed.
 
+- Hitman Absolution: fixed minor typos in level names.
+
 ### Added
 
 - The GOG version of Hitman Codename 47 is now supported.

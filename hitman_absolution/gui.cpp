@@ -24,7 +24,7 @@ const std::vector<std::string> map_names = {
     "#9 Room 899",
     // Run for Your Life
     "#10 Burning Hotel",
-    "#11 The Libary",
+    "#11 The Library",
     "#12 Pigeon Coop",
     "#13 Rooftops",
     "#14 Shangri-La",
@@ -83,7 +83,7 @@ const std::vector<std::string> map_names = {
     "#54 The Penthouse",
     "#55 Blackwater Roof",
     // Absolution
-    "#56 Cementary Entrance",
+    "#56 Cemetery Entrance",
     "#57 Burnwood Family Tomb",
     "#58 Crematorium",
 };
