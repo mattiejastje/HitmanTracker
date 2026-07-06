@@ -95,7 +95,9 @@ static BasePtrs get_base_ptrs(const std::vector<Module>& modules) {
 }
 
 static std::optional<Game> get_game_for_process(
-    const std::vector<GameInfo>& registry, const char* exe_file, DWORD process_id
+    const std::vector<GameInfo>& registry,
+    const char* exe_file,
+    DWORD process_id
 ) {
     spdlog::trace("Inspecting process {} with id {:#x}", exe_file, process_id);
     for (auto& info : registry) {
@@ -133,7 +135,9 @@ std::optional<Game> find_game(const std::vector<GameInfo>& registry) {
         if (Process32First(snapshot_handle.get(), &process_entry)) {
             do {
                 game = get_game_for_process(
-                    registry, process_entry.szExeFile, process_entry.th32ProcessID
+                    registry,
+                    process_entry.szExeFile,
+                    process_entry.th32ProcessID
                 );
                 if (game) break;
             } while (Process32Next(snapshot_handle.get(), &process_entry));
