@@ -32,48 +32,6 @@ struct TableRow {
         value;
 };
 
-template <typename... Args>
-void table_row(
-    ImFont* label_font,
-    const ImVec4& label_color,
-    ImFont* value_font,
-    const ImVec4& value_color,
-    const char* label,
-    const char* value,
-    Args... args
-) {
-    ImGui::TableNextRow();
-    ImGui::TableNextColumn();
-    imgui_app::text(value_font, value_color, value, args...);
-    ImGui::TableNextColumn();
-    imgui_app::text(label_font, label_color, label);
-}
-
-template <typename... Args>
-void table_row(
-    std::span<ImFont*> fonts,
-    const settings::Gui& settings,
-    std::optional<Status> status,
-    const char* label,
-    const char* value,
-    Args... args
-) {
-    auto value_color
-        = !status.has_value()               ? settings.value.color
-          : status.value() == Status::GREEN ? settings.rating_good.color
-          : status.value() == Status::RED   ? settings.rating_bad.color
-                                            : settings.rating_maybe.color;
-    table_row(
-        fonts[FontIndex::Label],
-        im_vec4(settings.label.color),
-        fonts[FontIndex::Value],
-        im_vec4(value_color),
-        label,
-        value,
-        args...
-    );
-}
-
 void gui_header(
     const settings::Gui& settings,
     std::span<ImFont*> fonts,
