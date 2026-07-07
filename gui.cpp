@@ -63,11 +63,11 @@ int gui_run(
                     )) {
                     game->hook
                         = game->methods.hook(game->handle, game->base_ptrs);
-                    if (!game->hook) {
-                        // skip hooking, use stub...
-                        game->hook = HookPtr{new Hook{}};
+                    if (game->hook) {
+                        spdlog::info("Game is now tracked");
+                    } else {
+                        spdlog::error("Game hook failed");
                     }
-                    spdlog::info("Game is now tracked");
                 } else {
                     spdlog::debug("Game not yet ready for tracking...");
                 }
