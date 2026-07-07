@@ -2,7 +2,7 @@ local M = {}
 
 local d = require("mempeep.descriptors")
 
-local layout = {
+local layouts = {
   steam = {
     name = "Steam",
     offset = {
@@ -410,8 +410,8 @@ local game = function(layout)
   )
 end
 
-M.GameSteam = game(layout.steam)
-M.GameGOG = game(layout.gog)
+M.GameSteam = game(layouts.steam)
+M.GameGOG = game(layouts.gog)
 
 M.get_current_checkpoint_index = function(checkpoints)
   if checkpoints.current_key == 0 then
