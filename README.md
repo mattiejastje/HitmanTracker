@@ -40,7 +40,11 @@ For now, only the Steam version is supported.
 
 ### Hitman: Contracts
 
-For now, only the Steam version is supported.
+Fully supported on both Steam and GOG.
+
+Note the game must be run as administrator on GOG.
+For this reason, the tracker must also be run as administrator,
+otherwise it cannot read the game's memory.
 
 ### Hitman: Blood Money
 
