@@ -1,5 +1,7 @@
 #include "stats.hpp"
 
+#include <spdlog/spdlog.h>
+
 #include <cmath>
 #include <mempeep/read.hpp>
 #include <mempeep/tracers/log_tracer.hpp>
@@ -9,7 +11,6 @@
 
 #include "../hitman_common/read_lethed.hpp"
 #include "../hitman_common/stats.hpp"
-#include <spdlog/spdlog.h>
 #include "../mem/read_write.hpp"
 #include "structs.hpp"
 
@@ -80,22 +81,37 @@ static int32_t measure_stealth(const StatsArray<int32_t>& stats) {
 }
 
 GameStatsSlow hitman_contracts::update_slow(Version version) {
-    return [](const std::filesystem::path& exe_path,
-              void* handle,
-              const BasePtrs& base_ptrs,
-              const LabelPtrs& label_ptrs,
-              std::any& remote_state_any,
-              std::any& stats_any) {
+    return [version](
+               const std::filesystem::path& exe_path,
+               void* handle,
+               const BasePtrs& base_ptrs,
+               const LabelPtrs& label_ptrs,
+               std::any& remote_state_any,
+               std::any& stats_any
+           ) {
         auto& game = std::any_cast<structs::HitmanContracts&>(remote_state_any);
         auto& stats = std::any_cast<Stats&>(stats_any);
-        const RemoteValue<structs::THitmanContracts, uint32_t> remote_game{
-            static_cast<uint32_t>(base_ptrs.at(0))
-        };
         MemoryReader<uint32_t> reader{handle};
         auto tracer = mempeep::LogTracer{
             MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS
         };
-        if (!mempeep::read(remote_game, reader, tracer, game)) return false;
+        const auto address = static_cast<uint32_t>(base_ptrs.at(0));
+        switch (version) {
+            case Version::Steam:
+                if (!read_at_address<structs::THitmanContractsSteam>(
+                        address, reader, tracer, game
+                    ))
+                    return false;
+                break;
+            case Version::GOG:
+                if (!read_at_address<structs::THitmanContractsGOG>(
+                        address, reader, tracer, game
+                    ))
+                    return false;
+                break;
+            default:
+                return false;
+        }
         const auto& scene = game.engine.scene_manager.scene_name.text;
         spdlog::trace("Scene {}", scene);
         auto iter = scenes.find(scene);
@@ -143,7 +159,9 @@ GameStatsSlow hitman_contracts::update_slow(Version version) {
 constexpr float seconds_per_tick = 1.0f / 1024;
 
 GameStatsFast hitman_contracts::update_fast(Version version) {
-    return [](void* handle,
+    const uint32_t engine_offset
+        = version == Version::Steam ? 0x39457C : 0x393DDC;
+    return [engine_offset](void* handle,
               const BasePtrs& base_ptrs,
               const LabelPtrs& label_ptrs,
               std::any& stats_any) {
@@ -151,7 +169,7 @@ GameStatsFast hitman_contracts::update_fast(Version version) {
         if (stats.map > 0) {
             const auto& base_ptr = base_ptrs.at(0);
             auto game_ticks
-                = read<int32_t>(handle, base_ptr + 0x39457C, {0x38}, INT32_MAX);
+                = read<int32_t>(handle, base_ptr + engine_offset, {0x38}, INT32_MAX);
             if (game_ticks) stats.time = game_ticks.value() * seconds_per_tick;
             return game_ticks.has_value();
         }

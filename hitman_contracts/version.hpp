@@ -2,6 +2,6 @@
 
 namespace hitman_contracts {
 
-enum class Version { Steam };
+enum class Version { Steam, GOG };
 
 }

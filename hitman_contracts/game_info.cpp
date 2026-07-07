@@ -19,4 +19,15 @@ void hitman_contracts::register_game_info(
             .module_infos = {{"hitmancontracts.exe", PeId{0x52B2D458}}},
         }
     );
+    registry.emplace_back(
+        GameInfo{
+            .name = GAME_NAME,
+            .methods
+            = GameMethods{gui(settings, "GOG"), hook_nothing, hook_immediately_ready, update_slow(Version::GOG), update_fast(Version::GOG)},
+            .make_remote_state
+            = [] { return std::make_any<structs::HitmanContracts>(); },
+            .make_stats = [] { return std::make_any<hitman_common::Stats>(); },
+            .module_infos = {{"hitmancontracts.exe", PeId{0x4091141B}}},
+        }
+    );
 }

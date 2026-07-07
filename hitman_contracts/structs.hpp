@@ -134,7 +134,7 @@ struct HitmanContracts {
     Player player;
 };
 
-using THitmanContracts = Struct<
+using THitmanContractsSteam = Struct<
     HitmanContracts,
     Fields<
         Seek<0x39457c>,
@@ -144,6 +144,18 @@ using THitmanContracts = Struct<
             Ref<Primitive<PropertyManager>>,
             &HitmanContracts::property_manager>,
         Seek<0x3947a8>,
+        Field<TPlayer, &HitmanContracts::player>>>;
+
+using THitmanContractsGOG = Struct<
+    HitmanContracts,
+    Fields<
+        Seek<0x393ddc>,
+        Field<Ref<TEngine>, &HitmanContracts::engine>,
+        Seek<0x393dfc>,
+        Field<
+            Ref<Primitive<PropertyManager>>,
+            &HitmanContracts::property_manager>,
+        Seek<0x394008>,
         Field<TPlayer, &HitmanContracts::player>>>;
 
 }  // namespace hitman_contracts::structs

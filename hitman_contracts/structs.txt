@@ -59,9 +59,15 @@ struct Player {
   PlayerStats* stats;  // offset 0x18
 };
 
-struct HitmanContracts {
+struct HitmanContractsSteam {
   Engine* engine;  // offset 0x39457c
   PropertyManager* property_manager;  // offset 0x39459c
   Player player;  // offset 0x3947a8
+};
+
+struct HitmanContractsGOG {
+  Engine* engine;  // offset 0x393ddc
+  PropertyManager* property_manager;  // offset 0x393dfc
+  Player player;  // offset 0x394008
 };
 

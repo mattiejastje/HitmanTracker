@@ -48,7 +48,8 @@ write_structs_txt("hitman2_silent_assassin", h2sa_structs)
 write_structs_cpp("hitman2_silent_assassin", h2sa_structs, "hitman2_silent_assassin::structs")
 hcon_structs = {
   h2sa.PropertyManagerRecord,
-  hcon.HitmanContracts,
+  hcon.HitmanContractsSteam,
+  hcon.HitmanContractsGOG,
 }
 write_structs_txt("hitman_contracts", hcon_structs)
 write_structs_cpp("hitman_contracts", hcon_structs, "hitman_contracts::structs")

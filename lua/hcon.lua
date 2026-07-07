@@ -3,6 +3,25 @@ M = {}
 local d = require("mempeep.descriptors")
 local h2sa = require("h2sa")
 
+local layouts = {
+  steam = {
+    name = "Steam",
+    offset = {
+      engine = 0x39457C,
+      property_manager = 0x39459C,
+      player = 0x3947A8,
+    },
+  },
+  gog = {
+    name = "GOG",
+    offset = {
+      engine = 0x393DDC,
+      property_manager = 0x393DFC,
+      player = 0x394008,
+    }
+  },
+}
+
 local SceneEntityManagerUnk08 = d.Struct("SceneEntityManagerUnk08", {
     d.Seek(0x10),
     d.Field(d.Int32, "mask"),
@@ -79,51 +98,59 @@ local Player = d.Struct("Player", {
     d.Field(d.NullableRef(PlayerStats), "stats"),  -- null when in menu
 })
 
-M.HitmanContracts = d.Struct("HitmanContracts", {
-    --[[
-    d.Seek(0x30E484),
-    d.Field(d.Float, "seconds_per_tick"),  -- 1/1024
-    d.Seek(0x30E808),
-    d.Field(d.Float, "ticks_per_second"),  -- 1024
-    d.Seek(0x363F58),
-    d.Field(d.ZString(0x6), "first_mission_name"),  -- "C01-1"
-    d.Seek(0x37EEF8),
-    d.Field(d.Array(h2sa.PropertyType, 18), "property_types"),
-    d.Seek(0x394570),
-    d.Field(d.Ref(h2sa.EntityManager), "entity_manager"),
-    ]]
-    d.Seek(0x39457C),
-    d.Field(d.Ref(Engine), "engine"),
-    d.Seek(0x39459C),
-    d.Field(d.Ref(h2sa.PropertyManager), "property_manager"),
-    --[[
-    d.Seek(0x3945A4),
-    d.Field(d.RawAddr(), "player_ptr"),  -- always points at +3947A8
-    ]]
-    d.Seek(0x3947A8),
-    d.Field(Player, "player"),
-    --[[
-    d.Seek(0x395718),
-    d.Field(d.RawAddr(), "player_data_copy"),  -- equal to the player.data pointer but sometimes stale e.g. when in menu after mission
-    ]]
-    --[[
-    d.Seek(0x39FFBC),
-    d.Field(d.ZString(0x0E), "current_mission_name"),  -- only during stats screen
-    d.Seek(0x39FFC4),
-    d.Field(d.Int32, "shots_fired"),  -- only during stats screen
-    d.Field(d.Int32, "close_encounters"),  -- only during stats screen
-    d.Field(d.Int32, "headshots"),  -- only during stats screen
-    d.Field(d.Int32, "alerts"),  -- only during stats screen
-    d.Field(d.Int32, "enemies_killed"),  -- only during stats screen
-    d.Field(d.Int32, "enemies_wounded"),  -- only during stats screen
-    d.Field(d.Int32, "innocents_killed"),  -- only during stats screen
-    d.Field(d.Int32, "innocents_wounded"),  -- only during stats screen
-    d.Field(d.Int32, "stealth"),  -- only during stats screen
-    d.Field(d.Int32, "aggression"),  -- only during stats screen
-    d.Field(d.Int32, "time"),  -- only during stats screen
-    d.Field(d.Int32, "saves_used"),  -- only during stats screen
-    ]]
-})
+local hitman_contracts = function(layout)
+  return d.Struct(
+    "HitmanContracts" .. layout.name, {
+      --[[
+      d.Seek(0x30E484),
+      d.Field(d.Float, "seconds_per_tick"),  -- 1/1024
+      d.Seek(0x30E808),
+      d.Field(d.Float, "ticks_per_second"),  -- 1024
+      d.Seek(0x363F58),
+      d.Field(d.ZString(0x6), "first_mission_name"),  -- "C01-1"
+      d.Seek(0x37EEF8),
+      d.Field(d.Array(h2sa.PropertyType, 18), "property_types"),
+      d.Seek(0x394570),
+      d.Field(d.Ref(h2sa.EntityManager), "entity_manager"),
+      ]]
+      d.Seek(layout.offset.engine),
+      d.Field(d.Ref(Engine), "engine"),
+      d.Seek(layout.offset.property_manager),
+      d.Field(d.Ref(h2sa.PropertyManager), "property_manager"),
+      --[[
+      d.Seek(0x3945A4),
+      d.Field(d.RawAddr(), "player_ptr"),  -- always points at +3947A8
+      ]]
+      d.Seek(layout.offset.player),
+      d.Field(Player, "player"),
+      --[[
+      d.Seek(0x395718),
+      d.Field(d.RawAddr(), "player_data_copy"),  -- equal to the player.data pointer but sometimes stale e.g. when in menu after mission
+      ]]
+      --[[
+      d.Seek(0x39FFBC),
+      d.Field(d.ZString(0x0E), "current_mission_name"),  -- only during stats screen
+      d.Seek(0x39FFC4),
+      d.Field(d.Int32, "shots_fired"),  -- only during stats screen
+      d.Field(d.Int32, "close_encounters"),  -- only during stats screen
+      d.Field(d.Int32, "headshots"),  -- only during stats screen
+      d.Field(d.Int32, "alerts"),  -- only during stats screen
+      d.Field(d.Int32, "enemies_killed"),  -- only during stats screen
+      d.Field(d.Int32, "enemies_wounded"),  -- only during stats screen
+      d.Field(d.Int32, "innocents_killed"),  -- only during stats screen
+      d.Field(d.Int32, "innocents_wounded"),  -- only during stats screen
+      d.Field(d.Int32, "stealth"),  -- only during stats screen
+      d.Field(d.Int32, "aggression"),  -- only during stats screen
+      d.Field(d.Int32, "time"),  -- only during stats screen
+      d.Field(d.Int32, "saves_used"),  -- only during stats screen
+      ]]
+    },
+    { native_name = "HitmanContracts" }
+  )
+end
+
+M.HitmanContractsSteam = hitman_contracts(layouts.steam)
+M.HitmanContractsGOG = hitman_contracts(layouts.gog)
 
 M.mission_scene_names = {
     "SCENES\\C01-1\\C01-1_MAIN.gms",
