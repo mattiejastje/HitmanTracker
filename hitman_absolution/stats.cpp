@@ -687,18 +687,6 @@ static std::string get_scaled_score(double modifier, int32_t raw_score) {
     return std::format("{:.7g}", raw_score * modifier);
 };
 
-template <typename T, IsMemoryReader Reader, IsTracer Tracer>
-bool read_game(
-    uint32_t address,
-    Reader& reader,
-    Tracer& tracer,
-    hitman_absolution::structs::Game& game
-) {
-    return mempeep::read(
-        RemoteValue<T, uint32_t>{address}, reader, tracer, game
-    );
-}
-
 static hitman_absolution::CheckpointType get_checkpoint_type(
     const MapInfo& info
 ) {
@@ -735,13 +723,13 @@ GameStatsSlow hitman_absolution::update_slow(
         const auto address = static_cast<uint32_t>(base_ptrs.at(0));
         switch (version) {
             case Version::Steam:
-                if (!read_game<structs::TGameSteam>(
+                if (!read_at_address<structs::TGameSteam>(
                         address, reader, tracer, game
                     ))
                     return false;
                 break;
             case Version::GOG:
-                if (!read_game<structs::TGameGOG>(
+                if (!read_at_address<structs::TGameGOG>(
                         address, reader, tracer, game
                     ))
                     return false;

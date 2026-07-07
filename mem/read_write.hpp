@@ -5,8 +5,8 @@
 #include <cassert>
 #include <concepts>
 #include <cstdint>
-#include <mempeep/detail/concepts/address.hpp>
 #include <mempeep/tracers/log_tracer.hpp>
+#include <mempeep/read.hpp>
 #include <optional>
 #include <string>
 #include <vector>
@@ -115,3 +115,18 @@ struct MempeepOnLogEntry {
         }
     }
 };
+
+template <
+    mempeep::IsDescriptor Desc,
+    mempeep::IsMemoryReader Reader,
+    mempeep::IsTracer Tracer>
+bool read_at_address(
+    uint32_t address,
+    Reader &reader,
+    Tracer &tracer,
+    mempeep::native_type_t<Desc> &out
+) {
+    return mempeep::read(
+        mempeep::RemoteValue<Desc, uint32_t>{address}, reader, tracer, out
+    );
+}
