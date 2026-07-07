@@ -14,36 +14,48 @@ local SceneEntityManager = d.Struct("SceneEntityManager", {
 })
 
 local SceneManager = d.Struct("SceneManager", {
+    --[[
     d.Skip(0x4),
     d.Field(d.NullableRef(SceneEntityManager), "entity_manager"),
     d.Seek(0xBB0),
     d.Field(d.Int8, "pause_flag_1"),
     d.Field(d.Int8, "pause_flag_2"),
+    ]]
     d.Seek(0xBCD),
     d.Field(h2sa.SmallString, "scene_name"),
+    --[[
     d.Seek(0x6D39),
     d.Field(d.Int32, "unk_6d39"),
+    ]]
 })
 
 local Engine = d.Struct("Engine", {
+    --[[
     d.Seek(0x24),
     d.Field(d.Float, "game_time"),  -- ticks / 1024, only updated 5 times per second
     d.Seek(0x30),
     d.Field(d.Int32, "game_ticks_copy"),
-    d.Skip(0x4),
+    ]]
+    d.Seek(0x38),
     d.Field(d.Int32, "game_ticks"),  -- in ticks, most accurate, root source of all game timings
+    --[[
     d.Field(d.Int32, "game_ticks_previous"),
     d.Field(d.Float, "frame_time"),  -- smoothed time spent on each frame (seconds)
     d.Field(d.Int32, "pause_ticks_offset"),  -- total time game was paused, in negative ticks
+    ]]
     d.Seek(0xA5),
     d.Field(d.Ref(SceneManager), "scene_manager"),
+    --[[
     d.Seek(0x80D),
     d.Field(d.Float, "game_time_update_interval"),  -- 0.2, interval to update game_time_seconds
+    ]]
 })
 
 local PlayerData = d.Struct("PlayerData", {
+    --[[
     d.Seek(0xE59),
     d.Field(d.Int8, "unk_flag_e59"),  -- gates kill registration?
+    ]]
     d.Seek(0x13DB),
     d.Field(d.Int32, "shots_fired"),
 })

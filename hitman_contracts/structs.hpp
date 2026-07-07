@@ -47,24 +47,6 @@ using TPropertyManagerRecord = Struct<
             RemoteAddr<TProperty, uint32_t>,
             &PropertyManagerRecord::property>>>;
 
-struct SceneEntityManagerUnk08 {
-    int32_t mask;
-};
-
-using TSceneEntityManagerUnk08 = Struct<
-    SceneEntityManagerUnk08,
-    Fields<Seek<0x10>, Field<Int32, &SceneEntityManagerUnk08::mask>>>;
-
-struct SceneEntityManager {
-    SceneEntityManagerUnk08 unk_08;
-};
-
-using TSceneEntityManager = Struct<
-    SceneEntityManager,
-    Fields<
-        Seek<0x8>,
-        Field<Ref<TSceneEntityManagerUnk08>, &SceneEntityManager::unk_08>>>;
-
 struct SmallString {
     std::string text;
 };
@@ -74,53 +56,25 @@ using TSmallString = Struct<
     Fields<Field<Ref<ZString<0x100>>, &SmallString::text>, Skip<0x7c>>>;
 
 struct SceneManager {
-    std::optional<SceneEntityManager> entity_manager;
-    int8_t pause_flag_1;
-    int8_t pause_flag_2;
     SmallString scene_name;
-    int32_t unk_6d39;
 };
 
 using TSceneManager = Struct<
     SceneManager,
-    Fields<
-        Skip<0x4>,
-        Field<NullableRef<TSceneEntityManager>, &SceneManager::entity_manager>,
-        Seek<0xbb0>,
-        Field<Int8, &SceneManager::pause_flag_1>,
-        Field<Int8, &SceneManager::pause_flag_2>,
-        Seek<0xbcd>,
-        Field<TSmallString, &SceneManager::scene_name>,
-        Seek<0x6d39>,
-        Field<Int32, &SceneManager::unk_6d39>>>;
+    Fields<Seek<0xbcd>, Field<TSmallString, &SceneManager::scene_name>>>;
 
 struct Engine {
-    float game_time;
-    int32_t game_ticks_copy;
     int32_t game_ticks;
-    int32_t game_ticks_previous;
-    float frame_time;
-    int32_t pause_ticks_offset;
     SceneManager scene_manager;
-    float game_time_update_interval;
 };
 
 using TEngine = Struct<
     Engine,
     Fields<
-        Seek<0x24>,
-        Field<Float, &Engine::game_time>,
-        Seek<0x30>,
-        Field<Int32, &Engine::game_ticks_copy>,
-        Skip<0x4>,
+        Seek<0x38>,
         Field<Int32, &Engine::game_ticks>,
-        Field<Int32, &Engine::game_ticks_previous>,
-        Field<Float, &Engine::frame_time>,
-        Field<Int32, &Engine::pause_ticks_offset>,
         Seek<0xa5>,
-        Field<Ref<TSceneManager>, &Engine::scene_manager>,
-        Seek<0x80d>,
-        Field<Float, &Engine::game_time_update_interval>>>;
+        Field<Ref<TSceneManager>, &Engine::scene_manager>>>;
 
 struct PropertyManager {
     uint32_t vtable;
@@ -130,17 +84,12 @@ struct PropertyManager {
 };
 
 struct PlayerData {
-    int8_t unk_flag_e59;
     int32_t shots_fired;
 };
 
 using TPlayerData = Struct<
     PlayerData,
-    Fields<
-        Seek<0xe59>,
-        Field<Int8, &PlayerData::unk_flag_e59>,
-        Seek<0x13db>,
-        Field<Int32, &PlayerData::shots_fired>>>;
+    Fields<Seek<0x13db>, Field<Int32, &PlayerData::shots_fired>>>;
 
 struct PlayerStats {
     float aggression;

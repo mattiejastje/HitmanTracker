@@ -19,35 +19,17 @@ struct PropertyManagerRecord {
   Property property;  // offset 0x5
 };
 
-struct SceneEntityManagerUnk08 {
-  int32_t mask;  // offset 0x10
-};
-
-struct SceneEntityManager {
-  SceneEntityManagerUnk08* unk_08;  // offset 0x8
-};
-
 struct SmallString {
   char* text;  // offset 0x0
 };
 
 struct SceneManager {
-  SceneEntityManager* entity_manager;  // offset 0x4
-  int8_t pause_flag_1;  // offset 0xbb0
-  int8_t pause_flag_2;  // offset 0xbb1
   SmallString scene_name;  // offset 0xbcd
-  int32_t unk_6d39;  // offset 0x6d39
 };
 
 struct Engine {
-  float game_time;  // offset 0x24
-  int32_t game_ticks_copy;  // offset 0x30
   int32_t game_ticks;  // offset 0x38
-  int32_t game_ticks_previous;  // offset 0x3c
-  float frame_time;  // offset 0x40
-  int32_t pause_ticks_offset;  // offset 0x44
   SceneManager* scene_manager;  // offset 0xa5
-  float game_time_update_interval;  // offset 0x80d
 };
 
 struct PropertyManager {
@@ -58,7 +40,6 @@ struct PropertyManager {
 };
 
 struct PlayerData {
-  int8_t unk_flag_e59;  // offset 0xe59
   int32_t shots_fired;  // offset 0x13db
 };
 
