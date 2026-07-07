@@ -13,8 +13,7 @@ add_executable (HitmanTracker
 	"HitmanTracker.cpp"
 	"color.cpp"
 	"gui.cpp"
-	"settings.cpp"
-	
+	"settings.cpp"	
 	"game.cpp"
 	"hook.cpp"
 	"format_duration.cpp"
@@ -22,6 +21,7 @@ add_executable (HitmanTracker
 	"imgui_app/deviced3d.cpp"
 	"imgui_app/fonts.cpp"
 	"imgui_app/key_value_table.cpp"
+	"imgui_app/text.cpp"
 	"imgui_app/ui.cpp"
 	"imgui_app/window.cpp"
 	"imgui_app/window_class.cpp"

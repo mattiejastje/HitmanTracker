@@ -4,11 +4,6 @@
 
 namespace imgui_app {
 
-template <typename... Args>
-void text(ImFont* font, const ImVec4& color, const char* fmt, Args... args) {
-    if (font) ImGui::PushFont(font);
-    ImGui::TextColored(color, fmt, args...);
-    if (font) ImGui::PopFont();
-}
+void text(ImFont* font, const ImVec4& color, const char* msg);
 
 }  // namespace imgui_app
