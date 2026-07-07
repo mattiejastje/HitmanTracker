@@ -68,6 +68,7 @@ local Player = d.Struct("Player", {
 })
 
 M.HitmanContracts = d.Struct("HitmanContracts", {
+    --[[
     d.Seek(0x30E484),
     d.Field(d.Float, "seconds_per_tick"),  -- 1/1024
     d.Seek(0x30E808),
@@ -78,16 +79,22 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Field(d.Array(h2sa.PropertyType, 18), "property_types"),
     d.Seek(0x394570),
     d.Field(d.Ref(h2sa.EntityManager), "entity_manager"),
+    ]]
     d.Seek(0x39457C),
     d.Field(d.Ref(Engine), "engine"),
     d.Seek(0x39459C),
     d.Field(d.Ref(h2sa.PropertyManager), "property_manager"),
+    --[[
     d.Seek(0x3945A4),
     d.Field(d.RawAddr(), "player_ptr"),  -- always points at +3947A8
+    ]]
     d.Seek(0x3947A8),
     d.Field(Player, "player"),
+    --[[
     d.Seek(0x395718),
     d.Field(d.RawAddr(), "player_data_copy"),  -- equal to the player.data pointer but sometimes stale e.g. when in menu after mission
+    ]]
+    --[[
     d.Seek(0x39FFBC),
     d.Field(d.ZString(0x0E), "current_mission_name"),  -- only during stats screen
     d.Seek(0x39FFC4),
@@ -103,6 +110,7 @@ M.HitmanContracts = d.Struct("HitmanContracts", {
     d.Field(d.Int32, "aggression"),  -- only during stats screen
     d.Field(d.Int32, "time"),  -- only during stats screen
     d.Field(d.Int32, "saves_used"),  -- only during stats screen
+    ]]
 })
 
 M.mission_scene_names = {

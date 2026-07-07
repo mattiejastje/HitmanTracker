@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <cstdint>
 #include <mempeep/descriptors.hpp>
 #include <optional>
@@ -47,28 +46,6 @@ using TPropertyManagerRecord = Struct<
         Field<
             RemoteAddr<TProperty, uint32_t>,
             &PropertyManagerRecord::property>>>;
-
-struct EntityManager {
-    std::optional<
-        RemoteValue<Primitive<std::array<int32_t, 0x40000>>, uint32_t>>
-        versions;
-    std::optional<
-        RemoteValue<Primitive<std::array<uint32_t, 0x40000>>, uint32_t>>
-        entities;
-};
-
-using TEntityManager = Struct<
-    EntityManager,
-    Fields<
-        Seek<0x24>,
-        Field<
-            NullableRef<
-                RemoteAddr<Primitive<std::array<int32_t, 0x40000>>, uint32_t>>,
-            &EntityManager::versions>,
-        Field<
-            NullableRef<
-                RemoteAddr<Primitive<std::array<uint32_t, 0x40000>>, uint32_t>>,
-            &EntityManager::entities>>>;
 
 struct SceneEntityManagerUnk08 {
     int32_t mask;
@@ -203,72 +180,21 @@ using TPlayer = Struct<
         Field<NullableRef<TPlayerStats>, &Player::stats>>>;
 
 struct HitmanContracts {
-    float seconds_per_tick;
-    float ticks_per_second;
-    std::string first_mission_name;
-    std::array<PropertyType, 0x12> property_types;
-    EntityManager entity_manager;
     Engine engine;
     PropertyManager property_manager;
-    uint32_t player_ptr;
     Player player;
-    uint32_t player_data_copy;
-    std::string current_mission_name;
-    int32_t shots_fired;
-    int32_t close_encounters;
-    int32_t headshots;
-    int32_t alerts;
-    int32_t enemies_killed;
-    int32_t enemies_wounded;
-    int32_t innocents_killed;
-    int32_t innocents_wounded;
-    int32_t stealth;
-    int32_t aggression;
-    int32_t time;
-    int32_t saves_used;
 };
 
 using THitmanContracts = Struct<
     HitmanContracts,
     Fields<
-        Seek<0x30e484>,
-        Field<Float, &HitmanContracts::seconds_per_tick>,
-        Seek<0x30e808>,
-        Field<Float, &HitmanContracts::ticks_per_second>,
-        Seek<0x363f58>,
-        Field<ZString<0x6>, &HitmanContracts::first_mission_name>,
-        Seek<0x37eef8>,
-        Field<
-            Primitive<std::array<PropertyType, 0x12>>,
-            &HitmanContracts::property_types>,
-        Seek<0x394570>,
-        Field<Ref<TEntityManager>, &HitmanContracts::entity_manager>,
         Seek<0x39457c>,
         Field<Ref<TEngine>, &HitmanContracts::engine>,
         Seek<0x39459c>,
         Field<
             Ref<Primitive<PropertyManager>>,
             &HitmanContracts::property_manager>,
-        Seek<0x3945a4>,
-        Field<RawAddr<uint32_t>, &HitmanContracts::player_ptr>,
         Seek<0x3947a8>,
-        Field<TPlayer, &HitmanContracts::player>,
-        Seek<0x395718>,
-        Field<RawAddr<uint32_t>, &HitmanContracts::player_data_copy>,
-        Seek<0x39ffbc>,
-        Field<ZString<0xe>, &HitmanContracts::current_mission_name>,
-        Seek<0x39ffc4>,
-        Field<Int32, &HitmanContracts::shots_fired>,
-        Field<Int32, &HitmanContracts::close_encounters>,
-        Field<Int32, &HitmanContracts::headshots>,
-        Field<Int32, &HitmanContracts::alerts>,
-        Field<Int32, &HitmanContracts::enemies_killed>,
-        Field<Int32, &HitmanContracts::enemies_wounded>,
-        Field<Int32, &HitmanContracts::innocents_killed>,
-        Field<Int32, &HitmanContracts::innocents_wounded>,
-        Field<Int32, &HitmanContracts::stealth>,
-        Field<Int32, &HitmanContracts::aggression>,
-        Field<Int32, &HitmanContracts::time>,
-        Field<Int32, &HitmanContracts::saves_used>>>;
+        Field<TPlayer, &HitmanContracts::player>>>;
 
 }  // namespace hitman_contracts::structs

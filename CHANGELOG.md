@@ -6,9 +6,11 @@
 
 - Various minor bugs fixed.
 
+- Hitman Contracts: reduce CPU usage.
+
 - Hitman Absolution: fixed minor typos in level names.
 
-- Hitman Absolution: efficiency improved.
+- Hitman Absolution: reduce CPU usage.
 
 ### Added
 

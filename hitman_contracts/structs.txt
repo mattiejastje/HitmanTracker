@@ -19,11 +19,6 @@ struct PropertyManagerRecord {
   Property property;  // offset 0x5
 };
 
-struct EntityManager {
-  std::array<int32_t, 0x40000>* versions;  // offset 0x24
-  std::array<void*, 0x40000>* entities;  // offset 0x28
-};
-
 struct SceneEntityManagerUnk08 {
   int32_t mask;  // offset 0x10
 };
@@ -84,28 +79,8 @@ struct Player {
 };
 
 struct HitmanContracts {
-  float seconds_per_tick;  // offset 0x30e484
-  float ticks_per_second;  // offset 0x30e808
-  char[6] first_mission_name;  // offset 0x363f58
-  std::array<PropertyType, 0x12> property_types;  // offset 0x37eef8
-  EntityManager* entity_manager;  // offset 0x394570
   Engine* engine;  // offset 0x39457c
   PropertyManager* property_manager;  // offset 0x39459c
-  void* player_ptr;  // offset 0x3945a4
   Player player;  // offset 0x3947a8
-  void* player_data_copy;  // offset 0x395718
-  char[14] current_mission_name;  // offset 0x39ffbc
-  int32_t shots_fired;  // offset 0x39ffc4
-  int32_t close_encounters;  // offset 0x39ffc8
-  int32_t headshots;  // offset 0x39ffcc
-  int32_t alerts;  // offset 0x39ffd0
-  int32_t enemies_killed;  // offset 0x39ffd4
-  int32_t enemies_wounded;  // offset 0x39ffd8
-  int32_t innocents_killed;  // offset 0x39ffdc
-  int32_t innocents_wounded;  // offset 0x39ffe0
-  int32_t stealth;  // offset 0x39ffe4
-  int32_t aggression;  // offset 0x39ffe8
-  int32_t time;  // offset 0x39ffec
-  int32_t saves_used;  // offset 0x39fff0
 };
 
