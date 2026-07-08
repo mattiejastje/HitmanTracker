@@ -39,6 +39,7 @@ add_executable (HitmanTracker
 	"hitman_absolution/hook.cpp"
 	"hitman_absolution/stats.cpp"
 	"hitman_common/gui.cpp"
+	"hitman_common/read_lethed.cpp"
 	"hitman_common/stats.cpp"
 	"hitman_contracts/game_info.cpp"
 	"hitman_contracts/gui.cpp"
