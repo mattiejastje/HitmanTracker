@@ -271,9 +271,10 @@ GameStatsSlow hitman2_silent_assassin::update_slow(Version version) {
         const auto& info = iter->second;
         stats.map = info.map;
         stats.map_stage = MapStage::main;  // always render stats
-        stats.difficulty = read_lethed(
+        stats.difficulty = read_property_int32(
                                game.property_manager.data,
                                game.property_manager.data_used,
+                               "lethed",
                                reader,
                                tracer
         )

@@ -123,9 +123,10 @@ GameStatsSlow hitman_contracts::update_slow(Version version) {
             spdlog::trace("Unhandled scene {}", scene);
             stats.map = 0;
         }
-        stats.difficulty = read_lethed(
+        stats.difficulty = read_property_int32(
                                game.property_manager.data,
                                game.property_manager.data_used,
+                               "lethed",
                                reader,
                                tracer
         )

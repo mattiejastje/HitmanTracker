@@ -4,9 +4,10 @@
 
 #include "../hitman2_silent_assassin/structs.hpp"
 
-std::optional<uint32_t> hitman_common::read_lethed(
+std::optional<int32_t> hitman_common::read_property_int32(
     uint32_t data,
     int32_t data_used,
+    std::string_view key,
     MemoryReader<uint32_t>& reader,
     LogTracer<MempeepOnLogEntry>& tracer
 ) {
@@ -26,28 +27,38 @@ std::optional<uint32_t> hitman_common::read_lethed(
             spdlog::warn("Unable to read property manager record");
             return {};
         }
+        // record_size - 4 bytes
+        // is_active - 1 byte
+        // property.key_length - 4 bytes
+        // property.type - 4 bytes
+        // property.size - 4 bytes
+        // property.key - ... (at least 1 byte)
+        // so record_size > 4+1+4+4+4 = 0x11
         if (record.record_size <= 0x11) {
             spdlog::warn("Invalid property record size");
             return {};
         }
-        // "lethed" property has record size 0x1C so filter on that first
-        if (record.is_active && record.record_size == 0x1C) {
+        // uint32_t property has record size
+        // 0x11 (header) + key.size() + 1 (null) + 4 (value)
+        // so filter on that first
+        if (record.is_active
+            && record.record_size == 0x11 + key.size() + 1 + 4) {
             hitman2_silent_assassin::structs::Property property{};
             if (!mempeep::read(record.property, reader, tracer, property)) {
                 spdlog::warn("Unable to read property");
                 return {};
             }
-            if (property.key == "lethed") {
+            if (property.key == key) {
                 if (property.size != 4) {
-                    spdlog::warn("Property \"lethed\" has wrong size");
+                    spdlog::warn("Property \"{}\" has wrong size", key);
                     return {};
                 }
-                int32_t lethed;
-                if (!reader(data + offset + 0x18, 4, &lethed)) {
-                    spdlog::warn("Unable to read property \"lethed\" value");
+                int32_t val;
+                if (!reader(data + offset + 0x18, 4, &val)) {
+                    spdlog::warn("Unable to read property \"{}\" value", key);
                     return {};
                 }
-                return lethed;
+                return val;
             }
         }
         offset += record.record_size;
