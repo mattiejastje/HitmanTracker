@@ -21,6 +21,7 @@ struct LevelInfo {
     uint32_t player_gref;
 };
 
+// TODO codes / grefs are different on GOG
 std::unordered_map<std::string, LevelInfo> level_infos{
     // sanctuary
     {
@@ -229,22 +230,37 @@ static int32_t measure_stealth(const StatsArray<int32_t>& stats) {
 }
 
 GameStatsSlow hitman2_silent_assassin::update_slow(Version version) {
-    return [](const std::filesystem::path& exe_path,
-              void* handle,
-              const BasePtrs& base_ptrs,
-              const LabelPtrs& label_ptrs,
-              std::any& remote_state_any,
-              std::any& stats_any) {
+    return [version](
+               const std::filesystem::path& exe_path,
+               void* handle,
+               const BasePtrs& base_ptrs,
+               const LabelPtrs& label_ptrs,
+               std::any& remote_state_any,
+               std::any& stats_any
+           ) {
         auto& game = std::any_cast<structs::Game&>(remote_state_any);
         auto& stats = std::any_cast<Stats&>(stats_any);
-        const RemoteValue<structs::TGame, uint32_t> remote_game{
-            static_cast<uint32_t>(base_ptrs.at(0))
-        };
         MemoryReader<uint32_t> reader{handle};
         auto tracer = mempeep::LogTracer{
             MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS
         };
-        if (!mempeep::read(remote_game, reader, tracer, game)) return false;
+        const auto address = static_cast<uint32_t>(base_ptrs.at(0));
+        switch (version) {
+            case Version::Steam:
+                if (!read_at_address<structs::TGameSteam>(
+                        address, reader, tracer, game
+                    ))
+                    return false;
+                break;
+            case Version::GOG:
+                if (!read_at_address<structs::TGameGOG>(
+                        address, reader, tracer, game
+                    ))
+                    return false;
+                break;
+            default:
+                return false;
+        }
         const auto& scene = game.engine.scene_manager.scene_name.text;
         auto iter = level_infos.find(scene);
         if (iter == level_infos.end()) {
@@ -326,16 +342,19 @@ GameStatsSlow hitman2_silent_assassin::update_slow(Version version) {
 }
 
 GameStatsFast hitman2_silent_assassin::update_fast(Version version) {
-    return [](void* handle,
-              const BasePtrs& base_ptrs,
-              const LabelPtrs& label_ptrs,
-              std::any& stats_any) {
+    const uint32_t offset = version == Version::Steam ? 0x2A6C58 : 0x2A8C60;
+    return [offset](
+               void* handle,
+               const BasePtrs& base_ptrs,
+               const LabelPtrs& label_ptrs,
+               std::any& stats_any
+           ) {
         auto& stats = std::any_cast<Stats&>(stats_any);
         if (stats.map > 0) {
             const auto& base_ptr = base_ptrs.at(0);
             auto time = read<int32_t>(
                 handle,
-                base_ptr + 0x2A6C58,
+                base_ptr + offset,
                 {0x118, 0xB38, 0x8, 0x1084, 0x24},
                 INT32_MAX
             );

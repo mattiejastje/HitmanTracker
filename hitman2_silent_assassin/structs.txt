@@ -115,27 +115,15 @@ struct PropertyManager {
   int32_t data_used;  // offset 0xc
 };
 
-struct Game {
-  void* engine_ptr;  // offset 0x2625d4
-  void* unk_2a6c54_ptr;  // offset 0x2625dc
-  std::array<PropertyType, 0x12> property_types;  // offset 0x297840
+struct GameSteam {
   EntityManager* entity_manager;  // offset 0x2a6c50
-  void* unk_2a6c54;  // offset 0x2a6c54
   Engine* engine;  // offset 0x2a6c5c
   PropertyManager* property_manager;  // offset 0x2a6c7c
-  char[64] lethed;  // offset 0x28aa18
-  char[8] current_level_name;  // offset 0x2b3418
-  int32_t shots_fired;  // offset 0x2b3420
-  int32_t close_encounters;  // offset 0x2b3424
-  int32_t headshots;  // offset 0x2b3428
-  int32_t alerts;  // offset 0x2b342c
-  int32_t enemies_killed;  // offset 0x2b3430
-  int32_t enemies_wounded;  // offset 0x2b3434
-  int32_t innocents_killed;  // offset 0x2b3438
-  int32_t innocents_wounded;  // offset 0x2b343c
-  int32_t stealth;  // offset 0x2b3440
-  int32_t aggression;  // offset 0x2b3444
-  int32_t time;  // offset 0x2b3448
-  int32_t saves_used;  // offset 0x2b344c
+};
+
+struct GameGOG {
+  EntityManager* entity_manager;  // offset 0x2a8c58
+  Engine* engine;  // offset 0x2a8c64
+  PropertyManager* property_manager;  // offset 0x2a8c84
 };
 

@@ -3,6 +3,25 @@ M = {}
 local d = require("mempeep.descriptors")
 local read = require("mempeep.read")
 
+local layouts = {
+  steam = {
+    name = "Steam",
+    offset = {
+      entity_manager = 0x2A6C50,
+      engine = 0x2A6C5C,
+      property_manager = 0x2A6C7C,
+    },
+  },
+  gog = {
+    name = "GOG",
+    offset = {
+      entity_manager = 0x2A8C58,
+      engine = 0x2A8C64,
+      property_manager = 0x2A8C84,
+    }
+  },
+}
+
 M.SmallString = d.Struct("SmallString", {
     d.Field(d.Ref(d.ZString(0x100)), "text"),
     d.Skip(0x7C),  -- inline buffer for strings <= 0x7C chars
@@ -223,37 +242,49 @@ M.PropertyManager = d.Struct("PropertyManager", {
     d.Field(d.Int32, "data_used"),   -- how much is actually used
 })
 
-M.Game = d.Struct("Game", {
-    d.Seek(0x2625D4),
-    d.Field(d.RawAddr(), "engine_ptr"),  -- always points to engine field
-    d.Seek(0x2625DC),
-    d.Field(d.RawAddr(), "unk_2a6c54_ptr"),  -- always points to unk_2a6c54 field
-    d.Seek(0x297840),
-    d.Field(d.Array(M.PropertyType, 18), "property_types"),
-    d.Seek(0x2A6C50),
-    d.Field(d.Ref(M.EntityManager), "entity_manager"),
-    d.Field(d.RawAddr(), "unk_2a6c54"),
-    d.Seek(0x2A6C5C),
-    d.Field(d.Ref(Engine), "engine"),
-    d.Seek(0x2A6C7C),
-    d.Field(d.Ref(M.PropertyManager), "property_manager"),
-    d.Seek(0x28AA18),
-    d.Field(d.ZString(0x40), "lethed"),  -- literal string constant
-    d.Seek(0x2B3418),
-    d.Field(d.ZString(0x08), "current_level_name"),  -- only during stats screen
-    d.Field(d.Int32, "shots_fired"),  -- only during stats screen
-    d.Field(d.Int32, "close_encounters"),  -- only during stats screen
-    d.Field(d.Int32, "headshots"),  -- only during stats screen
-    d.Field(d.Int32, "alerts"),  -- only during stats screen
-    d.Field(d.Int32, "enemies_killed"),  -- only during stats screen
-    d.Field(d.Int32, "enemies_wounded"),  -- only during stats screen
-    d.Field(d.Int32, "innocents_killed"),  -- only during stats screen
-    d.Field(d.Int32, "innocents_wounded"),  -- only during stats screen
-    d.Field(d.Int32, "stealth"),  -- only during stats screen
-    d.Field(d.Int32, "aggression"),  -- only during stats screen
-    d.Field(d.Int32, "time"),  -- only during stats screen
-    d.Field(d.Int32, "saves_used"),  -- only during stats screen
-})
+local game = function(layout)
+  return d.Struct(
+    "Game" .. layout.name, {
+      --[[
+      d.Seek(0x2625D4),
+      d.Field(d.RawAddr(), "engine_ptr"),  -- always points to engine field
+      d.Seek(0x2625DC),
+      d.Field(d.RawAddr(), "unk_2a6c54_ptr"),  -- always points to unk_2a6c54 field
+      d.Seek(0x297840),
+      d.Field(d.Array(M.PropertyType, 18), "property_types"),
+      ]]
+      d.Seek(layout.offset.entity_manager),
+      d.Field(d.Ref(M.EntityManager), "entity_manager"),
+      -- d.Field(d.RawAddr(), "unk_2a6c54"),
+      d.Seek(layout.offset.engine),
+      d.Field(d.Ref(Engine), "engine"),
+      d.Seek(layout.offset.property_manager),
+      d.Field(d.Ref(M.PropertyManager), "property_manager"),
+      --[[
+      d.Seek(0x28AA18),
+      d.Field(d.ZString(0x40), "lethed"),  -- literal string constant
+      d.Seek(0x2B3418),
+      d.Field(d.ZString(0x08), "current_level_name"),  -- only during stats screen
+      d.Field(d.Int32, "shots_fired"),  -- only during stats screen
+      d.Field(d.Int32, "close_encounters"),  -- only during stats screen
+      d.Field(d.Int32, "headshots"),  -- only during stats screen
+      d.Field(d.Int32, "alerts"),  -- only during stats screen
+      d.Field(d.Int32, "enemies_killed"),  -- only during stats screen
+      d.Field(d.Int32, "enemies_wounded"),  -- only during stats screen
+      d.Field(d.Int32, "innocents_killed"),  -- only during stats screen
+      d.Field(d.Int32, "innocents_wounded"),  -- only during stats screen
+      d.Field(d.Int32, "stealth"),  -- only during stats screen
+      d.Field(d.Int32, "aggression"),  -- only during stats screen
+      d.Field(d.Int32, "time"),  -- only during stats screen
+      d.Field(d.Int32, "saves_used"),  -- only during stats screen
+      ]]
+    },
+    { native_name = "Game" }
+  )
+end
+
+M.GameSteam = game(layouts.steam)
+M.GameGOG = game(layouts.gog)
 
 --- Get all valid property addresses from the SceneManager shared_com container.
 M.get_scene_manager_property_addrs = function(scene_manager)
