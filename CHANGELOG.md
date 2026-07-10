@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- The GOG version of Hitman 2 Silent Assassin is now supported.
+
+### Changed
+
+- Various minor refactorings and improvements.
+
 ## [0.6.0] - 2026-07-07
 
 ### Fixed
