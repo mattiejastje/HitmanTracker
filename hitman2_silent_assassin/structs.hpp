@@ -261,60 +261,29 @@ struct PropertyManager {
 };
 
 struct Game {
-    uint32_t engine_ptr;
-    uint32_t unk_2a6c54_ptr;
-    std::array<PropertyType, 0x12> property_types;
     EntityManager entity_manager;
-    uint32_t unk_2a6c54;
     Engine engine;
     PropertyManager property_manager;
-    std::string lethed;
-    std::string current_level_name;
-    int32_t shots_fired;
-    int32_t close_encounters;
-    int32_t headshots;
-    int32_t alerts;
-    int32_t enemies_killed;
-    int32_t enemies_wounded;
-    int32_t innocents_killed;
-    int32_t innocents_wounded;
-    int32_t stealth;
-    int32_t aggression;
-    int32_t time;
-    int32_t saves_used;
 };
 
-using TGame = Struct<
+using TGameSteam = Struct<
     Game,
     Fields<
-        Seek<0x2625d4>,
-        Field<RawAddr<uint32_t>, &Game::engine_ptr>,
-        Seek<0x2625dc>,
-        Field<RawAddr<uint32_t>, &Game::unk_2a6c54_ptr>,
-        Seek<0x297840>,
-        Field<Primitive<std::array<PropertyType, 0x12>>, &Game::property_types>,
         Seek<0x2a6c50>,
         Field<Ref<TEntityManager>, &Game::entity_manager>,
-        Field<RawAddr<uint32_t>, &Game::unk_2a6c54>,
         Seek<0x2a6c5c>,
         Field<Ref<TEngine>, &Game::engine>,
         Seek<0x2a6c7c>,
-        Field<Ref<Primitive<PropertyManager>>, &Game::property_manager>,
-        Seek<0x28aa18>,
-        Field<ZString<0x40>, &Game::lethed>,
-        Seek<0x2b3418>,
-        Field<ZString<0x8>, &Game::current_level_name>,
-        Field<Int32, &Game::shots_fired>,
-        Field<Int32, &Game::close_encounters>,
-        Field<Int32, &Game::headshots>,
-        Field<Int32, &Game::alerts>,
-        Field<Int32, &Game::enemies_killed>,
-        Field<Int32, &Game::enemies_wounded>,
-        Field<Int32, &Game::innocents_killed>,
-        Field<Int32, &Game::innocents_wounded>,
-        Field<Int32, &Game::stealth>,
-        Field<Int32, &Game::aggression>,
-        Field<Int32, &Game::time>,
-        Field<Int32, &Game::saves_used>>>;
+        Field<Ref<Primitive<PropertyManager>>, &Game::property_manager>>>;
+
+using TGameGOG = Struct<
+    Game,
+    Fields<
+        Seek<0x2a8c58>,
+        Field<Ref<TEntityManager>, &Game::entity_manager>,
+        Seek<0x2a8c64>,
+        Field<Ref<TEngine>, &Game::engine>,
+        Seek<0x2a8c84>,
+        Field<Ref<Primitive<PropertyManager>>, &Game::property_manager>>>;
 
 }  // namespace hitman2_silent_assassin::structs

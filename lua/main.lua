@@ -42,7 +42,8 @@ h2sa_structs = {
   h2sa.PlayerEntity,
   h2sa.Player,
   h2sa.PropertyManagerRecord,
-  h2sa.Game,
+  h2sa.GameSteam,
+  h2sa.GameGOG,
 }
 write_structs_txt("hitman2_silent_assassin", h2sa_structs)
 write_structs_cpp("hitman2_silent_assassin", h2sa_structs, "hitman2_silent_assassin::structs")

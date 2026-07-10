@@ -123,9 +123,10 @@ GameStatsSlow hitman_contracts::update_slow(Version version) {
             spdlog::trace("Unhandled scene {}", scene);
             stats.map = 0;
         }
-        stats.difficulty = read_lethed(
+        stats.difficulty = read_property_int32(
                                game.property_manager.data,
                                game.property_manager.data_used,
+                               "lethed",
                                reader,
                                tracer
         )
@@ -161,15 +162,18 @@ constexpr float seconds_per_tick = 1.0f / 1024;
 GameStatsFast hitman_contracts::update_fast(Version version) {
     const uint32_t engine_offset
         = version == Version::Steam ? 0x39457C : 0x393DDC;
-    return [engine_offset](void* handle,
-              const BasePtrs& base_ptrs,
-              const LabelPtrs& label_ptrs,
-              std::any& stats_any) {
+    return [engine_offset](
+               void* handle,
+               const BasePtrs& base_ptrs,
+               const LabelPtrs& label_ptrs,
+               std::any& stats_any
+           ) {
         auto& stats = std::any_cast<Stats&>(stats_any);
         if (stats.map > 0) {
             const auto& base_ptr = base_ptrs.at(0);
-            auto game_ticks
-                = read<int32_t>(handle, base_ptr + engine_offset, {0x38}, INT32_MAX);
+            auto game_ticks = read<int32_t>(
+                handle, base_ptr + engine_offset, {0x38}, INT32_MAX
+            );
             if (game_ticks) stats.time = game_ticks.value() * seconds_per_tick;
             return game_ticks.has_value();
         }

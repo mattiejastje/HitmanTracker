@@ -3,6 +3,25 @@ M = {}
 local d = require("mempeep.descriptors")
 local read = require("mempeep.read")
 
+local layouts = {
+  steam = {
+    name = "Steam",
+    offset = {
+      entity_manager = 0x2A6C50,
+      engine = 0x2A6C5C,
+      property_manager = 0x2A6C7C,
+    },
+  },
+  gog = {
+    name = "GOG",
+    offset = {
+      entity_manager = 0x2A8C58,
+      engine = 0x2A8C64,
+      property_manager = 0x2A8C84,
+    }
+  },
+}
+
 M.SmallString = d.Struct("SmallString", {
     d.Field(d.Ref(d.ZString(0x100)), "text"),
     d.Skip(0x7C),  -- inline buffer for strings <= 0x7C chars
@@ -223,37 +242,49 @@ M.PropertyManager = d.Struct("PropertyManager", {
     d.Field(d.Int32, "data_used"),   -- how much is actually used
 })
 
-M.Game = d.Struct("Game", {
-    d.Seek(0x2625D4),
-    d.Field(d.RawAddr(), "engine_ptr"),  -- always points to engine field
-    d.Seek(0x2625DC),
-    d.Field(d.RawAddr(), "unk_2a6c54_ptr"),  -- always points to unk_2a6c54 field
-    d.Seek(0x297840),
-    d.Field(d.Array(M.PropertyType, 18), "property_types"),
-    d.Seek(0x2A6C50),
-    d.Field(d.Ref(M.EntityManager), "entity_manager"),
-    d.Field(d.RawAddr(), "unk_2a6c54"),
-    d.Seek(0x2A6C5C),
-    d.Field(d.Ref(Engine), "engine"),
-    d.Seek(0x2A6C7C),
-    d.Field(d.Ref(M.PropertyManager), "property_manager"),
-    d.Seek(0x28AA18),
-    d.Field(d.ZString(0x40), "lethed"),  -- literal string constant
-    d.Seek(0x2B3418),
-    d.Field(d.ZString(0x08), "current_level_name"),  -- only during stats screen
-    d.Field(d.Int32, "shots_fired"),  -- only during stats screen
-    d.Field(d.Int32, "close_encounters"),  -- only during stats screen
-    d.Field(d.Int32, "headshots"),  -- only during stats screen
-    d.Field(d.Int32, "alerts"),  -- only during stats screen
-    d.Field(d.Int32, "enemies_killed"),  -- only during stats screen
-    d.Field(d.Int32, "enemies_wounded"),  -- only during stats screen
-    d.Field(d.Int32, "innocents_killed"),  -- only during stats screen
-    d.Field(d.Int32, "innocents_wounded"),  -- only during stats screen
-    d.Field(d.Int32, "stealth"),  -- only during stats screen
-    d.Field(d.Int32, "aggression"),  -- only during stats screen
-    d.Field(d.Int32, "time"),  -- only during stats screen
-    d.Field(d.Int32, "saves_used"),  -- only during stats screen
-})
+local game = function(layout)
+  return d.Struct(
+    "Game" .. layout.name, {
+      --[[
+      d.Seek(0x2625D4),
+      d.Field(d.RawAddr(), "engine_ptr"),  -- always points to engine field
+      d.Seek(0x2625DC),
+      d.Field(d.RawAddr(), "unk_2a6c54_ptr"),  -- always points to unk_2a6c54 field
+      d.Seek(0x297840),
+      d.Field(d.Array(M.PropertyType, 18), "property_types"),
+      ]]
+      d.Seek(layout.offset.entity_manager),
+      d.Field(d.Ref(M.EntityManager), "entity_manager"),
+      -- d.Field(d.RawAddr(), "unk_2a6c54"),
+      d.Seek(layout.offset.engine),
+      d.Field(d.Ref(Engine), "engine"),
+      d.Seek(layout.offset.property_manager),
+      d.Field(d.Ref(M.PropertyManager), "property_manager"),
+      --[[
+      d.Seek(0x28AA18),
+      d.Field(d.ZString(0x40), "lethed"),  -- literal string constant
+      d.Seek(0x2B3418),
+      d.Field(d.ZString(0x08), "current_level_name"),  -- only during stats screen
+      d.Field(d.Int32, "shots_fired"),  -- only during stats screen
+      d.Field(d.Int32, "close_encounters"),  -- only during stats screen
+      d.Field(d.Int32, "headshots"),  -- only during stats screen
+      d.Field(d.Int32, "alerts"),  -- only during stats screen
+      d.Field(d.Int32, "enemies_killed"),  -- only during stats screen
+      d.Field(d.Int32, "enemies_wounded"),  -- only during stats screen
+      d.Field(d.Int32, "innocents_killed"),  -- only during stats screen
+      d.Field(d.Int32, "innocents_wounded"),  -- only during stats screen
+      d.Field(d.Int32, "stealth"),  -- only during stats screen
+      d.Field(d.Int32, "aggression"),  -- only during stats screen
+      d.Field(d.Int32, "time"),  -- only during stats screen
+      d.Field(d.Int32, "saves_used"),  -- only during stats screen
+      ]]
+    },
+    { native_name = "Game" }
+  )
+end
+
+M.GameSteam = game(layouts.steam)
+M.GameGOG = game(layouts.gog)
 
 --- Get all valid property addresses from the SceneManager shared_com container.
 M.get_scene_manager_property_addrs = function(scene_manager)
@@ -329,108 +360,234 @@ end
 M.level_infos = {
     -- sanctuary
     ["SCENES\\C0-1\\C0-1__MAIN.gms"] = {
-        level_control_code = 0x205,
-        player_gref = 0x38EE0,
+        steam = {
+            level_control_code = 0x205,
+            player_gref = 0x38EE0,
+        },
+        gog = {
+            level_control_code = 0x205,
+            player_gref = 0x38F50,
+        },
     },
     -- anathema
     ["SCENES\\C1-1\\C1-1__MAIN.gms"] = {
-        level_control_code = 0x20E,
-        player_gref = 0x68F20,
+        steam = {
+            level_control_code = 0x20E,
+            player_gref = 0x68F20,
+        },
+        gog = {
+            level_control_code = 0x20E,
+            player_gref = 0x68F90,
+        },
     },
     -- stakeout
     ["SCENES\\C2-1\\C2-1__MAIN.gms"] = {
-        level_control_code = 0x2C9,
-        player_gref = 0x9FE10,
+        steam = {
+            level_control_code = 0x2C9,
+            player_gref = 0x9FE10,
+        },
+        gog = {
+            level_control_code = 0x2C9,
+            player_gref = 0x9FE80,
+        },
     },
     -- kirov  
     ["SCENES\\C2-2\\C2-2__MAIN.gms"] = {
-        level_control_code = 0x228,
-        player_gref = 0x54A10,
+        steam = {
+            level_control_code = 0x228,
+            player_gref = 0x54A10,
+        },
+        gog = {
+            level_control_code = 0x228,
+            player_gref = 0x54A80,
+        },
     },
     -- tubeway
     ["SCENES\\C2-3\\C2-3__MAIN.gms"] = {
-        level_control_code = 0x4E,
-        player_gref = 0x1E610,
+        steam = {
+            level_control_code = 0x4E,
+            player_gref = 0x1E610,
+        },
+        gog = {
+            level_control_code = 0x4E,
+            player_gref = 0x1E680,
+        },
     },
     -- invitation  
     ["SCENES\\C2-4\\C2-4__MAIN.gms"] = {
-        level_control_code = 0x2E2,
-        player_gref = 0x108CC0,
+        steam = {
+            level_control_code = 0x2E2,
+            player_gref = 0x108CC0,
+        },
+        gog = {
+            level_control_code = 0x2E2,
+            player_gref = 0x108D30,
+        },
     },
     -- tracking
     ["SCENES\\C3-1\\C3-1__MAIN.gms"] = {
-        level_control_code = 0x2EE,
-        player_gref = 0x55650,
+        steam = {
+            level_control_code = 0x2EE,
+            player_gref = 0x55650,
+        },
+        gog = {
+            level_control_code = 0x2EE,
+            player_gref = 0x556C0,
+        },
     },
     -- hidden valley
     ["SCENES\\C3-2a\\C3-2a__MAIN.gms"] = {
-        level_control_code = 0x2D2,
-        player_gref = 0x5F670,
+        steam = {
+            level_control_code = 0x2D2,
+            player_gref = 0x5F670,
+        },
+        gog = {
+            level_control_code = 0x2D2,
+            player_gref = 0x5F6E0,
+        },
     },
     -- gates
     ["SCENES\\C3-2b\\C3-2b__MAIN.gms"] = {
-        level_control_code = 0x33A,
-        player_gref = 0x4EDC0,
+        steam = {
+            level_control_code = 0x33A,
+            player_gref = 0x4EDC0,
+        },
+        gog = {
+            level_control_code = 0x33A,
+            player_gref = 0x4EE30,
+        },
     },
     -- showdown  
     ["SCENES\\C3-3\\C3-3__MAIN.gms"] = {
-        level_control_code = 0x4DB,
-        player_gref = 0x62A10,
+        steam = {
+            level_control_code = 0x4DB,
+            player_gref = 0x62A10,
+        },
+        gog = {
+            level_control_code = 0x4DB,
+            player_gref = 0x62A80,
+        },
     },
     -- basement  
     ["SCENES\\C4-1\\C4-1__MAIN.gms"] = {
-        level_control_code = 0x2B4,
-        player_gref = 0x77620,
+        steam = {
+            level_control_code = 0x2B4,
+            player_gref = 0x77620,
+        },
+        gog = {
+            level_control_code = 0x2B4,
+            player_gref = 0x77690,
+        },
     },
     -- graveyard
     ["SCENES\\C4-2\\C4-2__MAIN.gms"] = {
-        level_control_code = 0x3D4,
-        player_gref = 0x811E0,
+        steam = {
+            level_control_code = 0x3D4,
+            player_gref = 0x811E0,
+        },
+        gog = {
+            level_control_code = 0x3D4,
+            player_gref = 0x81250,
+        },
     },
     -- jacuzzi
     ["SCENES\\C4-3\\C4-3__MAIN.gms"] = {
-        level_control_code = 0x235,
-        player_gref = 0x44630,
+        steam = {
+            level_control_code = 0x235,
+            player_gref = 0x44630,
+        },
+        gog = {
+            level_control_code = 0x235,
+            player_gref = 0x446A0,
+        },
     },
     -- bazaar
     ["SCENES\\C5-1\\C5-1__MAIN.gms"] = {
-        level_control_code = 0x27B,
-        player_gref = 0x3CFA0,
+        steam = {
+            level_control_code = 0x27B,
+            player_gref = 0x3CFA0,
+        },
+        gog = {
+            level_control_code = 0x27B,
+            player_gref = 0x3D010,
+        },
     },
     -- motorcade
     ["SCENES\\C5-2\\C5-2__MAIN.gms"] = {
-        level_control_code = 0x100,
-        player_gref = 0x35590,
+        steam = {
+            level_control_code = 0x100,
+            player_gref = 0x35590,
+        },
+        gog = {
+            level_control_code = 0x100,
+            player_gref = 0x35600,
+        },
     },
     -- tunnel rat
     ["SCENES\\C5-3\\C5-3__MAIN.gms"] = {
-        level_control_code = 0x27B,
-        player_gref = 0x4D310,
+        steam = {
+            level_control_code = 0x27B,
+            player_gref = 0x4D310,
+        },
+        gog = {
+            level_control_code = 0x27B,
+            player_gref = 0x4D380,
+        },
     },
     -- temple city
     ["SCENES\\C6-1\\C6-1__MAIN.gms"] = {
-        level_control_code = 0x191,
-        player_gref = 0x6F820,
+        steam = {
+            level_control_code = 0x191,
+            player_gref = 0x6F820,
+        },
+        gog = {
+            level_control_code = 0x19B,  -- not steam
+            player_gref = 0x6FF20,  -- not steam + 0x70
+        },
     },
     -- hannelore
     ["SCENES\\C6-2\\C6-2__MAIN.gms"] = {
+        steam = {
         level_control_code = 0x2C2,
         player_gref = 0x60860,
+        },
+        gog = {
+            level_control_code = 0x2C8,  -- not steam
+            player_gref = 0x60B70,  -- not steam + 0x70
+        },
     },
     -- hospitality
     ["SCENES\\C6-3\\C6-3__MAIN.gms"] = {
-        level_control_code = 0x25B,
-        player_gref = 0xC5110,
+        steam = {
+            level_control_code = 0x25B,
+            player_gref = 0xC5110,
+        },
+        gog = {
+            level_control_code = 0x25B,
+            player_gref = 0xC5180,
+        },
     },
     -- revisited
     ["SCENES\\C7-1\\C7-1__MAIN.gms"] = {
+        steam = {
         level_control_code = 0x2C0,
         player_gref = 0xA0270,
+        },
+        gog = {
+            level_control_code = 0x2C0,
+            player_gref = 0xA02E0,
+        },
     },
     -- finale
     ["SCENES\\C8-1\\C8-1__MAIN.gms"] = {
-        level_control_code = 0x2,
-        player_gref = 0x15B60,
+        steam = {
+            level_control_code = 0x2,
+            player_gref = 0x15B60,
+        },
+        gog = {
+            level_control_code = 0x2,
+            player_gref = 0x15BD0,
+        },
     },
 }
 

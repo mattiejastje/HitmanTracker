@@ -18,4 +18,14 @@ void hitman2_silent_assassin::register_game_info(
             .module_infos = {{"hitman2.exe", PeId{0x3EF859D5}}},
         }
     );
+    registry.emplace_back(
+        GameInfo{
+            .name = GAME_NAME,
+            .methods
+            = GameMethods{gui(settings, "GOG"), hook_nothing, hook_immediately_ready, update_slow(Version::GOG), update_fast(Version::GOG)},
+            .make_remote_state = [] { return std::make_any<structs::Game>(); },
+            .make_stats = [] { return std::make_any<hitman_common::Stats>(); },
+            .module_infos = {{"hitman2.exe", PeId{0x0}}},  // not set on GOG
+        }
+    );
 };
