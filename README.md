@@ -52,7 +52,7 @@ otherwise it cannot read the game's memory.
 
 ### Hitman: Blood Money
 
-For now, only the Steam version is supported.
+Fully supported on both Steam and GOG.
 
 The game tracks time internally using 1024 ticks per second.
 However, the final mission screen shows time assuming 1000 ticks per second.

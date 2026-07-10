@@ -6,6 +6,8 @@
 
 - The GOG version of Hitman 2 Silent Assassin is now supported.
 
+- The GOG version of Hitman Blood Money is now supported.
+
 ### Changed
 
 - Various minor refactorings and improvements.
