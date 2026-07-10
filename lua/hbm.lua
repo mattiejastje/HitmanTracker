@@ -2,6 +2,25 @@ local M = {}
 
 local d = require("mempeep.descriptors")
 
+local layouts = {
+  steam = {
+    name = "Steam",
+    offset = {
+      sys_interface = 0x41F820,
+      settings = 0x41F83C,
+      stats = 0x5B2538,
+    },
+  },
+  gog = {
+    name = "GOG",
+    offset = {
+      sys_interface = 0x0,
+      settings = 0x0,
+      stats = 0x0,
+    }
+  },
+}
+
 local SceneInfo = d.Struct("SceneInfo", {
   d.Field(d.Int8, "unk_flag_00"),
   d.Skip(0x1),
