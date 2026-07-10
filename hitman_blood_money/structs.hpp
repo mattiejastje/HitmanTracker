@@ -204,11 +204,11 @@ using TGameSteam = Struct<
 using TGameGOG = Struct<
     Game,
     Fields<
-        Seek<0x0>,
+        Seek<0x420820>,
         Field<NullableRef<TSysInterface>, &Game::sys_interface>,
-        Seek<0x0>,
+        Seek<0x42083c>,
         Field<NullableRef<TSettings>, &Game::settings>,
-        Seek<0x0>,
+        Seek<0x5b3b38>,
         Field<Primitive<std::array<int32_t, 0x42>>, &Game::stats>>>;
 
 }  // namespace hitman_blood_money::structs

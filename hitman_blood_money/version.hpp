@@ -2,6 +2,6 @@
 
 namespace hitman_blood_money {
 
-enum class Version { Steam };
+enum class Version { Steam, GOG };
 
 }

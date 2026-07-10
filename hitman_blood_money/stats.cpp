@@ -147,14 +147,23 @@ constexpr std::size_t CAMERA_CAUGHT = 59;
 constexpr std::size_t CUSTOM_WEAPONS_LEFT_ON_LEVEL = 61;
 
 static std::optional<int32_t> get_time(
-    void* handle, uintptr_t base_ptr, MapStage map_stage
+    hitman_blood_money::Version version,
+    void* handle,
+    uintptr_t base_ptr,
+    MapStage map_stage
 ) {
+    const int32_t sys_interface
+        = version == hitman_blood_money::Version::Steam ? 0x41F820 : 0x420820;
+    const int32_t stats
+        = version == hitman_blood_money::Version::Steam ? 0x5B2538 : 0x5B3B38;
     if (map_stage == MapStage::main)
         // game.sys_interface.game_ticks
-        return read<int32_t>(handle, base_ptr + 0x41F820, {0x48}, INT32_MAX);
+        return read<int32_t>(
+            handle, base_ptr + sys_interface, {0x48}, INT32_MAX
+        );
     if (map_stage == MapStage::post)
         // game.stats[TIME]
-        return read<int32_t>(handle, base_ptr + 0x5B2538 + 4 * TIME);
+        return read<int32_t>(handle, base_ptr + stats + 4 * TIME);
     // map_stage == MapStage::pre
     return 0;
 }
@@ -198,22 +207,37 @@ static Status get_rating_status(const hitman_blood_money::Stats& stats) {
 };
 
 GameStatsSlow hitman_blood_money::update_slow(Version version) {
-    return [](const std::filesystem::path& exe_path,
-              void* handle,
-              const BasePtrs& base_ptrs,
-              const LabelPtrs& label_ptrs,
-              std::any& remote_state_any,
-              std::any& stats_any) {
+    return [version](
+               const std::filesystem::path& exe_path,
+               void* handle,
+               const BasePtrs& base_ptrs,
+               const LabelPtrs& label_ptrs,
+               std::any& remote_state_any,
+               std::any& stats_any
+           ) {
         auto& game = std::any_cast<structs::Game&>(remote_state_any);
         auto& stats = std::any_cast<Stats&>(stats_any);
-        const RemoteValue<structs::TGameSteam, uint32_t> remote_game{
-            static_cast<uint32_t>(base_ptrs.at(0))
-        };
         MemoryReader<uint32_t> reader{handle};
         auto tracer = mempeep::LogTracer{
             MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS
         };
-        if (!mempeep::read(remote_game, reader, tracer, game)) return false;
+        const auto address = static_cast<uint32_t>(base_ptrs.at(0));
+        switch (version) {
+            case Version::Steam:
+                if (!read_at_address<structs::TGameSteam>(
+                        address, reader, tracer, game
+                    ))
+                    return false;
+                break;
+            case Version::GOG:
+                if (!read_at_address<structs::TGameGOG>(
+                        address, reader, tracer, game
+                    ))
+                    return false;
+                break;
+            default:
+                return false;
+        }
         auto& settings = game.settings;
         if (!settings) return true;  // game starting
         stats.difficulty = settings->difficulty;
@@ -286,14 +310,16 @@ GameStatsSlow hitman_blood_money::update_slow(Version version) {
 constexpr float game_display_seconds_per_tick = 1.0f / 1000;
 
 GameStatsFast hitman_blood_money::update_fast(Version version) {
-    return [](void* handle,
-              const BasePtrs& base_ptrs,
-              const LabelPtrs& label_ptrs,
-              std::any& stats_any) {
+    return [version](
+               void* handle,
+               const BasePtrs& base_ptrs,
+               const LabelPtrs& label_ptrs,
+               std::any& stats_any
+           ) {
         auto& stats = std::any_cast<Stats&>(stats_any);
         if (stats.map > 0) {
             const auto& base_ptr = base_ptrs.at(0);
-            auto time = get_time(handle, base_ptr, stats.map_stage);
+            auto time = get_time(version, handle, base_ptr, stats.map_stage);
             if (time) stats.time = time.value() * game_display_seconds_per_tick;
             return time.has_value();
         }

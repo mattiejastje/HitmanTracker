@@ -74,8 +74,8 @@ struct GameSteam {
 };
 
 struct GameGOG {
-  SysInterface* sys_interface;  // offset 0x0
-  Settings* settings;  // offset 0x0
-  std::array<int32_t, 0x42> stats;  // offset 0x0
+  SysInterface* sys_interface;  // offset 0x420820
+  Settings* settings;  // offset 0x42083c
+  std::array<int32_t, 0x42> stats;  // offset 0x5b3b38
 };
 
