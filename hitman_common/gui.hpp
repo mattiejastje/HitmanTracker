@@ -12,6 +12,7 @@ namespace hitman_common {
 
 enum FontIndex {
     Title,
+    Version,
     Difficulty,
     Map,
     Time,

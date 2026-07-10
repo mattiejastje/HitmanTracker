@@ -47,6 +47,7 @@ struct Gui {
     Color bg_color{0.0f, 0.0f, 0.0f};
     bool show_game_version{true};
     TextStyle title{"fonts/dejavu/DejaVuSansCondensed.ttf"};
+    TextStyle version{"fonts/dejavu/DejaVuSansCondensed.ttf", 0.7f};
     TextStyle difficulty{"fonts/dejavu/DejaVuSansCondensed.ttf", 0.9f};
     TextStyle map{"fonts/dejavu/DejaVuSansCondensed-Oblique.ttf"};
     TextStyle time{"fonts/dejavu/DejaVuSansMono-Bold.ttf", 1.1f};

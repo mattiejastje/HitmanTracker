@@ -10,6 +10,8 @@
 
 ### Changed
 
+- Game version is now shown on a separate line, with its own configurable size and color.
+
 - Various minor refactorings and improvements.
 
 ## [0.6.0] - 2026-07-07

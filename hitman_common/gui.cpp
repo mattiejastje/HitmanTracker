@@ -12,10 +12,12 @@
 #include "../imgui_app/key_value_table.hpp"
 #include "../imgui_app/text.hpp"
 
-std::vector<imgui_app::FontSpec>
-hitman_common::make_font_specs(const settings::Gui& settings) {
+std::vector<imgui_app::FontSpec> hitman_common::make_font_specs(
+    const settings::Gui& settings
+) {
     return {{
         {settings.title.file, settings.font_size * settings.title.scale},
+        {settings.version.file, settings.font_size * settings.version.scale},
         {settings.difficulty.file,
          settings.font_size * settings.difficulty.scale},
         {settings.map.file, settings.font_size * settings.map.scale},
@@ -43,12 +45,16 @@ void hitman_common::gui_header(
     MapStage map_stage,
     float time
 ) {
-    const auto title = settings.show_game_version
-                           ? std::format("{} [{}]", game_name, version)
-                           : game_name;
     imgui_app::text(
-        fonts[FontIndex::Title], im_vec4(settings.title.color), title.c_str()
+        fonts[FontIndex::Title], im_vec4(settings.title.color), game_name.c_str()
     );
+    if (settings.show_game_version) {
+        imgui_app::text(
+            fonts[FontIndex::Version],
+            im_vec4(settings.version.color),
+            version.c_str()
+        );
+    }
     imgui_app::text(
         fonts[FontIndex::Difficulty],
         im_vec4(settings.difficulty.color),

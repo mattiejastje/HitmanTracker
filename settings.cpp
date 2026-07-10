@@ -79,6 +79,7 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
         )
         ->capture_default_str();
     add_text_style_options(*gui_group, "title", "title", settings.gui.title);
+    add_text_style_options(*gui_group, "version", "version", settings.gui.version);
     add_text_style_options(*gui_group, "map", "map", settings.gui.map);
     add_text_style_options(*gui_group, "time", "time", settings.gui.time);
     add_text_style_options(
