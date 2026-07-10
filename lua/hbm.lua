@@ -100,10 +100,12 @@ M.Game = d.Struct("Game", {
   d.Field(d.NullableRef(Settings), "settings"),  -- null when game starts
   d.Seek(0x5B2538),
   d.Field(d.Array(d.Int32, 66), "stats"),
+  --[[
   d.Seek(0x356108),
   d.Field(d.Float, "seconds_per_tick"),  -- 1/1024
   d.Seek(0x35ECD0),
   d.Field(d.Double, "seconds_per_millisecond"),  -- 1/1000
+  ]]
 })
 
 return M
