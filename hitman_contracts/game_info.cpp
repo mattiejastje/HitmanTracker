@@ -12,7 +12,7 @@ void hitman_contracts::register_game_info(
         GameInfo{
             .name = GAME_NAME,
             .methods
-            = GameMethods{gui(settings, "Steam"), hook_nothing, hook_immediately_ready, update_slow(Version::Steam), update_fast(Version::Steam)},
+            = GameMethods{gui(settings, "Steam Build 175"), hook_nothing, hook_immediately_ready, update_slow(Version::Steam), update_fast(Version::Steam)},
             .make_remote_state
             = [] { return std::make_any<structs::HitmanContracts>(); },
             .make_stats = [] { return std::make_any<hitman_common::Stats>(); },
@@ -23,7 +23,7 @@ void hitman_contracts::register_game_info(
         GameInfo{
             .name = GAME_NAME,
             .methods
-            = GameMethods{gui(settings, "GOG"), hook_nothing, hook_immediately_ready, update_slow(Version::GOG), update_fast(Version::GOG)},
+            = GameMethods{gui(settings, "GOG Build 174"), hook_nothing, hook_immediately_ready, update_slow(Version::GOG), update_fast(Version::GOG)},
             .make_remote_state
             = [] { return std::make_any<structs::HitmanContracts>(); },
             .make_stats = [] { return std::make_any<hitman_common::Stats>(); },
