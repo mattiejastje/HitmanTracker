@@ -14,22 +14,39 @@
 #include "structs.hpp"
 
 using namespace hitman_common;
+using Version = hitman2_silent_assassin::Version;
 
-struct LevelInfo {
-    int map;
+struct LevelInfoData {
     std::size_t level_control_code;
     uint32_t player_gref;
 };
 
-// TODO codes / grefs are different on GOG
-std::unordered_map<std::string, LevelInfo> level_infos{
+struct LevelInfo {
+    int map;
+    std::unordered_map<Version, LevelInfoData> data;
+};
+
+const std::unordered_map<std::string, LevelInfo> level_infos{
     // sanctuary
     {
         "SCENES\\C0-1\\C0-1__MAIN.gms",
         {
             .map = 1,
-            .level_control_code = 0x205,
-            .player_gref = 0x38EE0,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x205,
+                       .player_gref = 0x38EE0,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x205,
+                       .player_gref = 0x38F50,
+                   },
+               }},
         },
     },
     // anathema
@@ -37,8 +54,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C1-1\\C1-1__MAIN.gms",
         {
             .map = 2,
-            .level_control_code = 0x20E,
-            .player_gref = 0x68F20,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x20E,
+                       .player_gref = 0x68F20,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x20E,
+                       .player_gref = 0x68F90,
+                   },
+               }},
         },
     },
     // stakeout
@@ -46,8 +76,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C2-1\\C2-1__MAIN.gms",
         {
             .map = 3,
-            .level_control_code = 0x2C9,
-            .player_gref = 0x9FE10,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x2C9,
+                       .player_gref = 0x9FE10,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x2C9,
+                       .player_gref = 0x9FE80,
+                   },
+               }},
         },
     },
     // kirov
@@ -55,8 +98,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C2-2\\C2-2__MAIN.gms",
         {
             .map = 4,
-            .level_control_code = 0x228,
-            .player_gref = 0x54A10,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x228,
+                       .player_gref = 0x54A10,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x228,
+                       .player_gref = 0x54A80,
+                   },
+               }},
         },
     },
     // tubeway
@@ -64,8 +120,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C2-3\\C2-3__MAIN.gms",
         {
             .map = 5,
-            .level_control_code = 0x4E,
-            .player_gref = 0x1E610,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x4E,
+                       .player_gref = 0x1E610,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x4E,
+                       .player_gref = 0x1E680,
+                   },
+               }},
         },
     },
     // invitation
@@ -73,8 +142,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C2-4\\C2-4__MAIN.gms",
         {
             .map = 6,
-            .level_control_code = 0x2E2,
-            .player_gref = 0x108CC0,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x2E2,
+                       .player_gref = 0x108CC0,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x2E2,
+                       .player_gref = 0x108D30,
+                   },
+               }},
         },
     },
     // tracking
@@ -82,8 +164,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C3-1\\C3-1__MAIN.gms",
         {
             .map = 7,
-            .level_control_code = 0x2EE,
-            .player_gref = 0x55650,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x2EE,
+                       .player_gref = 0x55650,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x2EE,
+                       .player_gref = 0x556C0,
+                   },
+               }},
         },
     },
     // hidden valley
@@ -91,8 +186,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C3-2a\\C3-2a__MAIN.gms",
         {
             .map = 8,
-            .level_control_code = 0x2D2,
-            .player_gref = 0x5F670,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x2D2,
+                       .player_gref = 0x5F670,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x2D2,
+                       .player_gref = 0x5F6E0,
+                   },
+               }},
         },
     },
     // gates
@@ -100,8 +208,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C3-2b\\C3-2b__MAIN.gms",
         {
             .map = 9,
-            .level_control_code = 0x33A,
-            .player_gref = 0x4EDC0,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x33A,
+                       .player_gref = 0x4EDC0,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x33A,
+                       .player_gref = 0x4EE30,
+                   },
+               }},
         },
     },
     // showdown
@@ -109,8 +230,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C3-3\\C3-3__MAIN.gms",
         {
             .map = 10,
-            .level_control_code = 0x4DB,
-            .player_gref = 0x62A10,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x4DB,
+                       .player_gref = 0x62A10,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x4DB,
+                       .player_gref = 0x62A80,
+                   },
+               }},
         },
     },
     // basement
@@ -118,8 +252,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C4-1\\C4-1__MAIN.gms",
         {
             .map = 11,
-            .level_control_code = 0x2B4,
-            .player_gref = 0x77620,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x2B4,
+                       .player_gref = 0x77620,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x2B4,
+                       .player_gref = 0x77690,
+                   },
+               }},
         },
     },
     // graveyard
@@ -127,8 +274,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C4-2\\C4-2__MAIN.gms",
         {
             .map = 12,
-            .level_control_code = 0x3D4,
-            .player_gref = 0x811E0,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x3D4,
+                       .player_gref = 0x811E0,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x3D4,
+                       .player_gref = 0x81250,
+                   },
+               }},
         },
     },
     // jacuzzi
@@ -136,8 +296,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C4-3\\C4-3__MAIN.gms",
         {
             .map = 13,
-            .level_control_code = 0x235,
-            .player_gref = 0x44630,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x235,
+                       .player_gref = 0x44630,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x235,
+                       .player_gref = 0x446A0,
+                   },
+               }},
         },
     },
     // bazaar
@@ -145,8 +318,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C5-1\\C5-1__MAIN.gms",
         {
             .map = 14,
-            .level_control_code = 0x27B,
-            .player_gref = 0x3CFA0,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x27B,
+                       .player_gref = 0x3CFA0,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x27B,
+                       .player_gref = 0x3D010,
+                   },
+               }},
         },
     },
     // motorcade
@@ -154,8 +340,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C5-2\\C5-2__MAIN.gms",
         {
             .map = 15,
-            .level_control_code = 0x100,
-            .player_gref = 0x35590,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x100,
+                       .player_gref = 0x35590,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x100,
+                       .player_gref = 0x35600,
+                   },
+               }},
         },
     },
     // tunnel rat
@@ -163,8 +362,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C5-3\\C5-3__MAIN.gms",
         {
             .map = 16,
-            .level_control_code = 0x27B,
-            .player_gref = 0x4D310,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x27B,
+                       .player_gref = 0x4D310,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x27B,
+                       .player_gref = 0x4D380,
+                   },
+               }},
         },
     },
     // temple city
@@ -172,8 +384,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C6-1\\C6-1__MAIN.gms",
         {
             .map = 17,
-            .level_control_code = 0x191,
-            .player_gref = 0x6F820,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x191,
+                       .player_gref = 0x6F820,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x19B,
+                       .player_gref = 0x6FF20,
+                   },
+               }},
         },
     },
     // hannelore
@@ -181,8 +406,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C6-2\\C6-2__MAIN.gms",
         {
             .map = 18,
-            .level_control_code = 0x2C2,
-            .player_gref = 0x60860,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x2C2,
+                       .player_gref = 0x60860,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x2C8,
+                       .player_gref = 0x60B70,
+                   },
+               }},
         },
     },
     // hospitality
@@ -190,8 +428,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C6-3\\C6-3__MAIN.gms",
         {
             .map = 19,
-            .level_control_code = 0x25B,
-            .player_gref = 0xC5110,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x25B,
+                       .player_gref = 0xC5110,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x25B,
+                       .player_gref = 0xC5180,
+                   },
+               }},
         },
     },
     // revisited
@@ -199,8 +450,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C7-1\\C7-1__MAIN.gms",
         {
             .map = 20,
-            .level_control_code = 0x2C0,
-            .player_gref = 0xA0270,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x2C0,
+                       .player_gref = 0xA0270,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x2C0,
+                       .player_gref = 0xA02E0,
+                   },
+               }},
         },
     },
     // finale
@@ -208,8 +472,21 @@ std::unordered_map<std::string, LevelInfo> level_infos{
         "SCENES\\C8-1\\C8-1__MAIN.gms",
         {
             .map = 21,
-            .level_control_code = 0x2,
-            .player_gref = 0x15B60,
+            .data
+            = {{
+                   Version::Steam,
+                   {
+                       .level_control_code = 0x2,
+                       .player_gref = 0x15B60,
+                   },
+               },
+               {
+                   Version::GOG,
+                   {
+                       .level_control_code = 0x2,
+                       .player_gref = 0x15BD0,
+                   },
+               }},
         },
     },
 };
@@ -280,19 +557,22 @@ GameStatsSlow hitman2_silent_assassin::update_slow(Version version) {
         )
                                .value_or(0);
         if (stats.map >= 2) {
+            const auto& info_data = info.data.at(version);
             structs::LevelControl level_control{};
-            // entities can be briefly null if mission is still loading
+            // entities can be briefly null if mission is still
+            // loading
             if (game.entity_manager.entities) {
                 uint32_t level_control_addr{};
                 if (!mempeep::read_at(
                         *game.entity_manager.entities,
-                        info.level_control_code,
+                        info_data.level_control_code,
                         reader,
                         tracer,
                         level_control_addr
                     ))
                     return false;
-                // address can be briefly zero if mission is still loading
+                // address can be briefly zero if mission is still
+                // loading
                 if (level_control_addr != 0) {
                     const RemoteValue<
                         Primitive<structs::LevelControl>,
@@ -311,14 +591,14 @@ GameStatsSlow hitman2_silent_assassin::update_slow(Version version) {
             if (game.engine.scene_manager.gref_manager) {
                 const RemoteValue<structs::TPlayer, uint32_t> remote_player{
                     game.engine.scene_manager.gref_manager->pool.base
-                    + info.player_gref
+                    + info_data.player_gref
                 };
                 if (!mempeep::read(remote_player, reader, tracer, player)) {
                     spdlog::warn("Failed to read player");
                     return false;
                 }
                 if (player.data.player_gref
-                    != (0x40000000 | info.player_gref)) {
+                    != (0x40000000 | info_data.player_gref)) {
                     spdlog::warn("Player gref validation check failed");
                     return false;
                 }
