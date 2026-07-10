@@ -10,7 +10,7 @@ void hitman_codename_47::register_game_info(
     registry.emplace_back(GameInfo {
         .name = GAME_NAME,
         .methods = GameMethods{
-            gui(settings, "Steam"),
+            gui(settings, "Steam b192"),
             hook_nothing,
             hook_immediately_ready,
             update_slow(Version::SteamOrGOG),
@@ -26,7 +26,7 @@ void hitman_codename_47::register_game_info(
     registry.emplace_back(GameInfo {
         .name = GAME_NAME,
         .methods = GameMethods{
-            gui(settings, "GOG"),
+            gui(settings, "GOG b192"),
             hook_nothing,
             hook_immediately_ready,
             update_slow(Version::SteamOrGOG),
