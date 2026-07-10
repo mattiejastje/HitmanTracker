@@ -14,9 +14,9 @@ local layouts = {
   gog = {
     name = "GOG",
     offset = {
-      sys_interface = 0x0,
-      settings = 0x0,
-      stats = 0x0,
+      sys_interface = 0x420820,
+      settings = 0x42083C,
+      stats = 0x5B3B38,
     }
   },
 }
