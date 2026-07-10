@@ -112,19 +112,27 @@ local Settings = d.Struct("Settings", {
   d.Field(d.Bounded(d.Int32, 0, 3), "difficulty")
 })
 
-M.Game = d.Struct("Game", {
-  d.Seek(0x41F820),
-  d.Field(d.NullableRef(SysInterface), "sys_interface"),
-  d.Seek(0x41F83C),
-  d.Field(d.NullableRef(Settings), "settings"),  -- null when game starts
-  d.Seek(0x5B2538),
-  d.Field(d.Array(d.Int32, 66), "stats"),
-  --[[
-  d.Seek(0x356108),
-  d.Field(d.Float, "seconds_per_tick"),  -- 1/1024
-  d.Seek(0x35ECD0),
-  d.Field(d.Double, "seconds_per_millisecond"),  -- 1/1000
-  ]]
-})
+local game = function(layout)
+  return d.Struct(
+    "Game" .. layout.name, {
+      d.Seek(layout.offset.sys_interface),
+      d.Field(d.NullableRef(SysInterface), "sys_interface"),
+      d.Seek(layout.offset.settings),
+      d.Field(d.NullableRef(Settings), "settings"),  -- null when game starts
+      d.Seek(layout.offset.stats),
+      d.Field(d.Array(d.Int32, 66), "stats"),
+      --[[
+      d.Seek(0x356108),
+      d.Field(d.Float, "seconds_per_tick"),  -- 1/1024
+      d.Seek(0x35ECD0),
+      d.Field(d.Double, "seconds_per_millisecond"),  -- 1/1000
+      ]]
+    },
+    { native_name = "Game" }
+  )
+end
+
+M.GameSteam = game(layouts.steam)
+M.GameGOG = game(layouts.gog)
 
 return M

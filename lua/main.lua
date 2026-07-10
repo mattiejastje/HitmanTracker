@@ -33,8 +33,8 @@ end
 
 write_structs_txt("hitman_absolution", { hma.GameSteam, hma.GameGOG })
 write_structs_cpp("hitman_absolution", { hma.GameSteam, hma.GameGOG }, "hitman_absolution::structs")
-write_structs_txt("hitman_blood_money", { hbm.Game })
-write_structs_cpp("hitman_blood_money", { hbm.Game }, "hitman_blood_money::structs")
+write_structs_txt("hitman_blood_money", { hbm.GameSteam, hbm.GameGOG })
+write_structs_cpp("hitman_blood_money", { hbm.GameSteam, hbm.GameGOG }, "hitman_blood_money::structs")
 write_structs_txt("hitman_codename_47", { hc47.HitmanDlc })
 write_structs_cpp("hitman_codename_47", { hc47.HitmanDlc }, "hitman_codename_47::structs")
 h2sa_structs = {

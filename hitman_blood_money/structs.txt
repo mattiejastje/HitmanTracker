@@ -67,11 +67,15 @@ struct Settings {
   int32_t difficulty;  // offset 0x6664
 };
 
-struct Game {
+struct GameSteam {
   SysInterface* sys_interface;  // offset 0x41f820
   Settings* settings;  // offset 0x41f83c
   std::array<int32_t, 0x42> stats;  // offset 0x5b2538
-  float seconds_per_tick;  // offset 0x356108
-  double seconds_per_millisecond;  // offset 0x35ecd0
+};
+
+struct GameGOG {
+  SysInterface* sys_interface;  // offset 0x0
+  Settings* settings;  // offset 0x0
+  std::array<int32_t, 0x42> stats;  // offset 0x0
 };
 

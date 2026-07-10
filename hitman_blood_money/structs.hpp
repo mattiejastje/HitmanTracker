@@ -189,11 +189,9 @@ struct Game {
     std::optional<SysInterface> sys_interface;
     std::optional<Settings> settings;
     std::array<int32_t, 0x42> stats;
-    float seconds_per_tick;
-    double seconds_per_millisecond;
 };
 
-using TGame = Struct<
+using TGameSteam = Struct<
     Game,
     Fields<
         Seek<0x41f820>,
@@ -201,10 +199,16 @@ using TGame = Struct<
         Seek<0x41f83c>,
         Field<NullableRef<TSettings>, &Game::settings>,
         Seek<0x5b2538>,
-        Field<Primitive<std::array<int32_t, 0x42>>, &Game::stats>,
-        Seek<0x356108>,
-        Field<Float, &Game::seconds_per_tick>,
-        Seek<0x35ecd0>,
-        Field<Double, &Game::seconds_per_millisecond>>>;
+        Field<Primitive<std::array<int32_t, 0x42>>, &Game::stats>>>;
+
+using TGameGOG = Struct<
+    Game,
+    Fields<
+        Seek<0x0>,
+        Field<NullableRef<TSysInterface>, &Game::sys_interface>,
+        Seek<0x0>,
+        Field<NullableRef<TSettings>, &Game::settings>,
+        Seek<0x0>,
+        Field<Primitive<std::array<int32_t, 0x42>>, &Game::stats>>>;
 
 }  // namespace hitman_blood_money::structs

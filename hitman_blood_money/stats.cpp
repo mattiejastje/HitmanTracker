@@ -206,7 +206,7 @@ GameStatsSlow hitman_blood_money::update_slow(Version version) {
               std::any& stats_any) {
         auto& game = std::any_cast<structs::Game&>(remote_state_any);
         auto& stats = std::any_cast<Stats&>(stats_any);
-        const RemoteValue<structs::TGame, uint32_t> remote_game{
+        const RemoteValue<structs::TGameSteam, uint32_t> remote_game{
             static_cast<uint32_t>(base_ptrs.at(0))
         };
         MemoryReader<uint32_t> reader{handle};
