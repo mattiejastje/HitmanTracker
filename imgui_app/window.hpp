@@ -21,6 +21,9 @@ struct Window {
         RECT dpi_rect{};
         UINT dpi = 0;
         ImGuiContext* imgui_context = nullptr;
+        // makes client area behave like title bar
+        // so window can be dragged around
+        bool is_htclient_mapped_to_htcaption = false;
     };
 
     std::shared_ptr<WindowClass> window_class;
@@ -45,6 +48,7 @@ using WindowPtr = std::unique_ptr<Window, WindowDeleter>;
     DWORD dw_ex_style,
     int logical_width,
     int logical_height,
+    bool is_htclient_mapped_to_htcaption,
     std::optional<POINT> pos = std::nullopt
 );
 

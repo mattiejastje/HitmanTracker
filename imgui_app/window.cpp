@@ -46,6 +46,12 @@ wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 // Disable ALT application menu
                 if ((wparam & 0xfff0) == SC_KEYMENU) return 0;
                 break;
+            case WM_NCHITTEST:
+                if (state->is_htclient_mapped_to_htcaption) {
+                    auto hit = ::DefWindowProcW(hwnd, msg, wparam, lparam);
+                    return hit == HTCLIENT ? HTCAPTION : hit;
+                }
+                break;
             case WM_DESTROY:
                 ::PostQuitMessage(0);
                 return 0;
@@ -75,6 +81,7 @@ imgui_app::WindowPtr imgui_app::create_window(
     DWORD dw_ex_style,
     int logical_width,
     int logical_height,
+    bool is_htclient_mapped_to_htcaption,
     std::optional<POINT> pos
 ) {
     spdlog::debug(L"Creating window {}...", title);
@@ -82,10 +89,12 @@ imgui_app::WindowPtr imgui_app::create_window(
     float dpiscale = ImGui_ImplWin32_GetDpiScaleForMonitor(
         ::MonitorFromPoint(pos.value_or(POINT{0, 0}), MONITOR_DEFAULTTOPRIMARY)
     );
-    auto window = std::unique_ptr<Window, WindowDeleter>(new Window{});
+    auto window = WindowPtr{new Window{}};
     window->window_class = window_class;
     window->title = title;
     window->state = std::make_unique<Window::State>();
+    window->state->is_htclient_mapped_to_htcaption
+        = is_htclient_mapped_to_htcaption;
     auto pos_cw = pos.value_or(POINT{CW_USEDEFAULT, CW_USEDEFAULT});
     window->handle = ::CreateWindowExW(
         dw_ex_style,

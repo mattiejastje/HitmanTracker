@@ -32,7 +32,8 @@ imgui_app::AppWindowPtr imgui_app::create_app_window(
         spec.style,
         spec.ex_style,
         spec.character_width * font_size,
-        spec.character_height * font_size
+        spec.character_height * font_size,
+        spec.is_htclient_mapped_to_htcaption
     );
     if (!window) return nullptr;
     auto dev = imgui_app::CreateDeviceD3D(window->handle);

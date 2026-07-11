@@ -124,11 +124,12 @@ int gui_run(
     auto stats = imgui_app::create_app_window(
         window_class,
         imgui_app::AppWindowSpec{
-            .title = L"Hitman Tracker - Stats",
+            .title = L"Hitman Tracker - Overlay",
             .style = WS_OVERLAPPEDWINDOW,
             .ex_style = settings.gui.topmost ? WS_EX_TOPMOST : 0U,
             .character_width = 15,
             .character_height = 30,
+            .is_htclient_mapped_to_htcaption = true,  // drag
             .pos = std::nullopt,
         },
         settings.gui.font_size,
@@ -179,8 +180,9 @@ int gui_run(
             .title = L"Hitman Tracker",
             .style = WS_OVERLAPPEDWINDOW,
             .ex_style = 0U,
-            .character_width = 30,
-            .character_height = 30,
+            .character_width = 48,
+            .character_height = 27,
+            .is_htclient_mapped_to_htcaption = false,
             .pos = std::nullopt,
         },
         12.0,

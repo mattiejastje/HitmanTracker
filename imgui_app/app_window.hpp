@@ -21,6 +21,7 @@ struct AppWindowSpec {
     DWORD style;
     DWORD ex_style;
     int character_width, character_height;
+    bool is_htclient_mapped_to_htcaption;
     std::optional<POINT> pos;
 };
 
