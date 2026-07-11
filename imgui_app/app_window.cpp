@@ -48,7 +48,7 @@ imgui_app::AppWindowPtr imgui_app::create_app_window(
     }};
 }
 
-void imgui_app::run(std::span<AppWindow*> app_windows) {
+void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
     spdlog::debug("Starting main loop...");
     auto last_now = std::chrono::steady_clock::now();
     bool quit = false;
@@ -63,6 +63,7 @@ void imgui_app::run(std::span<AppWindow*> app_windows) {
         auto now = std::chrono::steady_clock::now();
         float dt = std::chrono::duration<float>(now - last_now).count();
         last_now = now;
+        tick(dt);
         std::unordered_set<AppWindow*> pending_rescale{};
         for (auto& aw : app_windows) {
             auto& device = *aw->device;
@@ -102,6 +103,9 @@ void imgui_app::run(std::span<AppWindow*> app_windows) {
             ImGui_ImplDX9_NewFrame();
             ImGui_ImplWin32_NewFrame();
             ImGui::NewFrame();
+            auto& io = ImGui::GetIO();
+            ImGui::SetNextWindowSize({io.DisplaySize.x, io.DisplaySize.y});
+            ImGui::SetNextWindowPos({0, 0});
             auto draw_result = aw->draw(*aw, dt);
             ImGui::EndFrame();
             imgui_app::RenderAndPresent(device);

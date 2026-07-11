@@ -24,6 +24,8 @@ struct AppWindowSpec {
     std::optional<POINT> pos;
 };
 
+using TickFunc = std::function<void(float)>;
+
 // forward declare for DrawResult
 struct AppWindow;
 
@@ -55,6 +57,6 @@ AppWindowPtr create_app_window(
     DrawFunc draw
 );
 
-void run(std::span<AppWindow*> app_windows);
+void run(TickFunc tick, std::span<AppWindow*> app_windows);
 
 }  // namespace imgui_app

@@ -37,8 +37,7 @@ int gui_run(
     Profiler profiler_slow{{"slow update time", "seconds"}};
     Profiler profiler_fast{{"fast update time", "seconds"}};
 
-    imgui_app::DrawFunc draw = [&registry,
-                                &settings,
+    imgui_app::TickFunc tick = [&registry,
                                 &timer_find_game,
                                 &timer_update_stats,
                                 &game,
@@ -46,10 +45,7 @@ int gui_run(
                                 &error_slow,
                                 &error_fast,
                                 &profiler_slow,
-                                &profiler_fast](
-                                   imgui_app::AppWindow& aw, float dt
-                               ) {
-        imgui_app::DrawResult result{};
+                                &profiler_fast](float dt) {
         frametime_signal.update(1 / dt, dt);
         if (timer_find_game.tick(dt)) {
             // try find game if none found yet
@@ -87,74 +83,48 @@ int gui_run(
                 error_slow.update(100.0f * static_cast<float>(!ok), dt);
             }
         }
-        auto& io = ImGui::GetIO();
-        ImGui::SetNextWindowSize({io.DisplaySize.x, io.DisplaySize.y});
-        ImGui::SetNextWindowPos({0, 0});
-        if (ImGui::Begin(
-                "Hitman Tracker",
-                nullptr,
-                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
-                    | ImGuiWindowFlags_NoMove
-            )) {
-            ImGui::PushFont(aw.ui->fonts[hitman_common::FontIndex::Settings]);
-            if (ImGui::Button("Settings...")) {
-                ImGui::OpenPopup("Settings");
-            }
-            if (ImGui::BeginPopup("Settings")) {
-                auto changed = settings_gui(settings);
-                if (changed.any) settings::save(settings);
-                if (changed.fonts) {
-                    aw.ui->bg_color = im_vec4(settings.gui.bg_color);
-                    aw.ui->font_specs
-                        = hitman_common::make_font_specs(settings.gui);
-                    result.pending_rescale.insert(&aw);
-                }
-                if (changed.topmost) {
-                    spdlog::debug("Topmost is {}", settings.gui.topmost);
-                    SetWindowPos(
-                        aw.window->handle,
-                        settings.gui.topmost ? HWND_TOPMOST : HWND_NOTOPMOST,
-                        0,
-                        0,
-                        0,
-                        0,
-                        SWP_NOMOVE | SWP_NOSIZE
-                    );
-                }
-                ImGui::EndPopup();
-            }
-            ImGui::PopFont();
-            ImGui::Spacing();
-            if (game && game->hook) {
-                auto scoped_fast = ScopedProfiler{profiler_fast, dt};
-                bool ok = game->methods.update_fast(
-                    game->handle.get(),
-                    game->base_ptrs,
-                    game->hook->label_ptrs,
-                    game->stats
-                );
-                error_fast.update(100.0f * static_cast<float>(!ok), dt);
-                game->methods.gui(aw.ui->fonts, game->stats);
-            } else {
-                imgui_app::text(
-                    aw.ui->fonts[hitman_common::FontIndex::Title],
-                    im_vec4(settings.gui.title.color),
-                    "No game running"
-                );
-            }
+        if (game && game->hook) {
+            auto scoped_fast = ScopedProfiler{profiler_fast, dt};
+            bool ok = game->methods.update_fast(
+                game->handle.get(),
+                game->base_ptrs,
+                game->hook->label_ptrs,
+                game->stats
+            );
+            error_fast.update(100.0f * static_cast<float>(!ok), dt);
         }
-        ImGui::End();
-        return result;
     };
+
+    imgui_app::DrawFunc draw_stats
+        = [&registry, &settings, &game](imgui_app::AppWindow& aw, float dt) {
+              if (ImGui::Begin(
+                      "Stats",
+                      nullptr,
+                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
+                          | ImGuiWindowFlags_NoMove
+                  )) {
+                  if (game && game->hook) {
+                      game->methods.gui(aw.ui->fonts, game->stats);
+                  } else {
+                      imgui_app::text(
+                          aw.ui->fonts[hitman_common::FontIndex::Title],
+                          im_vec4(settings.gui.title.color),
+                          "No game running"
+                      );
+                  }
+                  ImGui::End();
+              }
+              return imgui_app::DrawResult{};
+          };
 
     spdlog::info("Running user interface");
     ImGui_ImplWin32_EnableDpiAwareness();
     std::shared_ptr<imgui_app::WindowClass> window_class
         = imgui_app::create_window_class();
-    auto overlay = imgui_app::create_app_window(
+    auto stats = imgui_app::create_app_window(
         window_class,
         imgui_app::AppWindowSpec{
-            .title = L"Hitman Tracker",
+            .title = L"Hitman Tracker - Stats",
             .style = WS_OVERLAPPEDWINDOW,
             .ex_style = settings.gui.topmost ? WS_EX_TOPMOST : 0U,
             .character_width = 15,
@@ -164,10 +134,64 @@ int gui_run(
         settings.gui.font_size,
         im_vec4(settings.gui.bg_color),
         hitman_common::make_font_specs(settings.gui),
-        draw
+        draw_stats
     );
-    std::vector<imgui_app::AppWindow*> aws{overlay.get()};
-    imgui_app::run(aws);
+
+    imgui_app::DrawFunc draw_main
+        = [&registry, &settings, &stats](imgui_app::AppWindow& aw, float dt) {
+              imgui_app::DrawResult result{};
+              if (ImGui::Begin(
+                      "Main",
+                      nullptr,
+                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
+                          | ImGuiWindowFlags_NoMove
+                  )) {
+                  auto changed = settings_gui(settings);
+                  if (changed.any) settings::save(settings);
+                  if (changed.fonts) {
+                      stats->ui->bg_color = im_vec4(settings.gui.bg_color);
+                      stats->ui->font_specs
+                          = hitman_common::make_font_specs(settings.gui);
+                      result.pending_rescale.insert(stats.get());
+                  }
+                  if (changed.topmost) {
+                      spdlog::debug("Topmost is {}", settings.gui.topmost);
+                      ImGui::SetCurrentContext(stats->ui->imgui_context);
+                      ::SetWindowPos(
+                          stats->window->handle,
+                          settings.gui.topmost ? HWND_TOPMOST : HWND_NOTOPMOST,
+                          0,
+                          0,
+                          0,
+                          0,
+                          SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE
+                      );
+                      ImGui::SetCurrentContext(aw.ui->imgui_context);
+                  }
+                  ImGui::End();
+              }
+              return result;
+          };
+
+    auto main = imgui_app::create_app_window(
+        window_class,
+        imgui_app::AppWindowSpec{
+            .title = L"Hitman Tracker",
+            .style = WS_OVERLAPPEDWINDOW,
+            .ex_style = 0U,
+            .character_width = 30,
+            .character_height = 30,
+            .pos = std::nullopt,
+        },
+        12.0,
+        im_vec4(settings.gui.bg_color),
+        std::vector<imgui_app::FontSpec>{
+            {"fonts/proggyforever/ProggyForever-Regular.ttf", 12.0f}
+        },
+        draw_main
+    );
+    std::vector<imgui_app::AppWindow*> aws{stats.get(), main.get()};
+    imgui_app::run(tick, aws);
     spdlog::debug("Cleanup...");
     return 0;
 }
