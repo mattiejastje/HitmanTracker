@@ -125,7 +125,7 @@ int gui_run(
         window_class,
         imgui_app::AppWindowSpec{
             .title = L"Hitman Tracker - Overlay",
-            .style = WS_OVERLAPPEDWINDOW,
+            .style = settings.gui.topmost ? WS_POPUP : WS_OVERLAPPEDWINDOW,
             .ex_style = settings.gui.topmost ? WS_EX_TOPMOST : 0U,
             .character_width = 15,
             .character_height = 30,
@@ -160,16 +160,35 @@ int gui_run(
             }
             if (changed.topmost) {
                 spdlog::debug("Topmost is {}", settings.gui.topmost);
+                auto style
+                    = WS_VISIBLE
+                      | (settings.gui.topmost ? WS_POPUP : WS_OVERLAPPEDWINDOW);
+                auto ex_style
+                    = settings.gui.topmost
+                          ? WS_EX_TOPMOST | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT
+                          : 0U;
+                UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED
+                             | SWP_NOACTIVATE;
                 actions.emplace_back(
                     stats.get(),
-                    imgui_app::AppWindowAction::SetWindowPos{
+                    imgui_app::AppWindowAction::SetWinLongPtr{
+                        .index = GWL_STYLE,
+                        .value = style,
+                    }
+                );
+                actions.emplace_back(
+                    stats.get(),
+                    imgui_app::AppWindowAction::SetWinLongPtr{
+                        .index = GWL_EXSTYLE,
+                        .value = ex_style,
+                    }
+                );
+                actions.emplace_back(
+                    stats.get(),
+                    imgui_app::AppWindowAction::SetWinPos{
                         .hwnd_insert_after
                         = settings.gui.topmost ? HWND_TOPMOST : HWND_NOTOPMOST,
-                        .x = 0,
-                        .y = 0,
-                        .cx = 0,
-                        .cy = 0,
-                        .flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE
+                        .flags = flags,
                     }
                 );
             }

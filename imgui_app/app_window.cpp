@@ -93,7 +93,7 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
                     = (float)state.dpi / (float)USER_DEFAULT_SCREEN_DPI;
                 all_actions.emplace_back(
                     aw,
-                    AppWindowAction::SetWindowPos{
+                    AppWindowAction::SetWinPos{
                         .hwnd_insert_after = NULL,
                         .x = dpi_rect.left,
                         .y = dpi_rect.top,
@@ -124,12 +124,10 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
             ImGui::SetCurrentContext(action.app_window->ui->imgui_context);
             std::visit(
                 overloaded{
-                    [&action](
-                        AppWindowAction::UpdateUIScaling update_ui_scaling
-                    ) {
+                    [&action](AppWindowAction::UpdateUIScaling args) {
                         if (!UpdateUIScaling(
                                 *action.app_window->ui,
-                                update_ui_scaling.dpiscale.value_or(
+                                args.dpiscale.value_or(
                                     ImGui_ImplWin32_GetDpiScaleForHwnd(
                                         action.app_window->window->handle
                                     )
@@ -137,17 +135,24 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
                             ))
                             spdlog::error("Failed to update UI scaling");
                     },
-                    [&action](AppWindowAction::SetWindowPos set_window_pos) {
+                    [&action](AppWindowAction::SetWinPos args) {
                         if (!::SetWindowPos(
                                 action.app_window->window->handle,
-                                set_window_pos.hwnd_insert_after,
-                                set_window_pos.x,
-                                set_window_pos.y,
-                                set_window_pos.cx,
-                                set_window_pos.cy,
-                                set_window_pos.flags
+                                args.hwnd_insert_after,
+                                args.x,
+                                args.y,
+                                args.cx,
+                                args.cy,
+                                args.flags
                             ))
                             spdlog::error("Failed to set window position");
+                    },
+                    [&action](AppWindowAction::SetWinLongPtr args) {
+                        SetWindowLongPtr(
+                            action.app_window->window->handle,
+                            args.index,
+                            args.value
+                        );
                     },
                 },
                 action.action
