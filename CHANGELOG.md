@@ -8,6 +8,10 @@
 
 - The GOG version of Hitman Blood Money is now supported.
 
+- The settings window is now separate from the stats window.
+
+- The stats window can be dragged around by clicking anywhere.
+
 ### Changed
 
 - Game version is now shown on a separate line, with its own configurable size and color.
