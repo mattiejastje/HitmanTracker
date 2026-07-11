@@ -8,6 +8,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <unordered_set>
 
 #include "deviced3d.hpp"
 #include "fonts.hpp"
@@ -23,11 +24,14 @@ struct AppWindowSpec {
     std::optional<POINT> pos;
 };
 
+// forward declare for DrawResult
+struct AppWindow;
+
 struct DrawResult {
-    bool pending_rescale;
+    std::unordered_set<AppWindow*> pending_rescale;
 };
 
-using DrawFunc = std::function<DrawResult(HWND, UI&, float)>;
+using DrawFunc = std::function<DrawResult(AppWindow&, float)>;
 
 struct AppWindow {
     WindowPtr window;

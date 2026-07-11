@@ -47,9 +47,9 @@ int gui_run(
                                 &error_fast,
                                 &profiler_slow,
                                 &profiler_fast](
-                                   HWND handle, imgui_app::UI& ui, float dt
+                                   imgui_app::AppWindow& aw, float dt
                                ) {
-        auto pending_rescale = false;
+        imgui_app::DrawResult result{};
         frametime_signal.update(1 / dt, dt);
         if (timer_find_game.tick(dt)) {
             // try find game if none found yet
@@ -96,7 +96,7 @@ int gui_run(
                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
                     | ImGuiWindowFlags_NoMove
             )) {
-            ImGui::PushFont(ui.fonts[hitman_common::FontIndex::Settings]);
+            ImGui::PushFont(aw.ui->fonts[hitman_common::FontIndex::Settings]);
             if (ImGui::Button("Settings...")) {
                 ImGui::OpenPopup("Settings");
             }
@@ -104,15 +104,15 @@ int gui_run(
                 auto changed = settings_gui(settings);
                 if (changed.any) settings::save(settings);
                 if (changed.fonts) {
-                    ui.bg_color = im_vec4(settings.gui.bg_color);
-                    ui.font_specs
+                    aw.ui->bg_color = im_vec4(settings.gui.bg_color);
+                    aw.ui->font_specs
                         = hitman_common::make_font_specs(settings.gui);
-                    pending_rescale = true;
+                    result.pending_rescale.insert(&aw);
                 }
                 if (changed.topmost) {
                     spdlog::debug("Topmost is {}", settings.gui.topmost);
                     SetWindowPos(
-                        handle,
+                        aw.window->handle,
                         settings.gui.topmost ? HWND_TOPMOST : HWND_NOTOPMOST,
                         0,
                         0,
@@ -134,17 +134,17 @@ int gui_run(
                     game->stats
                 );
                 error_fast.update(100.0f * static_cast<float>(!ok), dt);
-                game->methods.gui(ui.fonts, game->stats);
+                game->methods.gui(aw.ui->fonts, game->stats);
             } else {
                 imgui_app::text(
-                    ui.fonts[hitman_common::FontIndex::Title],
+                    aw.ui->fonts[hitman_common::FontIndex::Title],
                     im_vec4(settings.gui.title.color),
                     "No game running"
                 );
             }
         }
         ImGui::End();
-        return imgui_app::DrawResult{pending_rescale};
+        return result;
     };
 
     spdlog::info("Running user interface");

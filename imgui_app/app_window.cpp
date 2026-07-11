@@ -63,6 +63,7 @@ void imgui_app::run(std::span<AppWindow*> app_windows) {
         auto now = std::chrono::steady_clock::now();
         float dt = std::chrono::duration<float>(now - last_now).count();
         last_now = now;
+        std::unordered_set<AppWindow*> pending_rescale{};
         for (auto& aw : app_windows) {
             auto& device = *aw->device;
             auto& ui = *aw->ui;
@@ -101,14 +102,18 @@ void imgui_app::run(std::span<AppWindow*> app_windows) {
             ImGui_ImplDX9_NewFrame();
             ImGui_ImplWin32_NewFrame();
             ImGui::NewFrame();
-            auto draw_result = aw->draw(window.handle, ui, dt);
+            auto draw_result = aw->draw(*aw, dt);
             ImGui::EndFrame();
             imgui_app::RenderAndPresent(device);
-            if (draw_result.pending_rescale) {
-                float dpiscale
-                    = ImGui_ImplWin32_GetDpiScaleForHwnd(window.handle);
-                if (!UpdateUIScaling(ui, dpiscale)) return;
-            }
+            pending_rescale.insert(
+                draw_result.pending_rescale.begin(), draw_result.pending_rescale.end()
+            );
+        }
+        for (auto* aw : pending_rescale) {
+            ImGui::SetCurrentContext(aw->ui->imgui_context);
+            float dpiscale
+                = ImGui_ImplWin32_GetDpiScaleForHwnd(aw->window->handle);
+            if (!UpdateUIScaling(*aw->ui, dpiscale)) return;
         }
     }
     spdlog::info("Stopping main loop");
