@@ -28,7 +28,7 @@ imgui_app::AppWindowPtr imgui_app::create_app_window(
     if (!window_class) return nullptr;
     auto window = imgui_app::create_window(
         window_class,
-        L"Hitman Tracker",
+        spec.title,
         spec.style,
         spec.ex_style,
         spec.character_width * font_size,
