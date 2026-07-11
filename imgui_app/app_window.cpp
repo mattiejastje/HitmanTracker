@@ -4,6 +4,8 @@
 #include <imgui_impl_win32.h>
 #include <spdlog/spdlog.h>
 
+#include "../overloaded.hpp"
+
 void imgui_app::AppWindowDeleter::operator()(AppWindow* app_window) const {
     spdlog::debug("Releasing AppWindow...");
     if (app_window) {
@@ -44,9 +46,9 @@ imgui_app::AppWindowPtr imgui_app::create_app_window(
     auto ui = imgui_app::CreateUI(*window, *dev, bg_color, font_specs);
     if (!ui) return nullptr;
     window->state->imgui_context = ui->imgui_context;
-    return AppWindowPtr{new AppWindow{
-        std::move(window), std::move(dev), std::move(ui), draw
-    }};
+    return AppWindowPtr{
+        new AppWindow{std::move(window), std::move(dev), std::move(ui), draw}
+    };
 }
 
 void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
@@ -65,7 +67,7 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
         float dt = std::chrono::duration<float>(now - last_now).count();
         last_now = now;
         tick(dt);
-        std::unordered_set<AppWindow*> pending_rescale{};
+        AppWindowActions all_actions{};
         for (auto& aw : app_windows) {
             auto& device = *aw->device;
             auto& ui = *aw->ui;
@@ -87,18 +89,22 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
             if (state.dpi_changed) {
                 spdlog::debug("Handling dpi change");
                 const auto& dpi_rect = state.dpi_rect;
-                ::SetWindowPos(
-                    window.handle,
-                    NULL,
-                    dpi_rect.left,
-                    dpi_rect.top,
-                    dpi_rect.right - dpi_rect.left,
-                    dpi_rect.bottom - dpi_rect.top,
-                    SWP_NOZORDER
-                );
                 float dpiscale
                     = (float)state.dpi / (float)USER_DEFAULT_SCREEN_DPI;
-                if (!UpdateUIScaling(ui, dpiscale)) return;
+                all_actions.emplace_back(
+                    aw,
+                    AppWindowAction::SetWindowPos{
+                        .hwnd_insert_after = NULL,
+                        .x = dpi_rect.left,
+                        .y = dpi_rect.top,
+                        .cx = dpi_rect.right - dpi_rect.left,
+                        .cy = dpi_rect.bottom - dpi_rect.top,
+                        .flags = SWP_NOZORDER
+                    }
+                );
+                all_actions.emplace_back(
+                    aw, AppWindowAction::UpdateUIScaling{dpiscale}
+                );
                 state.dpi_changed = false;
             }
             ImGui_ImplDX9_NewFrame();
@@ -107,18 +113,45 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
             auto& io = ImGui::GetIO();
             ImGui::SetNextWindowSize({io.DisplaySize.x, io.DisplaySize.y});
             ImGui::SetNextWindowPos({0, 0});
-            auto draw_result = aw->draw(*aw, dt);
+            auto actions = aw->draw(*aw, dt);
             ImGui::EndFrame();
             imgui_app::RenderAndPresent(device);
-            pending_rescale.insert(
-                draw_result.pending_rescale.begin(), draw_result.pending_rescale.end()
+            all_actions.insert(
+                all_actions.end(), actions.begin(), actions.end()
             );
         }
-        for (auto* aw : pending_rescale) {
-            ImGui::SetCurrentContext(aw->ui->imgui_context);
-            float dpiscale
-                = ImGui_ImplWin32_GetDpiScaleForHwnd(aw->window->handle);
-            if (!UpdateUIScaling(*aw->ui, dpiscale)) return;
+        for (auto& action : all_actions) {
+            ImGui::SetCurrentContext(action.app_window->ui->imgui_context);
+            std::visit(
+                overloaded{
+                    [&action](
+                        AppWindowAction::UpdateUIScaling update_ui_scaling
+                    ) {
+                        if (!UpdateUIScaling(
+                                *action.app_window->ui,
+                                update_ui_scaling.dpiscale.value_or(
+                                    ImGui_ImplWin32_GetDpiScaleForHwnd(
+                                        action.app_window->window->handle
+                                    )
+                                )
+                            ))
+                            spdlog::error("Failed to update UI scaling");
+                    },
+                    [&action](AppWindowAction::SetWindowPos set_window_pos) {
+                        if (!::SetWindowPos(
+                                action.app_window->window->handle,
+                                set_window_pos.hwnd_insert_after,
+                                set_window_pos.x,
+                                set_window_pos.y,
+                                set_window_pos.cx,
+                                set_window_pos.cy,
+                                set_window_pos.flags
+                            ))
+                            spdlog::error("Failed to set window position");
+                    },
+                },
+                action.action
+            );
         }
     }
     spdlog::info("Stopping main loop");

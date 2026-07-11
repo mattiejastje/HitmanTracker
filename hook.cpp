@@ -4,6 +4,7 @@
 
 #include "contract.hpp"
 #include "mem/read_write.hpp"
+#include "overloaded.hpp"
 
 static Code get_code_i8(intptr_t value) {
     APP_CHECK((INT8_MIN <= value) && (value <= INT8_MAX));
@@ -35,11 +36,6 @@ static intptr_t get_align_size(intptr_t current_ptr, intptr_t size) {
     APP_REQUIRE(current_ptr != 1 || final_size == size - 1);
     return final_size;
 }
-
-template <typename... Ts>
-struct overloaded : Ts... {
-    using Ts::operator()...;
-};
 
 static intptr_t get_code_size(const Assembly& item, intptr_t current_ptr) {
     return std::visit(

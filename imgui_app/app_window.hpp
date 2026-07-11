@@ -13,6 +13,7 @@
 #include "deviced3d.hpp"
 #include "fonts.hpp"
 #include "ui.hpp"
+#include <variant>
 
 namespace imgui_app {
 
@@ -30,11 +31,25 @@ using TickFunc = std::function<void(float)>;
 // forward declare for DrawResult
 struct AppWindow;
 
-struct DrawResult {
-    std::unordered_set<AppWindow*> pending_rescale;
+
+struct AppWindowAction {
+    struct UpdateUIScaling {
+        std::optional<float> dpiscale;
+    };
+
+    struct SetWindowPos {
+        HWND hwnd_insert_after;
+        int x, y, cx, cy;
+        UINT flags;
+    };
+
+    AppWindow* app_window;
+    std::variant<UpdateUIScaling, SetWindowPos> action;
 };
 
-using DrawFunc = std::function<DrawResult(AppWindow&, float)>;
+using AppWindowActions = std::list<AppWindowAction>;
+
+using DrawFunc = std::function<AppWindowActions(AppWindow&, float)>;
 
 struct AppWindow {
     WindowPtr window;

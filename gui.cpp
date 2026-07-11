@@ -96,7 +96,7 @@ int gui_run(
     };
 
     imgui_app::DrawFunc draw_stats
-        = [&registry, &settings, &game](imgui_app::AppWindow& aw, float dt) {
+        = [&settings, &game](imgui_app::AppWindow& aw, float dt) {
               if (ImGui::Begin(
                       "Stats",
                       nullptr,
@@ -114,7 +114,7 @@ int gui_run(
                   }
                   ImGui::End();
               }
-              return imgui_app::DrawResult{};
+              return imgui_app::AppWindowActions{};
           };
 
     spdlog::info("Running user interface");
@@ -138,41 +138,45 @@ int gui_run(
         draw_stats
     );
 
-    imgui_app::DrawFunc draw_main
-        = [&registry, &settings, &stats](imgui_app::AppWindow& aw, float dt) {
-              imgui_app::DrawResult result{};
-              if (ImGui::Begin(
-                      "Main",
-                      nullptr,
-                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
-                          | ImGuiWindowFlags_NoMove
-                  )) {
-                  auto changed = settings_gui(settings);
-                  if (changed.any) settings::save(settings);
-                  if (changed.fonts) {
-                      stats->ui->bg_color = im_vec4(settings.gui.bg_color);
-                      stats->ui->font_specs
-                          = hitman_common::make_font_specs(settings.gui);
-                      result.pending_rescale.insert(stats.get());
-                  }
-                  if (changed.topmost) {
-                      spdlog::debug("Topmost is {}", settings.gui.topmost);
-                      ImGui::SetCurrentContext(stats->ui->imgui_context);
-                      ::SetWindowPos(
-                          stats->window->handle,
-                          settings.gui.topmost ? HWND_TOPMOST : HWND_NOTOPMOST,
-                          0,
-                          0,
-                          0,
-                          0,
-                          SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE
-                      );
-                      ImGui::SetCurrentContext(aw.ui->imgui_context);
-                  }
-                  ImGui::End();
-              }
-              return result;
-          };
+    imgui_app::DrawFunc draw_main = [&settings, &stats](
+                                        imgui_app::AppWindow& aw, float dt
+                                    ) {
+        imgui_app::AppWindowActions actions{};
+        if (ImGui::Begin(
+                "Main",
+                nullptr,
+                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
+                    | ImGuiWindowFlags_NoMove
+            )) {
+            auto changed = settings_gui(settings);
+            if (changed.any) settings::save(settings);
+            if (changed.fonts) {
+                stats->ui->bg_color = im_vec4(settings.gui.bg_color);
+                stats->ui->font_specs
+                    = hitman_common::make_font_specs(settings.gui);
+                actions.emplace_back(
+                    stats.get(), imgui_app::AppWindowAction::UpdateUIScaling{}
+                );
+            }
+            if (changed.topmost) {
+                spdlog::debug("Topmost is {}", settings.gui.topmost);
+                actions.emplace_back(
+                    stats.get(),
+                    imgui_app::AppWindowAction::SetWindowPos{
+                        .hwnd_insert_after
+                        = settings.gui.topmost ? HWND_TOPMOST : HWND_NOTOPMOST,
+                        .x = 0,
+                        .y = 0,
+                        .cx = 0,
+                        .cy = 0,
+                        .flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE
+                    }
+                );
+            }
+            ImGui::End();
+        }
+        return actions;
+    };
 
     auto main = imgui_app::create_app_window(
         window_class,
