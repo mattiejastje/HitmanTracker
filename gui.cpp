@@ -122,12 +122,12 @@ int gui_run(
     std::shared_ptr<imgui_app::WindowClass> window_class
         = imgui_app::create_window_class();
     constexpr UINT OVERLAY_EX_STYLE = WS_EX_LAYERED | WS_EX_TRANSPARENT
-                                      | WS_EX_TOPMOST | WS_EX_TOOLWINDOW
-                                      | WS_EX_NOACTIVATE | WS_EX_WINDOWEDGE;
+                                      | WS_EX_TOPMOST | WS_EX_NOACTIVATE
+                                      | WS_EX_WINDOWEDGE;
     auto stats = imgui_app::create_app_window(
         window_class,
         imgui_app::AppWindowSpec{
-            .title = L"Hitman Tracker - Overlay",
+            .title = L"Hitman Tracker",
             .style = WS_POPUP,
             .ex_style = settings.gui.topmost ? OVERLAY_EX_STYLE : 0U,
             .character_width = 15,
@@ -194,7 +194,7 @@ int gui_run(
     auto main = imgui_app::create_app_window(
         window_class,
         imgui_app::AppWindowSpec{
-            .title = L"Hitman Tracker",
+            .title = L"Hitman Tracker - Settings",
             .style = WS_OVERLAPPEDWINDOW,
             .ex_style = 0U,
             .character_width = 48,
