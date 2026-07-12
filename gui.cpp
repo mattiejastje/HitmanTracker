@@ -121,19 +121,21 @@ int gui_run(
     ImGui_ImplWin32_EnableDpiAwareness();
     std::shared_ptr<imgui_app::WindowClass> window_class
         = imgui_app::create_window_class();
+    constexpr UINT OVERLAY_EX_STYLE = WS_EX_LAYERED | WS_EX_TRANSPARENT
+                                      | WS_EX_TOPMOST | WS_EX_TOOLWINDOW
+                                      | WS_EX_NOACTIVATE | WS_EX_WINDOWEDGE;
     auto stats = imgui_app::create_app_window(
         window_class,
         imgui_app::AppWindowSpec{
             .title = L"Hitman Tracker - Overlay",
-            .style = settings.gui.topmost ? WS_POPUP : WS_OVERLAPPEDWINDOW,
-            .ex_style = settings.gui.topmost ? WS_EX_TOPMOST : 0U,
+            .style = WS_POPUP,
+            .ex_style = settings.gui.topmost ? OVERLAY_EX_STYLE : 0U,
             .character_width = 15,
             .character_height = 30,
             .is_htclient_mapped_to_htcaption = true,  // drag
             .pos = std::nullopt,
         },
         settings.gui.font_size,
-        im_vec4(settings.gui.bg_color),
         hitman_common::make_font_specs(settings.gui),
         draw_stats
     );
@@ -151,7 +153,6 @@ int gui_run(
             auto changed = settings_gui(settings);
             if (changed.any) settings::save(settings);
             if (changed.fonts) {
-                stats->ui->bg_color = im_vec4(settings.gui.bg_color);
                 stats->ui->font_specs
                     = hitman_common::make_font_specs(settings.gui);
                 actions.emplace_back(
@@ -160,19 +161,9 @@ int gui_run(
             }
             if (changed.topmost) {
                 spdlog::debug("Topmost is {}", settings.gui.topmost);
-                auto style
-                    = WS_VISIBLE | WS_CLIPSIBLINGS
-                      | (settings.gui.topmost ? WS_POPUP : WS_OVERLAPPEDWINDOW);
-                auto ex_style = settings.gui.topmost ? WS_EX_TOPMOST : 0U;
+                auto ex_style = settings.gui.topmost ? OVERLAY_EX_STYLE : 0U;
                 UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED
                              | SWP_NOACTIVATE;
-                actions.emplace_back(
-                    stats.get(),
-                    imgui_app::AppWindowAction::SetWinLongPtr{
-                        .index = GWL_STYLE,
-                        .value = style,
-                    }
-                );
                 actions.emplace_back(
                     stats.get(),
                     imgui_app::AppWindowAction::SetWinLongPtr{
@@ -180,6 +171,12 @@ int gui_run(
                         .value = ex_style,
                     }
                 );
+                if (ex_style & WS_EX_LAYERED) {
+                    actions.emplace_back(
+                        stats.get(),
+                        imgui_app::AppWindowAction::SetTransparentColorKey{}
+                    );
+                }
                 actions.emplace_back(
                     stats.get(),
                     imgui_app::AppWindowAction::SetWinPos{
@@ -206,7 +203,6 @@ int gui_run(
             .pos = std::nullopt,
         },
         12.0,
-        im_vec4(settings.gui.bg_color),
         std::vector<imgui_app::FontSpec>{
             {"fonts/proggyforever/ProggyForever-Regular.ttf", 12.0f}
         },

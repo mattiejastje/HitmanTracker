@@ -47,8 +47,15 @@ struct AppWindowAction {
         LONG_PTR value;
     };
 
+    struct SetTransparentColorKey {};
+
     AppWindow* app_window;
-    std::variant<UpdateUIScaling, SetWinPos, SetWinLongPtr> action;
+    std::variant<
+        UpdateUIScaling,
+        SetWinPos,
+        SetWinLongPtr,
+        SetTransparentColorKey>
+        action;
 };
 
 using AppWindowActions = std::list<AppWindowAction>;
@@ -72,7 +79,6 @@ AppWindowPtr create_app_window(
     std::shared_ptr<WindowClass> window_class,
     const AppWindowSpec& spec,
     float font_size,
-    ImVec4 bg_color,
     std::span<const FontSpec> fonts,
     DrawFunc draw
 );

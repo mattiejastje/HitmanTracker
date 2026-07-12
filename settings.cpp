@@ -64,12 +64,9 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
         "GUI", "Options related to the graphical user interface"
     );
     gui_group
-        ->add_option("--topmost", settings.gui.topmost, "Force topmost window")
+        ->add_option("--overlay", settings.gui.topmost, "Overlay mode")
         ->capture_default_str();
     gui_group->add_option("--font-size", settings.gui.font_size, "Font size")
-        ->capture_default_str();
-    gui_group
-        ->add_option("--bg-color", settings.gui.bg_color, "Background color")
         ->capture_default_str();
     gui_group
         ->add_option(
@@ -79,7 +76,9 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
         )
         ->capture_default_str();
     add_text_style_options(*gui_group, "title", "title", settings.gui.title);
-    add_text_style_options(*gui_group, "version", "version", settings.gui.version);
+    add_text_style_options(
+        *gui_group, "version", "version", settings.gui.version
+    );
     add_text_style_options(*gui_group, "map", "map", settings.gui.map);
     add_text_style_options(*gui_group, "time", "time", settings.gui.time);
     add_text_style_options(

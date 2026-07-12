@@ -23,7 +23,6 @@ imgui_app::AppWindowPtr imgui_app::create_app_window(
     std::shared_ptr<WindowClass> window_class,
     const AppWindowSpec& spec,
     float font_size,
-    ImVec4 bg_color,
     std::span<const FontSpec> font_specs,
     DrawFunc draw
 ) {
@@ -43,7 +42,8 @@ imgui_app::AppWindowPtr imgui_app::create_app_window(
     spdlog::debug("Showing window...");
     ::ShowWindow(window->handle, SW_SHOWDEFAULT);
     ::UpdateWindow(window->handle);
-    auto ui = imgui_app::CreateUI(*window, *dev, bg_color, font_specs);
+    auto ui
+        = imgui_app::CreateUI(*window, *dev, ImVec4{0, 0, 0, 1}, font_specs);
     if (!ui) return nullptr;
     window->state->imgui_context = ui->imgui_context;
     return AppWindowPtr{
@@ -162,6 +162,18 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
                             value,
                             args.value
                         );
+                    },
+                    [&action](AppWindowAction::SetTransparentColorKey args) {
+                        if (!::SetLayeredWindowAttributes(
+                                action.app_window->window->handle,
+                                RGB(0, 0, 0),
+                                0,
+                                LWA_COLORKEY
+                            )) {
+                            spdlog::error(
+                                "Failed to set layered window attributes"
+                            );
+                        }
                     },
                 },
                 action.action

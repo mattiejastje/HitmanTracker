@@ -62,7 +62,7 @@ wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 imgui_app::WindowClassPtr imgui_app::create_window_class() {
     return imgui_app::detail::create_window_class(
-        L"ImGuiAppWindowClass", CS_OWNDC, wnd_proc
+        L"ImGuiAppWindowClass", 0U, wnd_proc
     );
 }
 
@@ -113,6 +113,13 @@ imgui_app::WindowPtr imgui_app::create_window(
     if (!window->handle) {
         spdlog::critical(L"Failed to create window {}", title);
         return nullptr;
+    }
+    if (dw_ex_style & WS_EX_LAYERED) {
+        if (!::SetLayeredWindowAttributes(
+                window->handle, RGB(0, 0, 0), 0, LWA_COLORKEY
+            )) {
+            spdlog::error("Failed to set layered window attributes");
+        }
     }
     return window;
 }

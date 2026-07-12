@@ -12,11 +12,17 @@
 
 - The stats window can be dragged around by clicking anywhere.
 
+- The old topmost option has been enhanced, and is now called "overlay mode". In this mode, the window is transparent and click-through so it can be used as direct in-game overlay, provided the game is played in windowed mode.
+
 ### Changed
 
 - Game version is now shown on a separate line, with its own configurable size and color.
 
 - Various minor refactorings and improvements.
+
+### Removed
+
+- Background color is now always black (for technical reasons, this simplifies implementation of transparency).
 
 ## [0.6.0] - 2026-07-07
 

@@ -68,8 +68,9 @@ SettingsChanged settings_gui(settings::Settings& settings) {
     if (ImGui::CollapsingHeader("User Interface")) {
         mark_topmost(
             changed,
-            ImGui::Checkbox("Force topmost window", &settings.gui.topmost)
+            ImGui::Checkbox("Overlay mode", &settings.gui.topmost)
         );
+        ImGui::SetItemTooltip("Makes the tracker transparent, click-through, and always on top");
         mark_any(
             changed,
             ImGui::Checkbox(
@@ -81,11 +82,6 @@ SettingsChanged settings_gui(settings::Settings& settings) {
             slider_float(
                 "Font size", &settings.gui.font_size, 8.0f, 64.0f, 1.0f
             )
-        );
-        // background needs ui refresh too
-        mark_fonts(
-            changed,
-            ImGui::ColorEdit3("Background", settings.gui.bg_color.data())
         );
         text_style_gui("Game", settings.gui.title, changed);
         text_style_gui("Version", settings.gui.version, changed);
