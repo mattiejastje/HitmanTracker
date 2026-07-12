@@ -148,9 +148,18 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
                             spdlog::error("Failed to set window position");
                     },
                     [&action](AppWindowAction::SetWinLongPtr args) {
+                        auto value = GetWindowLongPtr(
+                            action.app_window->window->handle, args.index
+                        );
                         SetWindowLongPtr(
                             action.app_window->window->handle,
                             args.index,
+                            args.value
+                        );
+                        spdlog::debug(
+                            "Window long ptr {:#x} changed from {:#x} to {:#x}",
+                            args.index,
+                            value,
                             args.value
                         );
                     },
