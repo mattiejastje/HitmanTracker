@@ -121,9 +121,8 @@ int gui_run(
     ImGui_ImplWin32_EnableDpiAwareness();
     std::shared_ptr<imgui_app::WindowClass> window_class
         = imgui_app::create_window_class();
-    constexpr UINT OVERLAY_EX_STYLE = WS_EX_LAYERED | WS_EX_TRANSPARENT
-                                      | WS_EX_TOPMOST | WS_EX_NOACTIVATE
-                                      | WS_EX_WINDOWEDGE;
+    constexpr UINT OVERLAY_EX_STYLE
+        = WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_NOACTIVATE;
     auto stats = imgui_app::create_app_window(
         window_class,
         imgui_app::AppWindowSpec{
