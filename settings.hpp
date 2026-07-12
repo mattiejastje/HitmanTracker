@@ -42,7 +42,7 @@ struct HMA {
 };
 
 struct Gui {
-    bool topmost{false};
+    bool overlay_mode{false};
     float font_size{20.0f};
     bool show_game_version{true};
     TextStyle title{"fonts/dejavu/DejaVuSansCondensed.ttf"};

@@ -9,7 +9,7 @@
 struct SettingsChanged {
     bool any{false};
     bool fonts{false};
-    bool topmost{false};
+    bool overlay_mode{false};
 };
 
 SettingsChanged settings_gui(settings::Settings& settings);

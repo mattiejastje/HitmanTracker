@@ -9,9 +9,9 @@ static void mark_fonts(SettingsChanged& changed, bool v) {
     changed.fonts |= v;
 }
 
-static void mark_topmost(SettingsChanged& changed, bool v) {
+static void mark_overlay_mode(SettingsChanged& changed, bool v) {
     changed.any |= v;
-    changed.topmost |= v;
+    changed.overlay_mode |= v;
 }
 
 static const char* LOG_LEVEL_NAMES[]
@@ -66,9 +66,9 @@ static void text_style_gui(
 SettingsChanged settings_gui(settings::Settings& settings) {
     SettingsChanged changed;
     if (ImGui::CollapsingHeader("User Interface")) {
-        mark_topmost(
+        mark_overlay_mode(
             changed,
-            ImGui::Checkbox("Overlay mode", &settings.gui.topmost)
+            ImGui::Checkbox("Overlay mode", &settings.gui.overlay_mode)
         );
         ImGui::SetItemTooltip("Makes the tracker transparent, click-through, and always on top");
         mark_any(

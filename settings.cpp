@@ -64,7 +64,7 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
         "GUI", "Options related to the graphical user interface"
     );
     gui_group
-        ->add_option("--overlay", settings.gui.topmost, "Overlay mode")
+        ->add_option("--overlay", settings.gui.overlay_mode, "Overlay mode")
         ->capture_default_str();
     gui_group->add_option("--font-size", settings.gui.font_size, "Font size")
         ->capture_default_str();

@@ -128,7 +128,7 @@ int gui_run(
         imgui_app::AppWindowSpec{
             .title = L"Hitman Tracker",
             .style = WS_POPUP,
-            .ex_style = settings.gui.topmost ? OVERLAY_EX_STYLE : 0U,
+            .ex_style = settings.gui.overlay_mode ? OVERLAY_EX_STYLE : 0U,
             .character_width = 15,
             .character_height = 30,
             .is_htclient_mapped_to_htcaption = true,  // drag
@@ -158,9 +158,9 @@ int gui_run(
                     stats.get(), imgui_app::AppWindowAction::UpdateUIScaling{}
                 );
             }
-            if (changed.topmost) {
-                spdlog::debug("Topmost is {}", settings.gui.topmost);
-                auto ex_style = settings.gui.topmost ? OVERLAY_EX_STYLE : 0U;
+            if (changed.overlay_mode) {
+                spdlog::debug("Overlay mode is {}", settings.gui.overlay_mode);
+                auto ex_style = settings.gui.overlay_mode ? OVERLAY_EX_STYLE : 0U;
                 UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED
                              | SWP_NOACTIVATE;
                 actions.emplace_back(
@@ -180,7 +180,7 @@ int gui_run(
                     stats.get(),
                     imgui_app::AppWindowAction::SetWinPos{
                         .hwnd_insert_after
-                        = settings.gui.topmost ? HWND_TOPMOST : HWND_NOTOPMOST,
+                        = settings.gui.overlay_mode ? HWND_TOPMOST : HWND_NOTOPMOST,
                         .flags = flags,
                     }
                 );
