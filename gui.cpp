@@ -161,12 +161,9 @@ int gui_run(
             if (changed.topmost) {
                 spdlog::debug("Topmost is {}", settings.gui.topmost);
                 auto style
-                    = WS_VISIBLE
+                    = WS_VISIBLE | WS_CLIPSIBLINGS
                       | (settings.gui.topmost ? WS_POPUP : WS_OVERLAPPEDWINDOW);
-                auto ex_style
-                    = settings.gui.topmost
-                          ? WS_EX_TOPMOST | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT
-                          : 0U;
+                auto ex_style = settings.gui.topmost ? WS_EX_TOPMOST : 0U;
                 UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED
                              | SWP_NOACTIVATE;
                 actions.emplace_back(
