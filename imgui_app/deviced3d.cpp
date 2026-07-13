@@ -51,9 +51,12 @@ void imgui_app::ResetDevice(DeviceD3D& dev) {
     spdlog::debug("Resetting Direct3D device...");
     ImGui_ImplDX9_InvalidateDeviceObjects();
     HRESULT hr = dev.d3d_device->Reset(&dev.state.present_parameters);
-    assert(hr != D3DERR_INVALIDCALL);
-    ImGui_ImplDX9_CreateDeviceObjects();
-    dev.state.is_lost = false;
+    if (hr == D3D_OK) {
+        ImGui_ImplDX9_CreateDeviceObjects();
+        dev.state.is_lost = false;
+    } else {
+        spdlog::warn("Direct3D device reset failed: {:#x}", hr);
+    }
 }
 
 HRESULT imgui_app::RenderAndPresent(DeviceD3D& dev) {
