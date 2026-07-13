@@ -45,7 +45,7 @@ static bool slider_float(
     int hi_int = std::lround(hi / step);
     int v_int = std::lround((*v) / step);
     bool changed = ImGui::SliderInt(label, &v_int, lo_int, hi_int);
-    *v = v_int * step;
+    if (changed) *v = v_int * step;
     return changed;
 }
 
