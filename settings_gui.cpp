@@ -65,197 +65,220 @@ static void text_style_gui(
 
 SettingsChanged settings_gui(settings::Settings& settings) {
     SettingsChanged changed;
-    if (ImGui::CollapsingHeader("User Interface")) {
-        mark_overlay_mode(
-            changed,
-            ImGui::Checkbox("Overlay mode", &settings.gui.overlay_mode)
-        );
-        ImGui::SetItemTooltip("Makes the tracker transparent, click-through, and always on top");
-        mark_any(
-            changed,
-            ImGui::Checkbox(
-                "Show game version", &settings.gui.show_game_version
-            )
-        );
-        mark_fonts(
-            changed,
-            slider_float(
-                "Font size", &settings.gui.font_size, 8.0f, 64.0f, 1.0f
-            )
-        );
-        text_style_gui("Game", settings.gui.title, changed);
-        text_style_gui("Version", settings.gui.version, changed);
-        text_style_gui("Difficulty", settings.gui.difficulty, changed);
-        text_style_gui("Map", settings.gui.map, changed);
-        text_style_gui("Time", settings.gui.time, changed);
-        ImGui::PushID("Rating");
-        if (ImGui::TreeNode("Rating")) {
+    if (ImGui::BeginTabBar("Settings")) {
+        if (ImGui::BeginTabItem("User Interface")) {
+            mark_overlay_mode(
+                changed,
+                ImGui::Checkbox("Overlay mode", &settings.gui.overlay_mode)
+            );
+            ImGui::SetItemTooltip(
+                "Makes the tracker transparent, click-through, and always on "
+                "top"
+            );
+            mark_any(
+                changed,
+                ImGui::Checkbox(
+                    "Show game version", &settings.gui.show_game_version
+                )
+            );
             mark_fonts(
                 changed,
                 slider_float(
-                    "Scale", &settings.gui.rating_bad.scale, 0.5f, 2.0f, 0.1f
+                    "Font size", &settings.gui.font_size, 8.0f, 64.0f, 1.0f
                 )
             );
-            settings.gui.rating_maybe.scale = settings.gui.rating_bad.scale;
-            settings.gui.rating_good.scale = settings.gui.rating_bad.scale;
+            text_style_gui("Game", settings.gui.title, changed);
+            text_style_gui("Version", settings.gui.version, changed);
+            text_style_gui("Difficulty", settings.gui.difficulty, changed);
+            text_style_gui("Map", settings.gui.map, changed);
+            text_style_gui("Time", settings.gui.time, changed);
+            ImGui::PushID("Rating");
+            if (ImGui::TreeNode("Rating")) {
+                mark_fonts(
+                    changed,
+                    slider_float(
+                        "Scale",
+                        &settings.gui.rating_bad.scale,
+                        0.5f,
+                        2.0f,
+                        0.1f
+                    )
+                );
+                settings.gui.rating_maybe.scale = settings.gui.rating_bad.scale;
+                settings.gui.rating_good.scale = settings.gui.rating_bad.scale;
+                mark_any(
+                    changed,
+                    ImGui::ColorEdit3(
+                        "Bad", settings.gui.rating_bad.color.data()
+                    )
+                );
+                mark_any(
+                    changed,
+                    ImGui::ColorEdit3(
+                        "Maybe", settings.gui.rating_maybe.color.data()
+                    )
+                );
+                mark_any(
+                    changed,
+                    ImGui::ColorEdit3(
+                        "Good", settings.gui.rating_good.color.data()
+                    )
+                );
+                ImGui::TreePop();
+            }
+            ImGui::PopID();
+            ImGui::PushID("Statistics");
+            if (ImGui::TreeNode("Statistics")) {
+                mark_fonts(
+                    changed,
+                    slider_float(
+                        "Scale", &settings.gui.label.scale, 0.5f, 2.0f, 0.1f
+                    )
+                );
+                settings.gui.value.scale = settings.gui.label.scale;
+                mark_any(
+                    changed,
+                    ImGui::ColorEdit3("Value", settings.gui.value.color.data())
+                );
+                mark_any(
+                    changed,
+                    ImGui::ColorEdit3("Label", settings.gui.label.color.data())
+                );
+                ImGui::TreePop();
+            }
+            ImGui::PopID();
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Blood Money")) {
             mark_any(
                 changed,
-                ImGui::ColorEdit3("Bad", settings.gui.rating_bad.color.data())
+                ImGui::Checkbox("Use real time", &settings.hbm.real_time)
             );
             mark_any(
                 changed,
-                ImGui::ColorEdit3(
-                    "Maybe", settings.gui.rating_maybe.color.data()
+                ImGui::Checkbox(
+                    "Show accident kills", &settings.hbm.show_accident_kills
                 )
             );
             mark_any(
                 changed,
-                ImGui::ColorEdit3("Good", settings.gui.rating_good.color.data())
+                ImGui::Checkbox("Show shots hit", &settings.hbm.show_shots_hit)
             );
-            ImGui::TreePop();
+            ImGui::EndTabItem();
         }
-        ImGui::PopID();
-        ImGui::PushID("Statistics");
-        if (ImGui::TreeNode("Statistics")) {
-            mark_fonts(
+        if (ImGui::BeginTabItem("Absolution")) {
+            mark_any(
                 changed,
-                slider_float(
-                    "Scale", &settings.gui.label.scale, 0.5f, 2.0f, 0.1f
+                ImGui::Checkbox(
+                    "Show SA rating details", &settings.hma.show_sa_details
                 )
             );
-            settings.gui.value.scale = settings.gui.label.scale;
             mark_any(
                 changed,
-                ImGui::ColorEdit3("Value", settings.gui.value.color.data())
+                ImGui::Checkbox(
+                    "Show max Score rating only",
+                    &settings.hma.show_max_score_rating_only
+                )
+            );
+            ImGui::SetItemTooltip("Only show Shadow / No Shadow etc.");
+            mark_any(
+                changed,
+                ImGui::Checkbox(
+                    "Show Score rating total", &settings.hma.show_score_total
+                )
             );
             mark_any(
                 changed,
-                ImGui::ColorEdit3("Label", settings.gui.label.color.data())
+                ImGui::Checkbox(
+                    "Show Score rating details",
+                    &settings.hma.show_score_details
+                )
             );
-            ImGui::TreePop();
+            mark_any(
+                changed,
+                ImGui::Checkbox(
+                    "Apply difficulty/challenge bonus",
+                    &settings.hma.apply_bonus
+                )
+            );
+            ImGui::PushID("Rating Mode");
+            if (ImGui::TreeNode("Rating Mode")) {
+                if (ImGui::Button("Original Game")) {
+                    settings.hma.rating_mode_unrated
+                        = settings::HMA::RatingMode::X;
+                    settings.hma.rating_mode_no_targets
+                        = settings::HMA::RatingMode::SC;
+                    settings.hma.rating_mode_targets
+                        = settings::HMA::RatingMode::SA_FALLBACK_SC;
+                    changed.any |= true;
+                };
+                ImGui::SameLine();
+                if (ImGui::Button("Max Rating")) {
+                    settings.hma.rating_mode_unrated
+                        = settings::HMA::RatingMode::X;
+                    settings.hma.rating_mode_no_targets
+                        = settings::HMA::RatingMode::SA_PLUS_SC;
+                    settings.hma.rating_mode_targets
+                        = settings::HMA::RatingMode::SA;
+                    changed.any |= true;
+                };
+                ImGui::SameLine();
+                if (ImGui::Button("SA")) {
+                    settings.hma.rating_mode_unrated
+                        = settings::HMA::RatingMode::SA;
+                    settings.hma.rating_mode_no_targets
+                        = settings::HMA::RatingMode::SA;
+                    settings.hma.rating_mode_targets
+                        = settings::HMA::RatingMode::SA;
+                    changed.any |= true;
+                };
+                ImGui::SameLine();
+                if (ImGui::Button("Full Tracking")) {
+                    settings.hma.rating_mode_unrated
+                        = settings::HMA::RatingMode::SA;
+                    settings.hma.rating_mode_no_targets
+                        = settings::HMA::RatingMode::SA_PLUS_SC;
+                    settings.hma.rating_mode_targets
+                        = settings::HMA::RatingMode::SA_PLUS_SC;
+                    changed.any |= true;
+                };
+                combo_rating_mode(
+                    changed,
+                    "Unrated checkpoints",
+                    settings.hma.rating_mode_unrated,
+                    false
+                );
+                combo_rating_mode(
+                    changed,
+                    "Checkpoints without targets",
+                    settings.hma.rating_mode_no_targets,
+                    true
+                );
+                combo_rating_mode(
+                    changed,
+                    "Checkpoints with targets",
+                    settings.hma.rating_mode_targets,
+                    true
+                );
+                ImGui::TreePop();
+            }
+            ImGui::PopID();
+            ImGui::EndTabItem();
         }
-        ImGui::PopID();
-    }
-    if (ImGui::CollapsingHeader("Blood Money")) {
-        mark_any(
-            changed, ImGui::Checkbox("Use real time", &settings.hbm.real_time)
-        );
-        mark_any(
-            changed,
-            ImGui::Checkbox(
-                "Show accident kills", &settings.hbm.show_accident_kills
-            )
-        );
-        mark_any(
-            changed,
-            ImGui::Checkbox("Show shots hit", &settings.hbm.show_shots_hit)
-        );
-    }
-    if (ImGui::CollapsingHeader("Absolution")) {
-        mark_any(
-            changed,
-            ImGui::Checkbox(
-                "Show SA rating details", &settings.hma.show_sa_details
-            )
-        );
-        mark_any(
-            changed,
-            ImGui::Checkbox(
-                "Show max Score rating only",
-                &settings.hma.show_max_score_rating_only
-            )
-        );
-        ImGui::SetItemTooltip("Only show Shadow / No Shadow etc.");
-        mark_any(
-            changed,
-            ImGui::Checkbox(
-                "Show Score rating total", &settings.hma.show_score_total
-            )
-        );
-        mark_any(
-            changed,
-            ImGui::Checkbox(
-                "Show Score rating details", &settings.hma.show_score_details
-            )
-        );
-        mark_any(
-            changed,
-            ImGui::Checkbox(
-                "Apply difficulty/challenge bonus", &settings.hma.apply_bonus
-            )
-        );
-        ImGui::PushID("Rating Mode");
-        if (ImGui::TreeNode("Rating Mode")) {
-            if (ImGui::Button("Original Game")) {
-                settings.hma.rating_mode_unrated = settings::HMA::RatingMode::X;
-                settings.hma.rating_mode_no_targets
-                    = settings::HMA::RatingMode::SC;
-                settings.hma.rating_mode_targets
-                    = settings::HMA::RatingMode::SA_FALLBACK_SC;
-                changed.any |= true;
-            };
-            ImGui::SameLine();
-            if (ImGui::Button("Max Rating")) {
-                settings.hma.rating_mode_unrated = settings::HMA::RatingMode::X;
-                settings.hma.rating_mode_no_targets
-                    = settings::HMA::RatingMode::SA_PLUS_SC;
-                settings.hma.rating_mode_targets
-                    = settings::HMA::RatingMode::SA;
-                changed.any |= true;
-            };
-            ImGui::SameLine();
-            if (ImGui::Button("SA")) {
-                settings.hma.rating_mode_unrated
-                    = settings::HMA::RatingMode::SA;
-                settings.hma.rating_mode_no_targets
-                    = settings::HMA::RatingMode::SA;
-                settings.hma.rating_mode_targets
-                    = settings::HMA::RatingMode::SA;
-                changed.any |= true;
-            };
-            ImGui::SameLine();
-            if (ImGui::Button("Full Tracking")) {
-                settings.hma.rating_mode_unrated
-                    = settings::HMA::RatingMode::SA;
-                settings.hma.rating_mode_no_targets
-                    = settings::HMA::RatingMode::SA_PLUS_SC;
-                settings.hma.rating_mode_targets
-                    = settings::HMA::RatingMode::SA_PLUS_SC;
-                changed.any |= true;
-            };
-            combo_rating_mode(
-                changed,
-                "Unrated checkpoints",
-                settings.hma.rating_mode_unrated,
-                false
+        if (ImGui::BeginTabItem("Logging")) {
+            bool log_changed = false;
+            log_changed |= ImGui::Combo(
+                "Log level", &settings.log.level, LOG_LEVEL_NAMES, 7
             );
-            combo_rating_mode(
-                changed,
-                "Checkpoints without targets",
-                settings.hma.rating_mode_no_targets,
-                true
+            log_changed |= ImGui::Combo(
+                "Flush level", &settings.log.flush_level, LOG_LEVEL_NAMES, 7
             );
-            combo_rating_mode(
-                changed,
-                "Checkpoints with targets",
-                settings.hma.rating_mode_targets,
-                true
-            );
-            ImGui::TreePop();
+            mark_any(changed, log_changed);
+            if (log_changed)
+                spdlog_set_level(settings.log.level, settings.log.flush_level);
+            ImGui::EndTabItem();
         }
-        ImGui::PopID();
-    }
-    if (ImGui::CollapsingHeader("Logging")) {
-        bool log_changed = false;
-        log_changed |= ImGui::Combo(
-            "Log level", &settings.log.level, LOG_LEVEL_NAMES, 7
-        );
-        log_changed |= ImGui::Combo(
-            "Flush level", &settings.log.flush_level, LOG_LEVEL_NAMES, 7
-        );
-        mark_any(changed, log_changed);
-        if (log_changed)
-            spdlog_set_level(settings.log.level, settings.log.flush_level);
+        ImGui::EndTabBar();
     }
     return changed;
 }
