@@ -150,10 +150,11 @@ static std::optional<std::string> read_hitman_sav(
     return payload;
 }
 
+static const std::regex RE_DIFFICULTY(" Difficulty=\"(\\d+)\" Current=\"1\"");
+
 static std::optional<int32_t> find_difficulty(const std::string& payload) {
-    std::regex re(" Difficulty=\"(\\d+)\" Current=\"1\"");
     std::smatch match;
-    if (!std::regex_search(payload, match, re)) {
+    if (!std::regex_search(payload, match, RE_DIFFICULTY)) {
         spdlog::warn("Difficulty could not be identified from save file");
         return {};
     }
