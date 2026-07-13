@@ -27,9 +27,7 @@ struct HBM {
 };
 
 struct HMA {
-    enum class RatingMode {
-        X, SA, SC, SA_PLUS_SC, SA_FALLBACK_SC
-    };
+    enum class RatingMode { X, SA, SC, SA_PLUS_SC, SA_FALLBACK_SC };
 
     bool show_sa_details{true};
     bool show_max_score_rating_only{false};
@@ -43,6 +41,10 @@ struct HMA {
 
 struct Gui {
     bool overlay_mode{false};
+    int overlay_x{0};             // pixels
+    int overlay_y{0};             // pixels
+    float overlay_width{15.0f};   // character units
+    float overlay_height{30.0f};  // character units
     float font_size{20.0f};
     TextStyle game{"fonts/dejavu/DejaVuSansCondensed.ttf"};
     TextStyle version{"fonts/dejavu/DejaVuSansCondensed.ttf", 0.7f};

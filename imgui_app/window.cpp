@@ -32,16 +32,25 @@ wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         switch (msg) {
             case WM_SIZE:
                 if (wparam == SIZE_MINIMIZED) return 0;
-                state->resize_width = (UINT)LOWORD(lparam);
-                state->resize_height = (UINT)HIWORD(lparam);
-                state->resized = true;
+                for (auto& callback : state->on_size)
+                    callback((UINT)LOWORD(lparam), (UINT)HIWORD(lparam));
                 return 0;
-            case WM_DPICHANGED:
+            case WM_DPICHANGED: {
                 assert(LOWORD(wparam) == HIWORD(wparam));
-                CopyMemory(&state->dpi_rect, (RECT*)lparam, sizeof(RECT));
-                state->dpi = LOWORD(wparam);
-                state->dpi_changed = true;
+                float dpiscale = static_cast<float>(LOWORD(wparam))
+                                 / USER_DEFAULT_SCREEN_DPI;
+                const RECT& rect = *reinterpret_cast<RECT*>(lparam);
+                for (auto& callback : state->on_dpi_changed)
+                    callback(dpiscale, rect);
                 return 0;
+            }
+            case WM_EXITSIZEMOVE: {
+                RECT rect;
+                if (::GetWindowRect(hwnd, &rect))
+                    for (auto& callback : state->on_exit_size_move)
+                        callback(rect);
+                return 0;
+            }
             case WM_SYSCOMMAND:
                 // Disable ALT application menu
                 if ((wparam & 0xfff0) == SC_KEYMENU) return 0;
@@ -93,10 +102,10 @@ wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     return ::DefWindowProcW(hwnd, msg, wparam, lparam);
 }
 
-imgui_app::WindowClassPtr imgui_app::create_window_class(UINT style) {
-    return imgui_app::detail::create_window_class(
-        L"ImGuiAppWindowClass", style, wnd_proc
-    );
+imgui_app::WindowClassPtr imgui_app::create_window_class(
+    std::wstring_view class_name, UINT style
+) {
+    return imgui_app::detail::create_window_class(class_name, style, wnd_proc);
 }
 
 void imgui_app::WindowDeleter::operator()(Window* window) const {
@@ -112,8 +121,9 @@ imgui_app::WindowPtr imgui_app::create_window(
     std::wstring_view title,
     DWORD dw_style,
     DWORD dw_ex_style,
-    int logical_width,
-    int logical_height,
+    float character_width,
+    float character_height,
+    float font_size,
     bool is_htclient_mapped_to_htcaption,
     std::optional<POINT> pos
 ) {
@@ -136,8 +146,8 @@ imgui_app::WindowPtr imgui_app::create_window(
         dw_style,
         pos_cw.x,
         pos_cw.y,
-        logical_width * dpiscale,
-        logical_height * dpiscale,
+        character_width * font_size * dpiscale,
+        character_height * font_size * dpiscale,
         nullptr,
         nullptr,
         window_class->cls.hInstance,

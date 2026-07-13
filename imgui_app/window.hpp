@@ -3,27 +3,44 @@
 #include <imgui.h>
 #include <windows.h>
 
+#include <functional>
 #include <memory>
 #include <optional>
+#include <string_view>
+#include <vector>
 
 #include "window_class.hpp"
 
 namespace imgui_app {
 
-[[nodiscard]] WindowClassPtr create_window_class(UINT style);
+[[nodiscard]] WindowClassPtr create_window_class(
+    std::wstring_view class_name, UINT style
+);
+
+using ResizeCallback = std::function<void(UINT width, UINT height)>;
+
+using DpiChangedCallback
+    = std::function<void(float dpiscale, const RECT& suggested_rect)>;
+
+using GeometryChangedCallback = std::function<void(const RECT& rect)>;
 
 struct Window {
     struct State {
-        bool resized = false;
-        UINT resize_width = 0;
-        UINT resize_height = 0;
-        bool dpi_changed = false;
-        RECT dpi_rect{};
-        UINT dpi = 0;
         ImGuiContext* imgui_context = nullptr;
         // makes client area behave like title bar
         // so window can be dragged around
         bool is_htclient_mapped_to_htcaption = false;
+        // Consumers append here (typically right after the window is
+        // created) to react to window events. wnd_proc invokes these
+        // directly, synchronously, whenever the corresponding message
+        // arrives. Changes that originate *inside* a draw()
+        // callback (e.g. a settings checkbox triggering a resize) must
+        // NOT call into these directly. Use AppWindowAction, returned
+        // from draw() and applied once every window's frame has ended,
+        // instead.
+        std::vector<ResizeCallback> on_size;
+        std::vector<DpiChangedCallback> on_dpi_changed;
+        std::vector<GeometryChangedCallback> on_exit_size_move;
     };
 
     std::shared_ptr<WindowClass> window_class;
@@ -46,8 +63,9 @@ using WindowPtr = std::unique_ptr<Window, WindowDeleter>;
     std::wstring_view title,
     DWORD dw_style,
     DWORD dw_ex_style,
-    int logical_width,
-    int logical_height,
+    float character_width,
+    float character_height,
+    float font_size,
     bool is_htclient_mapped_to_htcaption,
     std::optional<POINT> pos = std::nullopt
 );

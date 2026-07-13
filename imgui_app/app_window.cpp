@@ -32,9 +32,11 @@ imgui_app::AppWindowPtr imgui_app::create_app_window(
         spec.title,
         spec.style,
         spec.ex_style,
-        spec.character_width * font_size,
-        spec.character_height * font_size,
-        spec.is_htclient_mapped_to_htcaption
+        spec.character_width,
+        spec.character_height,
+        font_size,
+        spec.is_htclient_mapped_to_htcaption,
+        spec.pos
     );
     if (!window) return nullptr;
     auto dev = imgui_app::CreateDeviceD3D(window->handle);
@@ -46,9 +48,38 @@ imgui_app::AppWindowPtr imgui_app::create_app_window(
         = imgui_app::CreateUI(*window, *dev, ImVec4{0, 0, 0, 1}, font_specs);
     if (!ui) return nullptr;
     window->state->imgui_context = ui->imgui_context;
-    return AppWindowPtr{
-        new AppWindow{std::move(window), std::move(dev), std::move(ui), draw}
-    };
+    auto* app_window_ptr
+        = new AppWindow{std::move(window), std::move(dev), std::move(ui), draw};
+    AppWindowPtr app_window{app_window_ptr};
+    // Keep the D3D backbuffer in sync with the window's client size.
+    app_window_ptr->window->state->on_size.push_back(
+        [app_window_ptr](UINT width, UINT height) {
+            spdlog::debug("Handling window resize");
+            auto& device = *app_window_ptr->device;
+            device.state.present_parameters.BackBufferWidth = width;
+            device.state.present_parameters.BackBufferHeight = height;
+            ImGui::SetCurrentContext(app_window_ptr->ui->imgui_context);
+            imgui_app::ResetDevice(device);
+        }
+    );
+    // Move to the OS-suggested rect and rescale fonts/UI for the new DPI.
+    app_window_ptr->window->state->on_dpi_changed.push_back(
+        [app_window_ptr](float dpiscale, const RECT& rect) {
+            spdlog::debug("Handling dpi change");
+            ::SetWindowPos(
+                app_window_ptr->window->handle,
+                nullptr,
+                rect.left,
+                rect.top,
+                rect.right - rect.left,
+                rect.bottom - rect.top,
+                SWP_NOZORDER
+            );
+            ImGui::SetCurrentContext(app_window_ptr->ui->imgui_context);
+            imgui_app::UpdateUIScaling(*app_window_ptr->ui, dpiscale);
+        }
+    );
+    return app_window;
 }
 
 void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
@@ -77,36 +108,6 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
             if (imgui_app::HandleDeviceLost(device)) continue;
             spdlog::trace("New frame...");
             ImGui::SetCurrentContext(ui.imgui_context);
-            if (state.resized) {
-                spdlog::debug("Handling window resize");
-                device.state.present_parameters.BackBufferWidth
-                    = state.resize_width;
-                device.state.present_parameters.BackBufferHeight
-                    = state.resize_height;
-                imgui_app::ResetDevice(device);
-                state.resized = false;
-            }
-            if (state.dpi_changed) {
-                spdlog::debug("Handling dpi change");
-                const auto& dpi_rect = state.dpi_rect;
-                float dpiscale
-                    = (float)state.dpi / (float)USER_DEFAULT_SCREEN_DPI;
-                all_actions.emplace_back(
-                    aw,
-                    AppWindowAction::SetWinPos{
-                        .hwnd_insert_after = NULL,
-                        .x = dpi_rect.left,
-                        .y = dpi_rect.top,
-                        .cx = dpi_rect.right - dpi_rect.left,
-                        .cy = dpi_rect.bottom - dpi_rect.top,
-                        .flags = SWP_NOZORDER
-                    }
-                );
-                all_actions.emplace_back(
-                    aw, AppWindowAction::UpdateUIScaling{dpiscale}
-                );
-                state.dpi_changed = false;
-            }
             ImGui_ImplDX9_NewFrame();
             ImGui_ImplWin32_NewFrame();
             ImGui::NewFrame();

@@ -114,23 +114,45 @@ int gui_run(
     spdlog::info("Running user interface");
     ImGui_ImplWin32_EnableDpiAwareness();
     std::shared_ptr<imgui_app::WindowClass> window_class
-        = imgui_app::create_window_class(0U);
+        = imgui_app::create_window_class(L"HitmanTrackerWindowClass", 0U);
     constexpr UINT OVERLAY_EX_STYLE
         = WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_NOACTIVATE;
+    const POINT overlay_pos{settings.gui.overlay_x, settings.gui.overlay_y};
     auto stats = imgui_app::create_app_window(
         window_class,
         imgui_app::AppWindowSpec{
             .title = L"Hitman Tracker",
             .style = WS_POPUP,
             .ex_style = settings.gui.overlay_mode ? OVERLAY_EX_STYLE : 0U,
-            .character_width = 15,
-            .character_height = 30,
+            .character_width = settings.gui.overlay_width,
+            .character_height = settings.gui.overlay_height,
             .is_htclient_mapped_to_htcaption = true,  // drag
-            .pos = std::nullopt,
+            .pos = overlay_pos,
         },
         settings.gui.font_size,
         hitman_common::make_font_specs(settings.gui),
         draw_stats
+    );
+    // persist position/size (character units) once the user finishes dragging
+    stats->window->state->on_exit_size_move.push_back(
+        [&settings, handle = stats->window->handle](const RECT& rect) {
+            float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(handle);
+            settings.gui.overlay_x = rect.left;
+            settings.gui.overlay_y = rect.top;
+            settings.gui.overlay_width = (rect.right - rect.left)
+                                         / (settings.gui.font_size * dpiscale);
+            settings.gui.overlay_height = (rect.bottom - rect.top)
+                                          / (settings.gui.font_size * dpiscale);
+            settings::save(settings);
+        }
+    );
+    // keep the stored position roughly current if a DPI/monitor change moves it
+    stats->window->state->on_dpi_changed.push_back(
+        [&settings](float, const RECT& rect) {
+            settings.gui.overlay_x = rect.left;
+            settings.gui.overlay_y = rect.top;
+            settings::save(settings);
+        }
     );
 
     imgui_app::DrawFunc draw_main = [&settings, &game, &stats](
@@ -164,6 +186,26 @@ int gui_run(
                     = hitman_common::make_font_specs(settings.gui);
                 actions.emplace_back(
                     stats.get(), imgui_app::AppWindowAction::UpdateUIScaling{}
+                );
+                float dpiscale
+                    = ImGui_ImplWin32_GetDpiScaleForHwnd(stats->window->handle);
+                UINT flags = SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE;
+                actions.emplace_back(
+                    stats.get(),
+                    imgui_app::AppWindowAction::SetWinPos{
+                        .hwnd_insert_after = nullptr,
+                        .x = 0,
+                        .y = 0,
+                        .cx = static_cast<int>(
+                            settings.gui.overlay_width * settings.gui.font_size
+                            * dpiscale
+                        ),
+                        .cy = static_cast<int>(
+                            settings.gui.overlay_height * settings.gui.font_size
+                            * dpiscale
+                        ),
+                        .flags = flags,
+                    }
                 );
             }
             if (changed.overlay_mode) {

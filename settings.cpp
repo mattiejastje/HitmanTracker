@@ -66,6 +66,34 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     gui_group
         ->add_option("--overlay", settings.gui.overlay_mode, "Overlay mode")
         ->capture_default_str();
+    gui_group
+        ->add_option(
+            "--overlay-x",
+            settings.gui.overlay_x,
+            "Overlay window X position in pixels"
+        )
+        ->capture_default_str();
+    gui_group
+        ->add_option(
+            "--overlay-y",
+            settings.gui.overlay_y,
+            "Overlay window Y position in pixels"
+        )
+        ->capture_default_str();
+    gui_group
+        ->add_option(
+            "--overlay-width",
+            settings.gui.overlay_width,
+            "Overlay window width in character units"
+        )
+        ->capture_default_str();
+    gui_group
+        ->add_option(
+            "--overlay-height",
+            settings.gui.overlay_height,
+            "Overlay window height in character units"
+        )
+        ->capture_default_str();
     gui_group->add_option("--font-size", settings.gui.font_size, "Font size")
         ->capture_default_str();
     gui_group
