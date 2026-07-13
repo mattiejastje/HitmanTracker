@@ -69,13 +69,31 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     gui_group->add_option("--font-size", settings.gui.font_size, "Font size")
         ->capture_default_str();
     gui_group
+        ->add_option("--show-game", settings.gui.show_game, "Show game name")
+        ->capture_default_str();
+    gui_group
         ->add_option(
-            "--show-game-version",
-            settings.gui.show_game_version,
+            "--show-version",
+            settings.gui.show_version,
             "Show game version (i.e. steam, gog, ...)"
         )
         ->capture_default_str();
-    add_text_style_options(*gui_group, "title", "title", settings.gui.title);
+    gui_group
+        ->add_option(
+            "--show-difficulty", settings.gui.show_difficulty, "Show difficulty"
+        )
+        ->capture_default_str();
+    gui_group->add_option("--show-map", settings.gui.show_map, "Show map")
+        ->capture_default_str();
+    gui_group->add_option("--show-time", settings.gui.show_time, "Show time")
+        ->capture_default_str();
+    gui_group
+        ->add_option("--show-rating", settings.gui.show_rating, "Show rating")
+        ->capture_default_str();
+    gui_group
+        ->add_option("--show-stats", settings.gui.show_stats, "Show statistics")
+        ->capture_default_str();
+    add_text_style_options(*gui_group, "game", "game", settings.gui.game);
     add_text_style_options(
         *gui_group, "version", "version", settings.gui.version
     );

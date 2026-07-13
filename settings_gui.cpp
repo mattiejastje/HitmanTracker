@@ -66,7 +66,7 @@ static void text_style_gui(
 SettingsChanged settings_gui(settings::Settings& settings) {
     SettingsChanged changed;
     if (ImGui::BeginTabBar("Settings")) {
-        if (ImGui::BeginTabItem("User Interface")) {
+        if (ImGui::BeginTabItem("General")) {
             mark_overlay_mode(
                 changed,
                 ImGui::Checkbox("Overlay mode", &settings.gui.overlay_mode)
@@ -75,19 +75,47 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                 "Makes the tracker transparent, click-through, and always on "
                 "top"
             );
-            mark_any(
-                changed,
-                ImGui::Checkbox(
-                    "Show game version", &settings.gui.show_game_version
-                )
-            );
             mark_fonts(
                 changed,
                 slider_float(
                     "Font size", &settings.gui.font_size, 8.0f, 64.0f, 1.0f
                 )
             );
-            text_style_gui("Game", settings.gui.title, changed);
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Layout")) {
+            mark_any(
+                changed,
+                ImGui::Checkbox("Show game name", &settings.gui.show_game)
+            );
+            mark_any(
+                changed,
+                ImGui::Checkbox("Show game version", &settings.gui.show_version)
+            );
+            mark_any(
+                changed,
+                ImGui::Checkbox(
+                    "Show difficulty", &settings.gui.show_difficulty
+                )
+            );
+            mark_any(
+                changed, ImGui::Checkbox("Show map", &settings.gui.show_map)
+            );
+            mark_any(
+                changed, ImGui::Checkbox("Show time", &settings.gui.show_time)
+            );
+            mark_any(
+                changed,
+                ImGui::Checkbox("Show rating", &settings.gui.show_rating)
+            );
+            mark_any(
+                changed,
+                ImGui::Checkbox("Show statistics", &settings.gui.show_stats)
+            );
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Style")) {
+            text_style_gui("Game", settings.gui.game, changed);
             text_style_gui("Version", settings.gui.version, changed);
             text_style_gui("Difficulty", settings.gui.difficulty, changed);
             text_style_gui("Map", settings.gui.map, changed);

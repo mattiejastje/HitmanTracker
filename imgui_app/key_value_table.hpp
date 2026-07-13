@@ -31,7 +31,9 @@ void draw_key_value_table(
     ImFont* key_font,
     const ImVec4& key_color,
     ImFont* value_font,
-    std::span<const TableEntry> rows
+    std::span<const TableEntry> rows,
+    bool show_header,
+    bool show_entries
 );
 
 }  // namespace imgui_app

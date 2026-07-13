@@ -105,12 +105,6 @@ int gui_run(
                   )) {
                   if (game && game->hook) {
                       game->methods.gui(aw.ui->fonts, game->stats);
-                  } else {
-                      imgui_app::text(
-                          aw.ui->fonts[hitman_common::FontIndex::Title],
-                          im_vec4(settings.gui.title.color),
-                          "No game running"
-                      );
                   }
                   ImGui::End();
               }
@@ -139,7 +133,7 @@ int gui_run(
         draw_stats
     );
 
-    imgui_app::DrawFunc draw_main = [&settings, &stats](
+    imgui_app::DrawFunc draw_main = [&settings, &game, &stats](
                                         imgui_app::AppWindow& aw, float dt
                                     ) {
         imgui_app::AppWindowActions actions{};
@@ -149,6 +143,20 @@ int gui_run(
                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
                     | ImGuiWindowFlags_NoMove
             )) {
+            if (game && !game->hook) {
+                ImGui::Text(
+                    "Connecting to %s...",
+                    game->exe_path.filename().string().c_str()
+                );
+            } else if (game && game->hook) {
+                ImGui::Text(
+                    "Connected to %s",
+                    game->exe_path.filename().string().c_str()
+                );
+            } else {
+                ImGui::Text("No game detected");
+            }
+            ImGui::SeparatorText("Settings");
             auto changed = settings_gui(settings);
             if (changed.any) settings::save(settings);
             if (changed.fonts) {
@@ -160,7 +168,8 @@ int gui_run(
             }
             if (changed.overlay_mode) {
                 spdlog::debug("Overlay mode is {}", settings.gui.overlay_mode);
-                auto ex_style = settings.gui.overlay_mode ? OVERLAY_EX_STYLE : 0U;
+                auto ex_style
+                    = settings.gui.overlay_mode ? OVERLAY_EX_STYLE : 0U;
                 UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED
                              | SWP_NOACTIVATE;
                 actions.emplace_back(
@@ -179,8 +188,9 @@ int gui_run(
                 actions.emplace_back(
                     stats.get(),
                     imgui_app::AppWindowAction::SetWinPos{
-                        .hwnd_insert_after
-                        = settings.gui.overlay_mode ? HWND_TOPMOST : HWND_NOTOPMOST,
+                        .hwnd_insert_after = settings.gui.overlay_mode
+                                                 ? HWND_TOPMOST
+                                                 : HWND_NOTOPMOST,
                         .flags = flags,
                     }
                 );

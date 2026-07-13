@@ -44,8 +44,7 @@ struct HMA {
 struct Gui {
     bool overlay_mode{false};
     float font_size{20.0f};
-    bool show_game_version{true};
-    TextStyle title{"fonts/dejavu/DejaVuSansCondensed.ttf"};
+    TextStyle game{"fonts/dejavu/DejaVuSansCondensed.ttf"};
     TextStyle version{"fonts/dejavu/DejaVuSansCondensed.ttf", 0.7f};
     TextStyle difficulty{"fonts/dejavu/DejaVuSansCondensed.ttf", 0.9f};
     TextStyle map{"fonts/dejavu/DejaVuSansCondensed-Oblique.ttf"};
@@ -71,6 +70,13 @@ struct Gui {
     TextStyle value{
         "fonts/dejavu/DejaVuSansMono-Bold.ttf", 0.9f, Color{0.4f, 0.4f, 1.0f}
     };
+    bool show_game{true};
+    bool show_version{true};
+    bool show_difficulty{true};
+    bool show_map{true};
+    bool show_time{true};
+    bool show_rating{true};
+    bool show_stats{true};
 };
 
 struct Settings {
