@@ -15,7 +15,7 @@
 std::vector<imgui_app::FontSpec> hitman_common::make_font_specs(
     const settings::Gui& settings
 ) {
-    return {{
+    std::vector<imgui_app::FontSpec> font_specs{{
         {settings.title.file, settings.font_size * settings.title.scale},
         {settings.version.file, settings.font_size * settings.version.scale},
         {settings.difficulty.file,
@@ -30,8 +30,9 @@ std::vector<imgui_app::FontSpec> hitman_common::make_font_specs(
          settings.font_size * settings.rating_maybe.scale},
         {settings.label.file, settings.font_size * settings.label.scale},
         {settings.value.file, settings.font_size * settings.value.scale},
-        {"fonts/proggyforever/ProggyForever-Regular.ttf", 12.0f},
     }};
+    assert(font_specs.size() == FontIndex::Count);
+    return font_specs;
 }
 
 void hitman_common::gui_header(

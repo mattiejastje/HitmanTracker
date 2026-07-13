@@ -21,7 +21,6 @@ enum FontIndex {
     RatingMaybe,
     Label,
     Value,
-    Settings,
     Count
 };
 
