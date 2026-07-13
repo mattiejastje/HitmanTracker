@@ -60,9 +60,9 @@ wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     return ::DefWindowProcW(hwnd, msg, wparam, lparam);
 }
 
-imgui_app::WindowClassPtr imgui_app::create_window_class() {
+imgui_app::WindowClassPtr imgui_app::create_window_class(UINT style) {
     return imgui_app::detail::create_window_class(
-        L"ImGuiAppWindowClass", 0U, wnd_proc
+        L"ImGuiAppWindowClass", style, wnd_proc
     );
 }
 

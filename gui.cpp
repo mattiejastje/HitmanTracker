@@ -114,7 +114,7 @@ int gui_run(
     spdlog::info("Running user interface");
     ImGui_ImplWin32_EnableDpiAwareness();
     std::shared_ptr<imgui_app::WindowClass> window_class
-        = imgui_app::create_window_class();
+        = imgui_app::create_window_class(0U);
     constexpr UINT OVERLAY_EX_STYLE
         = WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_NOACTIVATE;
     auto stats = imgui_app::create_app_window(

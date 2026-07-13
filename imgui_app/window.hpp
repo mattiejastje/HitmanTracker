@@ -10,7 +10,7 @@
 
 namespace imgui_app {
 
-[[nodiscard]] WindowClassPtr create_window_class();
+[[nodiscard]] WindowClassPtr create_window_class(UINT style);
 
 struct Window {
     struct State {
