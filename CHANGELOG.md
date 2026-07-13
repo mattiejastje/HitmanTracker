@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Added
+
+- The tracker window now has its position and size stored across sessions.
+
+- Resizing the font size will now also resize the tracker window.
+
 ### Changed
 
 - The vcpkg baseline has been updated. Now using brotli@1.2.0, bzip2@1.0.8#6, cli11@2.6.2, fmt@12.2.0, freetype@2.14.3, imgui@1.92.8#1, libpng@1.6.58, nameof@0.10.6, spdlog@1.17.0#1, and zlib@1.3.2#1.
