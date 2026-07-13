@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.7.0] - 2026-07-13
 
 ### Added
 
@@ -147,7 +147,7 @@
 
 Initial public release.
 
-[unreleased]: https://github.com/mattiejastje/HitmanTracker/compare/v0.6.0...HEAD
+[0.7.0]: https://github.com/mattiejastje/HitmanTracker/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/mattiejastje/HitmanTracker/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/mattiejastje/HitmanTracker/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/mattiejastje/HitmanTracker/compare/v0.3.1...v0.4.0
