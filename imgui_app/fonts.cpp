@@ -7,7 +7,7 @@
 
 // direct load
 [[nodiscard]] static ImFont* load_font(
-    ImGuiIO& io, const std::filesystem::path file, float size
+    ImGuiIO& io, const std::filesystem::path& file, float size
 ) {
     auto im_font
         = std::filesystem::exists(file)
