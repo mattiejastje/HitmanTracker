@@ -46,8 +46,41 @@ wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 // Disable ALT application menu
                 if ((wparam & 0xfff0) == SC_KEYMENU) return 0;
                 break;
+            case WM_ERASEBKGND: {
+                HDC hdc = (HDC)wparam;
+                RECT rc;
+                GetClientRect(hwnd, &rc);
+                HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 0));
+                FillRect(hdc, &rc, hBrush);
+                DeleteObject(hBrush);
+                return TRUE;
+            }
+            case WM_SETCURSOR:
+                if (state->is_htclient_mapped_to_htcaption
+                    && LOWORD(lparam) == HTCAPTION) {
+                    SetCursor(LoadCursor(NULL, IDC_SIZEALL));
+                    return TRUE;
+                }
+                break;
             case WM_NCHITTEST:
                 if (state->is_htclient_mapped_to_htcaption) {
+                    POINT pt;
+                    GetCursorPos(&pt);
+                    ScreenToClient(hwnd, &pt);
+                    RECT rc;
+                    GetClientRect(hwnd, &rc);
+                    const int border = 10;
+                    if (pt.x < border && pt.y < border) return HTTOPLEFT;
+                    if (pt.x > rc.right - border && pt.y < border)
+                        return HTTOPRIGHT;
+                    if (pt.x < border && pt.y > rc.bottom - border)
+                        return HTBOTTOMLEFT;
+                    if (pt.x > rc.right - border && pt.y > rc.bottom - border)
+                        return HTBOTTOMRIGHT;
+                    if (pt.x < border) return HTLEFT;
+                    if (pt.x > rc.right - border) return HTRIGHT;
+                    if (pt.y < border) return HTTOP;
+                    if (pt.y > rc.bottom - border) return HTBOTTOM;
                     auto hit = ::DefWindowProcW(hwnd, msg, wparam, lparam);
                     return hit == HTCLIENT ? HTCAPTION : hit;
                 }
