@@ -8,17 +8,21 @@
 
 - The GOG version of Hitman Blood Money is now supported.
 
-- The settings window is now separate from the stats window.
-
-- The stats window can be dragged around by clicking anywhere.
-
 - The old topmost option has been enhanced, and is now called "overlay mode". In this mode, the window is transparent and click-through so it can be used as direct in-game overlay, provided the game is played in windowed mode.
+
+- The layout can now be edited: all individual elements can be shown or hidden.
 
 ### Changed
 
 - Game version is now shown on a separate line, with its own configurable size and color.
 
 - Various minor refactorings and improvements.
+
+- The settings window is now separate from the stats window.
+
+- The stats window can be dragged around by clicking anywhere, and resized by clicking its borders.
+
+- The settings are now organized into tabs for easier use.
 
 ### Removed
 
