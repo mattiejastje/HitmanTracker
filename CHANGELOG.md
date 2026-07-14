@@ -16,6 +16,8 @@
 
 - The settings window no longer loses focus when disabling overlay mode.
 
+- Fixed rare bug affecting lost Direct3D device.
+
 ## [0.7.0] - 2026-07-13
 
 ### Added
