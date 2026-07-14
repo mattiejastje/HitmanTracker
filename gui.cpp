@@ -287,6 +287,7 @@ int gui_run(
             if (reset_confirmed) {
                 changed.any |= true;
                 changed.fonts |= true;
+                changed.overlay_mode |= true;
             }
             if (changed.any) settings::save(settings);
             if (changed.fonts) {
