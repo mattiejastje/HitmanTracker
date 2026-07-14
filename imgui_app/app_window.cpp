@@ -59,7 +59,8 @@ imgui_app::AppWindowPtr imgui_app::create_app_window(
             device.state.present_parameters.BackBufferWidth = width;
             device.state.present_parameters.BackBufferHeight = height;
             ImGui::SetCurrentContext(app_window_ptr->ui->imgui_context);
-            imgui_app::ResetDevice(device);
+            // can ignore if reset failed, will retry next frame
+            std::ignore = imgui_app::ResetDevice(device);
         }
     );
     // Move to the OS-suggested rect and rescale fonts/UI for the new DPI.
@@ -104,8 +105,8 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
             auto& ui = *aw->ui;
             auto& window = *aw->window;
             auto& state = *window.state;
-            // skip render if device still lost
-            if (imgui_app::HandleDeviceLost(device)) continue;
+            // skip render if device not ready
+            if (!imgui_app::IsDeviceReady(device)) continue;
             spdlog::trace("New frame...");
             ImGui::SetCurrentContext(ui.imgui_context);
             ImGui_ImplDX9_NewFrame();

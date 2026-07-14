@@ -47,16 +47,16 @@ imgui_app::DeviceD3DPtr imgui_app::CreateDeviceD3D(HWND window_handle) {
     return dev;
 }
 
-void imgui_app::ResetDevice(DeviceD3D& dev) {
+bool imgui_app::ResetDevice(DeviceD3D& dev) {
     spdlog::debug("Resetting Direct3D device...");
     ImGui_ImplDX9_InvalidateDeviceObjects();
     HRESULT hr = dev.d3d_device->Reset(&dev.state.present_parameters);
-    if (hr == D3D_OK) {
-        ImGui_ImplDX9_CreateDeviceObjects();
-        dev.state.is_lost = false;
-    } else {
+    if (hr != D3D_OK) {
         spdlog::warn("Direct3D device reset failed: {:#x}", hr);
+        return false;
     }
+    ImGui_ImplDX9_CreateDeviceObjects();
+    return true;
 }
 
 HRESULT imgui_app::RenderAndPresent(DeviceD3D& dev) {
@@ -69,23 +69,20 @@ HRESULT imgui_app::RenderAndPresent(DeviceD3D& dev) {
         ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
         dev.d3d_device->EndScene();
     }
-    HRESULT result
-        = dev.d3d_device->Present(nullptr, nullptr, nullptr, nullptr);
-    if (result == D3DERR_DEVICELOST) dev.state.is_lost = true;
-    return result;
+    return dev.d3d_device->Present(nullptr, nullptr, nullptr, nullptr);
 }
 
-bool imgui_app::HandleDeviceLost(DeviceD3D& dev) {
-    if (!dev.state.is_lost) return false;
-    spdlog::debug("Handling lost D3D device");
+bool imgui_app::IsDeviceReady(DeviceD3D& dev) {
     HRESULT hr = dev.d3d_device->TestCooperativeLevel();
+    if (hr == D3D_OK) return true;
     if (hr == D3DERR_DEVICELOST) {
-        spdlog::debug("Device still lost");
+        spdlog::debug("Device lost");
         ::Sleep(10);
-        return true;
+        return false;
     }
-    if (hr == D3DERR_DEVICENOTRESET) imgui_app::ResetDevice(dev);
+    if (hr == D3DERR_DEVICENOTRESET) {
+        if (!imgui_app::ResetDevice(dev)) return false;
+    }
     spdlog::debug("Device recovered");
-    dev.state.is_lost = false;
-    return false;
+    return true;
 }

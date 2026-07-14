@@ -12,7 +12,6 @@ namespace imgui_app {
 struct DeviceD3D {
     struct State {
         D3DPRESENT_PARAMETERS present_parameters = {};
-        bool is_lost = false;
     };
 
     LPDIRECT3D9 d3d = nullptr;
@@ -27,8 +26,8 @@ struct DeviceD3DDeleter {
 using DeviceD3DPtr = std::unique_ptr<DeviceD3D, DeviceD3DDeleter>;
 
 DeviceD3DPtr CreateDeviceD3D(HWND window_handle);
-void ResetDevice(DeviceD3D& dev);
+[[nodiscard]] bool ResetDevice(DeviceD3D& dev);
 HRESULT RenderAndPresent(DeviceD3D& dev);
-bool HandleDeviceLost(DeviceD3D& dev);
+[[nodiscard]] bool IsDeviceReady(DeviceD3D& dev);
 
 }  // namespace imgui_app
