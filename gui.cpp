@@ -322,8 +322,8 @@ int gui_run(
                 spdlog::debug("Overlay mode is {}", settings.gui.overlay_mode);
                 auto ex_style
                     = settings.gui.overlay_mode ? OVERLAY_EX_STYLE : 0U;
-                UINT flags = SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE
-                             | SWP_FRAMECHANGED | SWP_NOACTIVATE;
+                UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED
+                             | SWP_NOACTIVATE;
                 actions.emplace_back(
                     stats.get(),
                     imgui_app::AppWindowAction::SetWinLongPtr{
