@@ -189,7 +189,7 @@ int gui_run(
             bool popup_about = false;
             if (ImGui::BeginMenuBar()) {
                 if (ImGui::BeginMenu("Settings")) {
-                    if (ImGui::MenuItem("Reset Defaults")) {
+                    if (ImGui::MenuItem("Reset")) {
                         popup_reset = true;
                     }
                     ImGui::EndMenu();
