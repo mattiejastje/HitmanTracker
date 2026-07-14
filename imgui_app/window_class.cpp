@@ -19,7 +19,7 @@ imgui_app::WindowClassPtr imgui_app::detail::create_window_class(
     std::wstring_view class_name, UINT style, WNDPROC wnd_proc
 ) {
     spdlog::debug(L"Registering window class {}...", class_name);
-    auto window_class = WindowClassPtr(new WindowClass{});
+    auto window_class = WindowClassPtr{new WindowClass{}};
     window_class->name = class_name;
     window_class->cls = WNDCLASSEXW{
         sizeof(WNDCLASSEXW),
