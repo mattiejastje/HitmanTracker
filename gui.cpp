@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
+#include <shellapi.h>
 #include <spdlog/spdlog.h>
 #include <tchar.h>
 
@@ -24,6 +25,22 @@
 #include "settings_gui.hpp"
 #include "signal.hpp"
 #include "timer.hpp"
+
+static std::filesystem::path get_executable_directory() {
+    wchar_t buffer[MAX_PATH];
+    DWORD length = GetModuleFileNameW(nullptr, buffer, MAX_PATH);
+    return std::filesystem::path(buffer).parent_path();
+}
+
+static void imgui_open_file(std::wstring_view filename) {
+    auto filepath = (get_executable_directory() / filename).c_str();
+    ShellExecuteW(nullptr, L"open", filepath, nullptr, nullptr, SW_SHOWNORMAL);
+}
+
+constexpr auto WEBSITE_MAIN = "https://github.com/mattiejastje/HitmanTracker";
+
+constexpr auto WEBSITE_ISSUES
+    = "https://github.com/mattiejastje/HitmanTracker/issues";
 
 int gui_run(
     const std::vector<GameInfo>& registry, settings::Settings& settings
@@ -165,8 +182,93 @@ int gui_run(
                 "Main",
                 nullptr,
                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
-                    | ImGuiWindowFlags_NoMove
+                    | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_MenuBar
             )) {
+            bool popup_reset = false;
+            bool reset_confirmed = false;
+            bool popup_about = false;
+            if (ImGui::BeginMenuBar()) {
+                if (ImGui::BeginMenu("Settings")) {
+                    if (ImGui::MenuItem("Reset Defaults")) {
+                        popup_reset = true;
+                    }
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Help")) {
+                    if (ImGui::MenuItem("Report Bug")) {
+                        ShellExecute(
+                            nullptr,
+                            "open",
+                            WEBSITE_ISSUES,
+                            nullptr,
+                            nullptr,
+                            SW_SHOWNORMAL
+                        );
+                    }
+                    ImGui::Separator();
+                    if (ImGui::MenuItem("Documentation"))
+                        imgui_open_file(L"README.txt");
+                    if (ImGui::MenuItem("Changelog"))
+                        imgui_open_file(L"CHANGELOG.txt");
+                    if (ImGui::MenuItem("License"))
+                        imgui_open_file(L"LICENSE.txt");
+                    ImGui::Separator();
+                    if (ImGui::MenuItem("About...")) {
+                        popup_about = true;
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenuBar();
+            }
+            if (popup_reset) ImGui::OpenPopup("Reset Settings");
+            if (ImGui::BeginPopupModal(
+                    "Reset Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize
+                )) {
+                ImGui::Text("Reset all settings to their default values?");
+                if (ImGui::Button("Reset")) {
+                    settings = settings::Settings{};
+                    reset_confirmed = true;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
+                ImGui::EndPopup();
+            }
+            if (popup_about) ImGui::OpenPopup("About");
+            if (ImGui::BeginPopupModal(
+                    "About", nullptr, ImGuiWindowFlags_AlwaysAutoResize
+                )) {
+                ImGui::TextUnformatted("Hitman Tracker");
+                ImGui::SameLine();
+                ImGui::TextDisabled("%s", "v0.7.0");
+                ImGui::Spacing();
+                ImGui::TextUnformatted("Statistics tracker for Hitman games.");
+                ImGui::Spacing();
+                ImGui::TextUnformatted("Supported (Steam & GOG):");
+                ImGui::BulletText("%s", "Hitman: Codename 47");
+                ImGui::BulletText("%s", "Hitman 2: Silent Assassin");
+                ImGui::BulletText("%s", "Hitman: Contracts");
+                ImGui::BulletText("%s", "Hitman: Blood Money");
+                ImGui::BulletText("%s", "Hitman: Absolution");
+                ImGui::Spacing();
+                ImGui::TextUnformatted("Website:");
+                ImGui::BulletText("%s", WEBSITE_MAIN);
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+                    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+                        ShellExecute(
+                            nullptr,
+                            "open",
+                            WEBSITE_MAIN,
+                            nullptr,
+                            nullptr,
+                            SW_SHOWNORMAL
+                        );
+                    }
+                }
+                if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
+                ImGui::EndPopup();
+            }
             if (game && !game->hook) {
                 ImGui::Text(
                     "Connecting to %s...",
@@ -182,6 +284,10 @@ int gui_run(
             }
             ImGui::SeparatorText("Settings");
             auto changed = settings_gui(settings);
+            if (reset_confirmed) {
+                changed.any |= true;
+                changed.fonts |= true;
+            }
             if (changed.any) settings::save(settings);
             if (changed.fonts) {
                 stats->ui->font_specs
@@ -191,7 +297,8 @@ int gui_run(
                 );
                 float dpiscale
                     = ImGui_ImplWin32_GetDpiScaleForHwnd(stats->window->handle);
-                UINT flags = SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE;
+                UINT flags = SWP_NOZORDER | (reset_confirmed ? 0U : SWP_NOMOVE)
+                             | SWP_NOACTIVATE;
                 actions.emplace_back(
                     stats.get(),
                     imgui_app::AppWindowAction::SetWinPos{
