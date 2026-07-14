@@ -32,18 +32,28 @@ imgui_app::UIPtr imgui_app::CreateUI(
     std::span<const FontSpec> font_specs
 ) {
     spdlog::debug("Initializing ImGui...");
-    auto ui = UIPtr{new UI{}};
-    ui->bg_color = bg_color;
-    ui->font_specs.assign(font_specs.begin(), font_specs.end());
     if (!IMGUI_CHECKVERSION()) return nullptr;
-    ui->imgui_context = ImGui::CreateContext();
-    if (!ui->imgui_context) return nullptr;
-    ImGui::SetCurrentContext(ui->imgui_context);
+    auto* context = ImGui::CreateContext();
+    if (!context) return nullptr;
+    ImGui::SetCurrentContext(context);
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;
     io.LogFilename = nullptr;
-    if (!ImGui_ImplWin32_Init(window.handle)) return nullptr;
-    if (!ImGui_ImplDX9_Init(dev.d3d_device)) return nullptr;
+    if (!ImGui_ImplWin32_Init(window.handle)) {
+        ImGui::DestroyContext(context);
+        return nullptr;
+    }
+    if (!ImGui_ImplDX9_Init(dev.d3d_device)) {
+        ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext(context);
+        return nullptr;
+    }
+    auto ui = UIPtr{new UI{
+        .imgui_context = context,
+        .fonts = {},
+        .bg_color = bg_color,
+        .font_specs = {font_specs.begin(), font_specs.end()}
+    }};
     float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(window.handle);
     if (!UpdateUIScaling(*ui, dpiscale)) return nullptr;
     return ui;

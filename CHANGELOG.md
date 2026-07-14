@@ -18,6 +18,8 @@
 
 - Fixed rare bug affecting lost Direct3D device.
 
+- Fixed rare shutdown bug when ImGui could not initialize.
+
 ## [0.7.0] - 2026-07-13
 
 ### Added
