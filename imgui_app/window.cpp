@@ -27,8 +27,7 @@ wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     if (state && state->imgui_context) {
         ImGui::SetCurrentContext(state->imgui_context);
-        if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam))
-            return true;
+        if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) return 1;
         switch (msg) {
             case WM_SIZE:
                 if (wparam == SIZE_MINIMIZED) return 0;
