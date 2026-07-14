@@ -25,18 +25,18 @@ imgui_app::WindowClassPtr imgui_app::detail::create_window_class(
     auto window_class = WindowClassPtr{new WindowClass{}};
     window_class->name = class_name;
     window_class->cls = WNDCLASSEXW{
-        sizeof(WNDCLASSEXW),
-        style,
-        wnd_proc,
-        0L,
-        0L,
-        GetModuleHandle(nullptr),
-        nullptr,
-        nullptr,
-        background_brush,
-        nullptr,
-        window_class->name.c_str(),
-        nullptr
+        .cbSize = sizeof(WNDCLASSEXW),
+        .style = style,
+        .lpfnWndProc = wnd_proc,
+        .cbClsExtra = 0L,
+        .cbWndExtra = 0L,
+        .hInstance = GetModuleHandle(nullptr),
+        .hIcon = nullptr,
+        .hCursor = nullptr,
+        .hbrBackground = background_brush,
+        .lpszMenuName = nullptr,
+        .lpszClassName = window_class->name.c_str(),
+        .hIconSm = nullptr
     };
     window_class->atom = ::RegisterClassExW(&window_class->cls);
     if (window_class->atom == 0) {
