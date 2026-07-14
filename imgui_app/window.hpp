@@ -14,7 +14,7 @@
 namespace imgui_app {
 
 [[nodiscard]] WindowClassPtr create_window_class(
-    std::wstring_view class_name, UINT style
+    std::wstring_view class_name, UINT style, HBRUSH background_brush
 );
 
 using ResizeCallback = std::function<void(UINT width, UINT height)>;

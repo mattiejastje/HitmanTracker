@@ -54,15 +54,6 @@ wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 // Disable ALT application menu
                 if ((wparam & 0xfff0) == SC_KEYMENU) return 0;
                 break;
-            case WM_ERASEBKGND: {
-                HDC hdc = (HDC)wparam;
-                RECT rc;
-                GetClientRect(hwnd, &rc);
-                HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 0));
-                FillRect(hdc, &rc, hBrush);
-                DeleteObject(hBrush);
-                return TRUE;
-            }
             case WM_SETCURSOR:
                 if (state->is_htclient_mapped_to_htcaption
                     && LOWORD(lparam) == HTCAPTION) {
@@ -102,9 +93,11 @@ wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 }
 
 imgui_app::WindowClassPtr imgui_app::create_window_class(
-    std::wstring_view class_name, UINT style
+    std::wstring_view class_name, UINT style, HBRUSH background_brush
 ) {
-    return imgui_app::detail::create_window_class(class_name, style, wnd_proc);
+    return imgui_app::detail::create_window_class(
+        class_name, style, wnd_proc, background_brush
+    );
 }
 
 void imgui_app::WindowDeleter::operator()(Window* window) const {

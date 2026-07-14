@@ -16,7 +16,10 @@ void imgui_app::WindowClassDeleter::operator()(
 }
 
 imgui_app::WindowClassPtr imgui_app::detail::create_window_class(
-    std::wstring_view class_name, UINT style, WNDPROC wnd_proc
+    std::wstring_view class_name,
+    UINT style,
+    WNDPROC wnd_proc,
+    HBRUSH background_brush
 ) {
     spdlog::debug(L"Registering window class {}...", class_name);
     auto window_class = WindowClassPtr{new WindowClass{}};
@@ -30,7 +33,7 @@ imgui_app::WindowClassPtr imgui_app::detail::create_window_class(
         GetModuleHandle(nullptr),
         nullptr,
         nullptr,
-        nullptr,
+        background_brush,
         nullptr,
         window_class->name.c_str(),
         nullptr
