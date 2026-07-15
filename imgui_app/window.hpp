@@ -22,7 +22,7 @@ using ResizeCallback = std::function<void(UINT width, UINT height)>;
 using DpiChangedCallback
     = std::function<void(float dpiscale, const RECT& suggested_rect)>;
 
-using GeometryChangedCallback = std::function<void(const RECT& rect)>;
+using ExitSizeMoveCallback = std::function<void(const RECT& rect)>;
 
 struct Window {
     struct State {
@@ -40,7 +40,7 @@ struct Window {
         // instead.
         std::vector<ResizeCallback> on_size;
         std::vector<DpiChangedCallback> on_dpi_changed;
-        std::vector<GeometryChangedCallback> on_exit_size_move;
+        std::vector<ExitSizeMoveCallback> on_exit_size_move;
     };
 
     std::shared_ptr<WindowClass> window_class;
