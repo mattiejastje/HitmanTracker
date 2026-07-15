@@ -14,6 +14,8 @@
 
 - The vcpkg baseline has been updated. Now using brotli@1.2.0, bzip2@1.0.8#6, cli11@2.6.2, fmt@12.2.0, freetype@2.14.3, imgui@1.92.8#1, libpng@1.6.58, nameof@0.10.6, spdlog@1.17.0#1, and zlib@1.3.2#1.
 
+- Log level and flush level are now synced when configured in settings, for simplicity. Separate values can still be used on the command line.
+
 ### Fixed
 
 - The settings window no longer loses focus when disabling overlay mode.
