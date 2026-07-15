@@ -33,9 +33,9 @@ jobs:
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
       - name: Configure
-        run: cmake --preset ${{ matrix.preset }}
+        run: cmake --preset ${{ matrix.preset }} -DAPP_VERSION=${{ steps.version.outputs.semVer }}
       - name: Build
-        run: cmake --build out/build/${{ matrix.preset }}  -DAPP_VERSION=${{ steps.version.outputs.semVer }}
+        run: cmake --build out/build/${{ matrix.preset }}
       - name: Stage release files
         shell: bash
         run: |
