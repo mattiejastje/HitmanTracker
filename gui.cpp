@@ -282,7 +282,6 @@ int gui_run(
             } else {
                 ImGui::Text("No game detected");
             }
-            ImGui::SeparatorText("Settings");
             auto changed = settings_gui(settings);
             if (reset_confirmed) {
                 changed.any |= true;
