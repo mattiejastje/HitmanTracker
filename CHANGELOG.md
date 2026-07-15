@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- The tracker window now has a white border when not in overlay mode, to make it easier to find.
+
 ## [0.8.0] - 2026-07-15
 
 ### Added
