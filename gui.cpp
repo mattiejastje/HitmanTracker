@@ -240,7 +240,7 @@ int gui_run(
                 )) {
                 ImGui::TextUnformatted("Hitman Tracker");
                 ImGui::SameLine();
-                ImGui::TextDisabled("%s", "v0.7.0");
+                ImGui::TextDisabled("v%s", APP_VERSION);
                 ImGui::Spacing();
                 ImGui::TextUnformatted("Statistics tracker for Hitman games.");
                 ImGui::Spacing();

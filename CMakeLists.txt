@@ -63,6 +63,8 @@ target_link_options(HitmanTracker PRIVATE
     $<$<NOT:$<CONFIG:Debug>>:/ENTRY:mainCRTStartup>
 )
 add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
+set(APP_VERSION "0.0.0-dev" CACHE STRING "Application version")
+target_compile_definitions(HitmanTracker PRIVATE APP_VERSION="${APP_VERSION}")
 target_link_libraries(HitmanTracker PRIVATE CLI11::CLI11)
 target_link_libraries(HitmanTracker PRIVATE imgui::imgui)
 target_link_libraries(HitmanTracker PRIVATE spdlog::spdlog)
