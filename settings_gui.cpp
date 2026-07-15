@@ -294,16 +294,16 @@ SettingsChanged settings_gui(settings::Settings& settings) {
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Logging")) {
+            // for simplicity, sync log level and flush level
             bool log_changed = false;
             log_changed |= ImGui::Combo(
                 "Log level", &settings.log.level, LOG_LEVEL_NAMES, 7
             );
-            log_changed |= ImGui::Combo(
-                "Flush level", &settings.log.flush_level, LOG_LEVEL_NAMES, 7
-            );
             mark_any(changed, log_changed);
-            if (log_changed)
+            if (log_changed) {
+                settings.log.flush_level = settings.log.level;
                 spdlog_set_level(settings.log.level, settings.log.flush_level);
+            }
             ImGui::EndTabItem();
         }
         ImGui::EndTabBar();
