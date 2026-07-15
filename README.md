@@ -1,6 +1,6 @@
 # HitmanTracker
 
-A statistics tracker for Hitman games.
+A statistics tracker for all Hitman games from Codename 47 to Absolution.
 
 * Download: https://github.com/mattiejastje/HitmanTracker/releases
 * Report issues: https://github.com/mattiejastje/HitmanTracker/issues
