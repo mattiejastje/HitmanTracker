@@ -391,7 +391,10 @@ int gui_run(
                 if (ex_style & WS_EX_LAYERED) {
                     actions.emplace_back(
                         stats.get(),
-                        imgui_app::AppWindowAction::SetTransparentColorKey{}
+                        imgui_app::AppWindowAction::SetLayeredWinAttrs{
+                            .color = RGB(0, 0, 0),
+                            .flags = LWA_COLORKEY,
+                        }
                     );
                 }
                 actions.emplace_back(

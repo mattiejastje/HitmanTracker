@@ -183,12 +183,12 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
                             args.value
                         );
                     },
-                    [&action](AppWindowAction::SetTransparentColorKey args) {
+                    [&action](AppWindowAction::SetLayeredWinAttrs args) {
                         if (!::SetLayeredWindowAttributes(
                                 action.app_window->window->handle,
-                                RGB(0, 0, 0),
-                                0,
-                                LWA_COLORKEY
+                                args.color,
+                                args.alpha,
+                                args.flags
                             )) {
                             spdlog::error(
                                 "Failed to set layered window attributes"

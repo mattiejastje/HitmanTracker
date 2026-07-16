@@ -47,14 +47,18 @@ struct AppWindowAction {
         LONG_PTR value;
     };
 
-    struct SetTransparentColorKey {};
+    struct SetLayeredWinAttrs{
+        COLORREF color;
+        BYTE alpha;
+        DWORD flags;
+    };
 
     AppWindow* app_window;
     std::variant<
         UpdateUIScaling,
         SetWinPos,
         SetWinLongPtr,
-        SetTransparentColorKey>
+        SetLayeredWinAttrs>
         action;
 };
 
