@@ -15,7 +15,7 @@ jobs:
         preset: [x64-release]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
           fetch-depth: 0
@@ -25,12 +25,12 @@ jobs:
           path: out/build/${{ matrix.preset }}/vcpkg_installed
           key: vcpkg-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v4.5.0
+        uses: gittools/actions/gitversion/setup@v4.7.0
         with:
           versionSpec: '6.x'
       - name: Determine version
         id: version
-        uses: gittools/actions/gitversion/execute@v4.5.0
+        uses: gittools/actions/gitversion/execute@v4.7.0
       - name: Set up MSVC dev environment
         uses: ilammy/msvc-dev-cmd@v1
       - name: Install Ninja
@@ -55,7 +55,7 @@ jobs:
           echo "STAGE_DIR=${STAGE_DIR}" >> "$GITHUB_ENV"
       - name: Upload build artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: HitmanTracker-v${{ steps.version.outputs.semVer }}
           path: ${{ env.STAGE_DIR }}
