@@ -313,14 +313,9 @@ int gui_run(
                 if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
                 ImGui::EndPopup();
             }
-            if (game && !game->hook) {
+            if (game) {
                 ImGui::Text(
-                    "Connecting to %s...",
-                    game->exe_path.filename().string().c_str()
-                );
-            } else if (game && game->hook) {
-                ImGui::Text(
-                    "Connected to %s",
+                    game->hook ? "Connected to %s" : "Connecting to %s...",
                     game->exe_path.filename().string().c_str()
                 );
             } else {
