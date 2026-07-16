@@ -26,18 +26,14 @@
 #include "signal.hpp"
 #include "timer.hpp"
 
-static std::filesystem::path get_executable_directory() {
-    wchar_t buffer[MAX_PATH];
-    DWORD length = GetModuleFileNameW(nullptr, buffer, MAX_PATH);
-    return std::filesystem::path(buffer).parent_path();
-}
-
 static void shell_open_url(const char* url) {
     ShellExecuteA(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
 }
 
 static void shell_open_file(const wchar_t* filename) {
-    auto path = get_executable_directory().wstring();
+    static wchar_t buffer[MAX_PATH];
+    DWORD length = GetModuleFileNameW(nullptr, buffer, MAX_PATH);
+    auto path = std::filesystem::path(buffer).parent_path().wstring();
     ShellExecuteW(
         nullptr, L"open", filename, nullptr, path.c_str(), SW_SHOWNORMAL
     );
