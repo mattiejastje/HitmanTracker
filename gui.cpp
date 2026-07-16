@@ -39,6 +39,9 @@ static void shell_open_file(const wchar_t* filename) {
     );
 }
 
+constexpr UINT OVERLAY_EX_STYLE
+    = WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_NOACTIVATE;
+
 constexpr auto WEBSITE_MAIN = "https://github.com/mattiejastje/HitmanTracker";
 
 constexpr auto WEBSITE_ISSUES
@@ -135,6 +138,76 @@ static void draw_main_status(const char* game_exe, bool hooked) {
     } else {
         ImGui::Text("No game detected");
     }
+}
+
+static imgui_app::AppWindowActions draw_main_side_effects(
+    imgui_app::AppWindow* stats,
+    const SettingsChanged& changed,
+    settings::Settings& settings
+) {
+    imgui_app::AppWindowActions actions{};
+    if (changed.any) settings::save(settings);
+    if (changed.fonts) {
+        stats->ui->font_specs = hitman_common::make_font_specs(settings.gui);
+        actions.emplace_back(
+            stats, imgui_app::AppWindowAction::UpdateUIScaling{}
+        );
+        float dpiscale
+            = ImGui_ImplWin32_GetDpiScaleForHwnd(stats->window->handle);
+        actions.emplace_back(
+            stats,
+            imgui_app::AppWindowAction::SetWinPos{
+                .cx = static_cast<int>(
+                    settings.gui.overlay_width * settings.gui.font_size
+                    * dpiscale
+                ),
+                .cy = static_cast<int>(
+                    settings.gui.overlay_height * settings.gui.font_size
+                    * dpiscale
+                ),
+                .flags = SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE,
+            }
+        );
+    }
+    if (changed.overlay_mode) {
+        spdlog::debug("Overlay mode is {}", settings.gui.overlay_mode);
+        auto ex_style = settings.gui.overlay_mode ? OVERLAY_EX_STYLE : 0U;
+        actions.emplace_back(
+            stats,
+            imgui_app::AppWindowAction::SetWinLongPtr{
+                .index = GWL_EXSTYLE,
+                .value = ex_style,
+            }
+        );
+        if (ex_style & WS_EX_LAYERED) {
+            actions.emplace_back(
+                stats,
+                imgui_app::AppWindowAction::SetLayeredWinAttrs{
+                    .color = RGB(0, 0, 0),
+                    .flags = LWA_COLORKEY,
+                }
+            );
+        }
+        actions.emplace_back(
+            stats,
+            imgui_app::AppWindowAction::SetWinPos{
+                .hwnd_insert_after
+                = settings.gui.overlay_mode ? HWND_TOPMOST : HWND_NOTOPMOST,
+                .flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+            }
+        );
+    }
+    if (changed.reposition) {
+        actions.emplace_back(
+            stats,
+            imgui_app::AppWindowAction::SetWinPos{
+                .x = settings.gui.overlay_x,
+                .y = settings.gui.overlay_y,
+                .flags = SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE,
+            }
+        );
+    }
+    return actions;
 }
 
 int gui_run(
@@ -240,8 +313,6 @@ int gui_run(
         = imgui_app::create_window_class(
             L"HitmanTrackerWindowClass", 0U, (HBRUSH)GetStockObject(BLACK_BRUSH)
         );
-    constexpr UINT OVERLAY_EX_STYLE
-        = WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_NOACTIVATE;
     const POINT overlay_pos{settings.gui.overlay_x, settings.gui.overlay_y};
     auto stats = imgui_app::create_app_window(
         window_class,
@@ -329,8 +400,7 @@ int gui_run(
 
     imgui_app::DrawFunc draw_main = [&settings, &game, &stats](
                                         imgui_app::AppWindow& aw, float dt
-                                    ) {
-        imgui_app::AppWindowActions actions{};
+                                    ) -> imgui_app::AppWindowActions {
         if (ImGui::Begin(
                 "Main",
                 nullptr,
@@ -354,73 +424,10 @@ int gui_run(
                 game ? static_cast<bool>(game->hook) : false
             );
             changed |= settings_gui(settings);
-            if (changed.any) settings::save(settings);
-            if (changed.fonts) {
-                stats->ui->font_specs
-                    = hitman_common::make_font_specs(settings.gui);
-                actions.emplace_back(
-                    stats.get(), imgui_app::AppWindowAction::UpdateUIScaling{}
-                );
-                float dpiscale
-                    = ImGui_ImplWin32_GetDpiScaleForHwnd(stats->window->handle);
-                actions.emplace_back(
-                    stats.get(),
-                    imgui_app::AppWindowAction::SetWinPos{
-                        .cx = static_cast<int>(
-                            settings.gui.overlay_width * settings.gui.font_size
-                            * dpiscale
-                        ),
-                        .cy = static_cast<int>(
-                            settings.gui.overlay_height * settings.gui.font_size
-                            * dpiscale
-                        ),
-                        .flags = SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE,
-                    }
-                );
-            }
-            if (changed.overlay_mode) {
-                spdlog::debug("Overlay mode is {}", settings.gui.overlay_mode);
-                auto ex_style
-                    = settings.gui.overlay_mode ? OVERLAY_EX_STYLE : 0U;
-                actions.emplace_back(
-                    stats.get(),
-                    imgui_app::AppWindowAction::SetWinLongPtr{
-                        .index = GWL_EXSTYLE,
-                        .value = ex_style,
-                    }
-                );
-                if (ex_style & WS_EX_LAYERED) {
-                    actions.emplace_back(
-                        stats.get(),
-                        imgui_app::AppWindowAction::SetLayeredWinAttrs{
-                            .color = RGB(0, 0, 0),
-                            .flags = LWA_COLORKEY,
-                        }
-                    );
-                }
-                actions.emplace_back(
-                    stats.get(),
-                    imgui_app::AppWindowAction::SetWinPos{
-                        .hwnd_insert_after = settings.gui.overlay_mode
-                                                 ? HWND_TOPMOST
-                                                 : HWND_NOTOPMOST,
-                        .flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
-                    }
-                );
-            }
-            if (changed.reposition) {
-                actions.emplace_back(
-                    stats.get(),
-                    imgui_app::AppWindowAction::SetWinPos{
-                        .x = settings.gui.overlay_x,
-                        .y = settings.gui.overlay_y,
-                        .flags = SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE,
-                    }
-                );
-            }
             ImGui::End();
+            return draw_main_side_effects(stats.get(), changed, settings);
         }
-        return actions;
+        return {};
     };
 
     auto main = imgui_app::create_app_window(
