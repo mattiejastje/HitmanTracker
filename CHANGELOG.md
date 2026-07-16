@@ -6,6 +6,14 @@
 
 - The tracker window now has a white border when not in overlay mode, to make it easier to find.
 
+- The github builds now cache vcpkg dependencies, resulting in faster builds.
+
+### Changed
+
+- **Breaking:** The ``--overlay`` flag is now called ``--overlay-mode`` for consistency with the UI and to make it more clearly distinguishable in case more overlay options are added in the future.
+
+- Some internal quality-of-life refactoring of code.
+
 ## [0.8.0] - 2026-07-15
 
 ### Added
