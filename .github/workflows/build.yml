@@ -19,11 +19,6 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-      - name: Cache vcpkg installed packages
-        uses: actions/cache@v6
-        with:
-          path: out/build/${{ matrix.preset }}/vcpkg_installed
-          key: vcpkg-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
       - name: Install GitVersion
         uses: gittools/actions/gitversion/setup@v4.7.0
         with:
@@ -37,8 +32,18 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
+      - name: Cache vcpkg installed packages
+        uses: actions/cache@v6
+        with:
+          path: out/build/${{ matrix.preset }}/vcpkg_installed
+          key: vcpkg-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
       - name: Configure
         run: cmake --preset ${{ matrix.preset }} "-DAPP_VERSION=${{ steps.version.outputs.semVer }}"
+      - name: Debug - find vcpkg_installed
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse -Directory -Filter "vcpkg_installed" -ErrorAction SilentlyContinue |
+            ForEach-Object { Write-Host $_.FullName }
       - name: Build
         run: cmake --build out/build/${{ matrix.preset }}
       - name: Stage release files
