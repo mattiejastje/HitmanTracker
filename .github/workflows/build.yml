@@ -39,11 +39,6 @@ jobs:
           key: vcpkg-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
       - name: Configure
         run: cmake --preset ${{ matrix.preset }} "-DAPP_VERSION=${{ steps.version.outputs.semVer }}"
-      - name: Debug - find vcpkg_installed
-        shell: pwsh
-        run: |
-          Get-ChildItem -Recurse -Directory -Filter "vcpkg_installed" -ErrorAction SilentlyContinue |
-            ForEach-Object { Write-Host $_.FullName }
       - name: Build
         run: cmake --build out/build/${{ matrix.preset }}
       - name: Stage release files
