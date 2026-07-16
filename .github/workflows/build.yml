@@ -22,7 +22,7 @@ jobs:
       - name: Cache vcpkg installed packages
         uses: actions/cache@v6
         with:
-          path: out/build/${{ matrix.preset }}/vcpkg_installed
+          path: vcpkg
           key: vcpkg-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
       - name: Install GitVersion
         uses: gittools/actions/gitversion/setup@v4.7.0
