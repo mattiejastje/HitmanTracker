@@ -341,8 +341,6 @@ int gui_run(
                 );
                 float dpiscale
                     = ImGui_ImplWin32_GetDpiScaleForHwnd(stats->window->handle);
-                UINT flags = SWP_NOZORDER | (reset_confirmed ? 0U : SWP_NOMOVE)
-                             | SWP_NOACTIVATE;
                 actions.emplace_back(
                     stats.get(),
                     imgui_app::AppWindowAction::SetWinPos{
@@ -354,7 +352,9 @@ int gui_run(
                             settings.gui.overlay_height * settings.gui.font_size
                             * dpiscale
                         ),
-                        .flags = flags,
+                        .flags = SWP_NOZORDER
+                                 | (reset_confirmed ? 0U : SWP_NOMOVE)
+                                 | SWP_NOACTIVATE,
                     }
                 );
             }
@@ -362,7 +362,6 @@ int gui_run(
                 spdlog::debug("Overlay mode is {}", settings.gui.overlay_mode);
                 auto ex_style
                     = settings.gui.overlay_mode ? OVERLAY_EX_STYLE : 0U;
-                UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE;
                 actions.emplace_back(
                     stats.get(),
                     imgui_app::AppWindowAction::SetWinLongPtr{
@@ -385,7 +384,7 @@ int gui_run(
                         .hwnd_insert_after = settings.gui.overlay_mode
                                                  ? HWND_TOPMOST
                                                  : HWND_NOTOPMOST,
-                        .flags = flags,
+                        .flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
                     }
                 );
             }
