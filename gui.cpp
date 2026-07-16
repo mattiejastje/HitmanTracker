@@ -255,8 +255,8 @@ int gui_run(
                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
                     | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_MenuBar
             )) {
+            SettingsChanged changed{};
             bool popup_reset = false;
-            bool reset_confirmed = false;
             bool popup_about = false;
             if (ImGui::BeginMenuBar()) {
                 if (ImGui::BeginMenu("Settings")) {
@@ -283,18 +283,19 @@ int gui_run(
                 }
                 ImGui::EndMenuBar();
             }
-            modal_popup(
-                "Reset Settings", popup_reset, [&settings, &reset_confirmed]() {
-                    ImGui::Text("Reset all settings to their default values?");
-                    if (ImGui::Button("Reset")) {
-                        settings = settings::Settings{};
-                        reset_confirmed = true;
-                        ImGui::CloseCurrentPopup();
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
+            modal_popup("Reset Settings", popup_reset, [&settings, &changed]() {
+                ImGui::Text("Reset all settings to their default values?");
+                if (ImGui::Button("Reset")) {
+                    settings = settings::Settings{};
+                    // everything changed, force full refresh
+                    changed |= SettingsChanged{
+                        .any = true, .fonts = true, .overlay_mode = true, .reposition = true
+                    };
+                    ImGui::CloseCurrentPopup();
                 }
-            );
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
+            });
             modal_popup("About", popup_about, []() {
                 ImGui::TextUnformatted("Hitman Tracker");
                 ImGui::SameLine();
@@ -326,12 +327,7 @@ int gui_run(
             } else {
                 ImGui::Text("No game detected");
             }
-            auto changed = settings_gui(settings);
-            if (reset_confirmed) {
-                changed.any |= true;
-                changed.fonts |= true;
-                changed.overlay_mode |= true;
-            }
+            changed |= settings_gui(settings);
             if (changed.any) settings::save(settings);
             if (changed.fonts) {
                 stats->ui->font_specs
@@ -352,9 +348,7 @@ int gui_run(
                             settings.gui.overlay_height * settings.gui.font_size
                             * dpiscale
                         ),
-                        .flags = SWP_NOZORDER
-                                 | (reset_confirmed ? 0U : SWP_NOMOVE)
-                                 | SWP_NOACTIVATE,
+                        .flags = SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE,
                     }
                 );
             }
@@ -385,6 +379,16 @@ int gui_run(
                                                  ? HWND_TOPMOST
                                                  : HWND_NOTOPMOST,
                         .flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+                    }
+                );
+            }
+            if (changed.reposition) {
+                actions.emplace_back(
+                    stats.get(),
+                    imgui_app::AppWindowAction::SetWinPos{
+                        .x = settings.gui.overlay_x,
+                        .y = settings.gui.overlay_y,
+                        .flags = SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE,
                     }
                 );
             }

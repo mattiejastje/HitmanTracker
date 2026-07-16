@@ -10,6 +10,9 @@ struct SettingsChanged {
     bool any{false};
     bool fonts{false};
     bool overlay_mode{false};
+    bool reposition{false};
 };
+
+SettingsChanged& operator|=(SettingsChanged& a, const SettingsChanged& b);
 
 SettingsChanged settings_gui(settings::Settings& settings);

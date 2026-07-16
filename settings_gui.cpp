@@ -2,6 +2,14 @@
 
 #include "spdlog.hpp"
 
+SettingsChanged& operator|=(SettingsChanged& a, const SettingsChanged& b) {
+    a.any |= b.any;
+    a.fonts |= b.fonts;
+    a.overlay_mode |= b.overlay_mode;
+    a.reposition |= b.reposition;
+    return a;
+}
+
 static void mark_any(SettingsChanged& changed, bool v) { changed.any |= v; }
 
 static void mark_fonts(SettingsChanged& changed, bool v) {
