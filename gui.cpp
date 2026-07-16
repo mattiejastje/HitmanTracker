@@ -55,9 +55,9 @@ void modal_popup(const char* name, bool open, F&& body) {
     }
 }
 
-struct MenuActions{
-    bool popup_reset{false};
-    bool popup_about{false};
+struct MenuActions {
+    bool open_reset{false};
+    bool open_about{false};
 };
 
 static MenuActions draw_main_menu() {
@@ -65,7 +65,7 @@ static MenuActions draw_main_menu() {
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("Settings")) {
             if (ImGui::MenuItem("Reset")) {
-                menu_actions.popup_reset = true;
+                menu_actions.open_reset = true;
             }
             ImGui::EndMenu();
         }
@@ -78,13 +78,63 @@ static MenuActions draw_main_menu() {
             if (ImGui::MenuItem("License")) shell_open_file(L"LICENSE.txt");
             ImGui::Separator();
             if (ImGui::MenuItem("About...")) {
-                menu_actions.popup_about = true;
+                menu_actions.open_about = true;
             }
             ImGui::EndMenu();
         }
         ImGui::EndMenuBar();
     }
     return menu_actions;
+}
+
+static bool draw_popup_reset(bool open) {
+    bool reset_pressed = false;
+    modal_popup("Reset Settings", open, [&reset_pressed]() {
+        ImGui::Text("Reset all settings to their default values?");
+        if (ImGui::Button("Reset")) {
+            reset_pressed = true;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
+    });
+    return reset_pressed;
+}
+
+static void draw_popup_about(bool open) {
+    modal_popup("About", open, []() {
+        ImGui::TextUnformatted("Hitman Tracker");
+        ImGui::SameLine();
+        ImGui::TextDisabled("v%s", APP_VERSION);
+        ImGui::Spacing();
+        ImGui::TextUnformatted("Statistics tracker for Hitman games.");
+        ImGui::Spacing();
+        ImGui::TextUnformatted("Supported (Steam & GOG):");
+        ImGui::BulletText("%s", "Hitman: Codename 47");
+        ImGui::BulletText("%s", "Hitman 2: Silent Assassin");
+        ImGui::BulletText("%s", "Hitman: Contracts");
+        ImGui::BulletText("%s", "Hitman: Blood Money");
+        ImGui::BulletText("%s", "Hitman: Absolution");
+        ImGui::Spacing();
+        ImGui::TextUnformatted("Website:");
+        ImGui::BulletText("%s", WEBSITE_MAIN);
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                shell_open_url(WEBSITE_MAIN);
+        }
+        if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
+    });
+};
+
+static void draw_main_status(const char* game_exe, bool hooked) {
+    if (game_exe) {
+        ImGui::Text(
+            hooked ? "Connected to %s" : "Connecting to %s...", game_exe
+        );
+    } else {
+        ImGui::Text("No game detected");
+    }
 }
 
 int gui_run(
@@ -287,52 +337,22 @@ int gui_run(
                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
                     | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_MenuBar
             )) {
-            SettingsChanged changed{};
             auto menu_actions = draw_main_menu();
-            modal_popup("Reset Settings", menu_actions.popup_reset, [&settings, &changed]() {
-                ImGui::Text("Reset all settings to their default values?");
-                if (ImGui::Button("Reset")) {
-                    settings = settings::Settings{};
-                    // everything changed, force full refresh
-                    changed |= SettingsChanged{
-                        .any = true, .fonts = true, .overlay_mode = true, .reposition = true
-                    };
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
-            });
-            modal_popup("About", menu_actions.popup_about, []() {
-                ImGui::TextUnformatted("Hitman Tracker");
-                ImGui::SameLine();
-                ImGui::TextDisabled("v%s", APP_VERSION);
-                ImGui::Spacing();
-                ImGui::TextUnformatted("Statistics tracker for Hitman games.");
-                ImGui::Spacing();
-                ImGui::TextUnformatted("Supported (Steam & GOG):");
-                ImGui::BulletText("%s", "Hitman: Codename 47");
-                ImGui::BulletText("%s", "Hitman 2: Silent Assassin");
-                ImGui::BulletText("%s", "Hitman: Contracts");
-                ImGui::BulletText("%s", "Hitman: Blood Money");
-                ImGui::BulletText("%s", "Hitman: Absolution");
-                ImGui::Spacing();
-                ImGui::TextUnformatted("Website:");
-                ImGui::BulletText("%s", WEBSITE_MAIN);
-                if (ImGui::IsItemHovered()) {
-                    ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-                    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-                        shell_open_url(WEBSITE_MAIN);
-                }
-                if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
-            });
-            if (game) {
-                ImGui::Text(
-                    game->hook ? "Connected to %s" : "Connecting to %s...",
-                    game->exe_path.filename().string().c_str()
-                );
-            } else {
-                ImGui::Text("No game detected");
+            SettingsChanged changed{};
+            if (draw_popup_reset(menu_actions.open_reset)) {
+                settings = settings::Settings{};
+                changed |= SettingsChanged{
+                    .any = true,
+                    .fonts = true,
+                    .overlay_mode = true,
+                    .reposition = true
+                };
             }
+            draw_popup_about(menu_actions.open_about);
+            draw_main_status(
+                game ? game->exe_path.filename().string().c_str() : nullptr,
+                game ? static_cast<bool>(game->hook) : false
+            );
             changed |= settings_gui(settings);
             if (changed.any) settings::save(settings);
             if (changed.fonts) {
