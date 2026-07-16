@@ -68,7 +68,6 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
             "--overlay-mode", settings.gui.overlay_mode, "Overlay mode"
         )
         ->capture_default_str();
-        ->capture_default_str();
     gui_group
         ->add_option(
             "--overlay-x",
