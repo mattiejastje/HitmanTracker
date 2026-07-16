@@ -32,9 +32,15 @@ static std::filesystem::path get_executable_directory() {
     return std::filesystem::path(buffer).parent_path();
 }
 
-static void imgui_open_file(std::wstring_view filename) {
-    auto filepath = (get_executable_directory() / filename).c_str();
-    ShellExecuteW(nullptr, L"open", filepath, nullptr, nullptr, SW_SHOWNORMAL);
+static void shell_open_url(const char* url) {
+    ShellExecuteA(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
+}
+
+static void shell_open_file(const wchar_t* filename) {
+    auto path = get_executable_directory().wstring();
+    ShellExecuteW(
+        nullptr, L"open", filename, nullptr, path.c_str(), SW_SHOWNORMAL
+    );
 }
 
 constexpr auto WEBSITE_MAIN = "https://github.com/mattiejastje/HitmanTracker";
@@ -253,23 +259,15 @@ int gui_run(
                     ImGui::EndMenu();
                 }
                 if (ImGui::BeginMenu("Help")) {
-                    if (ImGui::MenuItem("Report Bug")) {
-                        ShellExecute(
-                            nullptr,
-                            "open",
-                            WEBSITE_ISSUES,
-                            nullptr,
-                            nullptr,
-                            SW_SHOWNORMAL
-                        );
-                    }
+                    if (ImGui::MenuItem("Report Bug"))
+                        shell_open_url(WEBSITE_ISSUES);
                     ImGui::Separator();
                     if (ImGui::MenuItem("Documentation"))
-                        imgui_open_file(L"README.txt");
+                        shell_open_file(L"README.txt");
                     if (ImGui::MenuItem("Changelog"))
-                        imgui_open_file(L"CHANGELOG.txt");
+                        shell_open_file(L"CHANGELOG.txt");
                     if (ImGui::MenuItem("License"))
-                        imgui_open_file(L"LICENSE.txt");
+                        shell_open_file(L"LICENSE.txt");
                     ImGui::Separator();
                     if (ImGui::MenuItem("About...")) {
                         popup_about = true;
@@ -313,16 +311,8 @@ int gui_run(
                 ImGui::BulletText("%s", WEBSITE_MAIN);
                 if (ImGui::IsItemHovered()) {
                     ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-                    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-                        ShellExecute(
-                            nullptr,
-                            "open",
-                            WEBSITE_MAIN,
-                            nullptr,
-                            nullptr,
-                            SW_SHOWNORMAL
-                        );
-                    }
+                    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                        shell_open_url(WEBSITE_MAIN);
                 }
                 if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
                 ImGui::EndPopup();
