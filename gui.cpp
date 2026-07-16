@@ -44,6 +44,17 @@ constexpr auto WEBSITE_MAIN = "https://github.com/mattiejastje/HitmanTracker";
 constexpr auto WEBSITE_ISSUES
     = "https://github.com/mattiejastje/HitmanTracker/issues";
 
+template <class F>
+void modal_popup(const char* name, bool open, F&& body) {
+    if (open) ImGui::OpenPopup(name);
+    if (ImGui::BeginPopupModal(
+            name, nullptr, ImGuiWindowFlags_AlwaysAutoResize
+        )) {
+        body();
+        ImGui::EndPopup();
+    }
+}
+
 int gui_run(
     const std::vector<GameInfo>& registry, settings::Settings& settings
 ) {
@@ -272,24 +283,19 @@ int gui_run(
                 }
                 ImGui::EndMenuBar();
             }
-            if (popup_reset) ImGui::OpenPopup("Reset Settings");
-            if (ImGui::BeginPopupModal(
-                    "Reset Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize
-                )) {
-                ImGui::Text("Reset all settings to their default values?");
-                if (ImGui::Button("Reset")) {
-                    settings = settings::Settings{};
-                    reset_confirmed = true;
-                    ImGui::CloseCurrentPopup();
+            modal_popup(
+                "Reset Settings", popup_reset, [&settings, &reset_confirmed]() {
+                    ImGui::Text("Reset all settings to their default values?");
+                    if (ImGui::Button("Reset")) {
+                        settings = settings::Settings{};
+                        reset_confirmed = true;
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
                 }
-                ImGui::SameLine();
-                if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
-                ImGui::EndPopup();
-            }
-            if (popup_about) ImGui::OpenPopup("About");
-            if (ImGui::BeginPopupModal(
-                    "About", nullptr, ImGuiWindowFlags_AlwaysAutoResize
-                )) {
+            );
+            modal_popup("About", popup_about, []() {
                 ImGui::TextUnformatted("Hitman Tracker");
                 ImGui::SameLine();
                 ImGui::TextDisabled("v%s", APP_VERSION);
@@ -311,8 +317,7 @@ int gui_run(
                         shell_open_url(WEBSITE_MAIN);
                 }
                 if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
-                ImGui::EndPopup();
-            }
+            });
             if (game) {
                 ImGui::Text(
                     game->hook ? "Connected to %s" : "Connecting to %s...",
