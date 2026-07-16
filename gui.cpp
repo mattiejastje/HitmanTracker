@@ -346,9 +346,6 @@ int gui_run(
                 actions.emplace_back(
                     stats.get(),
                     imgui_app::AppWindowAction::SetWinPos{
-                        .hwnd_insert_after = nullptr,
-                        .x = 0,
-                        .y = 0,
                         .cx = static_cast<int>(
                             settings.gui.overlay_width * settings.gui.font_size
                             * dpiscale
