@@ -56,6 +56,7 @@ imgui_app::AppWindowPtr imgui_app::create_app_window(
         switch (msg) {
             case WM_SIZE: {
                 // keep backbuffer in sync with window size
+                if (wparam == SIZE_MINIMIZED) return 0;
                 spdlog::debug("Handling window resize");
                 auto& device = *app_window_ptr->device;
                 device.state.present_parameters.BackBufferWidth
