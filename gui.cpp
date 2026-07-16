@@ -55,6 +55,38 @@ void modal_popup(const char* name, bool open, F&& body) {
     }
 }
 
+struct MenuActions{
+    bool popup_reset{false};
+    bool popup_about{false};
+};
+
+static MenuActions draw_main_menu() {
+    MenuActions menu_actions;
+    if (ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("Settings")) {
+            if (ImGui::MenuItem("Reset")) {
+                menu_actions.popup_reset = true;
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Help")) {
+            if (ImGui::MenuItem("Report Bug")) shell_open_url(WEBSITE_ISSUES);
+            ImGui::Separator();
+            if (ImGui::MenuItem("Documentation"))
+                shell_open_file(L"README.txt");
+            if (ImGui::MenuItem("Changelog")) shell_open_file(L"CHANGELOG.txt");
+            if (ImGui::MenuItem("License")) shell_open_file(L"LICENSE.txt");
+            ImGui::Separator();
+            if (ImGui::MenuItem("About...")) {
+                menu_actions.popup_about = true;
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+    return menu_actions;
+}
+
 int gui_run(
     const std::vector<GameInfo>& registry, settings::Settings& settings
 ) {
@@ -256,34 +288,8 @@ int gui_run(
                     | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_MenuBar
             )) {
             SettingsChanged changed{};
-            bool popup_reset = false;
-            bool popup_about = false;
-            if (ImGui::BeginMenuBar()) {
-                if (ImGui::BeginMenu("Settings")) {
-                    if (ImGui::MenuItem("Reset")) {
-                        popup_reset = true;
-                    }
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Help")) {
-                    if (ImGui::MenuItem("Report Bug"))
-                        shell_open_url(WEBSITE_ISSUES);
-                    ImGui::Separator();
-                    if (ImGui::MenuItem("Documentation"))
-                        shell_open_file(L"README.txt");
-                    if (ImGui::MenuItem("Changelog"))
-                        shell_open_file(L"CHANGELOG.txt");
-                    if (ImGui::MenuItem("License"))
-                        shell_open_file(L"LICENSE.txt");
-                    ImGui::Separator();
-                    if (ImGui::MenuItem("About...")) {
-                        popup_about = true;
-                    }
-                    ImGui::EndMenu();
-                }
-                ImGui::EndMenuBar();
-            }
-            modal_popup("Reset Settings", popup_reset, [&settings, &changed]() {
+            auto menu_actions = draw_main_menu();
+            modal_popup("Reset Settings", menu_actions.popup_reset, [&settings, &changed]() {
                 ImGui::Text("Reset all settings to their default values?");
                 if (ImGui::Button("Reset")) {
                     settings = settings::Settings{};
@@ -296,7 +302,7 @@ int gui_run(
                 ImGui::SameLine();
                 if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
             });
-            modal_popup("About", popup_about, []() {
+            modal_popup("About", menu_actions.popup_about, []() {
                 ImGui::TextUnformatted("Hitman Tracker");
                 ImGui::SameLine();
                 ImGui::TextDisabled("v%s", APP_VERSION);
