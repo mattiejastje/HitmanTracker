@@ -35,7 +35,6 @@ imgui_app::AppWindowPtr imgui_app::create_app_window(
         spec.character_width,
         spec.character_height,
         font_size,
-        spec.is_htclient_mapped_to_htcaption,
         spec.pos
     );
     if (!window) return nullptr;
@@ -51,35 +50,54 @@ imgui_app::AppWindowPtr imgui_app::create_app_window(
     auto* app_window_ptr
         = new AppWindow{std::move(window), std::move(dev), std::move(ui), draw};
     AppWindowPtr app_window{app_window_ptr};
-    // Keep the D3D backbuffer in sync with the window's client size.
-    app_window_ptr->window->state->on_size.push_back(
-        [app_window_ptr](UINT width, UINT height) {
-            spdlog::debug("Handling window resize");
-            auto& device = *app_window_ptr->device;
-            device.state.present_parameters.BackBufferWidth = width;
-            device.state.present_parameters.BackBufferHeight = height;
-            ImGui::SetCurrentContext(app_window_ptr->ui->imgui_context);
-            // can ignore if reset failed, will retry next frame
-            std::ignore = imgui_app::ResetDevice(device);
-        }
-    );
-    // Move to the OS-suggested rect and rescale fonts/UI for the new DPI.
-    app_window_ptr->window->state->on_dpi_changed.push_back(
-        [app_window_ptr](float dpiscale, const RECT& rect) {
-            spdlog::debug("Handling dpi change");
-            ::SetWindowPos(
-                app_window_ptr->window->handle,
-                nullptr,
-                rect.left,
-                rect.top,
-                rect.right - rect.left,
-                rect.bottom - rect.top,
-                SWP_NOZORDER
-            );
-            ImGui::SetCurrentContext(app_window_ptr->ui->imgui_context);
-            imgui_app::UpdateUIScaling(*app_window_ptr->ui, dpiscale);
-        }
-    );
+    OnMessage on_message = [app_window_ptr](
+                               UINT msg, WPARAM wparam, LPARAM lparam
+                           ) -> std::optional<LRESULT> {
+        switch (msg) {
+            case WM_SIZE: {
+                // keep backbuffer in sync with window size
+                spdlog::debug("Handling window resize");
+                auto& device = *app_window_ptr->device;
+                device.state.present_parameters.BackBufferWidth
+                    = (UINT)LOWORD(lparam);
+                device.state.present_parameters.BackBufferHeight
+                    = (UINT)HIWORD(lparam);
+                ImGui::SetCurrentContext(app_window_ptr->ui->imgui_context);
+                // can ignore if reset failed, will retry next frame
+                std::ignore = imgui_app::ResetDevice(device);
+                return 0;
+            }
+            case WM_DPICHANGED: {
+                // move to suggested rect and rescale fonts/UI
+                assert(LOWORD(wparam) == HIWORD(wparam));
+                float dpiscale = static_cast<float>(LOWORD(wparam))
+                                 / USER_DEFAULT_SCREEN_DPI;
+                const RECT& rect = *reinterpret_cast<RECT*>(lparam);
+                spdlog::debug("Handling dpi change");
+                ::SetWindowPos(
+                    app_window_ptr->window->handle,
+                    nullptr,
+                    rect.left,
+                    rect.top,
+                    rect.right - rect.left,
+                    rect.bottom - rect.top,
+                    SWP_NOZORDER
+                );
+                ImGui::SetCurrentContext(app_window_ptr->ui->imgui_context);
+                imgui_app::UpdateUIScaling(*app_window_ptr->ui, dpiscale);
+                return 0;
+            }
+            case WM_SYSCOMMAND:
+                // disable ALT application menu
+                if ((wparam & 0xfff0) == SC_KEYMENU) return 0;
+                break;
+            case WM_DESTROY:
+                ::PostQuitMessage(0);
+                return 0;
+        };
+        return std::nullopt;
+    };
+    app_window_ptr->window->state->on_message.push_back(on_message);
     return app_window;
 }
 

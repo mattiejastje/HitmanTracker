@@ -156,34 +156,81 @@ int gui_run(
             .ex_style = settings.gui.overlay_mode ? OVERLAY_EX_STYLE : 0U,
             .character_width = settings.gui.overlay_width,
             .character_height = settings.gui.overlay_height,
-            .is_htclient_mapped_to_htcaption = true,  // drag
             .pos = overlay_pos,
         },
         settings.gui.font_size,
         hitman_common::make_font_specs(settings.gui),
         draw_stats
     );
-    // persist position/size (character units) once the user finishes dragging
-    stats->window->state->on_exit_size_move.push_back(
-        [&settings, handle = stats->window->handle](const RECT& rect) {
-            float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(handle);
-            settings.gui.overlay_x = rect.left;
-            settings.gui.overlay_y = rect.top;
-            settings.gui.overlay_width = (rect.right - rect.left)
-                                         / (settings.gui.font_size * dpiscale);
-            settings.gui.overlay_height = (rect.bottom - rect.top)
-                                          / (settings.gui.font_size * dpiscale);
-            settings::save(settings);
+
+    imgui_app::OnMessage on_message_stats
+        = [&settings, handle = stats->window->handle](
+              UINT msg, WPARAM wparam, LPARAM lparam
+          ) -> std::optional<LRESULT> {
+        switch (msg) {
+            case WM_EXITSIZEMOVE: {
+                // save position/size (character units)
+                // once the user finishes dragging
+                float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(handle);
+                RECT rect;
+                if (::GetWindowRect(handle, &rect)) {
+                    settings.gui.overlay_x = rect.left;
+                    settings.gui.overlay_y = rect.top;
+                    settings.gui.overlay_width
+                        = (rect.right - rect.left)
+                          / (settings.gui.font_size * dpiscale);
+                    settings.gui.overlay_height
+                        = (rect.bottom - rect.top)
+                          / (settings.gui.font_size * dpiscale);
+                    settings::save(settings);
+                }
+                break;
+            }
+            case WM_DPICHANGED: {
+                // keep the stored position roughly current
+                // if a DPI/monitor change moves it
+                const RECT& rect = *reinterpret_cast<RECT*>(lparam);
+                settings.gui.overlay_x = rect.left;
+                settings.gui.overlay_y = rect.top;
+                settings::save(settings);
+                break;
+            }
+            case WM_SETCURSOR:
+                // show move icon when hovering over client area
+                if (LOWORD(lparam) == HTCAPTION) {
+                    SetCursor(LoadCursor(NULL, IDC_SIZEALL));
+                    return TRUE;
+                }
+                break;
+            case WM_NCHITTEST: {
+                // treat client area (HTCLIENT) as title area (HTCAPTION)
+                // make border draggable (HTTOP/BOTTOM/LEFT/RIGHT...)
+                float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(handle);
+                const int border = std::lround(5 * dpiscale);
+                POINT pt;
+                GetCursorPos(&pt);
+                ScreenToClient(handle, &pt);
+                RECT rc;
+                GetClientRect(handle, &rc);
+                if (pt.x < border && pt.y < border) return HTTOPLEFT;
+                if (pt.x > rc.right - border && pt.y < border)
+                    return HTTOPRIGHT;
+                if (pt.x < border && pt.y > rc.bottom - border)
+                    return HTBOTTOMLEFT;
+                if (pt.x > rc.right - border && pt.y > rc.bottom - border)
+                    return HTBOTTOMRIGHT;
+                if (pt.x < border) return HTLEFT;
+                if (pt.x > rc.right - border) return HTRIGHT;
+                if (pt.y < border) return HTTOP;
+                if (pt.y > rc.bottom - border) return HTBOTTOM;
+                auto hit = ::DefWindowProcW(handle, msg, wparam, lparam);
+                return hit == HTCLIENT ? HTCAPTION : hit;
+            }
         }
-    );
-    // keep the stored position roughly current if a DPI/monitor change moves it
-    stats->window->state->on_dpi_changed.push_back(
-        [&settings](float, const RECT& rect) {
-            settings.gui.overlay_x = rect.left;
-            settings.gui.overlay_y = rect.top;
-            settings::save(settings);
-        }
-    );
+        return std::nullopt;
+    };
+
+    stats->window->state->on_message.push_back(on_message_stats);
 
     imgui_app::DrawFunc draw_main = [&settings, &game, &stats](
                                         imgui_app::AppWindow& aw, float dt
@@ -370,7 +417,6 @@ int gui_run(
             .ex_style = 0U,
             .character_width = 48,
             .character_height = 27,
-            .is_htclient_mapped_to_htcaption = false,
             .pos = std::nullopt,
         },
         12.0,

@@ -3,6 +3,8 @@
 #include <imgui_impl_win32.h>
 #include <spdlog/spdlog.h>
 
+#include <ranges>
+
 #include "window_class.hpp"
 
 // Forward declare message handler from imgui_impl_win32.cpp
@@ -27,66 +29,12 @@ wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     if (state && state->imgui_context) {
         ImGui::SetCurrentContext(state->imgui_context);
+        // Must run before any on_message hook: it needs to observe every raw
+        // input message to keep ImGui's IO state correct, even on messages
+        // where it returns 0.
         if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) return 1;
-        switch (msg) {
-            case WM_SIZE:
-                if (wparam == SIZE_MINIMIZED) return 0;
-                for (auto& callback : state->on_size)
-                    callback((UINT)LOWORD(lparam), (UINT)HIWORD(lparam));
-                return 0;
-            case WM_DPICHANGED: {
-                assert(LOWORD(wparam) == HIWORD(wparam));
-                float dpiscale = static_cast<float>(LOWORD(wparam))
-                                 / USER_DEFAULT_SCREEN_DPI;
-                const RECT& rect = *reinterpret_cast<RECT*>(lparam);
-                for (auto& callback : state->on_dpi_changed)
-                    callback(dpiscale, rect);
-                return 0;
-            }
-            case WM_EXITSIZEMOVE: {
-                RECT rect;
-                if (::GetWindowRect(hwnd, &rect))
-                    for (auto& callback : state->on_exit_size_move)
-                        callback(rect);
-                return 0;
-            }
-            case WM_SYSCOMMAND:
-                // Disable ALT application menu
-                if ((wparam & 0xfff0) == SC_KEYMENU) return 0;
-                break;
-            case WM_SETCURSOR:
-                if (state->is_htclient_mapped_to_htcaption
-                    && LOWORD(lparam) == HTCAPTION) {
-                    SetCursor(LoadCursor(NULL, IDC_SIZEALL));
-                    return TRUE;
-                }
-                break;
-            case WM_NCHITTEST:
-                if (state->is_htclient_mapped_to_htcaption) {
-                    POINT pt;
-                    GetCursorPos(&pt);
-                    ScreenToClient(hwnd, &pt);
-                    RECT rc;
-                    GetClientRect(hwnd, &rc);
-                    const int border = 10;
-                    if (pt.x < border && pt.y < border) return HTTOPLEFT;
-                    if (pt.x > rc.right - border && pt.y < border)
-                        return HTTOPRIGHT;
-                    if (pt.x < border && pt.y > rc.bottom - border)
-                        return HTBOTTOMLEFT;
-                    if (pt.x > rc.right - border && pt.y > rc.bottom - border)
-                        return HTBOTTOMRIGHT;
-                    if (pt.x < border) return HTLEFT;
-                    if (pt.x > rc.right - border) return HTRIGHT;
-                    if (pt.y < border) return HTTOP;
-                    if (pt.y > rc.bottom - border) return HTBOTTOM;
-                    auto hit = ::DefWindowProcW(hwnd, msg, wparam, lparam);
-                    return hit == HTCLIENT ? HTCAPTION : hit;
-                }
-                break;
-            case WM_DESTROY:
-                ::PostQuitMessage(0);
-                return 0;
+        for (auto& callback : state->on_message | std::views::reverse) {
+            if (auto result = callback(msg, wparam, lparam)) return *result;
         }
     }
     return ::DefWindowProcW(hwnd, msg, wparam, lparam);
@@ -116,7 +64,6 @@ imgui_app::WindowPtr imgui_app::create_window(
     float character_width,
     float character_height,
     float font_size,
-    bool is_htclient_mapped_to_htcaption,
     std::optional<POINT> pos
 ) {
     spdlog::debug(L"Creating window {}...", title);
@@ -128,8 +75,6 @@ imgui_app::WindowPtr imgui_app::create_window(
     window->window_class = window_class;
     window->title = title;
     window->state = std::make_unique<Window::State>();
-    window->state->is_htclient_mapped_to_htcaption
-        = is_htclient_mapped_to_htcaption;
     auto pos_cw = pos.value_or(POINT{CW_USEDEFAULT, CW_USEDEFAULT});
     window->handle = ::CreateWindowExW(
         dw_ex_style,

@@ -17,19 +17,11 @@ namespace imgui_app {
     std::wstring_view class_name, UINT style, HBRUSH background_brush
 );
 
-using ResizeCallback = std::function<void(UINT width, UINT height)>;
-
-using DpiChangedCallback
-    = std::function<void(float dpiscale, const RECT& suggested_rect)>;
-
-using ExitSizeMoveCallback = std::function<void(const RECT& rect)>;
+using OnMessage = std::function<std::optional<LRESULT>(UINT msg, WPARAM wparam, LPARAM lparam)>;
 
 struct Window {
     struct State {
         ImGuiContext* imgui_context = nullptr;
-        // makes client area behave like title bar
-        // so window can be dragged around
-        bool is_htclient_mapped_to_htcaption = false;
         // Consumers append here (typically right after the window is
         // created) to react to window events. wnd_proc invokes these
         // directly, synchronously, whenever the corresponding message
@@ -38,9 +30,11 @@ struct Window {
         // NOT call into these directly. Use AppWindowAction, returned
         // from draw() and applied once every window's frame has ended,
         // instead.
-        std::vector<ResizeCallback> on_size;
-        std::vector<DpiChangedCallback> on_dpi_changed;
-        std::vector<ExitSizeMoveCallback> on_exit_size_move;
+        // The callbacks are processed in reverse order,
+        // so push back to this vector to override behaviour.
+        // Returning nullopt will process the previous callback.
+        // Returning an LRESULT will return that value for wnd_proc.
+        std::vector<OnMessage> on_message;
     };
 
     std::shared_ptr<WindowClass> window_class;
@@ -66,7 +60,6 @@ using WindowPtr = std::unique_ptr<Window, WindowDeleter>;
     float character_width,
     float character_height,
     float font_size,
-    bool is_htclient_mapped_to_htcaption,
     std::optional<POINT> pos = std::nullopt
 );
 
