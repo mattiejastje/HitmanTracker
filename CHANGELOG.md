@@ -8,6 +8,8 @@
 
 - The github builds now cache vcpkg dependencies, resulting in faster builds.
 
+- Logs now show game for additional context.
+
 ### Changed
 
 - **Breaking:** The ``--overlay`` flag is now called ``--overlay-mode`` for consistency with the UI and to make it more clearly distinguishable in case more overlay options are added in the future.
