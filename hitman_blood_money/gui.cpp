@@ -36,7 +36,7 @@ GameGui hitman_blood_money::gui(
         hitman_common::gui_header(
             settings,
             fonts,
-            GAME_NAME,
+            "Hitman: Blood Money",
             version,
             stats.difficulty == 0   ? "Rookie"
             : stats.difficulty == 1 ? "Normal"

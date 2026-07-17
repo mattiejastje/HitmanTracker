@@ -45,7 +45,7 @@ GameGui hitman2_silent_assassin::gui(
         hitman_common::gui_header(
             settings,
             fonts,
-            GAME_NAME,
+            "Hitman 2: Silent Assassin",
             version,
             stats.difficulty == 1   ? "Normal"
             : stats.difficulty == 2 ? "Expert"

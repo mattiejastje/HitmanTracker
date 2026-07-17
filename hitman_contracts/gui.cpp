@@ -36,7 +36,7 @@ GameGui hitman_contracts::gui(
         hitman_common::gui_header(
             settings,
             fonts,
-            GAME_NAME,
+            "Hitman: Contracts",
             version,
             stats.difficulty == 1   ? "Normal"
             : stats.difficulty == 2 ? "Expert"

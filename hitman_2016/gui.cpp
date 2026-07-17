@@ -9,7 +9,15 @@ GameGui hitman_2016::gui(
 ) {
     return [&settings, version](std::span<ImFont*> fonts, const std::any& stats_any) {
         hitman_common::gui_header(
-            settings, fonts, GAME_NAME, version, "", "", 0, MapStage::pre, 0.0f
+            settings,
+            fonts,
+            "Hitman (2016)",
+            version,
+            "",
+            "",
+            0,
+            MapStage::pre,
+            0.0f
         );
     };
 }
