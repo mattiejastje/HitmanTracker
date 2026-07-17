@@ -27,7 +27,7 @@ void spdlog_init() {
     auto logger = std::make_shared<spdlog::logger>(
         "HitmanTracker", sinks.begin(), sinks.end()
     );
-    logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%t] [%^%l%$] %v");
+    logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%t] [%^%l%$] [%&] %v");
     spdlog::set_default_logger(logger);
 }
 

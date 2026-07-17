@@ -4,6 +4,7 @@
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
 #include <shellapi.h>
+#include <spdlog/mdc.h>
 #include <spdlog/spdlog.h>
 #include <tchar.h>
 
@@ -235,7 +236,9 @@ int gui_run(
         if (timer_find_game.tick(dt)) {
             // try find game if none found yet
             if (!game || !is_process_running(game->handle.get())) {
+                const bool had_game = static_cast<bool>(game);
                 game = find_game(registry);
+                if (had_game && !game) spdlog::mdc::remove("game");
             };
             // try install hook if none installed yet
             if (game && !game->hook) {

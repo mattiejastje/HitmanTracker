@@ -1,5 +1,6 @@
 #include "game.hpp"
 
+#include <spdlog/mdc.h>
 #include <spdlog/spdlog.h>
 #include <synchapi.h>
 #include <tlhelp32.h>
@@ -112,6 +113,7 @@ static std::optional<Game> get_game_for_process(
         std::shared_ptr<void> handle = std::move(process_handle);
         auto base_ptrs = get_base_ptrs(*modules);
         spdlog::info("Found process for {}", info.tag);
+        spdlog::mdc::put("game", info.tag);
         return Game{
             (*modules)[0].exe_path,
             handle,
