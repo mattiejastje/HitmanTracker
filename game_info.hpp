@@ -46,7 +46,7 @@ struct ModuleInfo {
 };
 
 struct GameInfo {
-    std::string name;
+    std::string tag;
     GameMethods methods;
     std::function<std::any()> make_remote_state;
     std::function<std::any()> make_stats;

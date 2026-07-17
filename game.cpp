@@ -111,7 +111,7 @@ static std::optional<Game> get_game_for_process(
         if (!modules) continue;
         std::shared_ptr<void> handle = std::move(process_handle);
         auto base_ptrs = get_base_ptrs(*modules);
-        spdlog::info("Found process for {}", info.name);
+        spdlog::info("Found process for {}", info.tag);
         return Game{
             (*modules)[0].exe_path,
             handle,

@@ -8,7 +8,7 @@ void hitman_2016::register_game_info(
     registry.emplace_back(
         // Direct3D 11: retail/HITMAN.exe
         GameInfo{
-            .name = GAME_NAME,
+            .tag = "h1-s-dx11",
             .methods = GameMethods{
                 gui(settings, "Steam DX11"),
                 hook_nothing,
@@ -26,7 +26,7 @@ void hitman_2016::register_game_info(
     registry.emplace_back(
         // Direct3D 12: dx12Retail\HITMAN.exe
         GameInfo{
-            .name = GAME_NAME,
+            .tag = "h1-s-dx12",
             .methods = GameMethods{
                 gui(settings, "Steam DX12"),
                 hook_nothing,

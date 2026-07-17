@@ -8,7 +8,7 @@ void hitman_codename_47::register_game_info(
     std::vector<GameInfo>& registry, const settings::Gui& settings
 ) {
     registry.emplace_back(GameInfo {
-        .name = GAME_NAME,
+        .tag = "hc47-s",
         .methods = GameMethods{
             gui(settings, "Steam b192"),
             hook_nothing,
@@ -24,7 +24,7 @@ void hitman_codename_47::register_game_info(
         },
     });
     registry.emplace_back(GameInfo {
-        .name = GAME_NAME,
+        .tag = "hc47-g",
         .methods = GameMethods{
             gui(settings, "GOG b192"),
             hook_nothing,

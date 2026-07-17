@@ -10,7 +10,7 @@ void hitman2_silent_assassin::register_game_info(
 ) {
     registry.emplace_back(
         GameInfo{
-            .name = GAME_NAME,
+            .tag = "h2sa-s",
             .methods
             = GameMethods{gui(settings, "Steam v1.02"), hook_nothing, hook_immediately_ready, update_slow(Version::Steam), update_fast(Version::Steam)},
             .make_remote_state = [] { return std::make_any<structs::Game>(); },
@@ -20,7 +20,7 @@ void hitman2_silent_assassin::register_game_info(
     );
     registry.emplace_back(
         GameInfo{
-            .name = GAME_NAME,
+            .tag = "h2sa-g",
             .methods
             = GameMethods{gui(settings, "GOG v1.01"), hook_nothing, hook_immediately_ready, update_slow(Version::GOG), update_fast(Version::GOG)},
             .make_remote_state = [] { return std::make_any<structs::Game>(); },

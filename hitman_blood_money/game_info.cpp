@@ -12,7 +12,7 @@ void hitman_blood_money::register_game_info(
 ) {
     registry.emplace_back(
         GameInfo{
-        .name = GAME_NAME,
+        .tag = "hbm-s",
         .methods = GameMethods{
             gui(settings, hbm, "Steam"),
             hook(Version::Steam),
@@ -26,7 +26,7 @@ void hitman_blood_money::register_game_info(
     });
     registry.emplace_back(
         GameInfo{
-        .name = GAME_NAME,
+        .tag = "hbm-g",
         .methods = GameMethods{
             gui(settings, hbm, "GOG"),
             hook(Version::GOG),

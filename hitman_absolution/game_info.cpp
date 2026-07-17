@@ -12,7 +12,7 @@ void hitman_absolution::register_game_info(
 ) {
     registry.emplace_back(
         GameInfo{
-            .name = GAME_NAME,
+            .tag = "hma-s",
             .methods
             = GameMethods{gui(settings, hma, "Steam"), hook(Version::Steam), hook_ready(Version::Steam), update_slow(hma, Version::Steam), update_fast(Version::Steam)},
             .make_remote_state = [] { return std::make_any<structs::Game>(); },
@@ -22,7 +22,7 @@ void hitman_absolution::register_game_info(
     );
     registry.emplace_back(
         GameInfo{
-            .name = GAME_NAME,
+            .tag = "hma-g",
             .methods
             = GameMethods{gui(settings, hma, "GOG"), hook(Version::GOG), hook_ready(Version::GOG), update_slow(hma, Version::GOG), update_fast(Version::GOG)},
             .make_remote_state = [] { return std::make_any<structs::Game>(); },

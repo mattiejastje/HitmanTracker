@@ -10,7 +10,7 @@ void hitman_contracts::register_game_info(
 ) {
     registry.emplace_back(
         GameInfo{
-            .name = GAME_NAME,
+            .tag = "hcon-s",
             .methods
             = GameMethods{gui(settings, "Steam Build 175"), hook_nothing, hook_immediately_ready, update_slow(Version::Steam), update_fast(Version::Steam)},
             .make_remote_state
@@ -21,7 +21,7 @@ void hitman_contracts::register_game_info(
     );
     registry.emplace_back(
         GameInfo{
-            .name = GAME_NAME,
+            .tag = "hcon-g",
             .methods
             = GameMethods{gui(settings, "GOG Build 174"), hook_nothing, hook_immediately_ready, update_slow(Version::GOG), update_fast(Version::GOG)},
             .make_remote_state
