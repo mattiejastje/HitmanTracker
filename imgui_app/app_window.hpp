@@ -31,40 +31,9 @@ using TickFunc = std::function<void(float)>;
 // forward declare for DrawResult
 struct AppWindow;
 
-struct AppWindowAction {
-    struct UpdateUIScaling {
-        std::optional<float> dpiscale;
-    };
+using AppWindowSideEffect = std::function<void()>;
 
-    struct SetWinPos {
-        HWND hwnd_insert_after;
-        int x, y, cx, cy;
-        UINT flags;
-    };
-
-    struct SetWinLongPtr {
-        int index;
-        LONG_PTR value;
-    };
-
-    struct SetLayeredWinAttrs{
-        COLORREF color;
-        BYTE alpha;
-        DWORD flags;
-    };
-
-    AppWindow* app_window;
-    std::variant<
-        UpdateUIScaling,
-        SetWinPos,
-        SetWinLongPtr,
-        SetLayeredWinAttrs>
-        action;
-};
-
-using AppWindowActions = std::list<AppWindowAction>;
-
-using DrawFunc = std::function<AppWindowActions(AppWindow&, float)>;
+using DrawFunc = std::function<AppWindowSideEffect(AppWindow&, float)>;
 
 struct AppWindow {
     WindowPtr window;

@@ -141,74 +141,64 @@ static void draw_main_status(const char* game_exe, bool hooked) {
     }
 }
 
-static imgui_app::AppWindowActions draw_main_side_effects(
+static imgui_app::AppWindowSideEffect draw_main_side_effect(
     imgui_app::AppWindow* stats,
     const SettingsChanged& changed,
     settings::Settings& settings
 ) {
-    imgui_app::AppWindowActions actions{};
-    if (changed.any) settings::save(settings);
-    if (changed.fonts) {
-        stats->ui->font_specs = hitman_common::make_font_specs(settings.gui);
-        actions.emplace_back(
-            stats, imgui_app::AppWindowAction::UpdateUIScaling{}
-        );
-        float dpiscale
-            = ImGui_ImplWin32_GetDpiScaleForHwnd(stats->window->handle);
-        actions.emplace_back(
-            stats,
-            imgui_app::AppWindowAction::SetWinPos{
-                .cx = static_cast<int>(
-                    settings.gui.overlay_width * settings.gui.font_size
-                    * dpiscale
-                ),
-                .cy = static_cast<int>(
-                    settings.gui.overlay_height * settings.gui.font_size
-                    * dpiscale
-                ),
-                .flags = SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE,
-            }
-        );
-    }
-    if (changed.overlay_mode) {
-        spdlog::debug("Overlay mode is {}", settings.gui.overlay_mode);
-        auto ex_style = settings.gui.overlay_mode ? OVERLAY_EX_STYLE : 0U;
-        actions.emplace_back(
-            stats,
-            imgui_app::AppWindowAction::SetWinLongPtr{
-                .index = GWL_EXSTYLE,
-                .value = ex_style,
-            }
-        );
-        if (ex_style & WS_EX_LAYERED) {
-            actions.emplace_back(
-                stats,
-                imgui_app::AppWindowAction::SetLayeredWinAttrs{
-                    .color = RGB(0, 0, 0),
-                    .flags = LWA_COLORKEY,
-                }
+    return [stats, changed, &settings]() {
+        auto handle = stats->window->handle;
+        auto& ui = *stats->ui;
+        ImGui::SetCurrentContext(ui.imgui_context);
+        if (changed.any) settings::save(settings);
+        if (changed.fonts) {
+            ui.font_specs = hitman_common::make_font_specs(settings.gui);
+            float dpiscale = ImGui_ImplWin32_GetDpiScaleForHwnd(handle);
+            auto cx = settings.gui.overlay_width * settings.gui.font_size;
+            auto cy = settings.gui.overlay_height * settings.gui.font_size;
+            imgui_app::UpdateUIScaling(ui, dpiscale);
+            ::SetWindowPos(
+                handle,
+                nullptr,
+                0,
+                0,
+                static_cast<int>(cx * dpiscale),
+                static_cast<int>(cy * dpiscale),
+                SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE
             );
         }
-        actions.emplace_back(
-            stats,
-            imgui_app::AppWindowAction::SetWinPos{
-                .hwnd_insert_after
-                = settings.gui.overlay_mode ? HWND_TOPMOST : HWND_NOTOPMOST,
-                .flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+        if (changed.overlay_mode) {
+            spdlog::debug("Overlay mode is {}", settings.gui.overlay_mode);
+            const auto overlay_mode = settings.gui.overlay_mode;
+            const auto ex_style = overlay_mode ? OVERLAY_EX_STYLE : 0U;
+            SetWindowLongPtr(handle, GWL_EXSTYLE, ex_style);
+            if (ex_style & WS_EX_LAYERED) {
+                ::SetLayeredWindowAttributes(
+                    handle, RGB(0, 0, 0), 0, LWA_COLORKEY
+                );
             }
-        );
-    }
-    if (changed.reposition) {
-        actions.emplace_back(
-            stats,
-            imgui_app::AppWindowAction::SetWinPos{
-                .x = settings.gui.overlay_x,
-                .y = settings.gui.overlay_y,
-                .flags = SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE,
-            }
-        );
-    }
-    return actions;
+            ::SetWindowPos(
+                handle,
+                overlay_mode ? HWND_TOPMOST : HWND_NOTOPMOST,
+                0,
+                0,
+                0,
+                0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE
+            );
+        }
+        if (changed.reposition) {
+            ::SetWindowPos(
+                handle,
+                nullptr,
+                settings.gui.overlay_x,
+                settings.gui.overlay_y,
+                0,
+                0,
+                SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE
+            );
+        }
+    };
 }
 
 int gui_run(
@@ -283,37 +273,38 @@ int gui_run(
         }
     };
 
-    imgui_app::DrawFunc draw_stats =
-        [&settings, &game](imgui_app::AppWindow& aw, float dt) {
-            const bool show_border
-                = settings.gui.border_size > 0 && !settings.gui.overlay_mode;
-            if (show_border) {
-                ImGui::PushStyleVar(
-                    ImGuiStyleVar_WindowBorderSize,
-                    settings.gui.border_size
-                        * ImGui_ImplWin32_GetDpiScaleForHwnd(aw.window->handle)
-                );
-                ImGui::PushStyleColor(
-                    ImGuiCol_Border, ImVec4{1.0f, 1.0f, 1.0f, 1.0f}
-                );
+    imgui_app::DrawFunc draw_stats = [&settings, &game](
+                                         imgui_app::AppWindow& aw, float dt
+                                     ) -> imgui_app::AppWindowSideEffect {
+        const bool show_border
+            = settings.gui.border_size > 0 && !settings.gui.overlay_mode;
+        if (show_border) {
+            ImGui::PushStyleVar(
+                ImGuiStyleVar_WindowBorderSize,
+                settings.gui.border_size
+                    * ImGui_ImplWin32_GetDpiScaleForHwnd(aw.window->handle)
+            );
+            ImGui::PushStyleColor(
+                ImGuiCol_Border, ImVec4{1.0f, 1.0f, 1.0f, 1.0f}
+            );
+        }
+        if (ImGui::Begin(
+                "Stats",
+                nullptr,
+                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
+                    | ImGuiWindowFlags_NoMove
+            )) {
+            if (game && game->hook) {
+                game->methods.gui(aw.ui->fonts, game->stats);
             }
-            if (ImGui::Begin(
-                    "Stats",
-                    nullptr,
-                    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
-                        | ImGuiWindowFlags_NoMove
-                )) {
-                if (game && game->hook) {
-                    game->methods.gui(aw.ui->fonts, game->stats);
-                }
-                ImGui::End();
-            }
-            if (show_border) {
-                ImGui::PopStyleColor();
-                ImGui::PopStyleVar();
-            }
-            return imgui_app::AppWindowActions{};
-        };
+            ImGui::End();
+        }
+        if (show_border) {
+            ImGui::PopStyleColor();
+            ImGui::PopStyleVar();
+        }
+        return nullptr;
+    };
 
     spdlog::info("Running user interface");
     ImGui_ImplWin32_EnableDpiAwareness();
@@ -408,7 +399,7 @@ int gui_run(
 
     imgui_app::DrawFunc draw_main = [&settings, &game, &stats](
                                         imgui_app::AppWindow& aw, float dt
-                                    ) -> imgui_app::AppWindowActions {
+                                    ) -> imgui_app::AppWindowSideEffect {
         if (ImGui::Begin(
                 "Main",
                 nullptr,
@@ -433,9 +424,9 @@ int gui_run(
             );
             changed |= settings_gui(settings);
             ImGui::End();
-            return draw_main_side_effects(stats.get(), changed, settings);
+            return draw_main_side_effect(stats.get(), changed, settings);
         }
-        return {};
+        return nullptr;
     };
 
     auto main = imgui_app::create_app_window(

@@ -118,7 +118,7 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
         float dt = std::chrono::duration<float>(now - last_now).count();
         last_now = now;
         tick(dt);
-        AppWindowActions all_actions{};
+        std::vector<AppWindowSideEffect> side_effects{};
         for (auto& aw : app_windows) {
             auto& device = *aw->device;
             auto& ui = *aw->ui;
@@ -134,72 +134,12 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
             auto& io = ImGui::GetIO();
             ImGui::SetNextWindowSize({io.DisplaySize.x, io.DisplaySize.y});
             ImGui::SetNextWindowPos({0, 0});
-            auto actions = aw->draw(*aw, dt);
+            auto side_effect = aw->draw(*aw, dt);
+            if (side_effect) side_effects.push_back(side_effect);
             ImGui::EndFrame();
             imgui_app::RenderAndPresent(device);
-            all_actions.insert(
-                all_actions.end(), actions.begin(), actions.end()
-            );
         }
-        for (auto& action : all_actions) {
-            ImGui::SetCurrentContext(action.app_window->ui->imgui_context);
-            std::visit(
-                overloaded{
-                    [&action](AppWindowAction::UpdateUIScaling args) {
-                        if (!UpdateUIScaling(
-                                *action.app_window->ui,
-                                args.dpiscale.value_or(
-                                    ImGui_ImplWin32_GetDpiScaleForHwnd(
-                                        action.app_window->window->handle
-                                    )
-                                )
-                            ))
-                            spdlog::error("Failed to update UI scaling");
-                    },
-                    [&action](AppWindowAction::SetWinPos args) {
-                        if (!::SetWindowPos(
-                                action.app_window->window->handle,
-                                args.hwnd_insert_after,
-                                args.x,
-                                args.y,
-                                args.cx,
-                                args.cy,
-                                args.flags
-                            ))
-                            spdlog::error("Failed to set window position");
-                    },
-                    [&action](AppWindowAction::SetWinLongPtr args) {
-                        auto value = GetWindowLongPtr(
-                            action.app_window->window->handle, args.index
-                        );
-                        SetWindowLongPtr(
-                            action.app_window->window->handle,
-                            args.index,
-                            args.value
-                        );
-                        spdlog::debug(
-                            "Window long ptr {:#x} changed from {:#x} to {:#x}",
-                            args.index,
-                            value,
-                            args.value
-                        );
-                    },
-                    [&action](AppWindowAction::SetLayeredWinAttrs args) {
-                        if (!::SetLayeredWindowAttributes(
-                                action.app_window->window->handle,
-                                args.color,
-                                args.alpha,
-                                args.flags
-                            )) {
-                            spdlog::error(
-                                "Failed to set layered window attributes"
-                            );
-                        }
-                    },
-                },
-                action.action
-            );
-        }
+        for (auto& side_effect : side_effects) side_effect();
     }
     spdlog::info("Stopping main loop");
 }
