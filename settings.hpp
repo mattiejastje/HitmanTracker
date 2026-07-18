@@ -46,6 +46,7 @@ struct Gui {
     float overlay_width{15.0f};   // character units
     float overlay_height{30.0f};  // character units
     float font_size{20.0f};
+    int border_size{2};
     TextStyle game{"fonts/dejavu/DejaVuSansCondensed.ttf"};
     TextStyle version{"fonts/dejavu/DejaVuSansCondensed.ttf", 0.7f};
     TextStyle difficulty{"fonts/dejavu/DejaVuSansCondensed.ttf", 0.9f};

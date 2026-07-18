@@ -283,32 +283,37 @@ int gui_run(
         }
     };
 
-    imgui_app::DrawFunc draw_stats
-        = [&settings, &game](imgui_app::AppWindow& aw, float dt) {
-              const bool show_border = !settings.gui.overlay_mode;
-              if (show_border) {
-                  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
-                  ImGui::PushStyleColor(
-                      ImGuiCol_Border, ImVec4{1.0f, 1.0f, 1.0f, 1.0f}
-                  );
-              }
-              if (ImGui::Begin(
-                      "Stats",
-                      nullptr,
-                      ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
-                          | ImGuiWindowFlags_NoMove
-                  )) {
-                  if (game && game->hook) {
-                      game->methods.gui(aw.ui->fonts, game->stats);
-                  }
-                  ImGui::End();
-              }
-              if (show_border) {
-                  ImGui::PopStyleColor();
-                  ImGui::PopStyleVar();
-              }
-              return imgui_app::AppWindowActions{};
-          };
+    imgui_app::DrawFunc draw_stats =
+        [&settings, &game](imgui_app::AppWindow& aw, float dt) {
+            const bool show_border
+                = settings.gui.border_size > 0 && !settings.gui.overlay_mode;
+            if (show_border) {
+                ImGui::PushStyleVar(
+                    ImGuiStyleVar_WindowBorderSize,
+                    settings.gui.border_size
+                        * ImGui_ImplWin32_GetDpiScaleForHwnd(aw.window->handle)
+                );
+                ImGui::PushStyleColor(
+                    ImGuiCol_Border, ImVec4{1.0f, 1.0f, 1.0f, 1.0f}
+                );
+            }
+            if (ImGui::Begin(
+                    "Stats",
+                    nullptr,
+                    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
+                        | ImGuiWindowFlags_NoMove
+                )) {
+                if (game && game->hook) {
+                    game->methods.gui(aw.ui->fonts, game->stats);
+                }
+                ImGui::End();
+            }
+            if (show_border) {
+                ImGui::PopStyleColor();
+                ImGui::PopStyleVar();
+            }
+            return imgui_app::AppWindowActions{};
+        };
 
     spdlog::info("Running user interface");
     ImGui_ImplWin32_EnableDpiAwareness();

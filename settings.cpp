@@ -99,6 +99,9 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     gui_group->add_option("--font-size", settings.gui.font_size, "Font size")
         ->capture_default_str();
     gui_group
+        ->add_option("--border-size", settings.gui.border_size, "Border size")
+        ->capture_default_str();
+    gui_group
         ->add_option("--show-game", settings.gui.show_game, "Show game name")
         ->capture_default_str();
     gui_group

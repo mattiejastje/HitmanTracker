@@ -4,7 +4,7 @@
 
 ### Added
 
-- The tracker window now has a white border when not in overlay mode, to make it easier to find.
+- The tracker window now has a white border when not in overlay mode, to make it easier to find. The size of the border is configurable, and the border can be disabled.
 
 - The github builds now cache vcpkg dependencies, resulting in faster builds.
 
