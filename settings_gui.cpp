@@ -80,8 +80,7 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                 ImGui::Checkbox("Overlay mode", &settings.gui.overlay_mode)
             );
             ImGui::SetItemTooltip(
-                "Makes the tracker transparent, click-through, and always on "
-                "top"
+                "Make tracker transparent, click-through, and always on top"
             );
             mark_fonts(
                 changed,
