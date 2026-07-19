@@ -127,15 +127,6 @@ static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
     ImGui::SeparatorText("Recent Errors");
     auto counter_sink = spdlog_counter_sink();
     const auto count = counter_sink ? counter_sink->count.load() : 0;
-    result.changed.any |= ImGui::Checkbox(
-        count > 0 ? "Show Recent Errors (!)" : "Show Recent Errors",
-        &settings.show_recent_errors
-    );
-    if (count > 0) {
-        ImGui::SetItemTooltip("%d error(s) logged since last cleared", count);
-    } else {
-        ImGui::SetItemTooltip("No errors logged since last cleared");
-    }
     ImGui::BeginDisabled(count == 0);
     if (ImGui::Button("Copy to Clipboard")) {
         std::string clipboard_text;
@@ -158,6 +149,13 @@ static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
     ImGui::SetItemTooltip(
         count > 0 ? "Clear %d error(s)" : "No errors to clear", count
     );
+    ImGui::EndDisabled();
+    result.changed.any
+        |= ImGui::Checkbox("Show Recent Errors", &settings.show_recent_errors);
+    ImGui::SetItemTooltip(
+        count > 0 ? "Show %d error(s)" : "No errors to show", count
+    );
+    ImGui::BeginDisabled(count == 0);
     if (settings.show_recent_errors) {
         if (ImGui::BeginChild("log_table")) {
             if (ImGui::BeginTable(
@@ -194,6 +192,12 @@ static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
             ImGui::EndTable();
         }
         ImGui::EndChild();
+    } else {
+        ImGui::Text(
+            count > 0 ? "%d error(s) logged since last cleared"
+                      : "No errors since last cleared",
+            count
+        );
     }
     ImGui::EndDisabled();
     return result;
