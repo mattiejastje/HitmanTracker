@@ -21,8 +21,12 @@ int main(int argc, char** argv) {
         hitman_codename_47::register_game_info(registry, settings->gui);
         hitman2_silent_assassin::register_game_info(registry, settings->gui);
         hitman_contracts::register_game_info(registry, settings->gui);
-        hitman_blood_money::register_game_info(registry, settings->gui, settings->hbm);
-        hitman_absolution::register_game_info(registry, settings->gui, settings->hma);
+        hitman_blood_money::register_game_info(
+            registry, settings->gui, settings->hbm
+        );
+        hitman_absolution::register_game_info(
+            registry, settings->gui, settings->hma
+        );
         hitman_2016::register_game_info(registry, settings->gui);
         gui_run(registry, *settings);
     }
