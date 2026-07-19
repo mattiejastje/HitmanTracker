@@ -10,6 +10,10 @@
 
 - Logs now show game for additional context.
 
+- Logs are now stored in a ``logs`` subfolder next to the executable instead of the install root.
+
+- The Help menu has a new "Logs Folder" entry for quickly finding the log when reporting a bug.
+
 ### Changed
 
 - **Breaking:** The ``--overlay`` flag is now called ``--overlay-mode`` for consistency with the UI and to make it more clearly distinguishable in case more overlay options are added in the future.
