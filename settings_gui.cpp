@@ -90,7 +90,7 @@ static ImVec4 level_color(spdlog::level::level_enum lvl) {
 static bool draw_popup_clear_log_files(bool open) {
     bool clear_pressed = false;
     imgui_app::modal_popup("Clear Log Files", open, [&clear_pressed]() {
-        ImGui::Text("Clear all log files?");
+        ImGui::Text("Delete all log files?");
         if (ImGui::Button("Clear###ClearLogFiles")) {
             clear_pressed = true;
             ImGui::CloseCurrentPopup();
