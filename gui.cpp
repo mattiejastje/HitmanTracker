@@ -3,7 +3,6 @@
 #include <imgui.h>
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
-#include <shellapi.h>
 #include <spdlog/mdc.h>
 #include <spdlog/spdlog.h>
 #include <tchar.h>
@@ -24,21 +23,9 @@
 #include "imgui_app/window.hpp"
 #include "mem/handle.hpp"
 #include "settings_gui.hpp"
+#include "shell.hpp"
 #include "signal.hpp"
 #include "timer.hpp"
-
-static void shell_open_url(const char* url) {
-    ShellExecuteA(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
-}
-
-static void shell_open_file(const wchar_t* filename) {
-    static wchar_t buffer[MAX_PATH];
-    DWORD length = GetModuleFileNameW(nullptr, buffer, MAX_PATH);
-    auto path = std::filesystem::path(buffer).parent_path().wstring();
-    ShellExecuteW(
-        nullptr, L"open", filename, nullptr, path.c_str(), SW_SHOWNORMAL
-    );
-}
 
 constexpr UINT OVERLAY_EX_STYLE
     = WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_NOACTIVATE;

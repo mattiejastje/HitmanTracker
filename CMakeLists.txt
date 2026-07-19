@@ -53,6 +53,7 @@ add_executable (HitmanTracker
 	"hitman_blood_money/stats.cpp"
 	"pe.cpp"
 	"settings_gui.cpp"
+	"shell.cpp"
 	"signal.cpp"
 	"stats.cpp"
 	"timer.cpp"
