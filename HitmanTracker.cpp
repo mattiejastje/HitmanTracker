@@ -1,4 +1,6 @@
-﻿#include <iostream>
+﻿#include <spdlog/spdlog.h>
+
+#include <iostream>
 
 #include "game_info.hpp"
 #include "gui.hpp"
@@ -17,6 +19,7 @@ int main(int argc, char** argv) {
     auto settings = settings::load(argc, argv);
     if (settings) {
         spdlog_set_level(settings->log.level, settings->log.flush_level);
+        spdlog::info("Hitman Tracker v" APP_VERSION);
         std::vector<GameInfo> registry;
         hitman_codename_47::register_game_info(registry, settings->gui);
         hitman2_silent_assassin::register_game_info(registry, settings->gui);
