@@ -26,6 +26,7 @@
 #include "settings_gui.hpp"
 #include "shell.hpp"
 #include "signal.hpp"
+#include "spdlog.hpp"
 #include "timer.hpp"
 
 constexpr UINT OVERLAY_EX_STYLE
@@ -53,7 +54,8 @@ static MenuActions draw_main_menu() {
         if (ImGui::BeginMenu("Help")) {
             if (ImGui::MenuItem("Report Bug")) shell_open_url(WEBSITE_ISSUES);
             ImGui::Separator();
-            if (ImGui::MenuItem("Log Folder")) shell_open_file(L"logs");
+            if (ImGui::MenuItem("Log Folder"))
+                shell_open_file(spdlog_log_dir().wstring().c_str());
             if (ImGui::MenuItem("Documentation"))
                 shell_open_file(L"README.txt");
             if (ImGui::MenuItem("Changelog")) shell_open_file(L"CHANGELOG.txt");
