@@ -46,14 +46,13 @@ static bool combo_rating_mode(
 }
 
 static bool slider_float(
-    const char* label, float* v, float lo, float hi, float step
+    const char* label, float* v, float lo, float hi, float step, const char* fmt
 ) {
-    int lo_int = std::lround(lo / step);
-    int hi_int = std::lround(hi / step);
-    int v_int = std::lround((*v) / step);
-    bool changed = ImGui::SliderInt(label, &v_int, lo_int, hi_int);
-    if (changed) *v = v_int * step;
-    return changed;
+    float old = *v;
+    if (ImGui::SliderFloat(label, v, lo, hi, fmt)) {
+        *v = step * std::round(*v / step);
+    }
+    return *v != old;
 }
 
 static void text_style_gui(
@@ -62,7 +61,8 @@ static void text_style_gui(
     ImGui::PushID(label);
     if (ImGui::TreeNode(label)) {
         mark_fonts(
-            changed, slider_float("Scale", &style.scale, 0.5f, 2.0f, 0.1f)
+            changed,
+            slider_float("Scale", &style.scale, 0.5f, 2.0f, 0.1f, "%.1f")
         );
         mark_any(changed, ImGui::ColorEdit3("Color", style.color.data()));
         ImGui::TreePop();
@@ -194,7 +194,12 @@ SettingsChanged settings_gui(settings::Settings& settings) {
             mark_fonts(
                 changed,
                 slider_float(
-                    "Font size", &settings.gui.font_size, 8.0f, 64.0f, 1.0f
+                    "Font size",
+                    &settings.gui.font_size,
+                    8.0f,
+                    64.0f,
+                    1.0f,
+                    "%.0f"
                 )
             );
             ImGui::BeginDisabled(settings.gui.overlay_mode);
@@ -254,7 +259,8 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                         &settings.gui.rating_bad.scale,
                         0.5f,
                         2.0f,
-                        0.1f
+                        0.1f,
+                        "%.1f"
                     )
                 );
                 settings.gui.rating_maybe.scale = settings.gui.rating_bad.scale;
@@ -285,7 +291,12 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                 mark_fonts(
                     changed,
                     slider_float(
-                        "Scale", &settings.gui.label.scale, 0.5f, 2.0f, 0.1f
+                        "Scale",
+                        &settings.gui.label.scale,
+                        0.5f,
+                        2.0f,
+                        0.1f,
+                        "%.1f"
                     )
                 );
                 settings.gui.value.scale = settings.gui.label.scale;
