@@ -306,7 +306,7 @@ int gui_run(
         return nullptr;
     };
 
-    spdlog::info("Running user interface");
+    spdlog::debug("Running user interface");
     ImGui_ImplWin32_EnableDpiAwareness();
     std::shared_ptr<imgui_app::WindowClass> window_class
         = imgui_app::create_window_class(
