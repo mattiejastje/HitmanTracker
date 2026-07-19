@@ -1,22 +1,22 @@
 # Changelog
 
-## [Unreleased]
+## [0.8.1] - 2026-07-19
 
 ### Added
 
 - The tracker window now has a white border when not in overlay mode, to make it easier to find. The size of the border is configurable, and the border can be disabled.
 
-- The github builds now cache vcpkg dependencies, resulting in faster builds.
-
-- Logs now show game for additional context.
-
 - Logs are now stored in a ``logs`` subfolder next to the executable instead of the install root.
 
 - The help menu and logging tab have a new "Logs Folder" entry for quickly finding the logs when reporting a bug.
 
+- Logs now show game for additional context.
+
+- The github builds now cache vcpkg dependencies, resulting in faster builds.
+
 ### Changed
 
-- **Breaking:** The ``--overlay`` flag is now called ``--overlay-mode`` for consistency with the UI and to make it more clearly distinguishable in case more overlay options are added in the future.
+- The ``--overlay`` flag is now called ``--overlay-mode`` for consistency with the UI and to make it more clearly distinguishable in case more overlay options are added in the future.
 
 - Some internal quality-of-life refactoring of code.
 
