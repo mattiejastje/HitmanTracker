@@ -125,28 +125,51 @@ static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
         "(has a significant performance cost)"
     );
     ImGui::SeparatorText("Recent Errors");
-    result.changed.any
-        |= ImGui::Checkbox("Show Recent Errors", &settings.show_recent_errors);
-    ImGui::BeginDisabled(!settings.show_recent_errors);
-    bool copy_pressed = ImGui::Button("Copy to Clipboard");
+    auto counter_sink = spdlog_counter_sink();
+    const auto count = counter_sink ? counter_sink->count.load() : 0;
+    result.changed.any |= ImGui::Checkbox(
+        count > 0 ? "Show Recent Errors (!)" : "Show Recent Errors",
+        &settings.show_recent_errors
+    );
+    if (count > 0) {
+        ImGui::SetItemTooltip("%d error(s) logged since last cleared", count);
+    } else {
+        ImGui::SetItemTooltip("No errors logged since last cleared");
+    }
+    ImGui::BeginDisabled(count == 0);
+    if (ImGui::Button("Copy to Clipboard")) {
+        std::string clipboard_text;
+        auto entries = spdlog_ring_sink()->last_raw();
+        for (int i = 0; i < static_cast<int>(entries.size()); i++) {
+            auto& e = entries[i];
+            if (e.time < cleared_before) continue;
+            clipboard_text += spdlog_format_entry(e);
+        }
+        ImGui::SetClipboardText(clipboard_text.c_str());
+    };
+    ImGui::SetItemTooltip(
+        count > 0 ? "Copy %d error(s) to clipboard" : "No errors to copy", count
+    );
     ImGui::SameLine();
     if (ImGui::Button("Clear###ClearRecentErrors")) {
         cleared_before = spdlog::log_clock::now();
-        spdlog_counter_sink()->count = 0;
+        if (counter_sink) counter_sink->count = 0;
     }
-    std::string clipboard_text;
-    if (ImGui::BeginChild("log_table")) {
-        if (ImGui::BeginTable(
-                "logs",
-                3,
-                ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY
-                    | ImGuiTableFlags_SizingFixedFit
-            )) {
-            ImGui::TableSetupColumn("Time");
-            ImGui::TableSetupColumn("Level");
-            ImGui::TableSetupColumn("Message");
-            ImGui::TableHeadersRow();
-            if (settings.show_recent_errors) {
+    ImGui::SetItemTooltip(
+        count > 0 ? "Clear %d error(s)" : "No errors to clear", count
+    );
+    if (settings.show_recent_errors) {
+        if (ImGui::BeginChild("log_table")) {
+            if (ImGui::BeginTable(
+                    "logs",
+                    3,
+                    ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY
+                        | ImGuiTableFlags_SizingFixedFit
+                )) {
+                ImGui::TableSetupColumn("Time");
+                ImGui::TableSetupColumn("Level");
+                ImGui::TableSetupColumn("Message");
+                ImGui::TableHeadersRow();
                 auto entries = spdlog_ring_sink()->last_raw();
                 for (int i = static_cast<int>(entries.size()) - 1; i >= 0;
                      i--) {
@@ -166,15 +189,12 @@ static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
                     ImGui::TableNextColumn();
                     std::string payload(e.payload.data(), e.payload.size());
                     ImGui::TextUnformatted(payload.c_str());
-                    if (copy_pressed)
-                        clipboard_text += spdlog_format_entry(e) + "\n";
                 }
             }
             ImGui::EndTable();
         }
         ImGui::EndChild();
     }
-    if (copy_pressed) ImGui::SetClipboardText(clipboard_text.c_str());
     ImGui::EndDisabled();
     return result;
 }
@@ -430,10 +450,9 @@ SettingsChanged settings_gui(settings::Settings& settings) {
             ImGui::EndTabItem();
         }
         auto counter_sink = spdlog_counter_sink();
+        const auto count = counter_sink ? counter_sink->count.load() : 0;
         if (ImGui::BeginTabItem(
-                settings.log.show_recent_errors && counter_sink->count > 0
-                    ? "Logging (!)###Logging"
-                    : "Logging###Logging"
+                count > 0 ? "Logging (!)###Logging" : "Logging###Logging"
             )) {
             auto result = draw_logging_tab(settings.log);
             changed |= result.changed;
