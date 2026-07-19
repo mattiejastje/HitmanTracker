@@ -151,7 +151,7 @@ static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
     );
     ImGui::EndDisabled();
     result.changed.any
-        |= ImGui::Checkbox("Show Recent Errors", &settings.show_recent_errors);
+        |= ImGui::Checkbox("Show recent errors", &settings.show_recent_errors);
     ImGui::SetItemTooltip(
         count > 0 ? "Show %d error(s)" : "No errors to show", count
     );
