@@ -1,5 +1,6 @@
 #include "settings_gui.hpp"
 
+#include "imgui_app/modal_popup.hpp"
 #include "shell.hpp"
 #include "spdlog.hpp"
 
@@ -22,9 +23,6 @@ static void mark_overlay_mode(SettingsChanged& changed, bool v) {
     changed.any |= v;
     changed.overlay_mode |= v;
 }
-
-static const char* LOG_LEVEL_NAMES[]
-    = {"off", "critical", "error", "warn", "info", "debug", "trace"};
 
 static const char* RATING_MODES[]
     = {"None", "SA", "Score", "SA & Score", "SA with Score fallback"};
@@ -72,8 +70,118 @@ static void text_style_gui(
     ImGui::PopID();
 }
 
+static ImVec4 level_color(spdlog::level::level_enum lvl) {
+    switch (lvl) {
+        case spdlog::level::trace:
+            return {0.6f, 0.6f, 0.6f, 1.0f};
+        case spdlog::level::debug:
+            return {0.5f, 0.5f, 0.9f, 1.0f};
+        case spdlog::level::warn:
+            return {0.9f, 0.8f, 0.1f, 1.0f};
+        case spdlog::level::err:
+            return {1.0f, 0.3f, 0.3f, 1.0f};
+        case spdlog::level::critical:
+            return {1.0f, 0.1f, 0.6f, 1.0f};
+        default:
+            return {1.0f, 1.0f, 1.0f, 1.0f};
+    }
+}
+
+static bool draw_popup_clear_log_files(bool open) {
+    bool clear_pressed = false;
+    imgui_app::modal_popup("Clear Log Files", open, [&clear_pressed]() {
+        ImGui::Text("Clear all log files?");
+        if (ImGui::Button("Clear###ClearLogFiles")) {
+            clear_pressed = true;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
+    });
+    return clear_pressed;
+}
+
+struct DrawLoggingTabResult {
+    SettingsChanged changed;
+    bool open_clear_log_files;
+};
+
+static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
+    DrawLoggingTabResult result;
+    static spdlog::log_clock::time_point cleared_before{};
+    ImGui::SeparatorText("Log Files");
+    if (ImGui::Button("Open Folder"))
+        shell_open_file(spdlog_log_dir().wstring().c_str());
+    ImGui::SameLine();
+    result.open_clear_log_files = ImGui::Button("Clear###OpenClearLogFiles");
+    if (ImGui::Checkbox(
+            "Include trace-level detail (slower)", &settings.capture_trace
+        )) {
+        spdlog_set_level(settings.capture_trace);
+        result.changed.any |= true;
+    }
+    ImGui::SetItemTooltip(
+        "Captures the most verbose detail into the logs "
+        "(has a significant performance cost)"
+    );
+    ImGui::SeparatorText("Recent Errors");
+    result.changed.any
+        |= ImGui::Checkbox("Show Recent Errors", &settings.show_recent_errors);
+    ImGui::BeginDisabled(!settings.show_recent_errors);
+    bool copy_pressed = ImGui::Button("Copy to Clipboard");
+    ImGui::SameLine();
+    if (ImGui::Button("Clear###ClearRecentErrors")) {
+        cleared_before = spdlog::log_clock::now();
+        spdlog_counter_sink()->count = 0;
+    }
+    std::string clipboard_text;
+    if (ImGui::BeginChild("log_table")) {
+        if (ImGui::BeginTable(
+                "logs",
+                3,
+                ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY
+                    | ImGuiTableFlags_SizingFixedFit
+            )) {
+            ImGui::TableSetupColumn("Time");
+            ImGui::TableSetupColumn("Level");
+            ImGui::TableSetupColumn("Message");
+            ImGui::TableHeadersRow();
+            if (settings.show_recent_errors) {
+                auto entries = spdlog_ring_sink()->last_raw();
+                for (int i = static_cast<int>(entries.size()) - 1; i >= 0;
+                     i--) {
+                    auto& e = entries[i];
+                    if (e.time < cleared_before) continue;
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::TextUnformatted(spdlog_format_time(e).c_str());
+                    ImGui::TableNextColumn();
+                    auto lvl_name = spdlog::level::to_string_view(e.level);
+                    ImGui::TextColored(
+                        level_color(e.level),
+                        "%.*s",
+                        (int)lvl_name.size(),
+                        lvl_name.data()
+                    );
+                    ImGui::TableNextColumn();
+                    std::string payload(e.payload.data(), e.payload.size());
+                    ImGui::TextUnformatted(payload.c_str());
+                    if (copy_pressed)
+                        clipboard_text += spdlog_format_entry(e) + "\n";
+                }
+            }
+            ImGui::EndTable();
+        }
+        ImGui::EndChild();
+    }
+    if (copy_pressed) ImGui::SetClipboardText(clipboard_text.c_str());
+    ImGui::EndDisabled();
+    return result;
+}
+
 SettingsChanged settings_gui(settings::Settings& settings) {
     SettingsChanged changed;
+    bool open_clear_log_files{false};
     if (ImGui::BeginTabBar("Settings")) {
         if (ImGui::BeginTabItem("General")) {
             mark_overlay_mode(
@@ -310,22 +418,20 @@ SettingsChanged settings_gui(settings::Settings& settings) {
             ImGui::PopID();
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Logging")) {
-            // for simplicity, sync log level and flush level
-            bool log_changed = false;
-            log_changed |= ImGui::Combo(
-                "Log level", &settings.log.level, LOG_LEVEL_NAMES, 7
-            );
-            mark_any(changed, log_changed);
-            if (log_changed) {
-                settings.log.flush_level = settings.log.level;
-                spdlog_set_level(settings.log.level, settings.log.flush_level);
-            }
-            ImGui::Spacing();
-            if (ImGui::Button("Open Logs Folder")) shell_open_file(L"logs");
+        auto counter_sink = spdlog_counter_sink();
+        if (ImGui::BeginTabItem(
+                settings.log.show_recent_errors && counter_sink->count > 0
+                    ? "Logging (!)###Logging"
+                    : "Logging###Logging"
+            )) {
+            auto result = draw_logging_tab(settings.log);
+            changed |= result.changed;
+            open_clear_log_files |= result.open_clear_log_files;
             ImGui::EndTabItem();
         }
         ImGui::EndTabBar();
+        if (draw_popup_clear_log_files(open_clear_log_files))
+            spdlog_clear_log_files();
     }
     return changed;
 }

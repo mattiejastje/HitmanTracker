@@ -18,6 +18,7 @@
 #include "hitman_common/gui.hpp"
 #include "imgui_app/app_window.hpp"
 #include "imgui_app/deviced3d.hpp"
+#include "imgui_app/modal_popup.hpp"
 #include "imgui_app/text.hpp"
 #include "imgui_app/ui.hpp"
 #include "imgui_app/window.hpp"
@@ -34,17 +35,6 @@ constexpr auto WEBSITE_MAIN = "https://github.com/mattiejastje/HitmanTracker";
 
 constexpr auto WEBSITE_ISSUES
     = "https://github.com/mattiejastje/HitmanTracker/issues";
-
-template <class F>
-void modal_popup(const char* name, bool open, F&& body) {
-    if (open) ImGui::OpenPopup(name);
-    if (ImGui::BeginPopupModal(
-            name, nullptr, ImGuiWindowFlags_AlwaysAutoResize
-        )) {
-        body();
-        ImGui::EndPopup();
-    }
-}
 
 struct MenuActions {
     bool open_reset{false};
@@ -63,7 +53,7 @@ static MenuActions draw_main_menu() {
         if (ImGui::BeginMenu("Help")) {
             if (ImGui::MenuItem("Report Bug")) shell_open_url(WEBSITE_ISSUES);
             ImGui::Separator();
-            if (ImGui::MenuItem("Logs Folder")) shell_open_file(L"logs");
+            if (ImGui::MenuItem("Log Folder")) shell_open_file(L"logs");
             if (ImGui::MenuItem("Documentation"))
                 shell_open_file(L"README.txt");
             if (ImGui::MenuItem("Changelog")) shell_open_file(L"CHANGELOG.txt");
@@ -81,7 +71,7 @@ static MenuActions draw_main_menu() {
 
 static bool draw_popup_reset(bool open) {
     bool reset_pressed = false;
-    modal_popup("Reset Settings", open, [&reset_pressed]() {
+    imgui_app::modal_popup("Reset Settings", open, [&reset_pressed]() {
         ImGui::Text("Reset all settings to their default values?");
         if (ImGui::Button("Reset")) {
             reset_pressed = true;
@@ -94,7 +84,7 @@ static bool draw_popup_reset(bool open) {
 }
 
 static void draw_popup_about(bool open) {
-    modal_popup("About", open, []() {
+    imgui_app::modal_popup("About", open, []() {
         ImGui::TextUnformatted("Hitman Tracker");
         ImGui::SameLine();
         ImGui::TextDisabled("v%s", APP_VERSION);

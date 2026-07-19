@@ -8,7 +8,11 @@
 
 - Logs are now stored in a ``logs`` subfolder next to the executable instead of the install root.
 
-- The help menu and logging tab have a new "Logs Folder" entry for quickly finding the logs when reporting a bug.
+- The help menu and logging tab have a new "Log Folder" entry for quickly finding the logs when reporting a bug.
+
+- Log files can be easily cleared.
+
+- Recent errors can be optionally shown, and cleared.
 
 - Logs now show game for additional context.
 

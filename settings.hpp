@@ -1,5 +1,7 @@
 #pragma once
 
+#include <spdlog/spdlog.h>
+
 #include <array>
 #include <filesystem>
 #include <optional>
@@ -8,8 +10,8 @@
 namespace settings {
 
 struct Log {
-    int level{4};
-    int flush_level{4};
+    bool capture_trace = false;
+    bool show_recent_errors = false;
 };
 
 using Color = std::array<float, 3>;

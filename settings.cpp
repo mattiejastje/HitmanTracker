@@ -7,16 +7,6 @@
 
 using namespace settings;
 
-static const CLI::TransformPairs<int> log_level_map{
-    {"trace", 6},
-    {"debug", 5},
-    {"info", 4},
-    {"warn", 3},
-    {"error", 2},
-    {"critical", 1},
-    {"off", 0},
-};
-
 static void add_text_style_options(
     CLI::App& app, std::string name, std::string desc, TextStyle& style
 ) {
@@ -49,17 +39,20 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
     );
     auto log_group
         = app->add_option_group("Logging", "Options related to logging");
-    log_group->add_option("--log-level", settings.log.level, "Log level")
-        ->capture_default_str()
-        ->transform(CLI::CheckedTransformer(log_level_map, CLI::ignore_case));
     log_group
         ->add_option(
-            "--log-flush-level",
-            settings.log.flush_level,
-            "On which level to flush the log"
+            "--capture-trace",
+            settings.log.capture_trace,
+            "Capture trace-level detail (has a performance cost)"
         )
-        ->capture_default_str()
-        ->transform(CLI::CheckedTransformer(log_level_map, CLI::ignore_case));
+        ->capture_default_str();
+    log_group
+        ->add_option(
+            "--show-recent-errors",
+            settings.log.show_recent_errors,
+            "Show recent errors"
+        )
+        ->capture_default_str();
     auto gui_group = app->add_option_group(
         "GUI", "Options related to the graphical user interface"
     );

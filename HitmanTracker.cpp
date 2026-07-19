@@ -15,10 +15,10 @@
 
 int main(int argc, char** argv) {
     spdlog_init();
-    spdlog_set_level(4, 4);  // don't know levels yet, set to "info" for now
+    spdlog_set_level(false);
     auto settings = settings::load(argc, argv);
     if (settings) {
-        spdlog_set_level(settings->log.level, settings->log.flush_level);
+        spdlog_set_level(settings->log.capture_trace);
         spdlog::info("Hitman Tracker v" APP_VERSION);
         std::vector<GameInfo> registry;
         hitman_codename_47::register_game_info(registry, settings->gui);
