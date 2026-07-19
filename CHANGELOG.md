@@ -12,7 +12,7 @@
 
 - Logs are now stored in a ``logs`` subfolder next to the executable instead of the install root.
 
-- The Help menu has a new "Logs Folder" entry for quickly finding the log when reporting a bug.
+- The help menu and logging tab have a new "Logs Folder" entry for quickly finding the logs when reporting a bug.
 
 ### Changed
 

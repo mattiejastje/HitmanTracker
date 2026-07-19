@@ -1,5 +1,6 @@
 #include "settings_gui.hpp"
 
+#include "shell.hpp"
 #include "spdlog.hpp"
 
 SettingsChanged& operator|=(SettingsChanged& a, const SettingsChanged& b) {
@@ -320,6 +321,8 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                 settings.log.flush_level = settings.log.level;
                 spdlog_set_level(settings.log.level, settings.log.flush_level);
             }
+            ImGui::Spacing();
+            if (ImGui::Button("Open Logs Folder")) shell_open_file(L"logs");
             ImGui::EndTabItem();
         }
         ImGui::EndTabBar();
