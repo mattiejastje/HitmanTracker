@@ -1,5 +1,7 @@
 #include "settings_gui.hpp"
 
+#include <ranges>
+
 #include "imgui_app/modal_popup.hpp"
 #include "shell.hpp"
 #include "spdlog.hpp"
@@ -101,9 +103,19 @@ static bool draw_popup_clear_log_files(bool open) {
     return clear_pressed;
 }
 
+static std::vector<spdlog::details::log_msg_buffer> get_pending_entries(
+    spdlog::log_clock::time_point cleared_before
+) {
+    auto entries = spdlog_ring_sink()->last_raw();
+    std::erase_if(entries, [cleared_before](const auto& e) {
+        return e.time < cleared_before;
+    });
+    return entries;
+}
+
 struct DrawLoggingTabResult {
-    SettingsChanged changed;
-    bool open_clear_log_files;
+    SettingsChanged changed{};
+    bool open_clear_log_files{false};
 };
 
 static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
@@ -130,14 +142,10 @@ static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
     ImGui::BeginDisabled(count == 0);
     if (ImGui::Button("Copy to Clipboard")) {
         std::string clipboard_text;
-        auto entries = spdlog_ring_sink()->last_raw();
-        for (int i = 0; i < static_cast<int>(entries.size()); i++) {
-            auto& e = entries[i];
-            if (e.time < cleared_before) continue;
-            clipboard_text += spdlog_format_entry(e);
-        }
+        for (auto& entry : get_pending_entries(cleared_before))
+            clipboard_text += spdlog_format_entry(entry);
         ImGui::SetClipboardText(clipboard_text.c_str());
-    };
+    }
     ImGui::SetItemTooltip(
         count > 0 ? "Copy %d error(s) to clipboard" : "No errors to copy", count
     );
@@ -168,24 +176,23 @@ static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
                 ImGui::TableSetupColumn("Level");
                 ImGui::TableSetupColumn("Message");
                 ImGui::TableHeadersRow();
-                auto entries = spdlog_ring_sink()->last_raw();
-                for (int i = static_cast<int>(entries.size()) - 1; i >= 0;
-                     i--) {
-                    auto& e = entries[i];
-                    if (e.time < cleared_before) continue;
+                for (auto& entry : get_pending_entries(cleared_before)
+                                       | std::views::reverse) {
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
-                    ImGui::TextUnformatted(spdlog_format_time(e).c_str());
+                    ImGui::TextUnformatted(spdlog_format_time(entry).c_str());
                     ImGui::TableNextColumn();
-                    auto lvl_name = spdlog::level::to_string_view(e.level);
+                    auto lvl_name = spdlog::level::to_string_view(entry.level);
                     ImGui::TextColored(
-                        level_color(e.level),
+                        level_color(entry.level),
                         "%.*s",
                         (int)lvl_name.size(),
                         lvl_name.data()
                     );
                     ImGui::TableNextColumn();
-                    std::string payload(e.payload.data(), e.payload.size());
+                    std::string payload(
+                        entry.payload.data(), entry.payload.size()
+                    );
                     ImGui::TextUnformatted(payload.c_str());
                 }
             }
