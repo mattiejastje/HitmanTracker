@@ -89,7 +89,7 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                     "Font size", &settings.gui.font_size, 8.0f, 64.0f, 1.0f
                 )
             );
-            if (settings.gui.overlay_mode) ImGui::BeginDisabled();
+            ImGui::BeginDisabled(settings.gui.overlay_mode);
             mark_any(
                 changed,
                 ImGui::SliderInt(
@@ -97,7 +97,7 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                 )
             );
             ImGui::SetItemTooltip("Border size in non-overlay mode");
-            if (settings.gui.overlay_mode) ImGui::EndDisabled();
+            ImGui::EndDisabled();
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Layout")) {
