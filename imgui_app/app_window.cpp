@@ -141,5 +141,5 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
         }
         for (auto& side_effect : side_effects) side_effect();
     }
-    spdlog::info("Stopping main loop");
+    spdlog::debug("Stopping main loop");
 }
