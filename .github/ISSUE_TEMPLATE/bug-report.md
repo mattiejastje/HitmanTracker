@@ -20,7 +20,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Log**
-If applicable, attach ``HitmanTracker.log`` or copy/paste the relevant lines from this file. It can be found alongside ``HitmanTracker.exe``.
+If applicable, attach ``HitmanTracker.log`` or copy/paste the relevant lines from this file. It can be found in the ``logs`` folder next to ``HitmanTracker.exe``.
 
 **Additional information (please complete the following information):**
  - Platform [e.g. Steam, GOG]

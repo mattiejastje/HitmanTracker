@@ -21,7 +21,7 @@ void spdlog_init() {
 #endif
     sinks.push_back(
         std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-            "HitmanTracker.log", 1024 * 1024 * 10, 5
+            "logs/HitmanTracker.log", 1024 * 1024 * 10, 5
         )
     );
     auto logger = std::make_shared<spdlog::logger>(
