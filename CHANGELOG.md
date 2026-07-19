@@ -10,9 +10,9 @@
 
 - The help menu and logging tab have a new "Log Folder" entry for quickly finding the logs when reporting a bug.
 
-- Log files can be easily cleared.
+- Log files can be easily deleted.
 
-- Recent errors can be optionally shown, and cleared.
+- Recent errors can be optionally shown, copied, and cleared.
 
 - Logs now show game for additional context.
 
