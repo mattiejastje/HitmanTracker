@@ -1,5 +1,6 @@
 #include "settings_gui.hpp"
 
+#include <algorithm>
 #include <ranges>
 
 #include "imgui_app/modal_popup.hpp"
@@ -35,13 +36,12 @@ static bool combo_rating_mode(
     settings::HMA::RatingMode& rating_mode,
     bool is_score_allowed
 ) {
-    auto rating_mode_int = static_cast<int>(rating_mode);
-    bool result = ImGui::Combo(
-        text,
-        &rating_mode_int,
-        RATING_MODES,
-        is_score_allowed ? IM_ARRAYSIZE(RATING_MODES) : 2
-    );
+    const int max_index
+        = (is_score_allowed ? IM_ARRAYSIZE(RATING_MODES) : 2) - 1;
+    auto rating_mode_int
+        = std::clamp(static_cast<int>(rating_mode), 0, max_index);
+    ImGui::Combo(text, &rating_mode_int, RATING_MODES, max_index + 1);
+    bool result = rating_mode_int != static_cast<int>(rating_mode);
     mark_any(changed, result);
     rating_mode = static_cast<settings::HMA::RatingMode>(rating_mode_int);
     return result;
