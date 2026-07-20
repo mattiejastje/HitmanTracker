@@ -204,7 +204,7 @@ static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
             ImGui::EndTable();
         }
         ImGui::EndChild();
-    };
+    }
     ImGui::EndDisabled();
     return result;
 }
