@@ -12,6 +12,7 @@ SettingsChanged& operator|=(SettingsChanged& a, const SettingsChanged& b) {
     a.fonts |= b.fonts;
     a.overlay_mode |= b.overlay_mode;
     a.reposition |= b.reposition;
+    a.logging |= b.logging;
     return a;
 }
 
@@ -25,6 +26,11 @@ static void mark_fonts(SettingsChanged& changed, bool v) {
 static void mark_overlay_mode(SettingsChanged& changed, bool v) {
     changed.any |= v;
     changed.overlay_mode |= v;
+}
+
+static void mark_logging(SettingsChanged& changed, bool v) {
+    changed.any |= v;
+    changed.logging |= v;
 }
 
 static const char* RATING_MODES[]
@@ -126,12 +132,12 @@ static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
         shell_open_file(spdlog_log_dir().wstring().c_str());
     ImGui::SameLine();
     result.open_clear_log_files = ImGui::Button("Clear###OpenClearLogFiles");
-    if (ImGui::Checkbox(
+    mark_logging(
+        result.changed,
+        ImGui::Checkbox(
             "Include trace-level detail (slower)", &settings.capture_trace
-        )) {
-        spdlog_set_level(settings.capture_trace);
-        result.changed.any |= true;
-    }
+        )
+    );
     ImGui::SetItemTooltip(
         "Captures the most verbose detail into the logs "
         "(has a significant performance cost)"

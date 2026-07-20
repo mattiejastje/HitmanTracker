@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Log tracing is now properly disabled when settings are reset.
+
 ## [0.8.1] - 2026-07-19
 
 ### Added

@@ -178,6 +178,7 @@ static imgui_app::AppWindowSideEffect draw_main_side_effect(
                 SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE
             );
         }
+        if (changed.logging) spdlog_set_level(settings.log.capture_trace);
     };
 }
 
@@ -394,7 +395,8 @@ int gui_run(
                     .any = true,
                     .fonts = true,
                     .overlay_mode = true,
-                    .reposition = true
+                    .reposition = true,
+                    .logging = true,
                 };
             }
             draw_popup_about(menu_actions.open_about);

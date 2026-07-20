@@ -11,6 +11,7 @@ struct SettingsChanged {
     bool fonts{false};
     bool overlay_mode{false};
     bool reposition{false};
+    bool logging{false};
 };
 
 SettingsChanged& operator|=(SettingsChanged& a, const SettingsChanged& b);
