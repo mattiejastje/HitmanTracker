@@ -123,7 +123,7 @@ static SettingsChanged draw_logging_tab(settings::Log& settings) {
     );
     ImGui::SeparatorText("Recent Errors");
     auto counter_sink = spdlog_counter_sink();
-    const auto count = counter_sink ? counter_sink->count.load() : 0;
+    const auto count = counter_sink->count.load();
     ImGui::Text(
         count > 0 ? "%d error(s) since last cleared"
                   : "No errors since last cleared",
@@ -142,7 +142,7 @@ static SettingsChanged draw_logging_tab(settings::Log& settings) {
     ImGui::SameLine();
     if (ImGui::Button("Clear###ClearRecentErrors")) {
         cleared_before = spdlog::log_clock::now();
-        if (counter_sink) counter_sink->count = 0;
+        counter_sink->count = 0;
     }
     ImGui::SetItemTooltip(
         count > 0 ? "Clear %d error(s)" : "No errors to clear", count
@@ -442,7 +442,7 @@ SettingsChanged settings_gui(settings::Settings& settings) {
             ImGui::EndTabItem();
         }
         auto counter_sink = spdlog_counter_sink();
-        const auto count = counter_sink ? counter_sink->count.load() : 0;
+        const auto count = counter_sink->count.load();
         if (ImGui::BeginTabItem(
                 count > 0 ? "Logging (!)###Logging" : "Logging###Logging"
             )) {
