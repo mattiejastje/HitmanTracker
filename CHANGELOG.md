@@ -6,6 +6,10 @@
 
 - Log tracing is now properly disabled when settings are reset.
 
+### Removed
+
+- Deleting log files during operation could result in a rare crash. Since the logs folder can be easily opened for manual deletion, for simplicity, the clear log files button has been removed.
+
 ## [0.8.1] - 2026-07-19
 
 ### Added

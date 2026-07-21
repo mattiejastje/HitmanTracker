@@ -95,20 +95,6 @@ static ImVec4 level_color(spdlog::level::level_enum lvl) {
     }
 }
 
-static bool draw_popup_clear_log_files(bool open) {
-    bool clear_pressed = false;
-    imgui_app::modal_popup("Clear Log Files", open, [&clear_pressed]() {
-        ImGui::Text("Delete all log files?");
-        if (ImGui::Button("Clear###ClearLogFiles")) {
-            clear_pressed = true;
-            ImGui::CloseCurrentPopup();
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
-    });
-    return clear_pressed;
-}
-
 static std::vector<spdlog::details::log_msg_buffer> get_pending_entries(
     spdlog::log_clock::time_point cleared_before
 ) {
@@ -119,21 +105,14 @@ static std::vector<spdlog::details::log_msg_buffer> get_pending_entries(
     return entries;
 }
 
-struct DrawLoggingTabResult {
-    SettingsChanged changed{};
-    bool open_clear_log_files{false};
-};
-
-static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
-    DrawLoggingTabResult result;
+static SettingsChanged draw_logging_tab(settings::Log& settings) {
     static spdlog::log_clock::time_point cleared_before{};
+    SettingsChanged changed{};
     ImGui::SeparatorText("Log Files");
     if (ImGui::Button("Open Folder"))
         shell_open_file(spdlog_log_dir().wstring().c_str());
-    ImGui::SameLine();
-    result.open_clear_log_files = ImGui::Button("Clear###OpenClearLogFiles");
     mark_logging(
-        result.changed,
+        changed,
         ImGui::Checkbox(
             "Include trace-level detail (slower)", &settings.capture_trace
         )
@@ -169,7 +148,7 @@ static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
         count > 0 ? "Clear %d error(s)" : "No errors to clear", count
     );
     ImGui::EndDisabled();
-    result.changed.any
+    changed.any
         |= ImGui::Checkbox("Show details", &settings.show_recent_errors);
     ImGui::BeginDisabled(count == 0);
     if (settings.show_recent_errors) {
@@ -209,7 +188,7 @@ static DrawLoggingTabResult draw_logging_tab(settings::Log& settings) {
         ImGui::EndChild();
     }
     ImGui::EndDisabled();
-    return result;
+    return changed;
 }
 
 SettingsChanged settings_gui(settings::Settings& settings) {
@@ -467,14 +446,10 @@ SettingsChanged settings_gui(settings::Settings& settings) {
         if (ImGui::BeginTabItem(
                 count > 0 ? "Logging (!)###Logging" : "Logging###Logging"
             )) {
-            auto result = draw_logging_tab(settings.log);
-            changed |= result.changed;
-            open_clear_log_files |= result.open_clear_log_files;
+            changed |= draw_logging_tab(settings.log);
             ImGui::EndTabItem();
         }
         ImGui::EndTabBar();
-        if (draw_popup_clear_log_files(open_clear_log_files))
-            spdlog_clear_log_files();
     }
     return changed;
 }

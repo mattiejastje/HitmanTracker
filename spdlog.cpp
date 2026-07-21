@@ -15,6 +15,7 @@ static std::shared_ptr<CounterSink> g_counter_sink = nullptr;
 static std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> g_file_sink
     = nullptr;
 static std::shared_ptr<spdlog::sinks::ringbuffer_sink_mt> g_ring_sink = nullptr;
+static std::mutex logger_config_mutex;
 
 static auto make_file_sink() {
     return std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
@@ -56,30 +57,6 @@ std::shared_ptr<CounterSink> spdlog_counter_sink() { return g_counter_sink; }
 
 std::filesystem::path spdlog_log_dir() {
     return std::filesystem::absolute("logs");
-}
-
-bool spdlog_clear_log_files() {
-    if (!g_file_sink) return false;
-    auto logger = spdlog::default_logger();
-    logger->flush();
-    auto& sinks = logger->sinks();
-    std::erase(
-        sinks, std::static_pointer_cast<spdlog::sinks::sink>(g_file_sink)
-    );
-    g_file_sink.reset();
-    bool ok = true;
-    std::error_code ec;
-    for (auto& entry :
-         std::filesystem::directory_iterator(spdlog_log_dir(), ec)) {
-        if (entry.is_regular_file(ec) && entry.path().extension() == ".log") {
-            if (!std::filesystem::remove(entry.path(), ec)) ok = false;
-        }
-    }
-    g_file_sink = make_file_sink();
-    sinks.push_back(g_file_sink);
-    spdlog::info("Log files cleared");
-    spdlog::info("Hitman Tracker v" APP_VERSION);
-    return ok;
 }
 
 std::string spdlog_format_entry(const spdlog::details::log_msg_buffer& msg) {
