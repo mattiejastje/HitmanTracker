@@ -42,14 +42,29 @@ static bool combo_rating_mode(
     settings::HMA::RatingMode& rating_mode,
     bool is_score_allowed
 ) {
-    const int max_index
-        = (is_score_allowed ? IM_ARRAYSIZE(RATING_MODES) : 2) - 1;
-    auto rating_mode_int
-        = std::clamp(static_cast<int>(rating_mode), 0, max_index);
-    ImGui::Combo(text, &rating_mode_int, RATING_MODES, max_index + 1);
-    bool result = rating_mode_int != static_cast<int>(rating_mode);
+    const int max_index = IM_ARRAYSIZE(RATING_MODES) - 1;
+    const int max_allowed_index = is_score_allowed ? max_index : 1;
+    auto current = std::clamp(static_cast<int>(rating_mode), 0, max_index);
+    bool result = false;
+    if (ImGui::BeginCombo(text, RATING_MODES[current])) {
+        for (int i = 0; i <= max_index; i++) {
+            bool disabled = i > max_allowed_index;
+            ImGui::BeginDisabled(disabled);
+            bool selected = (i == current);
+            if (ImGui::Selectable(RATING_MODES[i], selected)) {
+                current = i;
+                result = true;
+            }
+            ImGui::EndDisabled();
+            if (disabled
+                && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+                ImGui::SetTooltip("Unrated checkpoints have no score");
+            if (selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
     mark_any(changed, result);
-    rating_mode = static_cast<settings::HMA::RatingMode>(rating_mode_int);
+    if (result) rating_mode = static_cast<settings::HMA::RatingMode>(current);
     return result;
 }
 
