@@ -11,11 +11,9 @@
 constexpr auto LOG_PATTERN = "[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%&] %v";
 constexpr auto LOG_TIME_ONLY_PATTERN = "%H:%M:%S";
 
-static std::shared_ptr<CounterSink> g_counter_sink = nullptr;
 static std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> g_file_sink
     = nullptr;
 static std::shared_ptr<spdlog::sinks::ringbuffer_sink_mt> g_ring_sink = nullptr;
-static std::mutex logger_config_mutex;
 
 static auto make_file_sink() {
     return std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
@@ -33,9 +31,6 @@ void spdlog_init() {
     g_ring_sink = std::make_shared<spdlog::sinks::ringbuffer_sink_mt>(100);
     g_ring_sink->set_level(spdlog::level::err);
     sinks.push_back(g_ring_sink);
-    g_counter_sink = std::make_shared<CounterSink>();
-    g_counter_sink->set_level(spdlog::level::err);
-    sinks.push_back(g_counter_sink);
     auto logger = std::make_shared<spdlog::logger>(
         "HitmanTracker", sinks.begin(), sinks.end()
     );
@@ -52,8 +47,6 @@ void spdlog_set_level(bool capture_trace) {
 std::shared_ptr<spdlog::sinks::ringbuffer_sink_mt> spdlog_ring_sink() {
     return g_ring_sink;
 }
-
-std::shared_ptr<CounterSink> spdlog_counter_sink() { return g_counter_sink; }
 
 std::filesystem::path spdlog_log_dir() {
     return std::filesystem::absolute("logs");

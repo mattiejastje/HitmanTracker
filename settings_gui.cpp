@@ -95,6 +95,11 @@ static ImVec4 level_color(spdlog::level::level_enum lvl) {
     }
 }
 
+static bool has_pending_entries(spdlog::log_clock::time_point cleared_before) {
+    auto recent = spdlog_ring_sink()->last_raw(1);
+    return !recent.empty() && recent.back().time >= cleared_before;
+}
+
 static std::vector<spdlog::details::log_msg_buffer> get_pending_entries(
     spdlog::log_clock::time_point cleared_before
 ) {
@@ -105,8 +110,9 @@ static std::vector<spdlog::details::log_msg_buffer> get_pending_entries(
     return entries;
 }
 
-static SettingsChanged draw_logging_tab(settings::Log& settings) {
-    static spdlog::log_clock::time_point cleared_before{};
+static SettingsChanged draw_logging_tab(
+    settings::Log& settings, spdlog::log_clock::time_point& cleared_before
+) {
     SettingsChanged changed{};
     ImGui::SeparatorText("Log Files");
     if (ImGui::Button("Open Folder"))
@@ -122,8 +128,8 @@ static SettingsChanged draw_logging_tab(settings::Log& settings) {
         "(has a significant performance cost)"
     );
     ImGui::SeparatorText("Recent Errors");
-    auto counter_sink = spdlog_counter_sink();
-    const auto count = counter_sink->count.load();
+    const auto pending = get_pending_entries(cleared_before);
+    const auto count = pending.size();
     ImGui::Text(
         count > 0 ? "%d error(s) since last cleared"
                   : "No errors since last cleared",
@@ -132,7 +138,7 @@ static SettingsChanged draw_logging_tab(settings::Log& settings) {
     ImGui::BeginDisabled(count == 0);
     if (ImGui::Button("Copy to Clipboard")) {
         std::string clipboard_text;
-        for (auto& entry : get_pending_entries(cleared_before))
+        for (auto& entry : pending)
             clipboard_text += spdlog_format_entry(entry);
         ImGui::SetClipboardText(clipboard_text.c_str());
     }
@@ -142,7 +148,6 @@ static SettingsChanged draw_logging_tab(settings::Log& settings) {
     ImGui::SameLine();
     if (ImGui::Button("Clear###ClearRecentErrors")) {
         cleared_before = spdlog::log_clock::now();
-        counter_sink->count = 0;
     }
     ImGui::SetItemTooltip(
         count > 0 ? "Clear %d error(s)" : "No errors to clear", count
@@ -163,8 +168,7 @@ static SettingsChanged draw_logging_tab(settings::Log& settings) {
                 ImGui::TableSetupColumn("Level");
                 ImGui::TableSetupColumn("Message");
                 ImGui::TableHeadersRow();
-                for (auto& entry : get_pending_entries(cleared_before)
-                                       | std::views::reverse) {
+                for (auto& entry : pending | std::views::reverse) {
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
                     ImGui::TextUnformatted(spdlog_format_time(entry).c_str());
@@ -192,8 +196,8 @@ static SettingsChanged draw_logging_tab(settings::Log& settings) {
 }
 
 SettingsChanged settings_gui(settings::Settings& settings) {
+    static spdlog::log_clock::time_point cleared_before{};
     SettingsChanged changed;
-    bool open_clear_log_files{false};
     if (ImGui::BeginTabBar("Settings")) {
         if (ImGui::BeginTabItem("General")) {
             mark_overlay_mode(
@@ -441,12 +445,11 @@ SettingsChanged settings_gui(settings::Settings& settings) {
             ImGui::PopID();
             ImGui::EndTabItem();
         }
-        auto counter_sink = spdlog_counter_sink();
-        const auto count = counter_sink->count.load();
         if (ImGui::BeginTabItem(
-                count > 0 ? "Logging (!)###Logging" : "Logging###Logging"
+                has_pending_entries(cleared_before) ? "Logging (!)###Logging"
+                                                    : "Logging###Logging"
             )) {
-            changed |= draw_logging_tab(settings.log);
+            changed |= draw_logging_tab(settings.log, cleared_before);
             ImGui::EndTabItem();
         }
         ImGui::EndTabBar();
