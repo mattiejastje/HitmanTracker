@@ -11,9 +11,10 @@
 constexpr auto LOG_PATTERN = "[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%&] %v";
 constexpr auto LOG_TIME_ONLY_PATTERN = "%H:%M:%S";
 
-std::shared_ptr<CounterSink> g_counter_sink = nullptr;
-std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> g_file_sink = nullptr;
-std::shared_ptr<spdlog::sinks::ringbuffer_sink_mt> g_ring_sink = nullptr;
+static std::shared_ptr<CounterSink> g_counter_sink = nullptr;
+static std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> g_file_sink
+    = nullptr;
+static std::shared_ptr<spdlog::sinks::ringbuffer_sink_mt> g_ring_sink = nullptr;
 
 static auto make_file_sink() {
     return std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
