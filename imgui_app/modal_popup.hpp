@@ -1,6 +1,6 @@
-namespace imgui_app {
-
 #include <imgui.h>
+
+namespace imgui_app {
 
 template <class F>
 void modal_popup(const char* name, bool open, F&& body) {
