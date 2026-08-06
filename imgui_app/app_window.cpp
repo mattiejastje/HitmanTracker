@@ -124,10 +124,10 @@ void imgui_app::run(TickFunc tick, std::span<AppWindow*> app_windows) {
             auto& ui = *aw->ui;
             auto& window = *aw->window;
             auto& state = *window.state;
+            ImGui::SetCurrentContext(ui.imgui_context);
             // skip render if device not ready
             if (!imgui_app::IsDeviceReady(device)) continue;
             spdlog::trace("New frame...");
-            ImGui::SetCurrentContext(ui.imgui_context);
             ImGui_ImplDX9_NewFrame();
             ImGui_ImplWin32_NewFrame();
             ImGui::NewFrame();
