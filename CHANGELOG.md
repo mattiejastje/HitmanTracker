@@ -6,6 +6,8 @@
 
 - Log tracing is now properly disabled when settings are reset.
 
+- Fixed invalid D3D context causing tracker to hang in rare circumstances.
+
 ### Removed
 
 - Deleting log files during operation could result in a rare crash. Since the logs folder can be easily opened for manual deletion, for simplicity, the clear log files button has been removed.
