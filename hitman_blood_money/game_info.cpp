@@ -10,32 +10,34 @@ void hitman_blood_money::register_game_info(
     const settings::Gui& settings,
     const settings::HBM& hbm
 ) {
-    registry.emplace_back(
-        GameInfo{
-        .tag = "hbm-s",
-        .methods = GameMethods{
-            gui(settings, hbm, "Steam"),
-            hook(Version::Steam),
+    struct VersionSpec {
+        Version version;
+        const char* tag_suffix;
+        const char* version_display;
+        PeId pe_id;
+    };
+
+    constexpr VersionSpec specs[] = {
+        {Version::Steam, "-s", "Steam", PeId{0x447EF98A}},
+        {Version::GOG, "-g", "GOG", PeId{0x4492B845}},
+    };
+    for (const auto& spec : specs) {
+        GameMethods methods{
+            gui(settings, hbm, spec.version_display),
+            hook(spec.version),
             hook_immediately_ready,
-            update_slow(Version::Steam),
-            update_fast(Version::Steam),
-        },
-        .make_remote_state = [] { return std::make_any<structs::Game>(); },
-        .make_stats = [] { return std::make_any<Stats>(); },
-        .module_infos = {{"hitmanbloodmoney.exe", PeId{0x447EF98A}}},
-    });
-    registry.emplace_back(
-        GameInfo{
-        .tag = "hbm-g",
-        .methods = GameMethods{
-            gui(settings, hbm, "GOG"),
-            hook(Version::GOG),
-            hook_immediately_ready,
-            update_slow(Version::GOG),
-            update_fast(Version::GOG),
-        },
-        .make_remote_state = [] { return std::make_any<structs::Game>(); },
-        .make_stats = [] { return std::make_any<Stats>(); },
-        .module_infos = {{"hitmanbloodmoney.exe", PeId{0x4492B845}}},
-    });
+            update_slow(spec.version),
+            update_fast(spec.version),
+        };
+        registry.emplace_back(
+            GameInfo{
+                .tag = std::string("hbm") + spec.tag_suffix,
+                .methods = methods,
+                .make_remote_state
+                = [] { return std::make_any<structs::Game>(); },
+                .make_stats = [] { return std::make_any<Stats>(); },
+                .module_infos = {{"hitmanbloodmoney.exe", spec.pe_id}},
+            }
+        );
+    }
 }
