@@ -1,5 +1,3 @@
-#pragma once
-
 #include "read_lethed.hpp"
 
 #include "../hitman2_silent_assassin/structs.hpp"
