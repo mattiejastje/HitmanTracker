@@ -8,7 +8,8 @@ void AllocDeleter::operator()(Alloc *alloc) const {
         if (VirtualFreeEx(alloc->handle.get(), ptr, 0, MEM_RELEASE)) {
             spdlog::debug("Freed memory at {:#x}", alloc->ptr);
         } else {
-            spdlog::error("Failed to free memory at {:#x}", alloc->ptr);
+            // happens when application is closed
+            spdlog::warn("Failed to free memory at {:#x}", alloc->ptr);
         }
     }
     if (alloc) delete alloc;

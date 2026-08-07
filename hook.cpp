@@ -183,7 +183,8 @@ void SourceHookDeleter::operator()(SourceHook* source) const {
                 source->original_code.data(),
                 source->original_code.size()
             )) {
-            spdlog::critical(
+            // happens when application is closed
+            spdlog::warn(
                 "Hook: failed to restore source code at {:#x}", source->ptr
             );
         }
