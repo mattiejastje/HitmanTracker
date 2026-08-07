@@ -8,24 +8,36 @@
 void hitman2_silent_assassin::register_game_info(
     std::vector<GameInfo>& registry, const settings::Gui& settings
 ) {
-    registry.emplace_back(
-        GameInfo{
-            .tag = "h2sa-s",
-            .methods
-            = GameMethods{gui(settings, "Steam v1.02"), hook_nothing, hook_immediately_ready, update_slow(Version::Steam), update_fast(Version::Steam)},
-            .make_remote_state = [] { return std::make_any<structs::Game>(); },
-            .make_stats = [] { return std::make_any<hitman_common::Stats>(); },
-            .module_infos = {{"hitman2.exe", PeId{0x3EF859D5}}},
-        }
-    );
-    registry.emplace_back(
-        GameInfo{
-            .tag = "h2sa-g",
-            .methods
-            = GameMethods{gui(settings, "GOG v1.01"), hook_nothing, hook_immediately_ready, update_slow(Version::GOG), update_fast(Version::GOG)},
-            .make_remote_state = [] { return std::make_any<structs::Game>(); },
-            .make_stats = [] { return std::make_any<hitman_common::Stats>(); },
-            .module_infos = {{"hitman2.exe", PeId{0x0}}},  // not set on GOG
-        }
-    );
-};
+    struct VersionSpec {
+        Version version;
+        const char* tag_suffix;
+        const char* version_display;
+        PeId pe_id;
+    };
+
+    constexpr VersionSpec specs[] = {
+        {Version::Steam, "-s", "Steam v1.02", PeId{0x3EF859D5}},
+        // time date stamp not set on GOG version
+        {Version::GOG, "-g", "GOG v1.01", PeId{0x0}},
+    };
+    for (const auto& spec : specs) {
+        GameMethods methods{
+            gui(settings, spec.version_display),
+            hook_nothing,
+            hook_immediately_ready,
+            update_slow(spec.version),
+            update_fast(spec.version),
+        };
+        registry.emplace_back(
+            GameInfo{
+                .tag = std::string("h2sa") + spec.tag_suffix,
+                .methods = std::move(methods),
+                .make_remote_state
+                = [] { return std::make_any<structs::Game>(); },
+                .make_stats
+                = [] { return std::make_any<hitman_common::Stats>(); },
+                .module_infos = {{"hitman2.exe", spec.pe_id}},
+            }
+        );
+    }
+}
