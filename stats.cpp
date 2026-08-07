@@ -1,7 +1,7 @@
 #include "stats.hpp"
 
 // GREEN  = stat is not tracked
-// YELLOW = stat is tracked and currently clean (0) — borderline, since
+// YELLOW = stat is tracked and currently clean (0); borderline, since
 //          it could still become non-zero before the checkpoint ends
 // RED    = stat is tracked and already non-zero (violated)
 static Status status(int32_t value, bool is_tracked) {
