@@ -32,7 +32,7 @@ void hitman_blood_money::register_game_info(
         registry.emplace_back(
             GameInfo{
                 .tag = std::string("hbm") + spec.tag_suffix,
-                .methods = methods,
+                .methods = std::move(methods),
                 .make_remote_state
                 = [] { return std::make_any<structs::Game>(); },
                 .make_stats = [] { return std::make_any<Stats>(); },
