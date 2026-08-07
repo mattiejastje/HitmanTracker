@@ -7,12 +7,12 @@
 #include "overloaded.hpp"
 
 static Code get_code_i8(intptr_t value) {
-    APP_CHECK((INT8_MIN <= value) && (value <= INT8_MAX));
+    APP_REQUIRE((INT8_MIN <= value) && (value <= INT8_MAX));
     return {static_cast<uint8_t>(value)};
 }
 
 static Code get_code_i32(intptr_t value) {
-    APP_CHECK((INT32_MIN <= value) && (value <= INT32_MAX));
+    APP_REQUIRE((INT32_MIN <= value) && (value <= INT32_MAX));
     return {
         static_cast<uint8_t>(value),
         static_cast<uint8_t>(static_cast<uint32_t>(value) >> 8),
