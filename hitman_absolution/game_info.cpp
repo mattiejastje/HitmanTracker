@@ -13,7 +13,7 @@ void hitman_absolution::register_game_info(
     struct VersionSpec {
         Version version;
         const char* tag_suffix;
-        const char* display;
+        const char* version_display;
         PeId pe_id;
     };
 
@@ -22,11 +22,17 @@ void hitman_absolution::register_game_info(
         {Version::GOG, "-g", "GOG", PeId{0x5C9A0BF7}},
     };
     for (auto& spec : specs) {
+        GameMethods methods{
+            gui(settings, hma, spec.version_display),
+            hook(spec.version),
+            hook_ready(spec.version),
+            update_slow(hma, spec.version),
+            update_fast(spec.version),
+        };
         registry.emplace_back(
             GameInfo{
                 .tag = std::string("hma") + spec.tag_suffix,
-                .methods
-                = GameMethods{gui(settings, hma, spec.display), hook(spec.version), hook_ready(spec.version), update_slow(hma, spec.version), update_fast(spec.version)},
+                .methods = methods,
                 .make_remote_state
                 = [] { return std::make_any<structs::Game>(); },
                 .make_stats = [] { return std::make_any<Stats>(); },
