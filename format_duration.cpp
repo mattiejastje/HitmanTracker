@@ -9,7 +9,7 @@ std::string format_duration(float seconds) {
     hh_mm_ss hms{round<milliseconds>(duration<float>(seconds))};
     return fmt::format(
         "{}:{:02}.{:03}",
-        hms.minutes().count(),
+        hms.hours().count() * 60 + hms.minutes().count(),
         hms.seconds().count(),
         hms.subseconds().count()
     );

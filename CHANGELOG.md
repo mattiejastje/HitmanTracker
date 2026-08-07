@@ -8,6 +8,8 @@
 
 - Fixed invalid D3D context causing tracker to hang in rare circumstances.
 
+- Fixed timer wrapping around 60 minutes.
+
 ### Removed
 
 - Deleting log files during operation could result in a rare crash. Since the logs folder can be easily opened for manual deletion, for simplicity, the clear log files button has been removed.
