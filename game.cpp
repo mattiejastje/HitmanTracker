@@ -58,7 +58,6 @@ static std::optional<std::vector<Module>> get_modules(
     const std::vector<ModuleInfo>& module_infos
 ) {
     std::vector<Module> modules{};
-    std::vector<PeId> pe_ids{};
     for (const auto& module_info : module_infos) {
         auto module = all_modules.find(module_info.name);
         if (module == all_modules.end()) {
