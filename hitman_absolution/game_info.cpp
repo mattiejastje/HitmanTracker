@@ -21,7 +21,7 @@ void hitman_absolution::register_game_info(
         {Version::Steam, "-s", "Steam", PeId{0x5149E0B4}},
         {Version::GOG, "-g", "GOG", PeId{0x5C9A0BF7}},
     };
-    for (auto& spec : specs) {
+    for (const auto& spec : specs) {
         GameMethods methods{
             gui(settings, hma, spec.version_display),
             hook(spec.version),
