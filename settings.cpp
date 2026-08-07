@@ -268,6 +268,5 @@ std::optional<Settings> settings::load(int argc, char** argv) {
 
 void settings::save(Settings& settings) {
     auto app = make_app(settings);
-    std::filesystem::path ini_file{"HitmanTracker.ini"};
     _save(*app);
 };
