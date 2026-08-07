@@ -10,24 +10,28 @@ void hitman_absolution::register_game_info(
     const settings::Gui& settings,
     const settings::HMA& hma
 ) {
-    registry.emplace_back(
-        GameInfo{
-            .tag = "hma-s",
-            .methods
-            = GameMethods{gui(settings, hma, "Steam"), hook(Version::Steam), hook_ready(Version::Steam), update_slow(hma, Version::Steam), update_fast(Version::Steam)},
-            .make_remote_state = [] { return std::make_any<structs::Game>(); },
-            .make_stats = [] { return std::make_any<Stats>(); },
-            .module_infos = {{"hma.exe", PeId{0x5149E0B4}}},
-        }
-    );
-    registry.emplace_back(
-        GameInfo{
-            .tag = "hma-g",
-            .methods
-            = GameMethods{gui(settings, hma, "GOG"), hook(Version::GOG), hook_ready(Version::GOG), update_slow(hma, Version::GOG), update_fast(Version::GOG)},
-            .make_remote_state = [] { return std::make_any<structs::Game>(); },
-            .make_stats = [] { return std::make_any<Stats>(); },
-            .module_infos = {{"hma.exe", PeId{0x5C9A0BF7}}},
-        }
-    );
+    struct VersionSpec {
+        Version version;
+        const char* tag_suffix;
+        const char* display;
+        PeId pe_id;
+    };
+
+    constexpr VersionSpec specs[] = {
+        {Version::Steam, "-s", "Steam", PeId{0x5149E0B4}},
+        {Version::GOG, "-g", "GOG", PeId{0x5C9A0BF7}},
+    };
+    for (auto& spec : specs) {
+        registry.emplace_back(
+            GameInfo{
+                .tag = std::string("hma") + spec.tag_suffix,
+                .methods
+                = GameMethods{gui(settings, hma, spec.display), hook(spec.version), hook_ready(spec.version), update_slow(hma, spec.version), update_fast(spec.version)},
+                .make_remote_state
+                = [] { return std::make_any<structs::Game>(); },
+                .make_stats = [] { return std::make_any<Stats>(); },
+                .module_infos = {{"hma.exe", spec.pe_id}},
+            }
+        );
+    }
 }
