@@ -20,24 +20,23 @@ void hitman2_silent_assassin::register_game_info(
         // time date stamp not set on GOG version
         {Version::GOG, "-g", "GOG v1.01", PeId{0x0}},
     };
-    for (const auto& spec : specs) {
-        GameMethods methods{
-            gui(settings, spec.version_display),
-            hook_nothing,
-            hook_immediately_ready,
-            update_slow(spec.version),
-            update_fast(spec.version),
-        };
-        registry.emplace_back(
-            GameInfo{
-                .tag = std::string("h2sa") + spec.tag_suffix,
-                .methods = std::move(methods),
-                .make_remote_state
-                = [] { return std::make_any<structs::Game>(); },
-                .make_stats
-                = [] { return std::make_any<hitman_common::Stats>(); },
-                .module_infos = {{"hitman2.exe", spec.pe_id}},
-            }
-        );
-    }
+    register_game_variants<VersionSpec>(
+        registry,
+        "h2sa",
+        specs,
+        [&settings](const VersionSpec& spec) {
+            return GameMethods{
+                gui(settings, spec.version_display),
+                hook_nothing,
+                hook_immediately_ready,
+                update_slow(spec.version),
+                update_fast(spec.version),
+            };
+        },
+        [](const VersionSpec& spec) {
+            return std::vector<ModuleInfo>{{"hitman2.exe", spec.pe_id}};
+        },
+        [] { return std::make_any<structs::Game>(); },
+        [] { return std::make_any<hitman_common::Stats>(); }
+    );
 }

@@ -21,23 +21,23 @@ void hitman_absolution::register_game_info(
         {Version::Steam, "-s", "Steam", PeId{0x5149E0B4}},
         {Version::GOG, "-g", "GOG", PeId{0x5C9A0BF7}},
     };
-    for (const auto& spec : specs) {
-        GameMethods methods{
-            gui(settings, hma, spec.version_display),
-            hook(spec.version),
-            hook_ready(spec.version),
-            update_slow(hma, spec.version),
-            update_fast(spec.version),
-        };
-        registry.emplace_back(
-            GameInfo{
-                .tag = std::string("hma") + spec.tag_suffix,
-                .methods = std::move(methods),
-                .make_remote_state
-                = [] { return std::make_any<structs::Game>(); },
-                .make_stats = [] { return std::make_any<Stats>(); },
-                .module_infos = {{"hma.exe", spec.pe_id}},
-            }
-        );
-    }
+    register_game_variants<VersionSpec>(
+        registry,
+        "hma",
+        specs,
+        [&settings, &hma](const VersionSpec& spec) {
+            return GameMethods{
+                gui(settings, hma, spec.version_display),
+                hook(spec.version),
+                hook_ready(spec.version),
+                update_slow(hma, spec.version),
+                update_fast(spec.version),
+            };
+        },
+        [](const VersionSpec& spec) {
+            return std::vector<ModuleInfo>{{"hma.exe", spec.pe_id}};
+        },
+        [] { return std::make_any<structs::Game>(); },
+        [] { return std::make_any<Stats>(); }
+    );
 }

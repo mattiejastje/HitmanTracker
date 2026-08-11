@@ -6,8 +6,8 @@
 #include <span>
 
 #include "base_ptrs.hpp"
-#include "imgui_app/ui.hpp"
 #include "hook.hpp"
+#include "imgui_app/ui.hpp"
 #include "label_ptrs.hpp"
 #include "pe.hpp"
 #include "stats.hpp"
@@ -53,6 +53,35 @@ struct GameInfo {
     // first module name is always exe name
     std::vector<ModuleInfo> module_infos;
 };
+
+template <class Spec>
+using MakeMethods = std::function<GameMethods(const Spec &)>;
+
+template <class Spec>
+using MakeModuleInfos = std::function<std::vector<ModuleInfo>(const Spec &)>;
+
+template <class Spec>
+void register_game_variants(
+    std::vector<GameInfo> &registry,
+    std::string_view tag_prefix,
+    std::span<const Spec> specs,
+    MakeMethods<Spec> make_methods,
+    MakeModuleInfos<Spec> make_module_infos,
+    std::function<std::any()> make_remote_state,
+    std::function<std::any()> make_stats
+) {
+    for (const auto &spec : specs) {
+        registry.emplace_back(
+            GameInfo{
+                .tag = std::string(tag_prefix) + spec.tag_suffix,
+                .methods = make_methods(spec),
+                .make_remote_state = make_remote_state,
+                .make_stats = make_stats,
+                .module_infos = make_module_infos(spec),
+            }
+        );
+    }
+}
 
 inline bool stats_nothing_slow(
     const std::filesystem::path &exe_path,

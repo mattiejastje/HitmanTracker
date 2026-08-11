@@ -21,23 +21,25 @@ void hitman_blood_money::register_game_info(
         {Version::Steam, "-s", "Steam", PeId{0x447EF98A}},
         {Version::GOG, "-g", "GOG", PeId{0x4492B845}},
     };
-    for (const auto& spec : specs) {
-        GameMethods methods{
-            gui(settings, hbm, spec.version_display),
-            hook(spec.version),
-            hook_immediately_ready,
-            update_slow(spec.version),
-            update_fast(spec.version),
-        };
-        registry.emplace_back(
-            GameInfo{
-                .tag = std::string("hbm") + spec.tag_suffix,
-                .methods = std::move(methods),
-                .make_remote_state
-                = [] { return std::make_any<structs::Game>(); },
-                .make_stats = [] { return std::make_any<Stats>(); },
-                .module_infos = {{"hitmanbloodmoney.exe", spec.pe_id}},
-            }
-        );
-    }
+    register_game_variants<VersionSpec>(
+        registry,
+        "hbm",
+        specs,
+        [&settings, &hbm](const VersionSpec& spec) {
+            return GameMethods{
+                gui(settings, hbm, spec.version_display),
+                hook(spec.version),
+                hook_immediately_ready,
+                update_slow(spec.version),
+                update_fast(spec.version),
+            };
+        },
+        [](const VersionSpec& spec) {
+            return std::vector<ModuleInfo>{
+                {"hitmanbloodmoney.exe", spec.pe_id}
+            };
+        },
+        [] { return std::make_any<structs::Game>(); },
+        [] { return std::make_any<Stats>(); }
+    );
 }
