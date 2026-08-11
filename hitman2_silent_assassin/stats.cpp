@@ -633,11 +633,8 @@ GameStatsFast hitman2_silent_assassin::update_fast(Version version) {
         auto& stats = std::any_cast<Stats&>(stats_any);
         if (stats.map > 0) {
             const auto& base_ptr = base_ptrs.at(0);
-            auto time = read<int32_t>(
-                handle,
-                base_ptr + offset,
-                {0x118, 0xB38, 0x8, 0x1084, 0x24},
-                INT32_MAX
+            auto time = read<uint32_t, int32_t>(
+                handle, base_ptr + offset, {0x118, 0xB38, 0x8, 0x1084, 0x24}
             );
             if (time)
                 stats.time = time.value() * 0.0166666666666666f;  // 1 / 60.0f

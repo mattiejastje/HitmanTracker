@@ -171,8 +171,8 @@ GameStatsFast hitman_contracts::update_fast(Version version) {
         auto& stats = std::any_cast<Stats&>(stats_any);
         if (stats.map > 0) {
             const auto& base_ptr = base_ptrs.at(0);
-            auto game_ticks = read<int32_t>(
-                handle, base_ptr + engine_offset, {0x38}, INT32_MAX
+            auto game_ticks = read<uint32_t, int32_t>(
+                handle, base_ptr + engine_offset, {0x38}
             );
             if (game_ticks) stats.time = game_ticks.value() * seconds_per_tick;
             return game_ticks.has_value();

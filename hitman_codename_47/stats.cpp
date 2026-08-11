@@ -246,26 +246,23 @@ GameStatsFast hitman_codename_47::update_fast(Version version) {
         auto& stats = std::any_cast<Stats&>(stats_any);
         if (stats.map > 0) {
             const auto& base_ptr = base_ptrs.at(1);  // hitmandlc.dlc
-            auto scene_head = read<int32_t>(
-                handle, base_ptr + 0x1F000C, {0, 0x59, 0x7E, 0x1C}, INT32_MAX
+            auto scene_head = read<uint32_t, int32_t>(
+                handle, base_ptr + 0x1F000C, {0, 0x59, 0x7E, 0x1C}
             );
-            auto scene_tail = read<int32_t>(
-                handle, base_ptr + 0x1F000C, {0, 0x59, 0x7E, 0x20}, INT32_MAX
+            auto scene_tail = read<uint32_t, int32_t>(
+                handle, base_ptr + 0x1F000C, {0, 0x59, 0x7E, 0x20}
             );
             if (!scene_head || !scene_tail) return false;
             std::optional<double> time = {};
             if (scene_head == scene_tail) {
                 // main mission: use global game time
-                time = read<double>(
-                    handle, base_ptr + 0x1F000C, {0, 0x37B5}, INT32_MAX
+                time = read<uint32_t, double>(
+                    handle, base_ptr + 0x1F000C, {0, 0x37B5}
                 );
             } else {
                 // paused in the options menu: use time options menu was created
-                time = read<double>(
-                    handle,
-                    base_ptr + 0x1F000C,
-                    {0, 0x59, 0x7E, 0x1C, -0x32},
-                    INT32_MAX
+                time = read<uint32_t, double>(
+                    handle, base_ptr + 0x1F000C, {0, 0x59, 0x7E, 0x1C, -0x32}
                 );
             }
             if (!time) return false;

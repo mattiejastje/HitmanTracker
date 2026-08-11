@@ -158,8 +158,8 @@ static std::optional<int32_t> get_time(
         = version == hitman_blood_money::Version::Steam ? 0x5B2538 : 0x5B3B38;
     if (map_stage == MapStage::main)
         // game.sys_interface.game_ticks
-        return read<int32_t>(
-            handle, base_ptr + sys_interface, {0x48}, INT32_MAX
+        return read<uint32_t, int32_t>(
+            handle, base_ptr + sys_interface, {0x48}
         );
     if (map_stage == MapStage::post)
         // game.stats[TIME]
