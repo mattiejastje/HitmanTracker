@@ -6,19 +6,15 @@
 #include "mem/read_write.hpp"
 #include "overloaded.hpp"
 
-static Code get_code_i8(intptr_t value) {
-    APP_REQUIRE((INT8_MIN <= value) && (value <= INT8_MAX));
-    return {static_cast<uint8_t>(value)};
-}
-
-static Code get_code_i32(intptr_t value) {
-    APP_REQUIRE((INT32_MIN <= value) && (value <= INT32_MAX));
-    return {
-        static_cast<uint8_t>(value),
-        static_cast<uint8_t>(static_cast<uint32_t>(value) >> 8),
-        static_cast<uint8_t>(static_cast<uint32_t>(value) >> 16),
-        static_cast<uint8_t>(static_cast<uint32_t>(value) >> 24)
-    };
+template <std::signed_integral T>
+static Code get_code_int(intptr_t value) {
+    APP_REQUIRE(std::in_range<T>(value));
+    auto uvalue = static_cast<std::make_unsigned_t<T>>(value);
+    Code code(sizeof(T));
+    for (std::size_t i = 0; i < sizeof(T); i++) {
+        code[i] = static_cast<uint8_t>(uvalue >> (8 * i));
+    }
+    return code;
 }
 
 static Code add_code(const Code& code1, const Code& code2) {
@@ -89,18 +85,18 @@ static Code get_code(
             [](const Fill& f) { return Code(f.size, f.filler); },
             [&label_ptrs, &next_ptr](const Jump& j) {
                 auto offset = resolve_ptr(j.ptr, label_ptrs) - next_ptr;
-                return add_code(j.code, get_code_i32(offset));
+                return add_code(j.code, get_code_int<int32_t>(offset));
             },
             [&label_ptrs, &next_ptr](const JumpShort& j) {
                 auto offset = resolve_ptr(j.ptr, label_ptrs) - next_ptr;
-                return add_code(j.code, get_code_i8(offset));
+                return add_code(j.code, get_code_int<int8_t>(offset));
             },
             [&label_ptrs](const Label& l) {
                 APP_CHECK(label_ptrs.contains(l.index));
                 return Code{};
             },
             [&label_ptrs](const Ptr& p) {
-                return get_code_i32(resolve_ptr(p, label_ptrs));
+                return get_code_int<int32_t>(resolve_ptr(p, label_ptrs));
             },
         },
         item
