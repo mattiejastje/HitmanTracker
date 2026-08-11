@@ -4,7 +4,7 @@
 
 ### Added
 
-- Hitman Blood Money: new option to npcs (innocents/enemies/police) into a single row.
+- Hitman Blood Money: new option to merge npcs (innocents/enemies/police) into a single row.
 
 - Hitman Blood Money: new option to merge frisk failed and cover blown into a single row.
 
