@@ -164,7 +164,7 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
         ->add_option(
             "--hbm-merge-npcs",
             settings.hbm.merge_npcs,
-            "Merge innocents / enemies / cops"
+            "Merge innocents / enemies / police"
         )
         ->capture_default_str();
     hbm_group

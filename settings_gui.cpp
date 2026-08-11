@@ -362,7 +362,8 @@ SettingsChanged settings_gui(settings::Settings& settings) {
             mark_any(
                 changed,
                 ImGui::Checkbox(
-                    "Merge innocents / enemies / cops", &settings.hbm.merge_npcs
+                    "Merge innocents / enemies / police",
+                    &settings.hbm.merge_npcs
                 )
             );
             mark_any(

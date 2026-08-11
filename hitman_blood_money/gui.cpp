@@ -47,23 +47,90 @@ GameGui hitman_blood_money::gui(
             stats.map_stage,
             stats.time * (hbm.real_time ? (1000 / 1024.0f) : 1.0f)
         );
-        std::vector<hitman_common::TableRow> table_rows = {
-            {"Innocents Killed", stats.innocents_killed},
-            {"Innocents Wounded", stats.innocents_wounded},
-            {"Enemies Killed", stats.enemies_killed},
-            {"Enemies Wounded", stats.enemies_wounded},
-            {"Police Killed", stats.police_killed},
-            {"Police Wounded", stats.police_wounded},
-            {"Frisk Failed", stats.frisk_failed},
-            {"Cover Blown", stats.cover_blown},
-            {"Bodies Found", stats.bodies_fnd},
-            {"Target Bodies Found", stats.target_bodies_fnd},
-            {"Unconscious Bodies Found", stats.uncon_bodies_fnd},
-            {"Witnesses", stats.witnesses},
-            {"On Camera", stats.on_camera},
-            {"Custom Weapons Left", stats.cust_weapons_left},
-            {"Suit Left", stats.suit_left},
-        };
+        std::vector<hitman_common::TableRow> table_rows{};
+        if (hbm.merge_npcs) {
+            table_rows.emplace_back(
+                "NPCs Killed",
+                merge_stats_values({
+                    stats.innocents_killed,
+                    stats.enemies_killed,
+                    stats.police_killed,
+                })
+            );
+            table_rows.emplace_back(
+                "NPCs Wounded",
+                merge_stats_values({
+                    stats.innocents_wounded,
+                    stats.enemies_wounded,
+                    stats.police_wounded,
+                })
+            );
+        } else {
+            table_rows.emplace_back("Innocents Killed", stats.innocents_killed);
+            table_rows.emplace_back(
+                "Innocents Wounded", stats.innocents_wounded
+            );
+            table_rows.emplace_back("Enemies Killed", stats.enemies_killed);
+            table_rows.emplace_back("Enemies Wounded", stats.enemies_wounded);
+            table_rows.emplace_back("Police Killed", stats.police_killed);
+            table_rows.emplace_back("Police Wounded", stats.police_wounded);
+        }
+        if (hbm.merge_frisk_cover) {
+            table_rows.emplace_back(
+                "Frisk Failed / Cover Blown",
+                merge_stats_values({
+                    stats.frisk_failed,
+                    stats.cover_blown,
+                })
+            );
+        } else {
+            table_rows.emplace_back("Frisk Failed", stats.frisk_failed);
+            table_rows.emplace_back("Cover Blown", stats.cover_blown);
+        }
+        if (hbm.merge_bodies_found) {
+            table_rows.emplace_back(
+                "Bodies Found",
+                merge_stats_values({
+                    stats.bodies_fnd,
+                    stats.target_bodies_fnd,
+                    stats.uncon_bodies_fnd,
+                })
+            );
+        } else {
+            table_rows.emplace_back("Bodies Found", stats.bodies_fnd);
+            table_rows.emplace_back(
+                "Target Bodies Found", stats.target_bodies_fnd
+            );
+            table_rows.emplace_back(
+                "Unconscious Bodies Found", stats.uncon_bodies_fnd
+            );
+        }
+        if (hbm.merge_witnesses_camera) {
+            table_rows.emplace_back(
+                "Witnesses / On Camera",
+                merge_stats_values({
+                    stats.witnesses,
+                    stats.on_camera,
+                })
+            );
+        } else {
+            table_rows.emplace_back("Witnesses", stats.witnesses);
+            table_rows.emplace_back("On Camera", stats.on_camera);
+        }
+        if (hbm.merge_items_left) {
+            table_rows.emplace_back(
+                "Items Left",
+                merge_stats_values({
+                    stats.cust_weapons_left,
+                    stats.suit_left,
+                })
+            );
+        } else {
+            table_rows.emplace_back(
+                "Custom Weapons Left", stats.cust_weapons_left
+            );
+            table_rows.emplace_back("Suit Left", stats.suit_left);
+        }
         if (hbm.show_accident_kills) {
             table_rows.emplace_back(
                 "Accident Kills", StatsValue{stats.accident_kills}

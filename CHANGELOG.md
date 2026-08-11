@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Added
+
+- Hitman Blood Money: new option to npcs (innocents/enemies/police) into a single row.
+
+- Hitman Blood Money: new option to merge frisk failed and cover blown into a single row.
+
+- Hitman Blood Money: new option to merge bodies found (target/unconscious/total) into a single row.
+
+- Hitman Blood Money: new option to merge witnesses and on camera into a single row.
+
+- Hitman Blood Money: new option to merge items left into a single row.
+
 ### Fixed
 
 - Fix pointer reading for large address aware 32-bit executables.
