@@ -160,6 +160,48 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
             "Show accident kills"
         )
         ->capture_default_str();
+    hbm_group
+        ->add_option(
+            "--hbm-merge-npcs-killed",
+            settings.hbm.merge_npcs_killed,
+            "Merge npcs killed"
+        )
+        ->capture_default_str();
+    hbm_group
+        ->add_option(
+            "--hbm-merge-npcs-wounded",
+            settings.hbm.merge_npcs_wounded,
+            "Merge npcs wounded"
+        )
+        ->capture_default_str();
+    hbm_group
+        ->add_option(
+            "--hbm-merge-frisk-cover",
+            settings.hbm.merge_frisk_cover,
+            "Merge frisk failed / cover blown"
+        )
+        ->capture_default_str();
+    hbm_group
+        ->add_option(
+            "--hbm-merge-bodies-found",
+            settings.hbm.merge_bodies_found,
+            "Merge bodies found"
+        )
+        ->capture_default_str();
+    hbm_group
+        ->add_option(
+            "--hbm-merge-witnesses-camera",
+            settings.hbm.merge_witnesses_camera,
+            "Merge witnesses / on camera"
+        )
+        ->capture_default_str();
+    hbm_group
+        ->add_option(
+            "--hbm-merge-items-left",
+            settings.hbm.merge_items_left,
+            "Merge suit / custom weapons left"
+        )
+        ->capture_default_str();
     auto hma_group = app->add_option_group(
         "Hitman Absolution", "Options related to Hitman Absolution"
     );

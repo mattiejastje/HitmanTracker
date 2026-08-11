@@ -359,6 +359,45 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                 changed,
                 ImGui::Checkbox("Show shots hit", &settings.hbm.show_shots_hit)
             );
+            mark_any(
+                changed,
+                ImGui::Checkbox(
+                    "Merge npcs killed", &settings.hbm.merge_npcs_killed
+                )
+            );
+            mark_any(
+                changed,
+                ImGui::Checkbox(
+                    "Merge npcs wounded", &settings.hbm.merge_npcs_wounded
+                )
+            );
+            mark_any(
+                changed,
+                ImGui::Checkbox(
+                    "Merge frisk failed / cover blown",
+                    &settings.hbm.merge_frisk_cover
+                )
+            );
+            mark_any(
+                changed,
+                ImGui::Checkbox(
+                    "Merge bodies found", &settings.hbm.merge_bodies_found
+                )
+            );
+            mark_any(
+                changed,
+                ImGui::Checkbox(
+                    "Merge witnesses / on camera",
+                    &settings.hbm.merge_witnesses_camera
+                )
+            );
+            mark_any(
+                changed,
+                ImGui::Checkbox(
+                    "Merge suit / custom weapons left",
+                    &settings.hbm.merge_items_left
+                )
+            );
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Absolution")) {
