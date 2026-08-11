@@ -15,4 +15,3 @@ SeparateDefinitionBlocks: Always
 SortIncludes: CaseSensitive
 SortUsingDeclarations: Lexicographic
 UseTab: Never
-PointerAlignment: Right
