@@ -16,7 +16,7 @@
 
 ### Fixed
 
-- Fix pointer reading for large address aware 32-bit executables.
+- Fix bug when pointer reading for large address aware 32-bit executables.
 
 ## [0.8.2] - 2026-08-07
 
