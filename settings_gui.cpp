@@ -362,13 +362,7 @@ SettingsChanged settings_gui(settings::Settings& settings) {
             mark_any(
                 changed,
                 ImGui::Checkbox(
-                    "Merge npcs killed", &settings.hbm.merge_npcs_killed
-                )
-            );
-            mark_any(
-                changed,
-                ImGui::Checkbox(
-                    "Merge npcs wounded", &settings.hbm.merge_npcs_wounded
+                    "Merge innocents / enemies / cops", &settings.hbm.merge_npcs
                 )
             );
             mark_any(

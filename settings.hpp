@@ -26,8 +26,7 @@ struct HBM {
     bool real_time{false};
     bool show_shots_hit{false};
     bool show_accident_kills{false};
-    bool merge_npcs_killed{false};
-    bool merge_npcs_wounded{false};
+    bool merge_npcs{false};
     bool merge_frisk_cover{false};
     bool merge_bodies_found{false};
     bool merge_witnesses_camera{false};

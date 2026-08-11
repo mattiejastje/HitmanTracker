@@ -162,16 +162,9 @@ static std::unique_ptr<CLI::App> make_app(Settings& settings) {
         ->capture_default_str();
     hbm_group
         ->add_option(
-            "--hbm-merge-npcs-killed",
-            settings.hbm.merge_npcs_killed,
-            "Merge npcs killed"
-        )
-        ->capture_default_str();
-    hbm_group
-        ->add_option(
-            "--hbm-merge-npcs-wounded",
-            settings.hbm.merge_npcs_wounded,
-            "Merge npcs wounded"
+            "--hbm-merge-npcs",
+            settings.hbm.merge_npcs,
+            "Merge innocents / enemies / cops"
         )
         ->capture_default_str();
     hbm_group
