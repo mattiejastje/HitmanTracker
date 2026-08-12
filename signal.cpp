@@ -14,7 +14,7 @@ void Signal::update(float sample, float dt) {
         } else {
             spdlog::debug("{} = {:g} {}", name, value, unit);
         }
-        now -= interval;
+        now = std::fmod(now, interval);
     }
 }
 
