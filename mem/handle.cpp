@@ -28,7 +28,8 @@ HandlePtr open_process_handle(DWORD process_id) {
             "Handle {} opened for process id {:#x}", process_handle, process_id
         );
     } else {
-        auto msg = GetLastError() == 0x5 ? "Access denied for" : "Cannot open";
+        auto msg = GetLastError() == ERROR_ACCESS_DENIED ? "Access denied for"
+                                                         : "Cannot open";
         spdlog::error("{} process id {:#x}", msg, process_id);
     }
     return HandlePtr{process_handle};
