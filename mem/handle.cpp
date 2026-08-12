@@ -11,12 +11,18 @@ void HandleDeleter::operator()(void* handle) const {
 };
 
 bool is_process_running(void* process_handle) {
-    auto ret = WaitForSingleObject(process_handle, 0);
-    return ret == WAIT_TIMEOUT;
+    DWORD exit_code{};
+    if (!GetExitCodeProcess(process_handle, &exit_code)) return false;
+    return exit_code == STILL_ACTIVE;
 }
 
 HandlePtr open_process_handle(DWORD process_id) {
-    auto process_handle = OpenProcess(PROCESS_ALL_ACCESS, 0, process_id);
+    auto process_handle = OpenProcess(
+        PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
+            | PROCESS_QUERY_LIMITED_INFORMATION,
+        0,
+        process_id
+    );
     if (process_handle) {
         spdlog::debug(
             "Handle {} opened for process id {:#x}", process_handle, process_id
