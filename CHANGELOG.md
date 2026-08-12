@@ -14,9 +14,19 @@
 
 - Hitman Blood Money: new option to merge items left into a single row.
 
+### Changed
+
+- When opening the game process, only the strictly necessary access rights are requested.
+
+- Signals and timers will now behave better after lag spikes.
+
+- Some minor internal quality-of-life refactoring of code.
+
 ### Fixed
 
 - Fix bug when pointer reading for large address aware 32-bit executables.
+
+- Fix formatting of negative times (should they ever occur).
 
 ## [0.8.2] - 2026-08-07
 
