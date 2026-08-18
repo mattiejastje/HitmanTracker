@@ -188,22 +188,14 @@ int gui_run(
     timer::PeriodicTimer timer_find_game{1.0};
     timer::PeriodicTimer timer_update_stats{0.1};
     std::optional<Game> game{};
-    Signal frametime_signal{"fps", "frames per second"};
-    Signal error_slow{"slow update failure rate", "%", 50.0f};
-    Signal error_fast{"fast update failure rate", "%", 50.0f};
-    Profiler profiler_slow{{"slow update time", "seconds"}};
-    Profiler profiler_fast{{"fast update time", "seconds"}};
+    Diagnostics diagnostics{};
 
     imgui_app::TickFunc tick = [&registry,
                                 &timer_find_game,
                                 &timer_update_stats,
                                 &game,
-                                &frametime_signal,
-                                &error_slow,
-                                &error_fast,
-                                &profiler_slow,
-                                &profiler_fast](float dt) {
-        frametime_signal.update(1 / dt, dt);
+                                &diagnostics](float dt) {
+        diagnostics.frame_time.update(dt, dt);
         if (timer_find_game.tick(dt)) {
             // try find game if none found yet
             if (!game || !is_process_running(game->handle.get())) {
@@ -228,29 +220,35 @@ int gui_run(
                 }
             }
         }
-        if (timer_update_stats.tick(dt)) {
-            if (game && game->hook) {
-                auto scoped_slow = ScopedProfiler{profiler_slow, dt};
-                auto ok = game->methods.update_slow(
-                    game->exe_path,
-                    game->handle.get(),
-                    game->base_ptrs,
-                    game->hook->label_ptrs,
-                    game->remote_state,
-                    game->stats
-                );
-                error_slow.update(100.0f * static_cast<float>(!ok), dt);
-            }
-        }
-        if (game && game->hook) {
-            auto scoped_fast = ScopedProfiler{profiler_fast, dt};
-            bool ok = game->methods.update_fast(
-                game->handle.get(),
-                game->base_ptrs,
-                game->hook->label_ptrs,
-                game->stats
+        if (auto interval = timer_update_stats.tick(dt)) {
+            auto scoped_slow = ScopedProfiler{
+                diagnostics.slow_update, *interval
+            };
+            bool ok = game && game->hook ? game->methods.update_slow(
+                                               game->exe_path,
+                                               game->handle.get(),
+                                               game->base_ptrs,
+                                               game->hook->label_ptrs,
+                                               game->remote_state,
+                                               game->stats
+                                           )
+                                         : true;
+            diagnostics.slow_update_error_rate.update(
+                100.0f * static_cast<float>(!ok), *interval
             );
-            error_fast.update(100.0f * static_cast<float>(!ok), dt);
+        }
+        {
+            auto scoped_fast = ScopedProfiler{diagnostics.fast_update, dt};
+            bool ok = game && game->hook ? game->methods.update_fast(
+                                               game->handle.get(),
+                                               game->base_ptrs,
+                                               game->hook->label_ptrs,
+                                               game->stats
+                                           )
+                                         : true;
+            diagnostics.fast_update_error_rate.update(
+                100.0f * static_cast<float>(!ok), dt
+            );
         }
     };
 
@@ -378,7 +376,7 @@ int gui_run(
 
     stats->window->state->on_message.push_back(on_message_stats);
 
-    imgui_app::DrawFunc draw_main = [&settings, &game, &stats](
+    imgui_app::DrawFunc draw_main = [&settings, &diagnostics, &game, &stats](
                                         imgui_app::AppWindow& aw, float dt
                                     ) -> imgui_app::AppWindowSideEffect {
         if (ImGui::Begin(
@@ -404,7 +402,7 @@ int gui_run(
                 game ? game->exe_path.filename().string().c_str() : nullptr,
                 game ? static_cast<bool>(game->hook) : false
             );
-            changed |= settings_gui(settings);
+            changed |= settings_gui(settings, diagnostics);
             ImGui::End();
             return draw_main_side_effect(stats.get(), changed, settings);
         }

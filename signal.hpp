@@ -3,11 +3,17 @@
 #include <chrono>
 #include <optional>
 
-struct Signal {
+// Raw signal.
+struct RawSignal {
     const char* name;
     const char* unit;
-    std::optional<float> high = std::nullopt;
+    std::optional<float> warn = std::nullopt;
+    std::optional<float> err = std::nullopt;
     float value = 0.0f;
+};
+
+// Signal with smooth updates.
+struct Signal : public RawSignal {
     float inv_tau = 1.0f;
     float interval = 1.0f;
     float now = 0.0f;
@@ -15,6 +21,7 @@ struct Signal {
     void update(float sample, float dt);
 };
 
+// Profiler signal: measures smoothed time between begin and end.
 struct Profiler {
     using clock = std::chrono::steady_clock;
     Signal signal{};
@@ -24,6 +31,7 @@ struct Profiler {
     void end(float dt);
 };
 
+// Profiler for a scope.
 struct ScopedProfiler {
     Profiler& profiler;
     float dt;

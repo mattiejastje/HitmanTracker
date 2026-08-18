@@ -4,6 +4,7 @@
 
 #include <span>
 
+#include "diagnostics.hpp"
 #include "settings.hpp"
 
 struct SettingsChanged {
@@ -16,4 +17,6 @@ struct SettingsChanged {
 
 SettingsChanged& operator|=(SettingsChanged& a, const SettingsChanged& b);
 
-SettingsChanged settings_gui(settings::Settings& settings);
+SettingsChanged settings_gui(
+    settings::Settings& settings, const Diagnostics& diagnostics
+);

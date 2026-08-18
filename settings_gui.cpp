@@ -106,7 +106,7 @@ static ImVec4 level_color(spdlog::level::level_enum lvl) {
         case spdlog::level::critical:
             return {1.0f, 0.1f, 0.6f, 1.0f};
         default:
-            return {1.0f, 1.0f, 1.0f, 1.0f};
+            return ImGui::GetStyleColorVec4(ImGuiCol_Text);
     }
 }
 
@@ -123,6 +123,131 @@ static std::vector<spdlog::details::log_msg_buffer> get_pending_entries(
         return e.time < cleared_before;
     });
     return entries;
+}
+
+static ImVec4 signal_color(const RawSignal& signal) {
+    if (signal.err && signal.value > *signal.err) {
+        return ImVec4{1.0f, 0.3f, 0.3f, 1.0f};
+    }
+    if (signal.warn && signal.value > *signal.warn) {
+        return ImVec4{0.9f, 0.8f, 0.1f, 1.0f};
+    }
+    return ImGui::GetStyleColorVec4(ImGuiCol_Text);
+}
+
+static RawSignal make_fraction_signal(
+    const char* name, float part, float whole
+) {
+    return RawSignal{
+        name,
+        "% of frame",
+        FRACTION_WARN,
+        FRACTION_ERROR,
+        whole > 0.0f ? 100.0f * part / whole : 0.0f
+    };
+}
+
+static void draw_timing_row(
+    const char* label,
+    const char* tooltip,
+    const RawSignal& time_signal,
+    const RawSignal* fraction_signal
+) {
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+    ImGui::TextUnformatted(label);
+    if (tooltip && ImGui::IsItemHovered()) ImGui::SetTooltip("%s", tooltip);
+    ImGui::TableNextColumn();
+    ImGui::Text("%.2f ms", time_signal.value * 1000.0f);
+    ImGui::TableNextColumn();
+    if (fraction_signal) {
+        ImGui::TextColored(
+            signal_color(*fraction_signal), "%.0f%%", fraction_signal->value
+        );
+    } else {
+        ImGui::TextDisabled("-");
+    }
+}
+
+static void draw_error_rate_row(
+    const char* label, const char* tooltip, const RawSignal& signal
+) {
+    ImGui::TableNextRow();
+    ImGui::TableNextColumn();
+    ImGui::TextUnformatted(label);
+    if (tooltip && ImGui::IsItemHovered()) ImGui::SetTooltip("%s", tooltip);
+    ImGui::TableNextColumn();
+    ImGui::TextColored(signal_color(signal), "%.0f%%", signal.value);
+}
+
+static void draw_diagnostics_tab(const Diagnostics& diagnostics) {
+    const auto slow_fraction = make_fraction_signal(
+        "slow update fraction",
+        diagnostics.slow_update.signal.value,
+        diagnostics.frame_time.value
+    );
+    const auto fast_fraction = make_fraction_signal(
+        "fast update fraction",
+        diagnostics.fast_update.signal.value,
+        diagnostics.frame_time.value
+    );
+    ImGui::SeparatorText("Tracker Performance");
+    if (ImGui::BeginTable(
+            "timing",
+            3,
+            ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersInnerV
+                | ImGuiTableFlags_SizingFixedFit
+        )) {
+        ImGui::TableSetupColumn("Metric");
+        ImGui::TableSetupColumn("Time");
+        ImGui::TableSetupColumn("% of frame");
+        ImGui::TableHeadersRow();
+        draw_timing_row(
+            "Frame time",
+            "The tracker's frame time (not the game's).",
+            diagnostics.frame_time,
+            nullptr
+        );
+        draw_timing_row(
+            "Slow update",
+            "Time spent reading and processing stats (runs ~10x/s). ",
+            diagnostics.slow_update.signal,
+            &slow_fraction
+        );
+        draw_timing_row(
+            "Fast update",
+            "Time spent updating the timer (runs every frame).",
+            diagnostics.fast_update.signal,
+            &fast_fraction
+        );
+        ImGui::EndTable();
+    }
+    ImGui::SeparatorText("Memory Read Reliability");
+    if (ImGui::BeginTable(
+            "reliability",
+            2,
+            ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersInnerV
+                | ImGuiTableFlags_SizingFixedFit
+        )) {
+        ImGui::TableSetupColumn("Metric");
+        ImGui::TableSetupColumn("Failure rate");
+        ImGui::TableHeadersRow();
+        // inv_tau = 1.0 so roughly average over last second
+        draw_error_rate_row(
+            "Slow update",
+            "Percentage of stats reads that failed in the last second.",
+            diagnostics.slow_update_error_rate
+        );
+        draw_error_rate_row(
+            "Fast update",
+            "Percentage of timer reads that failed in the last second.",
+            diagnostics.fast_update_error_rate
+        );
+        ImGui::EndTable();
+    }
+    ImGui::TextDisabled(
+        "Occasional failures are normal (e.g. during level loads)."
+    );
 }
 
 static SettingsChanged draw_logging_tab(
@@ -210,7 +335,9 @@ static SettingsChanged draw_logging_tab(
     return changed;
 }
 
-SettingsChanged settings_gui(settings::Settings& settings) {
+SettingsChanged settings_gui(
+    settings::Settings& settings, const Diagnostics& diagnostics
+) {
     static spdlog::log_clock::time_point cleared_before{};
     SettingsChanged changed;
     if (ImGui::BeginTabBar("Settings")) {
@@ -492,6 +619,10 @@ SettingsChanged settings_gui(settings::Settings& settings) {
                 ImGui::TreePop();
             }
             ImGui::PopID();
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Diagnostics")) {
+            draw_diagnostics_tab(diagnostics);
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem(

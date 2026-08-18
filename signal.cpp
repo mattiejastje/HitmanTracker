@@ -9,8 +9,10 @@ void Signal::update(float sample, float dt) {
     value += alpha * (sample - value);
     now += dt;
     if (now > interval) {
-        if (high && (value > *high)) {
+        if (err && (value > *err)) {
             spdlog::error("{} = {:g} {} (too high)", name, value, unit);
+        } else if (warn && (value > *warn)) {
+            spdlog::warn("{} = {:g} {} (too high)", name, value, unit);
         } else {
             spdlog::debug("{} = {:g} {}", name, value, unit);
         }

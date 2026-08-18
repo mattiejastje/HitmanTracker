@@ -14,6 +14,8 @@
 
 - Hitman Blood Money: new option to merge items left into a single row.
 
+- New diagnostics tab, showing frame time, fraction of time spent on updating statistics and timer, and update failure rates.
+
 ### Changed
 
 - When opening the game process, only the strictly necessary access rights are requested.
@@ -27,6 +29,8 @@
 - Fix bug when pointer reading for large address aware 32-bit executables.
 
 - Fix formatting of negative times (should they ever occur).
+
+- Signals are now consistently updated even when a game is not running.
 
 ## [0.8.2] - 2026-08-07
 
