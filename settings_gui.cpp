@@ -532,7 +532,7 @@ SettingsChanged settings_gui(
             mark_any(
                 changed,
                 ImGui::Checkbox(
-                    "Show max Score rating only",
+                    "Show max score rating only",
                     &settings.hma.show_max_score_rating_only
                 )
             );
@@ -540,13 +540,13 @@ SettingsChanged settings_gui(
             mark_any(
                 changed,
                 ImGui::Checkbox(
-                    "Show Score rating total", &settings.hma.show_score_total
+                    "Show score rating total", &settings.hma.show_score_total
                 )
             );
             mark_any(
                 changed,
                 ImGui::Checkbox(
-                    "Show Score rating details",
+                    "Show score rating details",
                     &settings.hma.show_score_details
                 )
             );
