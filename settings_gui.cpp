@@ -203,19 +203,19 @@ static void draw_diagnostics_tab(const Diagnostics& diagnostics) {
         ImGui::TableSetupColumn("% of frame");
         ImGui::TableHeadersRow();
         draw_timing_row(
-            "Frame time",
+            "Frame Time",
             "The tracker's frame time (not the game's).",
             diagnostics.frame_time,
             nullptr
         );
         draw_timing_row(
-            "Slow update",
-            "Time spent reading and processing stats (runs ~10x/s). ",
+            "Statistics",
+            "Time spent reading and processing statistics (runs ~10x/s). ",
             diagnostics.slow_update.signal,
             &slow_fraction
         );
         draw_timing_row(
-            "Fast update",
+            "Timer",
             "Time spent updating the timer (runs every frame).",
             diagnostics.fast_update.signal,
             &fast_fraction
@@ -234,12 +234,12 @@ static void draw_diagnostics_tab(const Diagnostics& diagnostics) {
         ImGui::TableHeadersRow();
         // inv_tau = 1.0 so roughly average over last second
         draw_error_rate_row(
-            "Slow update",
-            "Percentage of stats reads that failed in the last second.",
+            "Statistics",
+            "Percentage of statistics reads that failed in the last second.",
             diagnostics.slow_update_error_rate
         );
         draw_error_rate_row(
-            "Fast update",
+            "Timer",
             "Percentage of timer reads that failed in the last second.",
             diagnostics.fast_update_error_rate
         );
