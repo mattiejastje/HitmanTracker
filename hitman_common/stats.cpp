@@ -49,7 +49,7 @@ static StatsArray<int32_t> find_nearest_safe_stats(
         const auto v1 = std::max(current1 - 6, 0);
         const auto v2 = std::max(current2 - 1, 0);
         if (v1 == 0 && v2 == 0) break;
-        int best_index = -1;
+        int best_index = 0;
         double best_gain = -std::numeric_limits<double>::infinity();
         // for each index, check which gives best improvement
         for (int i = 0; i < 8; i++) {
@@ -65,12 +65,6 @@ static StatsArray<int32_t> find_nearest_safe_stats(
                 best_index = i;
             }
         }
-        if (best_index == -1) {
-            // should never happen, but catch just in case to prevent infinite
-            // loop
-            spdlog::error("No best index found for nearest safe stats");
-            break;
-        };
         nearest[best_index]--;
     }
     spdlog::trace("safe shots_fired       = {}", nearest[SHOTS_FIRED]);
