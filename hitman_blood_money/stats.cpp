@@ -247,10 +247,12 @@ GameStatsSlow hitman_blood_money::update_slow(Version version) {
         if (!scene_manager) return true;  // game starting
         auto& scene = scene_manager->info.scene_name;
         spdlog::trace("Scene {}", scene);
-        std::transform(scene.begin(), scene.end(), scene.begin(), [](char& c) {
-            if (c == '\\') return '/';
-            return static_cast<char>(std::tolower(c));
-        });
+        std::transform(
+            scene.begin(), scene.end(), scene.begin(), [](unsigned char c) {
+                if (c == '\\') return '/';
+                return static_cast<char>(std::tolower(c));
+            }
+        );
         auto iter = scenes.find(scene);
         if (iter != scenes.end()) {
             stats.map = iter->second.map;

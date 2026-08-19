@@ -39,8 +39,11 @@ static std::unordered_map<std::string, Module> get_all_modules(
             do {
                 std::string name{module_entry.szModule};
                 std::transform(
-                    name.begin(), name.end(), name.begin(), [](char& c) {
-                        return std::tolower(c);
+                    name.begin(),
+                    name.end(),
+                    name.begin(),
+                    [](unsigned char c) {
+                        return static_cast<char>(std::tolower(c));
                     }
                 );
                 auto base_ptr
