@@ -57,7 +57,8 @@ static intptr_t get_code_size(const Assembly& item, intptr_t current_ptr) {
 static intptr_t get_code_size_upper_bound(const AssemblyCode& assembly) {
     return std::ranges::fold_left(
         assembly, intptr_t{0}, [](intptr_t acc, const Assembly& item) {
-            // current_ptr 1 gives worst case size
+            // current_ptr=1 gives worst-case Align padding for every size at
+            // once. Don't use 0: that's aligned to everything.
             return acc + get_code_size(item, 1);
         }
     );
