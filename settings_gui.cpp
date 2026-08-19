@@ -200,7 +200,7 @@ static void draw_diagnostics_tab(const Diagnostics& diagnostics) {
         )) {
         ImGui::TableSetupColumn("Metric");
         ImGui::TableSetupColumn("Time");
-        ImGui::TableSetupColumn("% of frame");
+        ImGui::TableSetupColumn("% Of Frame Time");
         ImGui::TableHeadersRow();
         draw_timing_row(
             "Frame Time",
@@ -230,7 +230,7 @@ static void draw_diagnostics_tab(const Diagnostics& diagnostics) {
                 | ImGuiTableFlags_SizingFixedFit
         )) {
         ImGui::TableSetupColumn("Metric");
-        ImGui::TableSetupColumn("Failure rate");
+        ImGui::TableSetupColumn("Failure Rate");
         ImGui::TableHeadersRow();
         // inv_tau = 1.0 so roughly average over last second
         draw_error_rate_row(
