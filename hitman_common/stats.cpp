@@ -36,6 +36,7 @@ constexpr StatsArray<int> weights = {
     3,  // INNOCENTS_WOUNDED
 };
 
+// heuristic greedy hill-climber algorithm
 static StatsArray<int32_t> find_nearest_safe_stats(
     StatsFunc measure_aggression,
     StatsFunc measure_stealth,
