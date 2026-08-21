@@ -140,14 +140,18 @@ local PlayerData = d.Struct("PlayerData", {
 })
 
 M.Player = d.Struct("Player", {
+    --[[
     d.Field(Matrix33, "unk_matrix_00"),
     d.Seek(0x3C),
     d.Field(d.Int32, "unk_flag_3c"), -- bit 0x08000000 means "don't free this object"?
+    ]]
     d.Seek(0x54),
     d.Field(d.Ref(PlayerData), "data"),
+    --[[
     d.Field(d.Int8, "unk_flag_58"),
     d.Seek(0x6C),
     d.Field(d.Int32, "unk_6c"),
+    ]]
     -- was last field, size is likely 0x70
 })
 
@@ -212,12 +216,16 @@ local SceneEntities = d.Struct("SceneEntities", {
 local SceneManager = d.Struct("SceneManager", {
     d.Skip(0x4),
     d.Field(d.NullableRef(GRefManager), "gref_manager"),  -- holds relocatable scene memory pool
+    --[[
     d.Seek(0xC4),
     d.Field(d.NullableRef(SceneEntities), "entities"),  -- can be null during mission reload
+    ]]
     d.Seek(0xBB7),
     d.Field(M.SmallString, "scene_name"),
+    --[[
     d.Seek(0x1C4B),
     d.Field(SharedCom, "shared_com"),  -- holds scene properties
+    ]]
 })
 
 local Engine = d.Struct("Engine", {

@@ -18,11 +18,7 @@ struct PlayerData {
 };
 
 struct Player {
-  std::array<std::array<float, 0x3>, 0x3> unk_matrix_00;  // offset 0x0
-  int32_t unk_flag_3c;  // offset 0x3c
   PlayerData* data;  // offset 0x54
-  int8_t unk_flag_58;  // offset 0x58
-  int32_t unk_6c;  // offset 0x6c
 };
 
 struct PropertyType {
@@ -63,45 +59,13 @@ struct GRefManager {
   void* slots;  // offset 0x5d
 };
 
-struct SceneEntities {
-  std::array<int32_t, 0x3e8>* handles;  // offset 0x4
-  void* unk_08;  // offset 0x8
-  int32_t unk_0c;  // offset 0xc
-  int32_t num_handles;  // offset 0x10
-};
-
 struct SmallString {
   char* text;  // offset 0x0
 };
 
-struct PropertyBlock {
-  void* prev_block;  // offset 0x0
-  void* next_block;  // offset 0x4
-  int32_t num_properties;  // offset 0x8
-  int32_t tombstone_marker;  // offset 0xc
-  std::array<void*, 0x20> properties;  // offset 0x10
-};
-
-struct SharedComContainer {
-  void* vtable;  // offset 0x0
-  PropertyBlock* blocks;  // offset 0x4
-  void* last_block;  // offset 0x8
-  int32_t unk_flags;  // offset 0xc
-  int32_t max_num_properties_per_block;  // offset 0x10
-  int32_t num_properties_total;  // offset 0x14
-  int32_t property_size;  // offset 0x18
-};
-
-struct SharedCom {
-  void* vtable;  // offset 0x0
-  SharedComContainer container;  // offset 0x4008
-};
-
 struct SceneManager {
   GRefManager* gref_manager;  // offset 0x4
-  SceneEntities* entities;  // offset 0xc4
   SmallString scene_name;  // offset 0xbb7
-  SharedCom shared_com;  // offset 0x1c4b
 };
 
 struct Engine {

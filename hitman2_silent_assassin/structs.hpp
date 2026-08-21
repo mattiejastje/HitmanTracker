@@ -1,11 +1,9 @@
 #pragma once
 
-#include <array>
 #include <cstdint>
 #include <mempeep/descriptors.hpp>
 #include <optional>
 #include <string>
-#include <vector>
 
 using namespace mempeep;
 
@@ -45,26 +43,12 @@ using TPlayerData = Struct<
         Seek<0x1263>>>;
 
 struct Player {
-    std::array<std::array<float, 0x3>, 0x3> unk_matrix_00;
-    int32_t unk_flag_3c;
     PlayerData data;
-    int8_t unk_flag_58;
-    int32_t unk_6c;
 };
 
 using TPlayer = Struct<
     Player,
-    Fields<
-        Field<
-            Primitive<std::array<std::array<float, 0x3>, 0x3>>,
-            &Player::unk_matrix_00>,
-        Seek<0x3c>,
-        Field<Int32, &Player::unk_flag_3c>,
-        Seek<0x54>,
-        Field<Ref<TPlayerData>, &Player::data>,
-        Field<Int8, &Player::unk_flag_58>,
-        Seek<0x6c>,
-        Field<Int32, &Player::unk_6c>>>;
+    Fields<Seek<0x54>, Field<Ref<TPlayerData>, &Player::data>>>;
 
 struct PropertyType {
     uint32_t fourcc;
@@ -151,24 +135,6 @@ using TGRefManager = Struct<
         Seek<0x5d>,
         Field<RawAddr<uint32_t>, &GRefManager::slots>>>;
 
-struct SceneEntities {
-    RemoteValue<Primitive<std::array<int32_t, 0x3e8>>, uint32_t> handles;
-    uint32_t unk_08;
-    int32_t unk_0c;
-    int32_t num_handles;
-};
-
-using TSceneEntities = Struct<
-    SceneEntities,
-    Fields<
-        Skip<0x4>,
-        Field<
-            Ref<RemoteAddr<Primitive<std::array<int32_t, 0x3e8>>, uint32_t>>,
-            &SceneEntities::handles>,
-        Field<RawAddr<uint32_t>, &SceneEntities::unk_08>,
-        Field<Int32, &SceneEntities::unk_0c>,
-        Field<Int32, &SceneEntities::num_handles>>>;
-
 struct SmallString {
     std::string text;
 };
@@ -177,60 +143,9 @@ using TSmallString = Struct<
     SmallString,
     Fields<Field<Ref<ZString<0x100>>, &SmallString::text>, Skip<0x7c>>>;
 
-struct PropertyBlock {
-    uint32_t prev_block;
-    uint32_t next_block;
-    int32_t num_properties;
-    int32_t tombstone_marker;
-    std::array<uint32_t, 0x20> properties;
-};
-
-struct SharedComContainer {
-    uint32_t vtable;
-    std::vector<PropertyBlock> blocks;
-    uint32_t last_block;
-    int32_t unk_flags;
-    int32_t max_num_properties_per_block;
-    int32_t num_properties_total;
-    int32_t property_size;
-};
-
-using TSharedComContainer = Struct<
-    SharedComContainer,
-    Fields<
-        Field<RawAddr<uint32_t>, &SharedComContainer::vtable>,
-        Field<
-            List<
-                Primitive<PropertyBlock>,
-                &PropertyBlock::next_block,
-                ListKind::NULL_TERMINATED,
-                0x1000>,
-            &SharedComContainer::blocks>,
-        Field<RawAddr<uint32_t>, &SharedComContainer::last_block>,
-        Field<Int32, &SharedComContainer::unk_flags>,
-        Field<
-            Bounded<Int32, 32, 32>,
-            &SharedComContainer::max_num_properties_per_block>,
-        Field<Int32, &SharedComContainer::num_properties_total>,
-        Field<Bounded<Int32, 1, 1>, &SharedComContainer::property_size>>>;
-
-struct SharedCom {
-    uint32_t vtable;
-    SharedComContainer container;
-};
-
-using TSharedCom = Struct<
-    SharedCom,
-    Fields<
-        Field<RawAddr<uint32_t>, &SharedCom::vtable>,
-        Seek<0x4008>,
-        Field<TSharedComContainer, &SharedCom::container>>>;
-
 struct SceneManager {
     std::optional<GRefManager> gref_manager;
-    std::optional<SceneEntities> entities;
     SmallString scene_name;
-    SharedCom shared_com;
 };
 
 using TSceneManager = Struct<
@@ -238,12 +153,8 @@ using TSceneManager = Struct<
     Fields<
         Skip<0x4>,
         Field<NullableRef<TGRefManager>, &SceneManager::gref_manager>,
-        Seek<0xc4>,
-        Field<NullableRef<TSceneEntities>, &SceneManager::entities>,
         Seek<0xbb7>,
-        Field<TSmallString, &SceneManager::scene_name>,
-        Seek<0x1c4b>,
-        Field<TSharedCom, &SceneManager::shared_com>>>;
+        Field<TSmallString, &SceneManager::scene_name>>>;
 
 struct Engine {
     SceneManager scene_manager;
