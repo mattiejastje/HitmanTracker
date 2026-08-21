@@ -56,9 +56,11 @@ static int32_t _measure_aggression(
             return 7;
         else if (is_first_map && stats[CLOSE_ENCOUNTERS] > 0)
             return 7;
-    } else if (stats[CLOSE_ENCOUNTERS] == 0 && stats[ENEMIES_KILLED] == 0
-               && stats[ENEMIES_WOUNDED] == 0 && stats[INNOCENTS_KILLED] == 0
-               && stats[INNOCENTS_WOUNDED] == 0 && stats[HEADSHOTS] == 0) {
+    } else if (
+        stats[CLOSE_ENCOUNTERS] == 0 && stats[ENEMIES_KILLED] == 0
+        && stats[ENEMIES_WOUNDED] == 0 && stats[INNOCENTS_KILLED] == 0
+        && stats[INNOCENTS_WOUNDED] == 0 && stats[HEADSHOTS] == 0
+    ) {
         // cap max at 6 (aggression = 2) in distraction shots only scenario
         return 6;
     }
