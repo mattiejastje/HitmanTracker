@@ -560,8 +560,7 @@ GameStatsSlow hitman2_silent_assassin::update_slow(Version version) {
         if (stats.map >= 2) {
             const auto& info_data = info.data.at(version);
             structs::LevelControl level_control{};
-            // entities can be briefly null if mission is still
-            // loading
+            // entities can be briefly null if mission is loading
             if (game.entity_manager.entities) {
                 uint32_t level_control_addr{};
                 if (!mempeep::read_at(
@@ -572,8 +571,7 @@ GameStatsSlow hitman2_silent_assassin::update_slow(Version version) {
                         level_control_addr
                     ))
                     return false;
-                // address can be briefly zero if mission is still
-                // loading
+                // address can be briefly zero if mission is loading
                 if (level_control_addr != 0) {
                     const RemoteValue<
                         Primitive<structs::LevelControl>,
