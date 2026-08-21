@@ -15,6 +15,10 @@ bool read_bytes(void* handle, intptr_t ptr, void* buffer, intptr_t size);
 
 bool write_bytes(void* handle, intptr_t ptr, void* buffer, intptr_t size);
 
+intptr_t take_bytes_read();
+
+intptr_t take_bytes_written();
+
 template <class T>
 std::optional<T> read(void* handle, intptr_t ptr) {
     T value{};

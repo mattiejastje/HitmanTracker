@@ -22,4 +22,6 @@ struct Diagnostics {
     Signal fast_update_error_rate{
         "fast update failure rate", "%", FRACTION_WARN, FRACTION_ERROR
     };
+    Signal bytes_read_rate{"bytes read", "B/s"};
+    Signal bytes_written_rate{"bytes written", "B/s"};
 };

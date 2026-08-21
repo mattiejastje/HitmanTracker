@@ -23,6 +23,7 @@
 #include "imgui_app/ui.hpp"
 #include "imgui_app/window.hpp"
 #include "mem/handle.hpp"
+#include "mem/read_write.hpp"
 #include "settings_gui.hpp"
 #include "shell.hpp"
 #include "signal.hpp"
@@ -221,9 +222,8 @@ int gui_run(
             }
         }
         if (auto interval = timer_update_stats.tick(dt)) {
-            auto scoped_slow = ScopedProfiler{
-                diagnostics.slow_update, *interval
-            };
+            auto scoped_slow
+                = ScopedProfiler{diagnostics.slow_update, *interval};
             bool ok = game && game->hook ? game->methods.update_slow(
                                                game->exe_path,
                                                game->handle.get(),
@@ -235,6 +235,12 @@ int gui_run(
                                          : true;
             diagnostics.slow_update_error_rate.update(
                 100.0f * static_cast<float>(!ok), *interval
+            );
+            diagnostics.bytes_read_rate.update(
+                static_cast<float>(take_bytes_read()) / *interval, *interval
+            );
+            diagnostics.bytes_written_rate.update(
+                static_cast<float>(take_bytes_written()) / *interval, *interval
             );
         }
         {

@@ -180,6 +180,19 @@ static void draw_error_rate_row(
     ImGui::TextColored(signal_color(signal), "%.0f%%", signal.value);
 }
 
+static constexpr float BYTES_PER_KB = 1024.0f;
+static constexpr float BYTES_PER_MB = 1024.0f * 1024.0f;
+static constexpr float INV_BYTES_PER_KB = 1.0f / BYTES_PER_KB;
+static constexpr float INV_BYTES_PER_MB = 1.0f / BYTES_PER_MB;
+
+static std::string format_byte_rate(float bytes_per_sec) {
+    if (bytes_per_sec >= BYTES_PER_MB)
+        return fmt::format("{:.2f} MB/s", bytes_per_sec * INV_BYTES_PER_MB);
+    if (bytes_per_sec >= BYTES_PER_KB)
+        return fmt::format("{:.2f} KB/s", bytes_per_sec * INV_BYTES_PER_KB);
+    return fmt::format("{:.0f} B/s", bytes_per_sec);
+}
+
 static void draw_diagnostics_tab(const Diagnostics& diagnostics) {
     const auto slow_fraction = make_fraction_signal(
         "slow update fraction",
@@ -248,6 +261,32 @@ static void draw_diagnostics_tab(const Diagnostics& diagnostics) {
     ImGui::TextDisabled(
         "Occasional failures are normal (e.g. during level loads)."
     );
+    ImGui::SeparatorText("Memory Throughput");
+    if (ImGui::BeginTable(
+            "throughput",
+            2,
+            ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersInnerV
+                | ImGuiTableFlags_SizingFixedFit
+        )) {
+        ImGui::TableSetupColumn("Metric");
+        ImGui::TableSetupColumn("Rate");
+        ImGui::TableHeadersRow();
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted("Bytes Read");
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted(
+            format_byte_rate(diagnostics.bytes_read_rate.value).c_str()
+        );
+        ImGui::TableNextRow();
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted("Bytes Written");
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted(
+            format_byte_rate(diagnostics.bytes_written_rate.value).c_str()
+        );
+        ImGui::EndTable();
+    }
 }
 
 static SettingsChanged draw_logging_tab(

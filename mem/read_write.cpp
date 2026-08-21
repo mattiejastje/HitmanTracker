@@ -2,6 +2,9 @@
 
 #include <windows.h>
 
+static intptr_t g_bytes_read = 0;
+static intptr_t g_bytes_written = 0;
+
 static bool read_process_memory(
     void* handle, void* ptr, void* buffer, intptr_t size
 ) {
@@ -21,6 +24,7 @@ bool read_bytes(void* handle, intptr_t ptr, void* buffer, intptr_t size) {
         if (read_process_memory(
                 handle, reinterpret_cast<void*>(ptr), buffer, size
             )) {
+            g_bytes_read += size;
             spdlog::trace("Read {} bytes at {:#x}", size, ptr);
             return true;
         }
@@ -34,6 +38,7 @@ bool write_bytes(void* handle, intptr_t ptr, void* buffer, intptr_t size) {
         if (write_process_memory(
                 handle, reinterpret_cast<void*>(ptr), buffer, size
             )) {
+            g_bytes_written += size;
             spdlog::trace("Written {} bytes at {:#x}", size, ptr);
             return true;
         }
@@ -41,6 +46,10 @@ bool write_bytes(void* handle, intptr_t ptr, void* buffer, intptr_t size) {
     spdlog::trace("Failed to write {} bytes at {:#x}", size, ptr);
     return false;
 }
+
+intptr_t take_bytes_read() { return std::exchange(g_bytes_read, 0); }
+
+intptr_t take_bytes_written() { return std::exchange(g_bytes_written, 0); }
 
 std::optional<std::string> read_string(
     void* handle, intptr_t ptr, intptr_t size

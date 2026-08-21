@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Diagnostics: show memory throughput.
+
 ## [0.8.3] - 2026-08-18
 
 ### Added
