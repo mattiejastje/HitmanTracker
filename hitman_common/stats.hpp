@@ -22,10 +22,16 @@ using StatsArray = std::array<T, 8>;
 
 using StatsFunc = std::function<int32_t(const StatsArray<int32_t>&)>;
 
+struct PropertyCache {
+    uint32_t data;    // property_manager.data this offset was found under
+    uint32_t offset;  // offset of the record within that data
+};
+
 struct Stats {
     float time;
     int map;
     MapStage map_stage;
+    std::optional<PropertyCache> lethed_cache{};
     int32_t difficulty;
     StatsValue<std::string> rating;
     StatsValue<int32_t> shots_fired;

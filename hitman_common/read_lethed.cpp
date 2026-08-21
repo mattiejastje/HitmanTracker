@@ -67,8 +67,18 @@ std::optional<int32_t> hitman_common::read_property_int32(
     int32_t data_used,
     std::string_view key,
     MemoryReader<uint32_t>& reader,
-    LogTracer<MempeepOnLogEntry>& tracer
+    LogTracer<MempeepOnLogEntry>& tracer,
+    std::optional<PropertyCache>& cache
 ) {
+    // fast path: use cached offset
+    if (cache && cache->data == data && cache->offset >= 0
+        && cache->offset < data_used) {
+        auto result
+            = read_property_record(data + cache->offset, key, reader, tracer);
+        if (result && result->value) return result->value;
+        // key moved / slot reused / read failed -> cache is stale
+    }
+    // slow path: iterate over all properties
     uint32_t offset = 0;
     uint32_t index = 0;  // to avoid infinite loop
     while (offset < data_used) {
@@ -77,9 +87,24 @@ std::optional<int32_t> hitman_common::read_property_int32(
             break;
         }
         auto result = read_property_record(data + offset, key, reader, tracer);
-        if (!result) return {};
-        if (result->value) return result->value;
+        if (!result) {
+            cache.reset();
+            return {};
+        }
+        if (result->value) {
+            cache = PropertyCache{.data = data, .offset = offset};
+            spdlog::debug(
+                "{} property cache updated: {} {}",
+                key,
+                cache->data,
+                cache->offset,
+                data,
+                data_used
+            );
+            return result->value;
+        }
         offset += result->record_size;
     }
+    cache.reset();
     return {};
 }

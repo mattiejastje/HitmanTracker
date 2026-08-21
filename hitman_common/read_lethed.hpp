@@ -7,6 +7,7 @@
 
 #include "../hitman2_silent_assassin/structs.hpp"
 #include "../mem/read_write.hpp"
+#include "stats.hpp"
 
 namespace hitman_common {
 
@@ -15,7 +16,8 @@ std::optional<int32_t> read_property_int32(
     int32_t data_used,
     std::string_view key,
     MemoryReader<uint32_t>& reader,
-    LogTracer<MempeepOnLogEntry>& tracer
+    LogTracer<MempeepOnLogEntry>& tracer,
+    std::optional<PropertyCache>& cache
 );
 
 }

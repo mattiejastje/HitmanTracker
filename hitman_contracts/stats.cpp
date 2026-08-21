@@ -130,7 +130,8 @@ GameStatsSlow hitman_contracts::update_slow(Version version) {
                                game.property_manager.data_used,
                                "lethed",
                                reader,
-                               tracer
+                               tracer,
+                               stats.lethed_cache
         )
                                .value_or(0);
         if (stats.map >= 1) {

@@ -6,6 +6,10 @@
 
 - Diagnostics: show memory throughput.
 
+### Changed
+
+- Hitman 2 Silent Assassin and Hitman Contracts performance improvement: the difficulty property offset is now cached so the code no longer needs to iterate over the full property list 10 times per second. For Hitman Contracts this reduces memory throughput by a factor 10.
+
 ## [0.8.3] - 2026-08-18
 
 ### Added
