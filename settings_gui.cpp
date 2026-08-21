@@ -248,12 +248,12 @@ static void draw_diagnostics_tab(const Diagnostics& diagnostics) {
         // inv_tau = 1.0 so roughly average over last second
         draw_error_rate_row(
             "Statistics",
-            "Percentage of statistics reads that failed in the last second.",
+            "Percentage of statistics reads that failed (smoothed over ~1s).",
             diagnostics.slow_update_error_rate
         );
         draw_error_rate_row(
             "Timer",
-            "Percentage of timer reads that failed in the last second.",
+            "Percentage of timer reads that failed (smoothed over ~1s).",
             diagnostics.fast_update_error_rate
         );
         ImGui::EndTable();
