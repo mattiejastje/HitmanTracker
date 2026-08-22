@@ -1021,9 +1021,7 @@ GameStatsSlow hitman_absolution::update_slow(
 constexpr float time_scale = 1.0f / (1024 * 1024);
 
 GameStatsFast hitman_absolution::update_fast(Version version) {
-    const uint32_t time_manager_offset
-        = version == Version::Steam ? 0xE24730 : 0xC88580;
-    return [time_manager_offset](
+    return [version](
                void* handle,
                const BasePtrs& base_ptrs,
                const LabelPtrs& label_ptrs,
@@ -1031,15 +1029,34 @@ GameStatsFast hitman_absolution::update_fast(Version version) {
            ) {
         auto& stats = std::any_cast<Stats&>(stats_any);
         if (stats.map > 0) {
-            const auto& base_ptr = base_ptrs.at(0);
-            auto game_time
-                = read<int64_t>(handle, base_ptr + time_manager_offset + 0x18);
+            structs::GameTimer game{};
+            MemoryReader<uint32_t> reader{handle};
+            auto tracer = mempeep::LogTracer{
+                MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS
+            };
+            const auto address = static_cast<uint32_t>(base_ptrs.at(0));
+            switch (version) {
+                case Version::Steam:
+                    if (!read_at_address<structs::TGameSteamTimer>(
+                            address, reader, tracer, game
+                        ))
+                        return false;
+                    break;
+                case Version::GOG:
+                    if (!read_at_address<structs::TGameGOGTimer>(
+                            address, reader, tracer, game
+                        ))
+                        return false;
+                    break;
+                default:
+                    return false;
+            }
+            auto game_time = game.time_manager.game_time;
             // game_time < stats.start_time means mission ended
             // but update_slow has not run yet
             // this check avoids the timer briefly glitching out
-            if (game_time && game_time >= stats.start_time)
-                stats.time = (*game_time - stats.start_time) * time_scale;
-            return game_time.has_value();
+            if (game_time >= stats.start_time)
+                stats.time = (game_time - stats.start_time) * time_scale;
         }
         return true;
     };
