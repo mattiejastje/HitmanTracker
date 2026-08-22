@@ -125,6 +125,7 @@ local CheckpointsManager = d.Struct("CheckpointsManager", {
   d.Field(d.NullableRef(Checkpoints), "checkpoints"),
 })
 
+-- view is "" or "Compact" (as Stats and Timer both need the same)
 local make_time_manager = function(view)
   local fields = {}
   add_fields_if(view == "", fields, {
@@ -396,11 +397,10 @@ local MovieManager = d.Struct("MovieManager", {
 })
 
 local make_game = function(layout, view)
-  is_full = view == ""
-  is_stats = is_full or view == "Stats"
-  is_timer = is_full or view == "Timer"
-  fields = {}
-  add_fields_if(is_stats, fields, {
+  local is_full = view == ""
+  local is_full_or_stats = is_full or view == "Stats"
+  local fields = {}
+  add_fields_if(is_full_or_stats, fields, {
     d.Seek(layout.offset.global_data + 0x10),
     d.Field(GlobalData, "global_data"),
     d.Seek(layout.offset.stats_manager),
@@ -423,7 +423,7 @@ local make_game = function(layout, view)
     d.Seek(layout.offset.time_manager),
     d.Field(make_time_manager(view == "" and "" or "Compact"), "time_manager"),
   })
-  add_fields_if(is_stats, fields, {
+  add_fields_if(is_full_or_stats, fields, {
     d.Seek(layout.offset.movie_manager),
     d.Field(MovieManager, "movie_manager"),
   })
