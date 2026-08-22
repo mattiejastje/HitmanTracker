@@ -18,90 +18,89 @@ local layouts = {
       engine = 0x393DDC,
       property_manager = 0x393DFC,
       player = 0x394008,
-    }
+    },
   },
 }
 
 local SceneEntityManagerUnk08 = d.Struct("SceneEntityManagerUnk08", {
-    d.Seek(0x10),
-    d.Field(d.Int32, "mask"),
+  d.Seek(0x10),
+  d.Field(d.Int32, "mask"),
 })
 
 local SceneEntityManager = d.Struct("SceneEntityManager", {
-    d.Seek(0x8),
-    d.Field(d.Ref(SceneEntityManagerUnk08), "unk_08"),
+  d.Seek(0x8),
+  d.Field(d.Ref(SceneEntityManagerUnk08), "unk_08"),
 })
 
 local SceneManager = d.Struct("SceneManager", {
-    --[[
+  --[[
     d.Skip(0x4),
     d.Field(d.NullableRef(SceneEntityManager), "entity_manager"),
     d.Seek(0xBB0),
     d.Field(d.Int8, "pause_flag_1"),
     d.Field(d.Int8, "pause_flag_2"),
     ]]
-    d.Seek(0xBCD),
-    d.Field(h2sa.SmallString, "scene_name"),
-    --[[
+  d.Seek(0xBCD),
+  d.Field(h2sa.SmallString, "scene_name"),
+  --[[
     d.Seek(0x6D39),
     d.Field(d.Int32, "unk_6d39"),
     ]]
 })
 
 local Engine = d.Struct("Engine", {
-    --[[
+  --[[
     d.Seek(0x24),
     d.Field(d.Float, "game_time"),  -- ticks / 1024, only updated 5 times per second
     d.Seek(0x30),
     d.Field(d.Int32, "game_ticks_copy"),
     ]]
-    d.Seek(0x38),
-    d.Field(d.Int32, "game_ticks"),  -- in ticks, most accurate, root source of all game timings
-    --[[
+  d.Seek(0x38),
+  d.Field(d.Int32, "game_ticks"), -- in ticks, most accurate, root source of all game timings
+  --[[
     d.Field(d.Int32, "game_ticks_previous"),
     d.Field(d.Float, "frame_time"),  -- smoothed time spent on each frame (seconds)
     d.Field(d.Int32, "pause_ticks_offset"),  -- total time game was paused, in negative ticks
     ]]
-    d.Seek(0xA5),
-    d.Field(d.Ref(SceneManager), "scene_manager"),
-    --[[
+  d.Seek(0xA5),
+  d.Field(d.Ref(SceneManager), "scene_manager"),
+  --[[
     d.Seek(0x80D),
     d.Field(d.Float, "game_time_update_interval"),  -- 0.2, interval to update game_time_seconds
     ]]
 })
 
 local PlayerData = d.Struct("PlayerData", {
-    --[[
+  --[[
     d.Seek(0xE59),
     d.Field(d.Int8, "unk_flag_e59"),  -- gates kill registration?
     ]]
-    d.Seek(0x13DB),
-    d.Field(d.Int32, "shots_fired"),
+  d.Seek(0x13DB),
+  d.Field(d.Int32, "shots_fired"),
 })
 
 local PlayerStats = d.Struct("PlayerStats", {
-    d.Seek(0xB13),
-    d.Field(d.Float, "aggression"),  -- not used for rating
-    d.Field(d.Int32, "headshots"),
-    d.Field(d.Int32, "enemies_wounded"),
-    d.Field(d.Int32, "enemies_killed"),
-    d.Field(d.Int32, "innocents_wounded"),
-    d.Field(d.Int32, "innocents_killed"),
-    d.Field(d.Int32, "alerts"),
-    d.Field(d.Int32, "close_encounters"),
+  d.Seek(0xB13),
+  d.Field(d.Float, "aggression"), -- not used for rating
+  d.Field(d.Int32, "headshots"),
+  d.Field(d.Int32, "enemies_wounded"),
+  d.Field(d.Int32, "enemies_killed"),
+  d.Field(d.Int32, "innocents_wounded"),
+  d.Field(d.Int32, "innocents_killed"),
+  d.Field(d.Int32, "alerts"),
+  d.Field(d.Int32, "close_encounters"),
 })
 
 local Player = d.Struct("Player", {
-    d.Skip(0x8),
-    d.Field(d.NullableRef(PlayerData), "data"),  -- null when in menu
-    d.Seek(0x18),
-    d.Field(d.NullableRef(PlayerStats), "stats"),  -- null when in menu
+  d.Skip(0x8),
+  d.Field(d.NullableRef(PlayerData), "data"), -- null when in menu
+  d.Seek(0x18),
+  d.Field(d.NullableRef(PlayerStats), "stats"), -- null when in menu
 })
 
 local hitman_contracts = function(layout)
-  return d.Struct(
-    "HitmanContracts" .. layout.name, {
-      --[[
+  return d.Struct("HitmanContracts" .. layout.name, {
+    --[[
       d.Seek(0x30E484),
       d.Field(d.Float, "seconds_per_tick"),  -- 1/1024
       d.Seek(0x30E808),
@@ -113,21 +112,21 @@ local hitman_contracts = function(layout)
       d.Seek(0x394570),
       d.Field(d.Ref(h2sa.EntityManager), "entity_manager"),
       ]]
-      d.Seek(layout.offset.engine),
-      d.Field(d.Ref(Engine), "engine"),
-      d.Seek(layout.offset.property_manager),
-      d.Field(d.Ref(h2sa.PropertyManager), "property_manager"),
-      --[[
+    d.Seek(layout.offset.engine),
+    d.Field(d.Ref(Engine), "engine"),
+    d.Seek(layout.offset.property_manager),
+    d.Field(d.Ref(h2sa.PropertyManager), "property_manager"),
+    --[[
       d.Seek(0x3945A4),
       d.Field(d.RawAddr(), "player_ptr"),  -- always points at +3947A8
       ]]
-      d.Seek(layout.offset.player),
-      d.Field(Player, "player"),
-      --[[
+    d.Seek(layout.offset.player),
+    d.Field(Player, "player"),
+    --[[
       d.Seek(0x395718),
       d.Field(d.RawAddr(), "player_data_copy"),  -- equal to the player.data pointer but sometimes stale e.g. when in menu after mission
       ]]
-      --[[
+    --[[
       d.Seek(0x39FFBC),
       d.Field(d.ZString(0x0E), "current_mission_name"),  -- only during stats screen
       d.Seek(0x39FFC4),
@@ -144,62 +143,74 @@ local hitman_contracts = function(layout)
       d.Field(d.Int32, "time"),  -- only during stats screen
       d.Field(d.Int32, "saves_used"),  -- only during stats screen
       ]]
-    },
-    { native_name = "HitmanContracts" }
-  )
+  }, { native_name = "HitmanContracts" })
 end
 
 M.HitmanContractsSteam = hitman_contracts(layouts.steam)
 M.HitmanContractsGOG = hitman_contracts(layouts.gog)
 
 M.mission_scene_names = {
-    "SCENES\\C01-1\\C01-1_MAIN.gms",
-    "SCENES\\C01-2\\C01-2_MAIN.gms",
-    "SCENES\\C02-1\\C02-1_MAIN.gms",
-    "SCENES\\C03-1\\C03-1_MAIN.gms",
-    "SCENES\\C06-1\\C06-1_MAIN.gms",
-    "SCENES\\C06-2\\C06-2_MAIN.gms",
-    "SCENES\\C07-1\\C07-1_MAIN.gms",
-    "SCENES\\C08-1\\C08-1_MAIN.gms",
-    "SCENES\\C08-2\\C08-2_MAIN.gms",
-    "SCENES\\C08-3\\C08-3_MAIN.gms",
-    "SCENES\\C08-4\\C08-4_MAIN.gms",
-    "SCENES\\C09-1\\C09-1_MAIN.gms",
+  "SCENES\\C01-1\\C01-1_MAIN.gms",
+  "SCENES\\C01-2\\C01-2_MAIN.gms",
+  "SCENES\\C02-1\\C02-1_MAIN.gms",
+  "SCENES\\C03-1\\C03-1_MAIN.gms",
+  "SCENES\\C06-1\\C06-1_MAIN.gms",
+  "SCENES\\C06-2\\C06-2_MAIN.gms",
+  "SCENES\\C07-1\\C07-1_MAIN.gms",
+  "SCENES\\C08-1\\C08-1_MAIN.gms",
+  "SCENES\\C08-2\\C08-2_MAIN.gms",
+  "SCENES\\C08-3\\C08-3_MAIN.gms",
+  "SCENES\\C08-4\\C08-4_MAIN.gms",
+  "SCENES\\C09-1\\C09-1_MAIN.gms",
 }
 
 --- Calculate aggression from player statistics and scene name.
 -- Can be at most 2 for silent assassin rating.
 M.measure_aggression = function(player, scene_name)
-    local stats = player.stats
-    local data = player.data
-    -- raw measure of aggression (non-negative)
-    local value = (
-        3 * stats.innocents_wounded + 6 * stats.innocents_killed
-        + stats.enemies_wounded + 3 * stats.enemies_killed
-        + 2 * data.shots_fired
-        + stats.headshots + stats.close_encounters
-    )
-    -- convert to [0,100] scale
-    -- 0.5 * value for small values, ramping off at 100
-    local aggression = math.floor(100 * math.tanh(0.005 * value))
-    -- cap min at 3 if innocents hurt or close encounter on 1st map
-    if aggression <= 2 then
-        if stats.innocents_wounded > 0 or stats.innocents_killed > 0 then return 3 end
-        if scene_name == "SCENES\\C01-1\\C01-1_MAIN.gms" and stats.close_encounters > 0 then return 3 end
+  local stats = player.stats
+  local data = player.data
+  -- raw measure of aggression (non-negative)
+  local value = (
+    3 * stats.innocents_wounded
+    + 6 * stats.innocents_killed
+    + stats.enemies_wounded
+    + 3 * stats.enemies_killed
+    + 2 * data.shots_fired
+    + stats.headshots
+    + stats.close_encounters
+  )
+  -- convert to [0,100] scale
+  -- 0.5 * value for small values, ramping off at 100
+  local aggression = math.floor(100 * math.tanh(0.005 * value))
+  -- cap min at 3 if innocents hurt or close encounter on 1st map
+  if aggression <= 2 then
+    if stats.innocents_wounded > 0 or stats.innocents_killed > 0 then
+      return 3
+    end
+    if scene_name == "SCENES\\C01-1\\C01-1_MAIN.gms" and stats.close_encounters > 0 then
+      return 3
+    end
     -- cap max at 2 in distraction shots only scenario
-    elseif stats.innocents_wounded == 0 and stats.innocents_killed == 0
-        and stats.enemies_wounded == 0 and stats.enemies_killed == 0
-        and stats.headshots == 0 and stats.close_encounters == 0 then return 2 end
-    return aggression
+  elseif
+    stats.innocents_wounded == 0
+    and stats.innocents_killed == 0
+    and stats.enemies_wounded == 0
+    and stats.enemies_killed == 0
+    and stats.headshots == 0
+    and stats.close_encounters == 0
+  then
+    return 2
+  end
+  return aggression
 end
 
 --- Calculate stealth from player statistics.
 -- Must be above 85 for silent assassin rating.
 M.measure_stealth = function(player_stats)
-    -- raw measure of stealth (non-negative)
-    local value = player_stats.alerts + player_stats.close_encounters
-    -- convert to [0,100] scale using power law
-    return math.floor(100 * (0.9 ^ value))
+  -- raw measure of stealth (non-negative)
+  local value = player_stats.alerts + player_stats.close_encounters
+  -- convert to [0,100] scale using power law
+  return math.floor(100 * (0.9 ^ value))
 end
 
 return M

@@ -33,7 +33,7 @@ local layouts = {
       time_manager = 0xC88580,
       movie_manager = 0xC87C00,
       movie_slots = 0xC8F774,
-    }
+    },
   },
 }
 
@@ -43,7 +43,7 @@ local NUM_LEVELS = 26
 -- levels have fewer than 13 checkpoints
 -- the 13 is an upper bound from the engine, used in the array of stats values
 local NUM_CHECKPOINTS_PER_LEVEL = 13
-local MAX_CHALLENGES = 300  -- never seen more than 279
+local MAX_CHALLENGES = 300 -- never seen more than 279
 local NUM_PLAYSTYLES = 26
 local MAX_PLAYSTYLE_CONDITIONS = 10
 local NUM_STATS_VALUES = 100
@@ -91,7 +91,7 @@ local LevelManager = d.Struct("LevelManager", {
   -- 0xE21310
   d.Skip(0x04),
   -- 0xE21314
-  d.Field(String, "scene"),  -- "assembly:/Scenes/.../*.entity"
+  d.Field(String, "scene"), -- "assembly:/Scenes/.../*.entity"
   -- 0xE2131C
   d.Field(d.Int32, "game_mode"),
   d.Skip(0x10),
@@ -209,7 +209,10 @@ local StatsManager = d.Struct("StatsManager", {
   d.Skip(0x10),
   ]]
   d.Seek(0x28),
-  d.Field(d.Ref(d.RemoteAddr(d.Array(d.Array(d.Array(d.Int16, NUM_STATS_VALUES), NUM_CHECKPOINTS_PER_LEVEL), NUM_LEVELS))), "values"),
+  d.Field(
+    d.Ref(d.RemoteAddr(d.Array(d.Array(d.Array(d.Int16, NUM_STATS_VALUES), NUM_CHECKPOINTS_PER_LEVEL), NUM_LEVELS))),
+    "values"
+  ),
   --[[
   d.Skip(0x08),
   d.Field(d.Ref(d.Array(d.Int8, 100)), "achieved_playstyles"), -- across all gaming sessions
@@ -224,7 +227,7 @@ local StatsManager = d.Struct("StatsManager", {
 })
 
 local EventManager = d.Struct("EventManager", {
-    --[[
+  --[[
     d.Seek(0x14),
     -- index 0 = regular kill
     -- index 1 = headshot kill (includes thrown weapon at head)
@@ -250,9 +253,9 @@ local EventManager = d.Struct("EventManager", {
     -- index 0x23 = spotted
     d.Field(d.Vector(d.Int32, 51), "events_per_event_type_2"),
     ]]
-    d.Seek(0xFC),
-    d.Field(d.Int32, "npcs_killed"),  -- includes targets too
-    --[[
+  d.Seek(0xFC),
+  d.Field(d.Int32, "npcs_killed"), -- includes targets too
+  --[[
     d.Seek(0x148),
     -- trespass = when exclamation mark shows
     -- happens also when holding a gun as civilian, etc.
@@ -378,36 +381,33 @@ local MovieManager = d.Struct("MovieManager", {
 })
 
 local game = function(layout)
-  return d.Struct(
-    "Game" .. layout.name, {
-      d.Seek(layout.offset.global_data + 0x10),
-      d.Field(GlobalData, "global_data"),
-      d.Seek(layout.offset.stats_manager),
-      d.Field(StatsManager, "stats_manager"),
-      d.Seek(layout.offset.challenge_manager),
-      d.Field(ChallengeManager, "challenge_manager"),
-      d.Seek(layout.offset.event_manager),
-      d.Field(EventManager, "event_manager"),
-      d.Seek(layout.offset.game_data),
-      d.Field(GameData, "game_data"),
-      d.Seek(layout.offset.level_manager),
-      d.Field(LevelManager, "level_manager"),
-      d.Seek(layout.offset.level),
-      -- level == -1 used by game when no level selected
-      d.Field(d.Bounded(d.Int32, -1, NUM_LEVELS - 1), "level"), -- part of level manager?
-      d.Seek(layout.offset.checkpoints_manager),
-      d.Field(CheckpointsManager, "checkpoints_manager"),
-      d.Seek(layout.offset.time_manager),
-      d.Field(TimeManager, "time_manager"),
-      d.Seek(layout.offset.movie_manager),
-      d.Field(MovieManager, "movie_manager"),
-      --[[
+  return d.Struct("Game" .. layout.name, {
+    d.Seek(layout.offset.global_data + 0x10),
+    d.Field(GlobalData, "global_data"),
+    d.Seek(layout.offset.stats_manager),
+    d.Field(StatsManager, "stats_manager"),
+    d.Seek(layout.offset.challenge_manager),
+    d.Field(ChallengeManager, "challenge_manager"),
+    d.Seek(layout.offset.event_manager),
+    d.Field(EventManager, "event_manager"),
+    d.Seek(layout.offset.game_data),
+    d.Field(GameData, "game_data"),
+    d.Seek(layout.offset.level_manager),
+    d.Field(LevelManager, "level_manager"),
+    d.Seek(layout.offset.level),
+    -- level == -1 used by game when no level selected
+    d.Field(d.Bounded(d.Int32, -1, NUM_LEVELS - 1), "level"), -- part of level manager?
+    d.Seek(layout.offset.checkpoints_manager),
+    d.Field(CheckpointsManager, "checkpoints_manager"),
+    d.Seek(layout.offset.time_manager),
+    d.Field(TimeManager, "time_manager"),
+    d.Seek(layout.offset.movie_manager),
+    d.Field(MovieManager, "movie_manager"),
+    --[[
       d.Seek(layout.offset.movie_slots),
       d.Field(d.Array(d.Int8, 8), "movie_slots"),
       ]]
-    },
-    { native_name = "Game" }
-  )
+  }, { native_name = "Game" })
 end
 
 M.GameSteam = game(layouts.steam)
