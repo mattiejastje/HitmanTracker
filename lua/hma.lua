@@ -1,5 +1,14 @@
 local M = {}
 
+-- HELPERS
+local function add_fields_if(cond, fields, new_fields)
+  if cond then
+    for _, item in ipairs(new_fields) do
+      fields[#fields + 1] = item
+    end
+  end
+end
+
 local d = require("mempeep.descriptors")
 
 local layouts = {
@@ -116,30 +125,36 @@ local CheckpointsManager = d.Struct("CheckpointsManager", {
   d.Field(d.NullableRef(Checkpoints), "checkpoints"),
 })
 
-local TimeManager = d.Struct("TimeManager", {
-  d.Skip(0x08),
-  -- 0xE24738
-  d.Field(d.Int64, "ticks_per_second"),
-  -- 0xE24740
-  d.Field(d.Int64, "last_time_ticks"),
-  -- 0xE24748
-  d.Field(d.Int64, "game_time"), -- divide by (1024 * 1024) to get seconds
-  -- 0xE24750
-  --[[
-  d.Field(d.Int64, "game_time_previous"),
-  d.Field(d.Int64, "game_time_delta"),
-  d.Field(d.Int64, "real_time"),
-  d.Field(d.Int64, "real_time_previous"),
-  d.Field(d.Int64, "real_time_delta"),
-  d.Field(d.Float, "game_time_multiplier"),
-  d.Field(d.Float, "debug_time_multiplier"),
-  d.Field(d.Int64, "frame_wait"),
-  d.Field(d.Int64, "frame_step"),
-  d.Field(d.Int64, "frame_remain"),
-  d.Field(d.Int32, "paused"),
-  d.Field(d.Int32, "frame_count"),
-  ]]
-})
+local make_time_manager = function(view)
+  local fields = {}
+  add_fields_if(view == "", fields, {
+    d.Skip(0x08),
+    -- 0xE24738
+    d.Field(d.Int64, "ticks_per_second"),
+    -- 0xE24740
+    d.Field(d.Int64, "last_time_ticks"),
+    -- 0xE24748
+    d.Field(d.Int64, "game_time"), -- divide by (1024 * 1024) to get seconds
+    -- 0xE24750
+    d.Field(d.Int64, "game_time_previous"),
+    d.Field(d.Int64, "game_time_delta"),
+    d.Field(d.Int64, "real_time"),
+    d.Field(d.Int64, "real_time_previous"),
+    d.Field(d.Int64, "real_time_delta"),
+    d.Field(d.Float, "game_time_multiplier"),
+    d.Field(d.Float, "debug_time_multiplier"),
+    d.Field(d.Int64, "frame_wait"),
+    d.Field(d.Int64, "frame_step"),
+    d.Field(d.Int64, "frame_remain"),
+    d.Field(d.Int32, "paused"),
+    d.Field(d.Int32, "frame_count"),
+  })
+  add_fields_if(view == "Compact", fields, {
+    d.Seek(0x18),
+    d.Field(d.Int64, "game_time"),
+  })
+  return d.Struct("TimeManager" .. view, fields)
+end
 
 local StatsScoringData = d.Struct("StatsScoringData", {
   d.Skip(0x08),
@@ -380,8 +395,12 @@ local MovieManager = d.Struct("MovieManager", {
   d.Field(d.Ref(MovieManagerData), "data"),
 })
 
-local game = function(layout)
-  return d.Struct("Game" .. layout.name, {
+local make_game = function(layout, view)
+  is_full = view == ""
+  is_stats = is_full or view == "Stats"
+  is_timer = is_full or view == "Timer"
+  fields = {}
+  add_fields_if(is_stats, fields, {
     d.Seek(layout.offset.global_data + 0x10),
     d.Field(GlobalData, "global_data"),
     d.Seek(layout.offset.stats_manager),
@@ -399,19 +418,28 @@ local game = function(layout)
     d.Field(d.Bounded(d.Int32, -1, NUM_LEVELS - 1), "level"), -- part of level manager?
     d.Seek(layout.offset.checkpoints_manager),
     d.Field(CheckpointsManager, "checkpoints_manager"),
+  })
+  add_fields_if(true, fields, {
     d.Seek(layout.offset.time_manager),
-    d.Field(TimeManager, "time_manager"),
+    d.Field(make_time_manager(view == "" and "" or "Compact"), "time_manager"),
+  })
+  add_fields_if(is_stats, fields, {
     d.Seek(layout.offset.movie_manager),
     d.Field(MovieManager, "movie_manager"),
-    --[[
-      d.Seek(layout.offset.movie_slots),
-      d.Field(d.Array(d.Int8, 8), "movie_slots"),
-      ]]
-  }, { native_name = "Game" })
+  })
+  add_fields_if(is_full, fields, {
+    d.Seek(layout.offset.movie_slots),
+    d.Field(d.Array(d.Int8, 8), "movie_slots"),
+  })
+  return d.Struct("Game" .. layout.name .. view, fields, { native_name = "Game" .. view })
 end
 
-M.GameSteam = game(layouts.steam)
-M.GameGOG = game(layouts.gog)
+M.GameSteam = make_game(layouts.steam, "")
+M.GameGOG = make_game(layouts.gog, "")
+M.GameSteamStats = make_game(layouts.steam, "Stats")
+M.GameGOGStats = make_game(layouts.gog, "Stats")
+M.GameSteamTimer = make_game(layouts.steam, "Timer")
+M.GameGOGTimer = make_game(layouts.gog, "Timer")
 
 M.get_current_checkpoint_index = function(checkpoints)
   if checkpoints.current_key == 0 then

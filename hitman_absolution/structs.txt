@@ -80,6 +80,18 @@ struct TimeManager {
   int64_t ticks_per_second;  // offset 0x8
   int64_t last_time_ticks;  // offset 0x10
   int64_t game_time;  // offset 0x18
+  int64_t game_time_previous;  // offset 0x20
+  int64_t game_time_delta;  // offset 0x28
+  int64_t real_time;  // offset 0x30
+  int64_t real_time_previous;  // offset 0x38
+  int64_t real_time_delta;  // offset 0x40
+  float game_time_multiplier;  // offset 0x48
+  float debug_time_multiplier;  // offset 0x4c
+  int64_t frame_wait;  // offset 0x50
+  int64_t frame_step;  // offset 0x58
+  int64_t frame_remain;  // offset 0x60
+  int32_t paused;  // offset 0x68
+  int32_t frame_count;  // offset 0x6c
 };
 
 struct MovieInfoBuffer {
@@ -118,6 +130,7 @@ struct GameSteam {
   CheckpointsManager checkpoints_manager;  // offset 0xe21580
   TimeManager time_manager;  // offset 0xe24730
   MovieManager movie_manager;  // offset 0xe31b80
+  std::array<int8_t, 0x8> movie_slots;  // offset 0xe37e90
 };
 
 struct GameGOG {
@@ -131,5 +144,6 @@ struct GameGOG {
   CheckpointsManager checkpoints_manager;  // offset 0xd69140
   TimeManager time_manager;  // offset 0xc88580
   MovieManager movie_manager;  // offset 0xc87c00
+  std::array<int8_t, 0x8> movie_slots;  // offset 0xc8f774
 };
 

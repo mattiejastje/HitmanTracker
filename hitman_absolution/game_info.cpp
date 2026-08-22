@@ -37,7 +37,7 @@ void hitman_absolution::register_game_info(
         [](const VersionSpec& spec) {
             return std::vector<ModuleInfo>{{"hma.exe", spec.pe_id}};
         },
-        [] { return std::make_any<structs::Game>(); },
+        [] { return std::make_any<structs::GameStats>(); },
         [] { return std::make_any<Stats>(); }
     );
 }

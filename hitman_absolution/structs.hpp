@@ -189,12 +189,13 @@ using TCheckpointsManager = Struct<
         Skip<0x28>,
         Field<NullableRef<TCheckpoints>, &CheckpointsManager::checkpoints>>>;
 
-struct TimeManager {
-    uint8_t _pad0[0x8];
-    int64_t ticks_per_second;
-    int64_t last_time_ticks;
+struct TimeManagerCompact {
     int64_t game_time;
 };
+
+using TTimeManagerCompact = Struct<
+    TimeManagerCompact,
+    Fields<Seek<0x18>, Field<Int64, &TimeManagerCompact::game_time>>>;
 
 struct MovieInfoBuffer {
     int32_t is_allocated;
@@ -228,7 +229,7 @@ using TMovieManager = Struct<
         Seek<0x84>,
         Field<Ref<Primitive<MovieManagerData>>, &MovieManager::data>>>;
 
-struct Game {
+struct GameStats {
     GlobalData global_data;
     StatsManager stats_manager;
     ChallengeManager challenge_manager;
@@ -237,56 +238,72 @@ struct Game {
     LevelManager level_manager;
     int32_t level;
     CheckpointsManager checkpoints_manager;
-    TimeManager time_manager;
+    TimeManagerCompact time_manager;
     MovieManager movie_manager;
 };
 
-using TGameSteam = Struct<
-    Game,
+using TGameSteamStats = Struct<
+    GameStats,
     Fields<
         Seek<0xd58c70>,
-        Field<Primitive<GlobalData>, &Game::global_data>,
+        Field<Primitive<GlobalData>, &GameStats::global_data>,
         Seek<0xd61710>,
-        Field<TStatsManager, &Game::stats_manager>,
+        Field<TStatsManager, &GameStats::stats_manager>,
         Seek<0xd617c0>,
-        Field<TChallengeManager, &Game::challenge_manager>,
+        Field<TChallengeManager, &GameStats::challenge_manager>,
         Seek<0xe20e40>,
-        Field<TEventManager, &Game::event_manager>,
+        Field<TEventManager, &GameStats::event_manager>,
         Seek<0xe212e0>,
-        Field<TGameData, &Game::game_data>,
+        Field<TGameData, &GameStats::game_data>,
         Seek<0xe21310>,
-        Field<TLevelManager, &Game::level_manager>,
+        Field<TLevelManager, &GameStats::level_manager>,
         Seek<0xe21394>,
-        Field<Bounded<Int32, -1, 25>, &Game::level>,
+        Field<Bounded<Int32, -1, 25>, &GameStats::level>,
         Seek<0xe21580>,
-        Field<TCheckpointsManager, &Game::checkpoints_manager>,
+        Field<TCheckpointsManager, &GameStats::checkpoints_manager>,
         Seek<0xe24730>,
-        Field<Primitive<TimeManager>, &Game::time_manager>,
+        Field<TTimeManagerCompact, &GameStats::time_manager>,
         Seek<0xe31b80>,
-        Field<TMovieManager, &Game::movie_manager>>>;
+        Field<TMovieManager, &GameStats::movie_manager>>>;
 
-using TGameGOG = Struct<
-    Game,
+struct GameTimer {
+    TimeManagerCompact time_manager;
+};
+
+using TGameSteamTimer = Struct<
+    GameTimer,
+    Fields<
+        Seek<0xe24730>,
+        Field<TTimeManagerCompact, &GameTimer::time_manager>>>;
+
+using TGameGOGStats = Struct<
+    GameStats,
     Fields<
         Seek<0xca0850>,
-        Field<Primitive<GlobalData>, &Game::global_data>,
+        Field<Primitive<GlobalData>, &GameStats::global_data>,
         Seek<0xca92d0>,
-        Field<TStatsManager, &Game::stats_manager>,
+        Field<TStatsManager, &GameStats::stats_manager>,
         Seek<0xca9380>,
-        Field<TChallengeManager, &Game::challenge_manager>,
+        Field<TChallengeManager, &GameStats::challenge_manager>,
         Seek<0xd68a00>,
-        Field<TEventManager, &Game::event_manager>,
+        Field<TEventManager, &GameStats::event_manager>,
         Seek<0xd68ea0>,
-        Field<TGameData, &Game::game_data>,
+        Field<TGameData, &GameStats::game_data>,
         Seek<0xd68ed0>,
-        Field<TLevelManager, &Game::level_manager>,
+        Field<TLevelManager, &GameStats::level_manager>,
         Seek<0xd68f54>,
-        Field<Bounded<Int32, -1, 25>, &Game::level>,
+        Field<Bounded<Int32, -1, 25>, &GameStats::level>,
         Seek<0xd69140>,
-        Field<TCheckpointsManager, &Game::checkpoints_manager>,
+        Field<TCheckpointsManager, &GameStats::checkpoints_manager>,
         Seek<0xc88580>,
-        Field<Primitive<TimeManager>, &Game::time_manager>,
+        Field<TTimeManagerCompact, &GameStats::time_manager>,
         Seek<0xc87c00>,
-        Field<TMovieManager, &Game::movie_manager>>>;
+        Field<TMovieManager, &GameStats::movie_manager>>>;
+
+using TGameGOGTimer = Struct<
+    GameTimer,
+    Fields<
+        Seek<0xc88580>,
+        Field<TTimeManagerCompact, &GameTimer::time_manager>>>;
 
 }  // namespace hitman_absolution::structs

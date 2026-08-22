@@ -714,7 +714,7 @@ GameStatsSlow hitman_absolution::update_slow(
                std::any& remote_state_any,
                std::any& stats_any
            ) {
-        auto& game = std::any_cast<structs::Game&>(remote_state_any);
+        auto& game = std::any_cast<structs::GameStats&>(remote_state_any);
         auto& stats = std::any_cast<Stats&>(stats_any);
         MemoryReader<uint32_t> reader{handle};
         auto tracer = mempeep::LogTracer{
@@ -723,13 +723,13 @@ GameStatsSlow hitman_absolution::update_slow(
         const auto address = static_cast<uint32_t>(base_ptrs.at(0));
         switch (version) {
             case Version::Steam:
-                if (!read_at_address<structs::TGameSteam>(
+                if (!read_at_address<structs::TGameSteamStats>(
                         address, reader, tracer, game
                     ))
                     return false;
                 break;
             case Version::GOG:
-                if (!read_at_address<structs::TGameGOG>(
+                if (!read_at_address<structs::TGameGOGStats>(
                         address, reader, tracer, game
                     ))
                     return false;
