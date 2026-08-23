@@ -147,12 +147,15 @@ template <
     mempeep::IsMemoryReader Reader,
     mempeep::IsTracer Tracer>
 bool read_at_address(
-    uint32_t address,
+    mempeep::address_t<Reader> address,
     Reader& reader,
     Tracer& tracer,
     mempeep::native_type_t<Desc>& out
 ) {
     return mempeep::read(
-        mempeep::RemoteValue<Desc, uint32_t>{address}, reader, tracer, out
+        mempeep::RemoteValue<Desc, mempeep::address_t<Reader>>{address},
+        reader,
+        tracer,
+        out
     );
 }
