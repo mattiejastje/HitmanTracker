@@ -9,7 +9,7 @@
 
 #include "../hitman_common/simple_rating.hpp"
 #include "../hitman_common/stats.hpp"
-#include "../mem/read_write.hpp"
+#include "../mem/read_variant.hpp"
 #include "structs.hpp"
 
 constexpr int AGENT = 0;
@@ -719,22 +719,12 @@ GameStatsSlow hitman_absolution::update_slow(
         MemoryReader<uint32_t> reader{handle};
         auto tracer = make_mempeep_log_tracer();
         const auto address = static_cast<uint32_t>(base_ptrs.at(0));
-        switch (version) {
-            case Version::Steam:
-                if (!read_at_address<structs::TGameSteamStats>(
-                        address, reader, tracer, game
-                    ))
-                    return false;
-                break;
-            case Version::GOG:
-                if (!read_at_address<structs::TGameGOGStats>(
-                        address, reader, tracer, game
-                    ))
-                    return false;
-                break;
-            default:
-                return false;
-        }
+        if (!read_variant<
+                Variant<Version::Steam, structs::TGameSteamStats>,
+                Variant<Version::GOG, structs::TGameGOGStats>>(
+                address, reader, tracer, version, game
+            ))
+            return false;
         stats.difficulty = game.global_data.difficulty;
         // engine may set level to -1 if not in a mission
         // sadly it's not a reliable way to detect if we are in a mission
@@ -1031,22 +1021,12 @@ GameStatsFast hitman_absolution::update_fast(Version version) {
             MemoryReader<uint32_t> reader{handle};
             auto tracer = make_mempeep_log_tracer();
             const auto address = static_cast<uint32_t>(base_ptrs.at(0));
-            switch (version) {
-                case Version::Steam:
-                    if (!read_at_address<structs::TGameSteamTimer>(
-                            address, reader, tracer, game
-                        ))
-                        return false;
-                    break;
-                case Version::GOG:
-                    if (!read_at_address<structs::TGameGOGTimer>(
-                            address, reader, tracer, game
-                        ))
-                        return false;
-                    break;
-                default:
-                    return false;
-            }
+            if (!read_variant<
+                    Variant<Version::Steam, structs::TGameSteamTimer>,
+                    Variant<Version::GOG, structs::TGameGOGTimer>>(
+                    address, reader, tracer, version, game
+                ))
+                return false;
             auto game_time = game.time_manager.game_time;
             // game_time < stats.start_time means mission ended
             // but update_slow has not run yet
