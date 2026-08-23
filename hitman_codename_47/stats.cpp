@@ -202,9 +202,7 @@ GameStatsSlow hitman_codename_47::update_slow(Version version) {
             static_cast<uint32_t>(base_ptrs.at(1))
         };
         MemoryReader<uint32_t> reader{handle};
-        auto tracer = mempeep::LogTracer{
-            MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS
-        };
+        auto tracer = make_mempeep_log_tracer();
         if (!mempeep::read(remote_game, reader, tracer, game)) return false;
         const auto hitman_sav = exe_path.parent_path() / "Hitman.sav";
         stats.difficulty

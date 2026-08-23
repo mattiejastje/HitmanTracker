@@ -94,9 +94,7 @@ GameStatsSlow hitman_contracts::update_slow(Version version) {
         auto& game = std::any_cast<structs::HitmanContracts&>(remote_state_any);
         auto& stats = std::any_cast<Stats&>(stats_any);
         MemoryReader<uint32_t> reader{handle};
-        auto tracer = mempeep::LogTracer{
-            MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS
-        };
+        auto tracer = make_mempeep_log_tracer();
         const auto address = static_cast<uint32_t>(base_ptrs.at(0));
         switch (version) {
             case Version::Steam:
