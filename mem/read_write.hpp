@@ -142,9 +142,7 @@ struct MempeepOnLogEntry {
     }
 };
 
-auto make_mempeep_log_tracer() {
-    return mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
-}
+mempeep::LogTracer<MempeepOnLogEntry> make_mempeep_log_tracer();
 
 template <
     mempeep::IsDescriptor Desc,

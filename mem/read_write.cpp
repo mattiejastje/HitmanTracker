@@ -62,3 +62,7 @@ std::optional<std::string> read_string(
     }
     return {};
 }
+
+mempeep::LogTracer<MempeepOnLogEntry> make_mempeep_log_tracer() {
+    return mempeep::LogTracer{MempeepOnLogEntry{}, mempeep::LogLevel::ERRORS};
+}
