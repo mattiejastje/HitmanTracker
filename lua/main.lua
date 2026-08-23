@@ -38,7 +38,11 @@ write_structs_cpp(
   "hitman_absolution::structs"
 )
 write_structs_txt("hitman_blood_money", { hbm.GameSteam, hbm.GameGOG })
-write_structs_cpp("hitman_blood_money", { hbm.GameSteam, hbm.GameGOG }, "hitman_blood_money::structs")
+write_structs_cpp(
+  "hitman_blood_money",
+  { hbm.GameSteamStats, hbm.GameSteamTimer, hbm.GameGOGStats, hbm.GameGOGTimer },
+  "hitman_blood_money::structs"
+)
 write_structs_txt("hitman_codename_47", { hc47.HitmanDlc })
 write_structs_cpp("hitman_codename_47", { hc47.HitmanDlc }, "hitman_codename_47::structs")
 h2sa_structs = {

@@ -1,15 +1,7 @@
 local M = {}
 
--- HELPERS
-local function add_fields_if(cond, fields, new_fields)
-  if cond then
-    for _, item in ipairs(new_fields) do
-      fields[#fields + 1] = item
-    end
-  end
-end
-
 local d = require("mempeep.descriptors")
+local common = require("common")
 
 local layouts = {
   steam = {
@@ -125,10 +117,10 @@ local CheckpointsManager = d.Struct("CheckpointsManager", {
   d.Field(d.NullableRef(Checkpoints), "checkpoints"),
 })
 
--- view is "" or "Compact" (as Stats and Timer both need the same)
+-- view is "" or "Compact"
 local make_time_manager = function(view)
   local fields = {}
-  add_fields_if(view == "", fields, {
+  common.add_fields_if(view == "", fields, {
     d.Skip(0x08),
     -- 0xE24738
     d.Field(d.Int64, "ticks_per_second"),
@@ -150,7 +142,7 @@ local make_time_manager = function(view)
     d.Field(d.Int32, "paused"),
     d.Field(d.Int32, "frame_count"),
   })
-  add_fields_if(view == "Compact", fields, {
+  common.add_fields_if(view == "Compact", fields, {
     d.Seek(0x18),
     d.Field(d.Int64, "game_time"),
   })
@@ -396,11 +388,12 @@ local MovieManager = d.Struct("MovieManager", {
   d.Field(d.Ref(MovieManagerData), "data"),
 })
 
+-- view is "" or "Stats" or "Timer"
 local make_game = function(layout, view)
   local is_full = view == ""
   local is_full_or_stats = is_full or view == "Stats"
   local fields = {}
-  add_fields_if(is_full_or_stats, fields, {
+  common.add_fields_if(is_full_or_stats, fields, {
     d.Seek(layout.offset.global_data + 0x10),
     d.Field(GlobalData, "global_data"),
     d.Seek(layout.offset.stats_manager),
@@ -419,15 +412,15 @@ local make_game = function(layout, view)
     d.Seek(layout.offset.checkpoints_manager),
     d.Field(CheckpointsManager, "checkpoints_manager"),
   })
-  add_fields_if(true, fields, {
+  common.add_fields(fields, {
     d.Seek(layout.offset.time_manager),
     d.Field(make_time_manager(view == "" and "" or "Compact"), "time_manager"),
   })
-  add_fields_if(is_full_or_stats, fields, {
+  common.add_fields_if(is_full_or_stats, fields, {
     d.Seek(layout.offset.movie_manager),
     d.Field(MovieManager, "movie_manager"),
   })
-  add_fields_if(is_full, fields, {
+  common.add_fields_if(is_full, fields, {
     d.Seek(layout.offset.movie_slots),
     d.Field(d.Array(d.Int8, 8), "movie_slots"),
   })

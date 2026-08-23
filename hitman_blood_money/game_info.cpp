@@ -39,7 +39,7 @@ void hitman_blood_money::register_game_info(
                 {"hitmanbloodmoney.exe", spec.pe_id}
             };
         },
-        [] { return std::make_any<structs::Game>(); },
+        [] { return std::make_any<structs::GameStats>(); },
         [] { return std::make_any<Stats>(); }
     );
 }

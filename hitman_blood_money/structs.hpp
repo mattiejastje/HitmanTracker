@@ -22,142 +22,25 @@ using TSceneInfo = Struct<
         Skip<0x1>,
         Field<ZString<0x104>, &SceneInfo::scene_name>>>;
 
-struct SceneTask {
-    uint32_t prev_task;
-    uint32_t next_task;
-    float unk_tick_interval;
-    int32_t unk_last_tick;
-    int32_t unk_flags_1;
-    int32_t unk_flags_2;
-    uint32_t unk_ptr_24;
-};
-
-using TSceneTask = Struct<
-    SceneTask,
-    Fields<
-        Field<RawAddr<uint32_t>, &SceneTask::prev_task>,
-        Field<RawAddr<uint32_t>, &SceneTask::next_task>,
-        Seek<0xc>,
-        Field<Float, &SceneTask::unk_tick_interval>,
-        Field<Int32, &SceneTask::unk_last_tick>,
-        Skip<0x4>,
-        Field<Int32, &SceneTask::unk_flags_1>,
-        Field<Int32, &SceneTask::unk_flags_2>,
-        Field<RawAddr<uint32_t>, &SceneTask::unk_ptr_24>>>;
-
-struct SceneTaskScheduler {
-    RemoteValue<
-        Array<
-            List<TSceneTask, &SceneTask::next_task, ListKind::CIRCULAR, 0x100>,
-            0x9>,
-        uint32_t>
-        tasks;
-    uint32_t unk_current_54;
-    uint32_t unk_active_58;
-};
-
-using TSceneTaskScheduler = Struct<
-    SceneTaskScheduler,
-    Fields<
-        Skip<0x4>,
-        Field<
-            RemoteAddr<
-                Array<
-                    List<
-                        TSceneTask,
-                        &SceneTask::next_task,
-                        ListKind::CIRCULAR,
-                        0x100>,
-                    0x9>,
-                uint32_t>,
-            &SceneTaskScheduler::tasks>,
-        Seek<0x54>,
-        Field<RawAddr<uint32_t>, &SceneTaskScheduler::unk_current_54>,
-        Field<RawAddr<uint32_t>, &SceneTaskScheduler::unk_active_58>>>;
-
-struct SceneManager {
+struct SceneManagerStats {
     SceneInfo info;
-    SceneTaskScheduler task_scheduler;
-    int8_t is_paused;
-    uint32_t unk_52d0;
 };
 
-using TSceneManager = Struct<
-    SceneManager,
-    Fields<
-        Seek<0x24>,
-        Field<Ref<TSceneInfo>, &SceneManager::info>,
-        Seek<0x30>,
-        Field<TSceneTaskScheduler, &SceneManager::task_scheduler>,
-        Seek<0xbc>,
-        Field<Int8, &SceneManager::is_paused>,
-        Seek<0x52d0>,
-        Field<RawAddr<uint32_t>, &SceneManager::unk_52d0>>>;
+using TSceneManagerStats = Struct<
+    SceneManagerStats,
+    Fields<Seek<0x24>, Field<Ref<TSceneInfo>, &SceneManagerStats::info>>>;
 
-struct SysInterface {
-    uint32_t vtable;
-    double clock_elapsed;
-    double clock_current;
-    double qpc_elapsed;
-    int32_t clock_ticks;
-    float clock_delta;
-    int32_t clock_ticks_previous;
-    int32_t qpc_ticks;
-    float qpc_delta;
-    int32_t game_ticks_copy;
-    int32_t game_ticks;
-    int32_t game_ticks_previous;
-    float game_frame_time;
-    int32_t pause_ticks_offset;
-    float qpc_frequency;
-    std::optional<SceneManager> scene_manager;
-    float requested_timescale;
-    float timescale;
-    int8_t is_timescale_locked;
-    int8_t use_qpc;
-    int64_t qpc_time_offset;
-    int64_t qpc_last_sample;
-    double qpc_frame_time;
-    int8_t qpc_force_tick;
+struct SysInterfaceStats {
+    std::optional<SceneManagerStats> scene_manager;
 };
 
-using TSysInterface = Struct<
-    SysInterface,
+using TSysInterfaceStats = Struct<
+    SysInterfaceStats,
     Fields<
-        Field<RawAddr<uint32_t>, &SysInterface::vtable>,
-        Skip<0xc>,
-        Field<Double, &SysInterface::clock_elapsed>,
-        Field<Double, &SysInterface::clock_current>,
-        Field<Double, &SysInterface::qpc_elapsed>,
-        Field<Int32, &SysInterface::clock_ticks>,
-        Field<Float, &SysInterface::clock_delta>,
-        Field<Int32, &SysInterface::clock_ticks_previous>,
-        Skip<0x4>,
-        Field<Int32, &SysInterface::qpc_ticks>,
-        Field<Float, &SysInterface::qpc_delta>,
-        Field<Int32, &SysInterface::game_ticks_copy>,
-        Skip<0x4>,
-        Field<Int32, &SysInterface::game_ticks>,
-        Field<Int32, &SysInterface::game_ticks_previous>,
-        Field<Float, &SysInterface::game_frame_time>,
-        Field<Int32, &SysInterface::pause_ticks_offset>,
-        Skip<0x8>,
-        Field<Float, &SysInterface::qpc_frequency>,
         Seek<0xb8>,
-        Field<NullableRef<TSceneManager>, &SysInterface::scene_manager>,
-        Seek<0xb24>,
-        Field<Float, &SysInterface::requested_timescale>,
-        Field<Float, &SysInterface::timescale>,
-        Field<Int8, &SysInterface::is_timescale_locked>,
-        Seek<0xde1>,
-        Field<Int8, &SysInterface::use_qpc>,
-        Seek<0x11f8>,
-        Field<Int64, &SysInterface::qpc_time_offset>,
-        Seek<0x1438>,
-        Field<Int64, &SysInterface::qpc_last_sample>,
-        Field<Double, &SysInterface::qpc_frame_time>,
-        Seek<0x1660>,
-        Field<Int8, &SysInterface::qpc_force_tick>>>;
+        Field<
+            NullableRef<TSceneManagerStats>,
+            &SysInterfaceStats::scene_manager>>>;
 
 struct Suits {
     int32_t current_suit;
@@ -185,30 +68,59 @@ using TSettings = Struct<
         Seek<0x6664>,
         Field<Bounded<Int32, 0, 3>, &Settings::difficulty>>>;
 
-struct Game {
-    std::optional<SysInterface> sys_interface;
+struct GameStats {
+    std::optional<SysInterfaceStats> sys_interface;
     std::optional<Settings> settings;
     std::array<int32_t, 0x42> stats;
 };
 
-using TGameSteam = Struct<
-    Game,
+using TGameSteamStats = Struct<
+    GameStats,
     Fields<
         Seek<0x41f820>,
-        Field<NullableRef<TSysInterface>, &Game::sys_interface>,
+        Field<NullableRef<TSysInterfaceStats>, &GameStats::sys_interface>,
         Seek<0x41f83c>,
-        Field<NullableRef<TSettings>, &Game::settings>,
+        Field<NullableRef<TSettings>, &GameStats::settings>,
         Seek<0x5b2538>,
-        Field<Primitive<std::array<int32_t, 0x42>>, &Game::stats>>>;
+        Field<Primitive<std::array<int32_t, 0x42>>, &GameStats::stats>>>;
 
-using TGameGOG = Struct<
-    Game,
+struct SysInterfaceTimer {
+    int32_t game_ticks;
+};
+
+using TSysInterfaceTimer = Struct<
+    SysInterfaceTimer,
+    Fields<Seek<0x48>, Field<Int32, &SysInterfaceTimer::game_ticks>>>;
+
+struct GameTimer {
+    std::optional<SysInterfaceTimer> sys_interface;
+    int32_t stats_time;
+};
+
+using TGameSteamTimer = Struct<
+    GameTimer,
+    Fields<
+        Seek<0x41f820>,
+        Field<NullableRef<TSysInterfaceTimer>, &GameTimer::sys_interface>,
+        Seek<0x5b25d4>,
+        Field<Int32, &GameTimer::stats_time>>>;
+
+using TGameGOGStats = Struct<
+    GameStats,
     Fields<
         Seek<0x420820>,
-        Field<NullableRef<TSysInterface>, &Game::sys_interface>,
+        Field<NullableRef<TSysInterfaceStats>, &GameStats::sys_interface>,
         Seek<0x42083c>,
-        Field<NullableRef<TSettings>, &Game::settings>,
+        Field<NullableRef<TSettings>, &GameStats::settings>,
         Seek<0x5b3b38>,
-        Field<Primitive<std::array<int32_t, 0x42>>, &Game::stats>>>;
+        Field<Primitive<std::array<int32_t, 0x42>>, &GameStats::stats>>>;
+
+using TGameGOGTimer = Struct<
+    GameTimer,
+    Fields<
+        Seek<0x420820>,
+        Field<NullableRef<TSysInterfaceTimer>, &GameTimer::sys_interface>,
+        Seek<0x5b3bd4>,
+        Field<Int32, &GameTimer::stats_time>>>;
 
 }  // namespace hitman_blood_money::structs

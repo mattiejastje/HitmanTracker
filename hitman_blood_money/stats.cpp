@@ -9,7 +9,7 @@
 #include <unordered_map>
 
 #include "../hitman_common/simple_rating.hpp"
-#include "../mem/read_write.hpp"
+#include "../mem/read_variant.hpp"
 #include "structs.hpp"
 
 /*
@@ -147,29 +147,18 @@ constexpr std::size_t CAMERA_CAUGHT = 59;
 constexpr std::size_t CUSTOM_WEAPONS_LEFT_ON_LEVEL = 61;
 
 static std::optional<int32_t> get_time(
-    hitman_blood_money::Version version,
-    void* handle,
-    uintptr_t base_ptr,
-    MapStage map_stage
+    MapStage map_stage, const hitman_blood_money::structs::GameTimer& game
 ) {
-    const int32_t sys_interface
-        = version == hitman_blood_money::Version::Steam ? 0x41F820 : 0x420820;
-    const int32_t stats
-        = version == hitman_blood_money::Version::Steam ? 0x5B2538 : 0x5B3B38;
     if (map_stage == MapStage::main)
-        // game.sys_interface.game_ticks
-        return read<uint32_t, int32_t>(
-            handle, base_ptr + sys_interface, {0x48}
-        );
-    if (map_stage == MapStage::post)
-        // game.stats[TIME]
-        return read<int32_t>(handle, base_ptr + stats + 4 * TIME);
-    // map_stage == MapStage::pre
-    return 0;
+        return game.sys_interface
+                   ? std::make_optional(game.sys_interface->game_ticks)
+                   : std::nullopt;
+    if (map_stage == MapStage::post) return game.stats_time;
+    return {};
 }
 
 static bool get_suit_left_on_level(
-    MapStage map_stage, const hitman_blood_money::structs::Game& game
+    MapStage map_stage, const hitman_blood_money::structs::GameStats& game
 ) {
     if (map_stage == MapStage::pre) {
         return 0;
@@ -215,27 +204,17 @@ GameStatsSlow hitman_blood_money::update_slow(Version version) {
                std::any& remote_state_any,
                std::any& stats_any
            ) {
-        auto& game = std::any_cast<structs::Game&>(remote_state_any);
+        auto& game = std::any_cast<structs::GameStats&>(remote_state_any);
         auto& stats = std::any_cast<Stats&>(stats_any);
         MemoryReader<uint32_t> reader{handle};
         auto tracer = make_mempeep_log_tracer();
         const auto address = static_cast<uint32_t>(base_ptrs.at(0));
-        switch (version) {
-            case Version::Steam:
-                if (!read_at_address<structs::TGameSteam>(
-                        address, reader, tracer, game
-                    ))
-                    return false;
-                break;
-            case Version::GOG:
-                if (!read_at_address<structs::TGameGOG>(
-                        address, reader, tracer, game
-                    ))
-                    return false;
-                break;
-            default:
-                return false;
-        }
+        if (!read_variant<
+                Variant<Version::Steam, structs::TGameSteamStats>,
+                Variant<Version::GOG, structs::TGameGOGStats>>(
+                address, reader, tracer, version, game
+            ))
+            return false;
         auto& settings = game.settings;
         if (!settings) return true;  // game starting
         stats.difficulty = settings->difficulty;
@@ -318,8 +297,17 @@ GameStatsFast hitman_blood_money::update_fast(Version version) {
            ) {
         auto& stats = std::any_cast<Stats&>(stats_any);
         if (stats.map > 0) {
-            const auto& base_ptr = base_ptrs.at(0);
-            auto time = get_time(version, handle, base_ptr, stats.map_stage);
+            structs::GameTimer game{};
+            MemoryReader<uint32_t> reader{handle};
+            auto tracer = make_mempeep_log_tracer();
+            const auto address = static_cast<uint32_t>(base_ptrs.at(0));
+            if (!read_variant<
+                    Variant<Version::Steam, structs::TGameSteamTimer>,
+                    Variant<Version::GOG, structs::TGameGOGTimer>>(
+                    address, reader, tracer, version, game
+                ))
+                return false;
+            auto time = get_time(stats.map_stage, game);
             if (time) stats.time = time.value() * game_display_seconds_per_tick;
             return time.has_value();
         }
