@@ -63,7 +63,8 @@ std::optional<intptr_t> find_pointer(
             }
             p += uoffset;
         } else {
-            auto uoffset1 = static_cast<uintptr_t>(0) - static_cast<uintptr_t>(offset);
+            auto uoffset1
+                = static_cast<uintptr_t>(0) - static_cast<uintptr_t>(offset);
             if (!std::in_range<P>(uoffset1)) {
                 spdlog::error("Offset too large for pointer type");
                 return {};
